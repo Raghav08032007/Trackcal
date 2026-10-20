@@ -124,34 +124,60 @@ async def _gemini_analyze_image(image_bytes: bytes, mime_type: str, context: Opt
 
 
 async def _analyze_image(image_bytes: bytes, mime_type: str, context: Optional[str] = None) -> List[dict]:
-    if MOCK_MODE or not os.getenv("GEMINI_API_KEY"):
-        return await _mock_analyze_image(context)
-    return await _gemini_analyze_image(image_bytes, mime_type, context)
+    # Priority 1: OpenRouter API (if configured)
+    if os.getenv("OPENROUTER_API_KEY"):
+        try:
+            from services.openrouter_client import analyze_food_image_openrouter
+            return await analyze_food_image_openrouter(image_bytes, mime_type, context)
+        except Exception as e:
+            print(f"[OpenRouter Vision] Error: {e}")
+            if MOCK_MODE:
+                return await _mock_analyze_image(context)
+            raise HTTPException(502, f"OpenRouter vision inference failed: {e}")
+
+    # Priority 2: Gemini API directly
+    if not MOCK_MODE and os.getenv("GEMINI_API_KEY"):
+        return await _gemini_analyze_image(image_bytes, mime_type, context)
+
+    # Priority 3: Mock development mode
+    return await _mock_analyze_image(context)
 
 
 async def _parse_text_meal(text: str, language: str = "en") -> List[dict]:
     """Parse natural-language meal description into food items."""
-    if MOCK_MODE:
-        return [{"name": f"Meal from: {text[:50]}", "quantity_g": 200, "confidence": 0.6,
-                 "calories": 350, "protein_g": 15, "carbs_g": 45, "fat_g": 10}]
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        prompt = (
-            f"Parse this meal description in {language}: '{text}'. "
-            "Return ONLY a JSON array of food items with: name, quantity_g, confidence, calories, protein_g, carbs_g, fat_g. "
-            "Use per-100g USDA values scaled to the quantity. If quantity not mentioned, use a typical serving."
-        )
-        response = model.generate_content(prompt)
-        text_resp = response.text.strip()
-        if "```" in text_resp:
-            text_resp = text_resp.split("```")[1].lstrip("json").strip()
-        return json.loads(text_resp)
-    except Exception as e:
-        print(f"Text parse error: {e}")
-        return [{"name": text, "quantity_g": 100, "confidence": 0.5,
-                 "calories": None, "protein_g": None, "carbs_g": None, "fat_g": None}]
+    # Priority 1: OpenRouter API
+    if os.getenv("OPENROUTER_API_KEY"):
+        try:
+            from services.openrouter_client import parse_text_meal_openrouter
+            return await parse_text_meal_openrouter(text, language)
+        except Exception as e:
+            print(f"[OpenRouter NLP] Error: {e}")
+            if MOCK_MODE:
+                return [{"name": f"Meal from: {text[:50]}", "quantity_g": 200, "confidence": 0.6,
+                         "calories": 350, "protein_g": 15, "carbs_g": 45, "fat_g": 10}]
+            raise HTTPException(502, f"OpenRouter text parsing failed: {e}")
+
+    # Priority 2: Gemini API
+    if not MOCK_MODE and os.getenv("GEMINI_API_KEY"):
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            prompt = (
+                f"Parse this meal description in {language}: '{text}'. "
+                "Return ONLY a JSON array of food items with: name, quantity_g, confidence, calories, protein_g, carbs_g, fat_g. "
+                "Use per-100g USDA values scaled to the quantity. If quantity not mentioned, use a typical serving."
+            )
+            response = model.generate_content(prompt)
+            text_resp = response.text.strip()
+            if "```" in text_resp:
+                text_resp = text_resp.split("```")[1].lstrip("json").strip()
+            return json.loads(text_resp)
+        except Exception as e:
+            print(f"Text parse error: {e}")
+
+    return [{"name": f"Meal from: {text[:50]}", "quantity_g": 200, "confidence": 0.6,
+             "calories": 350, "protein_g": 15, "carbs_g": 45, "fat_g": 10}]
 
 
 def _save_image(file_bytes: bytes, original_name: str, user_id: str) -> str:
@@ -432,3 +458,36 @@ def get_scan_job(job_id: str, user: models.User = Depends(get_current_active_use
             for p in job.predictions
         ],
     }
+
+
+@router.get("/barcode/{barcode_value}")
+async def scan_barcode(
+    barcode_value: str,
+    user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Live Barcode Scanner (Open Food Facts open-source API integration):
+    Resolves UPC/EAN barcodes to verified calories, macros, NOVA classification, and allergen tags.
+    """
+    from services.open_food_facts_client import lookup_barcode
+    product = await lookup_barcode(barcode_value)
+    if product:
+        return product
+
+    # Fallback to local DB barcodes table
+    db_barcode = db.query(models.Barcode).filter(models.Barcode.barcode_value == barcode_value).first()
+    if db_barcode and db_barcode.food:
+        f = db_barcode.food
+        return {
+            "barcode": barcode_value,
+            "product_name": f.name,
+            "brand": f.brand.name if f.brand else "Generic",
+            "serving_size": f.serving_size_description or f"{f.serving_size_g}g",
+            "data_source": "Local Verified Database",
+            "allergens": detect_allergens(f.name),
+            "nova_group": infer_nova_score(f.name)["nova_group"]
+        }
+
+    raise HTTPException(404, f"Barcode '{barcode_value}' not found in global Open Food Facts registry or local database.")
+

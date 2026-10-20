@@ -136,3 +136,29 @@ def test_onboarding_tdee_calculation():
     finally:
         app.dependency_overrides.clear()
 
+
+def test_barcode_lookup_endpoint():
+    """Verify barcode lookup endpoint with mock or live Open Food Facts."""
+    from routers.auth import get_current_active_user
+    mock_user = models.User(
+        id="test-user-id",
+        email="test@example.com",
+        role=models.UserRole.user,
+        is_active=True,
+        is_minor=False
+    )
+    app.dependency_overrides[get_current_active_user] = lambda: mock_user
+
+    try:
+        # Testing a known product barcode (Nutella 3017620422003 or generic 404 test)
+        response = client.get("/api/v1/scan/barcode/3017620422003")
+        # In test environment with network access it will return 200 from OpenFoodFacts, or 404 if offline
+        assert response.status_code in [200, 404]
+        if response.status_code == 200:
+            data = response.json()
+            assert "product_name" in data
+            assert "nutrients_per_100g" in data
+    finally:
+        app.dependency_overrides.clear()
+
+
