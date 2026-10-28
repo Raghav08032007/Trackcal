@@ -66,6 +66,15 @@ class GameSession(Base):
     attempts = Column(Integer, nullable=False, default=0)
 
 
+class FeatureFlag(Base):
+    """Runtime switch for a module listed in services.feature_flags.REGISTRY. No row means the registry default (off)."""
+    __tablename__ = "feature_flags"
+    key = Column(String(64), primary_key=True)
+    enabled = Column(Boolean, nullable=False, default=False)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = Column(String(100), nullable=True)
+
+
 class GamificationRule(Base):
     __tablename__ = "gamification_rules"
     key = Column(String(50), primary_key=True)
