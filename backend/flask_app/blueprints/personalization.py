@@ -1,10 +1,11 @@
 """Personal wellness endpoints under /api/v1/personalization."""
 from flask import Blueprint
 
-from flask_app import before_each, route
+from flask_app import before_each, retry_deadlocks, route
 from routers import personalization as handlers
 
 bp = Blueprint('personalization', __name__, url_prefix='/api/v1/personalization')
+retry_deadlocks(bp)  # XP awards; handlers make no external calls before committing
 route(bp, 'GET', '/state', handlers.state)
 route(bp, 'POST', '/onboarding', handlers.save_progress)
 route(bp, 'POST', '/measurements', handlers.save_measurement)

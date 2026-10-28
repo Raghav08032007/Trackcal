@@ -25,6 +25,14 @@ API request logs contain IDs/method/status/duration, not submitted nutrition or 
 
 Production AI is bound to verified accounts and a shared MySQL daily quota. Integrations have per-account buckets. Limits count attempts, including failed provider requests, to bound abuse. Monitor actual provider invoices and request volume; these limits do not establish a cost-per-user forecast or protect against every distributed attack. Put additional host/network protections in front of a public release.
 
+## Account closure and erasure
+
+Closing an account disables access at once. The `account-purge` service runs `scripts/purge_closed_accounts.py` daily and permanently erases accounts closed more than `ACCOUNT_ERASURE_DAYS` ago (default 30): every user-owned row, the user's support tickets, food submissions and audit entries, and their uploaded photo files. It prints counts only. Changing the window means changing the privacy notice and the account screen, which state 30 days. Backups still contain erased accounts until they expire, so keep the backup retention period no longer than you can justify in the privacy notice.
+
+## Client addresses and per-IP limits
+
+Login (30 attempts per 15 minutes) and signup (10 per hour) are limited per client address as well as per email. The API reads the address from `X-Forwarded-For` only when `TRUSTED_PROXY_HOPS` is set (`1` in compose: Caddy appends the real address and the web server passes it on). If you add or remove a proxy in front of the API, change this value, or every user will share one address and one limit.
+
 ## Source packaging and CI
 
 For a read-only configuration preflight, run `backend/.venv/Scripts/python.exe backend/scripts/release_preflight.py --env-file .env.production` from the repository root (use the deployment host's Python executable). It prints only check names/actions, not environment values, and returns nonzero for missing configuration. A successful configuration check does not approve launch or prove credentials work. Docker CLI presence does not establish that the engine is running.

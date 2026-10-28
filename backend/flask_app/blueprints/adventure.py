@@ -1,10 +1,11 @@
 """Habit adventure endpoints under /api/v1/adventure."""
 from flask import Blueprint
 
-from flask_app import before_each, route
+from flask_app import before_each, retry_deadlocks, route
 from routers import adventure as handlers
 
 bp = Blueprint('adventure', __name__, url_prefix='/api/v1/adventure')
+retry_deadlocks(bp)  # XP awards; handlers make no external calls before committing
 route(bp, 'POST', '/initialize', handlers.initialize)
 route(bp, 'GET', '/summary', handlers.summary)
 route(bp, 'POST', '/review-meal', handlers.review_meal)

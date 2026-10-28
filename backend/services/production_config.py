@@ -13,7 +13,17 @@ def valid_https_origin(value):
     except ValueError:
         return False
 
+def trusted_proxy_hops():
+    """How many X-Forwarded-For entries to trust (0 = use the socket address)."""
+    try:
+        hops = int(os.getenv("TRUSTED_PROXY_HOPS", "0"))
+        if not 0 <= hops <= 3: raise ValueError()
+        return hops
+    except ValueError:
+        raise RuntimeError("TRUSTED_PROXY_HOPS must be a whole number from 0 to 3.")
+
 def validate_production():
+    trusted_proxy_hops()
     if os.getenv("APP_ENV") != "production": return
     secret = os.getenv("APP_SECRET_KEY", "")
     if len(secret) < 32 or any(marker in secret.lower() for marker in ("change_me", "change-me", "your_secret", "your-secret")): raise RuntimeError("Production requires a unique APP_SECRET_KEY of at least 32 characters, not a template placeholder.")

@@ -4,6 +4,7 @@ import logging
 import uuid
 
 from flask import jsonify
+from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import HTTPException as WerkzeugHTTPException
 
 logger = logging.getLogger('trackcal')
@@ -19,6 +20,13 @@ class RequestValidation(Exception):
     def __init__(self, errors):
         super().__init__('Request validation failed')
         self.errors = errors
+
+
+MYSQL_DEADLOCK = 1213
+
+
+def is_deadlock(error):
+    return getattr(getattr(error, 'orig', None), 'args', (None,))[0] == MYSQL_DEADLOCK
 
 
 def _respond(status, detail, headers=None):
@@ -41,6 +49,12 @@ def register(app):
     def http_error(error):
         names = {404: 'Not Found', 405: 'Method Not Allowed', 413: 'Request Entity Too Large'}
         return _respond(error.code, names.get(error.code, error.name))
+
+    @app.errorhandler(OperationalError)
+    def database_busy(error):
+        if is_deadlock(error):  # still deadlocked after any retries: nothing was saved, so asking to retry is honest
+            return _respond(503, 'Your change could not be saved because the server was busy. Please try again.', {'Retry-After': '1'})
+        return unexpected(error)
 
     @app.errorhandler(Exception)
     def unexpected(error):

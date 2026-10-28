@@ -32,6 +32,12 @@ def close_dependencies(_error=None):
         generator.close()
 
 
+def reset_request():
+    """Finish this request's dependencies and forget cached values, so a retried call starts fresh."""
+    close_dependencies()
+    g.pop('dependency_cache', None)
+
+
 def _is_model(annotation):
     if inspect.isclass(annotation) and issubclass(annotation, BaseModel): return True
     if get_origin(annotation) is Union: return any(_is_model(a) for a in get_args(annotation) if a is not type(None))

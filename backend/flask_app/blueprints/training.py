@@ -1,10 +1,11 @@
 """Workout sessions endpoints under /api/v1/wellness."""
 from flask import Blueprint
 
-from flask_app import before_each, route
+from flask_app import before_each, retry_deadlocks, route
 from routers import training as handlers
 
 bp = Blueprint('training', __name__, url_prefix='/api/v1/wellness')
+retry_deadlocks(bp)  # XP awards; handlers make no external calls before committing
 route(bp, 'GET', '/exercises', handlers.exercises)
 route(bp, 'GET', '/exercises/<identifier>', handlers.exercise)
 route(bp, 'GET', '/training', handlers.dashboard)

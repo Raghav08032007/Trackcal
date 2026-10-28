@@ -58,9 +58,22 @@ Removed: fastapi, starlette, uvicorn, python-multipart.
 
 `alembic/versions/0001_baseline_schema_57_tables_as_of_phase_1.py`, `0002_feature_flags.py`. The live dev database was stamped at `0001` (after a read-only comparison showed 0 differences) and upgraded to `0002`. The old SQL files in `backend/migrations/` are frozen as history.
 
-## Still open (see KNOWN_ISSUES.md)
+## Follow-up: KI-01 to KI-04 fixed on Flask (28 October 2026)
 
-KI-01 (deadlock retry), KI-02 (real account deletion), KI-03 (complete export) and KI-04 (per-IP login limit) were planned to be fixed during this port. **They are not fixed yet**; they are the next backend task. Then comes the Vite frontend migration.
+| Issue | Result | Evidence |
+|---|---|---|
+| KI-01 deadlock 500s | **PASS** | XP blueprints retry a deadlocked request (max 3, backoff); exhaustion is a 503 with `Retry-After`; other blueprints and other database errors are not retried. 4 deterministic tests |
+| KI-02 real erasure | **PASS** (job **NOT VERIFIED** in Docker) | Erasure removes every user-owned row, the 3 `SET NULL` content tables and photo files; other accounts untouched; files outside uploads never deleted; closure returns the erasure date. 5 tests. Daily `account-purge` compose service added. Running the purge command against the dev database was declined by the permission check; a read-only preview showed 0 accounts due |
+| KI-03 export coverage | **PASS** | 11 sections added; credentials omitted (`device_token`, `storage_path`); register test fails on any unaccounted user-owned table. 2 tests |
+| KI-04 per-IP limits | **PASS** | Login 30 / 15 min and signup 10 / h per address in production; `X-Forwarded-For` trusted only for `TRUSTED_PROXY_HOPS` (forged first entries ignored); invalid settings stop start-up; the web server forwards the address. 4 backend + 2 web tests |
+
+Totals after the follow-up: **297/297 backend** (three runs), **223/223 web**, TypeScript passes, lint 0 errors / 3 accepted warnings.
+
+**Owner decision:** the 30-day erasure window is a default I chose. Confirm it, or set `ACCOUNT_ERASURE_DAYS` and update the two notices that state 30 days.
+
+## Next
+
+The Vite frontend migration, including moving the 10 Next.js server routes into Flask.
 
 ## Manual checks for the owner
 

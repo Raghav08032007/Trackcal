@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from flask_app.params import Depends, HTTPException, status
-from flask_app.params import OAuth2PasswordRequestForm, bearer_token
+from flask_app.params import OAuth2PasswordRequestForm, Request, bearer_token
 import jwt
 from jwt import InvalidTokenError as JWTError
 from passlib.context import CryptContext
@@ -122,6 +122,11 @@ def check_credential(data, user):
         raise HTTPException(401, "Session expired. Please sign in again.")
 
 
+# Per-IP buckets (KI-04). Generous enough for shared networks; per-account limits still apply.
+LOGIN_PER_IP = 30     # attempts per 15 minutes
+SIGNUP_PER_IP = 10    # accounts per hour
+
+
 def production_limit(db, action, subject, limit=5, seconds=60):
     if os.getenv("APP_ENV") == "production":
         from services.abuse_limits import consume
@@ -134,9 +139,10 @@ def get_current_active_user(current_user: models.User = Depends(get_current_user
 
 # ── Endpoints ───────────────────────────────────────────────────
 
-def signup(req: SignupRequest, db: Session = Depends(get_db)):
+def signup(req: SignupRequest, request: Request, db: Session = Depends(get_db)):
     """Register a new user."""
     production_limit(db, "signup", req.email.lower(), 3, 3600)
+    production_limit(db, "signup-ip", request.client.host or "unknown", SIGNUP_PER_IP, 3600)
     production_limit(db, "signup-global", "all", 100, 3600)
     existing = db.query(models.User).filter(models.User.email == req.email.lower()).first()
     if existing:
@@ -176,8 +182,9 @@ def signup(req: SignupRequest, db: Session = Depends(get_db)):
     )
 
 
-def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login with email + password."""
+    production_limit(db, "login-ip", request.client.host or "unknown", LOGIN_PER_IP, 900)  # many accounts, one source
     production_limit(db, "login", form.username.lower())
     user = db.query(models.User).filter(
         models.User.email == form.username.lower(),

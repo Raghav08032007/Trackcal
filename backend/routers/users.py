@@ -158,7 +158,7 @@ def update_settings(data: SettingsUpdate, user: models.User = Depends(get_curren
 
 
 def delete_account(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    """Soft-delete the user account."""
+    """Close the account now; services.account_erasure permanently erases it after the erasure window."""
     from datetime import datetime
     own_slots=db.query(models.CoachSlot.id).filter(models.CoachSlot.coach_id==user.id)
     appointments=db.query(models.CoachBooking).filter((models.CoachBooking.user_id==user.id)|(models.CoachBooking.slot_id.in_(own_slots))).with_for_update().all()
@@ -167,18 +167,20 @@ def delete_account(user: models.User = Depends(get_current_active_user), db: Ses
         slot=db.query(models.CoachSlot).filter_by(id=appointment.slot_id).with_for_update().first()
         if slot and slot.reserved_booking_id==appointment.id:slot.reserved_booking_id=None
     for slot in db.query(models.CoachSlot).filter_by(coach_id=user.id).with_for_update().all():slot.active=False
-    user.deleted_at = datetime.utcnow()
+    user.deleted_at = datetime.utcnow().replace(microsecond=0)  # DATETIME keeps whole seconds and MySQL rounds, not truncates
     user.is_active = False
     db.commit()
-    return {"status": "account_scheduled_for_deletion"}
+    from services.account_erasure import erase_after
+    return {"status": "account_closed", "erase_after": erase_after(user.deleted_at).date().isoformat(),
+            "detail": "Access is disabled now. Your server records will be permanently erased on or after this date."}
 
 
 def export_data(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Return a JSON dump of the user's data for GDPR portability."""
     logs = db.query(models.MealLog).filter(models.MealLog.user_id == user.id).all()
     recipes = db.query(models.Recipe).filter(models.Recipe.user_id == user.id).all()
-    def row(value):
-        return {column.name: getattr(value, column.name) for column in value.__table__.columns} if value is not None else None
+    def row(value, omit=()):
+        return {column.name: getattr(value, column.name) for column in value.__table__.columns if column.name not in omit} if value is not None else None
     return {
         "user_id": user.id,
         "email": user.email,
@@ -199,8 +201,39 @@ def export_data(user: models.User = Depends(get_current_active_user), db: Sessio
             "reviewed_meals": [row(meal) for meal in db.query(models.AdventureMeal).filter_by(user_id=user.id).all()],
             "game_sessions": [{"id":game.id,"expires_at":game.expires_at,"completed":game.completed,"attempts":game.attempts} for game in db.query(models.GameSession).filter_by(user_id=user.id).all()],
         },
+        "account_records": {name: [row(item, omit) for item in db.query(model).filter_by(user_id=user.id).all()] for name, model, omit in ACCOUNT_RECORDS},
         "note": "Nutrition and optional adventure data export. Uploaded image files are referenced by ID and are not embedded.",
     }
+
+
+# Export coverage register (KI-03). Every table with a user-owner column is exported or excluded with a
+# reason; tests/test_export_coverage.py fails when a new user-owned table is in neither list.
+ACCOUNT_RECORDS = [
+    ('saved_meals', models.SavedMeal, ()),
+    ('allergens', models.UserAllergen, ()),
+    ('consents', models.ConsentRecord, ()),
+    ('ai_scan_jobs', models.AIScanJob, ()),
+    ('food_images', models.FoodImage, ('storage_path',)),  # server-internal file location
+    ('food_corrections', models.FoodCorrection, ()),
+    ('community_submissions', models.CommunitySubmission, ()),
+    ('support_tickets', models.SupportTicket, ()),
+    ('coach_bookings', models.CoachBooking, ()),
+    ('subscription', models.Subscription, ()),
+    ('devices', models.UserDevice, ('device_token',)),  # a push credential, not personal content
+]
+EXPORTED_TABLES = {
+    'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',
+    'food_favorites', 'food_search_history', 'workout_blueprints', 'workout_sessions', 'personalization_profiles',
+    'wellness_measurements', 'activity_plans', 'recommendation_history', 'reminder_deliveries', 'activity_reward_events',
+    'user_achievements', 'character_unlocks', 'character_customizations', 'streak_records', 'adventure_profiles',
+    'reward_events', 'adventure_meals', 'game_sessions', *(model.__tablename__ for _name, model, _omit in ACCOUNT_RECORDS),
+}
+EXPORT_EXCLUDED = {
+    'account_action_tokens': 'one-time recovery and verification token digests (secrets, short-lived)',
+    'auth_identities': 'sign-in provider token hashes (credentials)',
+    'audit_logs': 'security record kept by the operator; available on request',
+    'coach_slots': "the coach's own published schedule, not the client's record",
+}
 
 
 class OnboardingPlanRequest(BaseModel):

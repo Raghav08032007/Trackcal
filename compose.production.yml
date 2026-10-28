@@ -29,6 +29,9 @@ services:
       CORS_ORIGINS: https://${APP_DOMAIN:?Set APP_DOMAIN}
       PUBLIC_APP_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
       AI_MOCK_MODE: "false"
+      # Caddy appends the real client IP to X-Forwarded-For and the web server passes it on unchanged,
+      # so the API trusts exactly one entry. Change only if the proxy chain changes.
+      TRUSTED_PROXY_HOPS: "1"
     depends_on:
       mysql: { condition: service_healthy }
     command: ["python", "scripts/bootstrap_schema.py"]
@@ -50,6 +53,20 @@ services:
     security_opt: ["no-new-privileges:true"]
     read_only: true
     tmpfs: ["/tmp:size=128m,mode=1777"]
+  account-purge:
+    # Daily permanent erasure of accounts closed more than ACCOUNT_ERASURE_DAYS ago (default 30; see .env.production).
+    build: ./backend
+    env_file: .env.production
+    environment: *api-environment
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    volumes: ["uploads:/app/uploads"]  # closed accounts' photo files are erased too
+    command: ["sh", "-c", "while true; do python scripts/purge_closed_accounts.py; sleep 86400; done"]
+    restart: unless-stopped
+    networks: [private]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: ["/tmp:size=16m,mode=1777"]
   web:
     build: ./frontend/web
     env_file: .env.production

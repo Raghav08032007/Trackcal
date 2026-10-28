@@ -5,6 +5,7 @@ Run locally:  flask --app flask_app run --port 8000      Production: gunicorn "f
 import json
 import logging
 import os
+import random
 import sys
 import time
 import uuid
@@ -12,6 +13,7 @@ import uuid
 from dotenv import load_dotenv
 from flask import Flask, Response, g, jsonify, request, send_from_directory
 from pydantic import TypeAdapter
+from sqlalchemy.exc import OperationalError
 
 load_dotenv()
 logger = logging.getLogger('trackcal')
@@ -23,12 +25,31 @@ from flask_app import binding, errors  # noqa: E402
 from flask_app.binding import call, encode  # noqa: E402
 
 
+DEADLOCK_ATTEMPTS = 3
+
+
+def retry_deadlocks(blueprint):
+    """Re-run this blueprint's requests when MySQL picks them as a deadlock victim (KI-01).
+
+    InnoDB rolls back the victim's whole transaction, so a rerun starts clean. Use only for blueprints
+    whose handlers do nothing outside the database (no AI, email or HTTP calls) before committing.
+    """
+    blueprint.__dict__['trackcal_retry_deadlocks'] = True
+
+
 def route(blueprint, method, rule, handler, status=200, response_model=None):
     """Declare one endpoint: HTTP method + rule -> handler, with its success status and optional response schema."""
     adapter = TypeAdapter(response_model) if response_model is not None else None
+    attempts = DEADLOCK_ATTEMPTS if blueprint.__dict__.get('trackcal_retry_deadlocks') else 1
 
     def view(**path_values):
-        result = call(handler, **path_values)
+        for attempt in range(attempts):
+            try:
+                result = call(handler, **path_values); break
+            except OperationalError as error:
+                if not errors.is_deadlock(error) or attempt == attempts - 1: raise
+                binding.reset_request()  # discard the rolled-back session and the user loaded with it
+                time.sleep(0.02 * (attempt + 1) + random.random() * 0.03)
         if isinstance(result, Response): return result
         if adapter is not None: result = adapter.dump_python(adapter.validate_python(result, from_attributes=True), mode='json')
         if status == 204: return Response(status=204)
@@ -72,9 +93,12 @@ def _cors(app):
 
 
 def create_app():
-    from services.production_config import validate_production
+    from services.production_config import trusted_proxy_hops, validate_production
     validate_production()
     app = Flask(__name__)
+    if trusted_proxy_hops():  # per-IP limits must see the client, not the proxy (KI-04)
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=trusted_proxy_hops())
     app.json.sort_keys = False; app.json.ensure_ascii = False
     app.url_map.strict_slashes = False
     app.teardown_appcontext(binding.close_dependencies)
