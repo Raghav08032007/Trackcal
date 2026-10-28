@@ -1,13 +1,12 @@
 """recipes.py — Recipe CRUD with per-serving nutrient calculation"""
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException
+from flask_app.params import Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 
 class IngredientIn(BaseModel):
@@ -66,7 +65,6 @@ def _calculate_recipe_nutrients(ingredients: List[models.RecipeIngredient], db: 
     return {k: round(v, 2) for k, v in totals.items()}, round(total_weight_g, 2)
 
 
-@router.post("", status_code=201)
 def create_recipe(
     data: RecipeCreate,
     user: models.User = Depends(get_current_active_user),
@@ -109,13 +107,11 @@ def create_recipe(
     return {"id": recipe.id, "name": recipe.name, "servings": recipe.servings}
 
 
-@router.get("")
 def list_recipes(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     recipes = db.query(models.Recipe).filter(models.Recipe.user_id == user.id).all()
     return [{"id": r.id, "name": r.name, "servings": r.servings, "cuisine_region": r.cuisine_region} for r in recipes]
 
 
-@router.get("/{recipe_id}")
 def get_recipe(recipe_id: str, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     recipe = db.query(models.Recipe).filter(
         models.Recipe.id == recipe_id, models.Recipe.user_id == user.id
@@ -152,7 +148,6 @@ def get_recipe(recipe_id: str, user: models.User = Depends(get_current_active_us
     }
 
 
-@router.delete("/{recipe_id}")
 def delete_recipe(recipe_id: str, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     recipe = db.query(models.Recipe).filter(
         models.Recipe.id == recipe_id, models.Recipe.user_id == user.id

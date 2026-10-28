@@ -1,14 +1,13 @@
 """meal_logs.py — Meal logging endpoints: create, list, edit, delete, copy"""
 from datetime import datetime, date
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query
+from flask_app.params import Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 
 class MealItemCreate(BaseModel):
@@ -50,7 +49,6 @@ def _calculate_totals(items: List[MealItemCreate]) -> dict:
             "carbs_g": round(total_carb, 1), "fat_g": round(total_fat, 1)}
 
 
-@router.post("", status_code=201)
 def create_meal_log(
     data: MealLogCreate,
     user: models.User = Depends(get_current_active_user),
@@ -100,7 +98,6 @@ def create_meal_log(
     return {"id": log.id, "logged_at": log.logged_at.isoformat(), "totals": totals, "item_count": len(data.items)}
 
 
-@router.get("")
 def list_meal_logs(
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
@@ -144,7 +141,6 @@ def list_meal_logs(
     }
 
 
-@router.get("/{log_id}")
 def get_meal_log(log_id: str, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     log = db.query(models.MealLog).filter(
         models.MealLog.id == log_id,
@@ -185,7 +181,6 @@ def get_meal_log(log_id: str, user: models.User = Depends(get_current_active_use
     }
 
 
-@router.delete("/{log_id}")
 def delete_meal_log(log_id: str, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     log = db.query(models.MealLog).filter(
         models.MealLog.id == log_id, models.MealLog.user_id == user.id
@@ -197,7 +192,6 @@ def delete_meal_log(log_id: str, user: models.User = Depends(get_current_active_
     return {"status": "deleted"}
 
 
-@router.post("/{log_id}/copy")
 def copy_meal_log(log_id: str, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Duplicate a previous meal log to today."""
     original = db.query(models.MealLog).filter(
@@ -237,7 +231,6 @@ def copy_meal_log(log_id: str, user: models.User = Depends(get_current_active_us
     return {"id": new_log.id, "status": "copied"}
 
 
-@router.patch("/{log_id}/items/{item_id}/confirm")
 def confirm_item(
     log_id: str, item_id: str,
     user: models.User = Depends(get_current_active_user),

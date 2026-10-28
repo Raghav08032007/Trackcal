@@ -1,7 +1,7 @@
 """Central, server-owned rewards. Call only after a module validates its own activity."""
 from collections import defaultdict
 from datetime import date,timedelta
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 import models
 
 KINDS={'saved_meal':'saved_meal_created','onboarding':'onboarding_completed','activity_plan':'activity_plan_created','planner_learning':'planner_education_completed','fitness_learning':'exercise_skill_learned','nutrition_learning':'personal_nutrition_education_completed','recovery':'recovery_activity_completed','meal':'nutrition_log_completed','quiz':'nutrition_education_completed','plan':'personal_plan_activity_completed','workout':'workout_completed','weekly':'weekly_consistency'}

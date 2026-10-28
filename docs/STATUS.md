@@ -6,7 +6,7 @@ Each blueprint module is marked from the code and from tests run on 28 October 2
 
 | # | Claim | Code reality |
 |---|---|---|
-| D1 | The plan's stack: "React + TypeScript + Vite frontend, Flask backend, MySQL" | **Next.js 16.4.2 (App Router) + FastAPI + MySQL 8.0.46.** The owner chose to migrate to Vite + Flask; that is a separate phase, not yet started |
+| D1 | The plan's stack: "React + TypeScript + Vite frontend, Flask backend, MySQL" | **Next.js 16.4.2 (App Router) + FastAPI + MySQL 8.0.46.** The owner chose to migrate to Vite + Flask. **Backend done 28 October 2026 (Flask 3.1.3, Alembic); frontend still Next.js** |
 | D2 | The plan refers to a 13-phase blueprint | The repository's own plan (`docs/PHASED_IMPLEMENTATION.md`) has phases 0–6, numbered differently. This map uses the module names, which both share |
 | D3 | "Reminders" is listed as existing | In-app reminders and calendar (ICS) export exist. **There is no web push**: no service-worker push handler, VAPID keys or sender (0 matches). Closed-app delivery is not possible |
 | D4 | "Account controls … export/backup" | Export exists but **omits 11 user-owned tables** (KI-03). "Delete account" only deactivates: it sets `deleted_at` and replies `account_scheduled_for_deletion`, but no job ever deletes (KI-02) |

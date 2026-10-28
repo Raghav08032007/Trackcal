@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 import threading
 import numpy as np
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "runtime" / "whisper" / "ggml-tiny.bin"
 slot = threading.Lock()

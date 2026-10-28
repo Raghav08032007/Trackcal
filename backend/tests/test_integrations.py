@@ -8,7 +8,7 @@ import wave
 from unittest.mock import AsyncMock
 import httpx
 import pytest
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 from tests.client import app, client
 from routers import integrations
 from services import safe_recipe

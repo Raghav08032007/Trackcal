@@ -2,6 +2,8 @@
 
 Generated from the running code, not from earlier reports: the FastAPI OpenAPI schema, the SQLAlchemy metadata, the Next.js build output and source scans. Regenerate after any route, table or setting change.
 
+> **Update, 28 October 2026:** the backend now runs on Flask. All 112 endpoints keep the same methods, paths and no-session responses (TEST_REPORT_MIGRATION_BACKEND.md); `/api/docs`, `/api/redoc` and `/api/openapi.json` were removed with FastAPI. A `feature_flags` table (58 tables) and Alembic's `alembic_version` were added.
+
 ## Summary
 
 | Item | Count | Source |

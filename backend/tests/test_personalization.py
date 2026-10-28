@@ -2,7 +2,7 @@ from datetime import datetime,timezone,timedelta,date
 import uuid
 import pytest
 from pydantic import ValidationError
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 from services import adventure,personalization as rules
 from services.personalization_inputs import Preferences,MeasurementInput
 import database,models

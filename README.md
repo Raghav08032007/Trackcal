@@ -15,7 +15,7 @@ An original, production-grade AI-powered nutrition and food tracking platform in
 - **Cross-Platform Experience**:
   - Web client powered by **Next.js 16 (App Router) + React 19 + Tailwind CSS**.
   - Mobile client powered by **React Native & Expo**.
-  - High-performance asynchronous backend powered by **FastAPI & MySQL 8.0**.
+  - Backend powered by **Flask & MySQL 8.0**, with versioned Alembic migrations.
 
 ---
 
@@ -24,7 +24,8 @@ An original, production-grade AI-powered nutrition and food tracking platform in
 ```text
 track-cal/
 ├── backend/
-│   ├── main.py              # FastAPI application entrypoint & middleware
+│   ├── flask_app/           # Flask app factory, middleware, blueprints and request binding
+│   ├── alembic/             # Versioned, reversible schema migrations
 │   ├── database.py          # SQLAlchemy engine, pool & session factory
 │   ├── models.py            # Complete MySQL 8.0 relational data models
 │   ├── seed_data.py         # 49 global food seeds, 16 nutrients, 14 allergens
@@ -50,7 +51,7 @@ track-cal/
 
 ## 🛠️ Getting Started
 
-### 1. Backend Setup (FastAPI & MySQL 8.0)
+### 1. Backend Setup (Flask & MySQL 8.0)
 
 1. Make sure MySQL 8.0 is running and configure `.env` in `backend/.env`:
    ```ini
@@ -62,17 +63,18 @@ track-cal/
    AI_MOCK_MODE=true
    ```
 
-2. Seed the database with global nutrition records:
+2. Create the schema (versioned Alembic migrations), then seed global nutrition records:
    ```bash
    cd backend
-   py -3.11 seed_data.py
+   .venv\Scripts\python.exe scripts/bootstrap_schema.py
+   .venv\Scripts\python.exe seed_data.py
    ```
 
-3. Launch the FastAPI server:
+3. Launch the Flask API:
    ```bash
-   py -3.11 -m uvicorn main:app --reload --port 8000
+   .venv\Scripts\python.exe -m flask --app "flask_app:create_app()" run --port 8000 --debug
    ```
-   Interactive API documentation will be available at [http://localhost:8000/api/docs](http://localhost:8000/api/docs).
+   The endpoint list is in [docs/INVENTORY.md](docs/INVENTORY.md). Production runs the same app under gunicorn (`backend/Dockerfile`).
 
 ---
 
@@ -108,7 +110,7 @@ The web app can run independently of MySQL for AI estimates and browser-local tr
 
 Journals, goals, the recipe draft, water, steps, activity and dated weight values are stored in the current browser. This is not account/cloud synchronization. Export all local data as JSON from the journal before clearing storage. Free AI models have provider availability/rate limits; failures are visible and never converted into fabricated meal results by the new web inference route. Manual tracking remains available without AI. Product nutrition comes from Open Food Facts with editable gram portions.
 
-The new local inference endpoint is disabled in production by default. `ENABLE_LOCAL_AI=true` permits private production-mode testing; public deployment requires authenticated access and durable rate limits. The legacy FastAPI routes and mobile client remain separate and need integration testing.
+The new local inference endpoint is disabled in production by default. `ENABLE_LOCAL_AI=true` permits private production-mode testing; public deployment requires authenticated access and durable rate limits. The backend API routes and mobile client remain separate and need integration testing.
 
 See [feature audit](docs/CAL_AI_FEATURE_AUDIT.md), [implementation and verification](docs/IMPLEMENTATION_STATUS.md), and [third-party notices](docs/THIRD_PARTY_NOTICES.md).
 

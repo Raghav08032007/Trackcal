@@ -1,16 +1,12 @@
 # Active API runtime. Optional legacy cloud SDKs/workers remain in requirements.txt.
-fastapi==0.159.1
 flask==3.1.3
 werkzeug==3.1.9
 gunicorn==26.2.0; sys_platform != "win32"
 alembic==1.14.0
-starlette==1.9.0
-uvicorn[standard]==0.32.1
 sqlalchemy==2.0.36
 pymysql[rsa]==1.1.1
 python-dotenv==1.2.4
 pydantic==2.10.3
-python-multipart==0.0.32
 PyJWT==2.15.1
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1

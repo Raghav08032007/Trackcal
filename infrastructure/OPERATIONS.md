@@ -21,7 +21,7 @@ Keep the last working image/release and backup. Rolling back code after a future
 
 ## Request and cost controls
 
-API request logs contain IDs/method/status/duration, not submitted nutrition or action tokens. Run uvicorn without access logs so recovery link fragments/parameters are not accidentally expanded by custom logging. Do not enable SQL echo in production. Use request IDs for support; infrastructure logs require separate review.
+API request logs contain IDs/method/status/duration, not submitted nutrition or action tokens. Run gunicorn without access logs (its default; the image does not enable `--access-logfile`) so recovery link fragments/parameters are not accidentally expanded by custom logging. Do not enable SQL echo in production. Use request IDs for support; infrastructure logs require separate review.
 
 Production AI is bound to verified accounts and a shared MySQL daily quota. Integrations have per-account buckets. Limits count attempts, including failed provider requests, to bound abuse. Monitor actual provider invoices and request volume; these limits do not establish a cost-per-user forecast or protect against every distributed attack. Put additional host/network protections in front of a public release.
 

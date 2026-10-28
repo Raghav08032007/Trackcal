@@ -1,5 +1,5 @@
 """support.py — Support ticket submission and status"""
-from fastapi import APIRouter, Depends, HTTPException
+from flask_app.params import Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
@@ -7,7 +7,6 @@ from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 
 class TicketCreate(BaseModel):
@@ -17,7 +16,6 @@ class TicketCreate(BaseModel):
     priority: str = "normal"
 
 
-@router.post("", status_code=201)
 def create_ticket(
     data: TicketCreate,
     user: models.User = Depends(get_current_active_user),
@@ -31,14 +29,12 @@ def create_ticket(
             "message": "Ticket submitted. We typically respond within 24 hours."}
 
 
-@router.get("")
 def list_tickets(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     tickets = db.query(models.SupportTicket).filter(models.SupportTicket.user_id == user.id).all()
     return [{"id": t.id, "subject": t.subject, "category": t.category,
              "status": t.status.value, "created_at": t.created_at.isoformat()} for t in tickets]
 
 
-@router.get("/{ticket_id}")
 def get_ticket(ticket_id: str, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     ticket = db.query(models.SupportTicket).filter(
         models.SupportTicket.id == ticket_id, models.SupportTicket.user_id == user.id

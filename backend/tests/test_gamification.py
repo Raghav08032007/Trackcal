@@ -1,7 +1,7 @@
 from datetime import date,datetime,timezone,timedelta
 import uuid
 import pytest
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 from services import adventure,gamification
 import database,models
 from tests.test_adventure import account,init,client,review

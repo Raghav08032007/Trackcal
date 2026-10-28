@@ -1,14 +1,13 @@
-"""One test client for both backends during the migration: TRACKCAL_BACKEND=flask (default) or fastapi.
+"""The shared test client for the Flask API.
 
 Exposes `app` (with a `dependency_overrides` dict) and `client` with the request/response interface the
-tests already use: client.post(url, json=..., data=..., files=..., headers=..., params=...) returning an
+tests use: client.post(url, json=..., data=..., files=..., headers=..., params=...) returning an
 object with .status_code, .json(), .text, .headers and .content.
 """
 import io
 import os
 
 os.environ.setdefault('APP_ENV', 'testing')
-BACKEND = os.getenv('TRACKCAL_BACKEND', 'flask')
 
 
 class FlaskResponse:
@@ -61,27 +60,18 @@ def _needs_login(fn, seen=None):
 
 
 def private_routes():
-    """(METHOD, '/path/{param}') for every endpoint that requires a signed-in user, on either backend."""
+    """(METHOD, '/path/{param}') for every endpoint that requires a signed-in user."""
     import re
-    if BACKEND == 'flask':
-        found = []
-        for rule in app.url_map.iter_rules():
-            view = app.view_functions[rule.endpoint]
-            handler = getattr(view, 'handler', None)
-            if handler and (_needs_login(handler) or any(_needs_login(d) for d in view.blueprint_dependencies)):
-                found += [(m, re.sub(r'<(?:\w+:)?(\w+)>', r'{\1}', rule.rule)) for m in rule.methods - {'HEAD', 'OPTIONS'}]
-        return sorted(found)
-    return sorted((m.upper(), p) for p, ops in app.openapi()['paths'].items() for m, op in ops.items() if isinstance(op, dict) and op.get('security'))
+    found = []
+    for rule in app.url_map.iter_rules():
+        view = app.view_functions[rule.endpoint]
+        handler = getattr(view, 'handler', None)
+        if handler and (_needs_login(handler) or any(_needs_login(d) for d in view.blueprint_dependencies)):
+            found += [(m, re.sub(r'<(?:\w+:)?(\w+)>', r'{\1}', rule.rule)) for m in rule.methods - {'HEAD', 'OPTIONS'}]
+    return sorted(found)
 
 
-if BACKEND == 'flask':
-    from flask_app import binding, create_app
-    app = create_app()
-    app.dependency_overrides = binding.overrides
-    client = FlaskClient(app)
-elif BACKEND == 'fastapi':
-    from fastapi.testclient import TestClient
-    from main import app
-    client = TestClient(app)
-else:
-    raise RuntimeError('TRACKCAL_BACKEND must be flask or fastapi')
+from flask_app import binding, create_app  # noqa: E402
+app = create_app()
+app.dependency_overrides = binding.overrides
+client = FlaskClient(app)

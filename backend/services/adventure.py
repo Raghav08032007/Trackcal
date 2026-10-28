@@ -1,7 +1,7 @@
 """Server-owned participation rewards. These do not measure nutrition or health."""
 from datetime import datetime, timezone, timedelta, date
 from zoneinfo import ZoneInfo
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 import models
 
 COMPANION_UNLOCKS = (("pip", 0), ("nova", 250), ("milo", 500), ("luna", 750), ("rio", 1000), ("sage", 1250))

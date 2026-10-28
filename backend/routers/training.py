@@ -1,7 +1,7 @@
 """Reviewed exercise catalog and transactional, resumable workout sessions."""
 from datetime import datetime,timezone,timedelta
 from uuid import UUID
-from fastapi import APIRouter,Depends,HTTPException,Query
+from flask_app.params import Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from database import get_db
@@ -12,7 +12,6 @@ from services.personalization_inputs import Preferences
 from services.wellness_inputs import BlueprintInput,StartSession,SessionUpdate
 from services.abuse_limits import consume
 import models
-router=APIRouter()
 CATEGORIES={'walk':'endurance','chair':'mobility','strength':'bodyweight','gym':'strength','run':'endurance','mobility':'mobility','yoga':'yoga','cycle':'endurance','recovery':'recovery','camera_squat':'camera','camera_pushup':'camera','camera_curl':'camera'}
 def catalog():return [{'id':key,**t,'category':CATEGORIES[key],'movement':{'strength':'push','gym':'resistance familiarization','walk':'locomotion','run':'locomotion','cycle':'cycling'}.get(key,'comfortable range / rest'),'safety':rules.RECOVERY,'accessibility':['seated'] if t['seated'] else [] if t['floor'] else ['no_floor'],'media':None} for key,t in rules.TEMPLATES.items()]
 def clock():return adventure.now().astimezone(timezone.utc).replace(tzinfo=None)
@@ -41,16 +40,13 @@ def linked(db,user,identifier):
  if activity.template_id!='recovery' and today.weekday() in prefs.rest_days:raise HTTPException(409,'Keep this as a chosen rest day or update your plan.')
  return activity
 
-@router.get('/exercises')
 def exercises(q:str=Query('',max_length=100),category:str=Query('',max_length=50),equipment:str=Query('',max_length=50),offset:int=Query(0,ge=0,le=10000),limit:int=Query(12,ge=1,le=50),user=Depends(get_current_active_user)):
  result=[e for e in catalog() if (not q or q.lower() in (e['name']+' '+e['category']+' '+e['instructions']).lower()) and (not category or e['category']==category) and (not equipment or equipment in e['equipment'] or equipment=='none' and not e['equipment'])]
  return {'results':result[offset:offset+limit],'total':len(result),'has_more':offset+limit<len(result)}
-@router.get('/exercises/{identifier}')
 def exercise(identifier:str,user=Depends(get_current_active_user)):
  item=next((e for e in catalog() if e['id']==identifier),None)
  if not item:raise HTTPException(404,'Exercise not found.')
  return item
-@router.get('/training')
 def dashboard(offset:int=Query(0,ge=0,le=10000),limit:int=Query(20,ge=1,le=50),user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  base=db.query(models.WorkoutSession).filter_by(user_id=user.id,is_deleted=False)
  rows=base.order_by(models.WorkoutSession.started_at.desc(),models.WorkoutSession.id).offset(offset).limit(limit+1).all()
@@ -66,7 +62,6 @@ def dashboard(offset:int=Query(0,ge=0,le=10000),limit:int=Query(20,ge=1,le=50),u
   if day in calendar:calendar[day]['count']+=1;calendar[day]['minutes']+=record.recorded_minutes
  summary=adventure.summary(db,user)
  return {'today':str(local_today),'calendar':list(calendar.values()),'achievements':summary.get('achievements',[]),'sessions':[view(r) for r in rows[:limit]],'has_more':len(rows)>limit,'current':view(current) if current else None,'templates':[{'id':b.id,'name':b.name,'exercises':b.exercises} for b in blueprints],'plan':plan_view(db,plans),'insights':{'completed':completed.count(),'recorded_minutes':completed.with_entities(func.sum(models.WorkoutSession.recorded_minutes)).scalar() or 0,'note':'Self-reported participation, not body or clinical outcomes.'}}
-@router.post('/templates')
 def blueprint(data:BlueprintInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'workout-blueprint',str(user.id),60,3600);lock(db,user);require_exercises(db,user,data.exercises)
  row=db.get(models.WorkoutBlueprint,str(data.id))
@@ -77,12 +72,10 @@ def blueprint(data:BlueprintInput,user=Depends(get_current_active_user),db:Sessi
   if db.query(models.WorkoutBlueprint).filter_by(user_id=user.id).count()>=200:raise HTTPException(409,'Remove an old saved workout before adding another.')
   row=models.WorkoutBlueprint(id=str(data.id),user_id=user.id);db.add(row)
  row.name=data.name;row.exercises=data.exercises;db.commit();return {'id':row.id,'name':row.name,'exercises':row.exercises}
-@router.delete('/templates/{identifier}')
 def remove_blueprint(identifier:UUID,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  row=db.query(models.WorkoutBlueprint).filter_by(id=str(identifier),user_id=user.id).first()
  if not row:raise HTTPException(404,'Workout not found.')
  db.delete(row);db.commit();return {'status':'removed'}
-@router.post('/sessions')
 def start(data:StartSession,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'session-start',str(user.id),40,3600);lock(db,user)
  prior=db.get(models.WorkoutSession,str(data.id))
@@ -102,12 +95,10 @@ def start(data:StartSession,user=Depends(get_current_active_user),db:Session=Dep
   activity.status='started'
  row=models.WorkoutSession(id=str(data.id),user_id=user.id,name=data.name,plan_activity_id=activity.id if activity else None,details={'exercises':[{'exercise_id':key,'sets':[]} for key in data.exercises],'notes':'','tracking_method':data.tracking_method},started_at=clock(),running_since=clock())
  db.add(row);db.flush();return finish(db,user,session=view(row),awarded_xp=0)
-@router.get('/sessions/{identifier}')
 def get_session(identifier:UUID,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  row=db.query(models.WorkoutSession).filter_by(id=str(identifier),user_id=user.id,is_deleted=False).first()
  if not row:raise HTTPException(404,'Session not found.')
  return {'session':view(row)}
-@router.put('/sessions/{identifier}')
 def update(identifier:UUID,data:SessionUpdate,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'session-update',str(user.id),240,3600);lock(db,user)
  row=db.query(models.WorkoutSession).filter_by(id=str(identifier),user_id=user.id,is_deleted=False).with_for_update().first()
@@ -150,7 +141,6 @@ def update(identifier:UUID,data:SessionUpdate,user=Depends(get_current_active_us
   if profile:points=gamification.award(db,user,'recovery' if all(k=='recovery' for k in keys) else 'workout',adventure.local_day(profile),source_id=row.plan_activity_id or row.id,payload={'tracking_method':method,'exercise':keys[0]} if method=='camera' else {})
  elif data.action=='abandon':row.status='abandoned';row.running_since=None
  return finish(db,user,session=view(row),awarded_xp=points)
-@router.delete('/sessions/{identifier}')
 def delete_session(identifier:UUID,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);row=db.query(models.WorkoutSession).filter_by(id=str(identifier),user_id=user.id,is_deleted=False).first()
  if not row:raise HTTPException(404,'Session not found.')

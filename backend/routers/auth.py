@@ -8,8 +8,8 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Body
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from flask_app.params import Depends, HTTPException, status
+from flask_app.params import OAuth2PasswordRequestForm, bearer_token
 import jwt
 from jwt import InvalidTokenError as JWTError
 from passlib.context import CryptContext
@@ -19,7 +19,6 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 
-router = APIRouter()
 
 # ── Security setup ──────────────────────────────────────────────
 SECRET_KEY = os.environ.get("APP_SECRET_KEY", "dev-secret-change-me")
@@ -28,7 +27,6 @@ ACCESS_EXPIRE = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 REFRESH_EXPIRE = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 # ── Schemas ─────────────────────────────────────────────────────
@@ -104,7 +102,7 @@ def _decode_token(token: str) -> TokenData:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:
+def get_current_user(token: str = Depends(bearer_token), db: Session = Depends(get_db)) -> models.User:
     data = _decode_token(token)
     if data.token_type != "access" or not data.user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
@@ -136,7 +134,6 @@ def get_current_active_user(current_user: models.User = Depends(get_current_user
 
 # ── Endpoints ───────────────────────────────────────────────────
 
-@router.post("/signup", response_model=LoginResponse, status_code=201)
 def signup(req: SignupRequest, db: Session = Depends(get_db)):
     """Register a new user."""
     production_limit(db, "signup", req.email.lower(), 3, 3600)
@@ -179,7 +176,6 @@ def signup(req: SignupRequest, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/login", response_model=LoginResponse)
 def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login with email + password."""
     production_limit(db, "login", form.username.lower())
@@ -199,7 +195,6 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     )
 
 
-@router.post("/refresh", response_model=LoginResponse)
 def refresh_token(req: RefreshRequest, db: Session = Depends(get_db)):
     """Issue a new access token using a refresh token."""
     data = _decode_token(req.refresh_token)
@@ -222,7 +217,6 @@ def refresh_token(req: RefreshRequest, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/me")
 def me(current_user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Return authenticated user profile."""
     profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == current_user.id).first()
@@ -252,7 +246,6 @@ class PasswordChange(BaseModel):
         return SignupRequest.password_bytes(value)
 
 
-@router.post("/password")
 def change_password(req: PasswordChange, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     if not user.hashed_password or not _verify_password(req.current_password, user.hashed_password):
         raise HTTPException(401, "Current password is incorrect")
@@ -304,7 +297,6 @@ def consume_action(data, purpose, db):
     return user
 
 
-@router.post("/forgot-password")
 def forgot_password(data: RecoveryEmail, db: Session = Depends(get_db)):
     from services import account_mail
     try: account_mail.configuration()
@@ -321,7 +313,6 @@ def forgot_password(data: RecoveryEmail, db: Session = Depends(get_db)):
     return {"status": "If an active account exists, a recovery link will be sent. Check your inbox and spam folder."}
 
 
-@router.post("/reset-password")
 def reset_password(data: ResetPassword, db: Session = Depends(get_db)):
     user = consume_action(data, "reset", db)
     user.hashed_password = _hash_password(data.new_password)
@@ -329,7 +320,6 @@ def reset_password(data: ResetPassword, db: Session = Depends(get_db)):
     return {"status": "Password reset. Sign in with your new password."}
 
 
-@router.post("/request-verification")
 def request_verification(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     production_limit(db, "verify", str(user.id), 3, 3600)
     if user.email_verified: return {"status": "Email already verified."}
@@ -337,7 +327,6 @@ def request_verification(user: models.User = Depends(get_current_active_user), d
     return {"status": "Verification link sent. Check your inbox and spam folder."}
 
 
-@router.post("/verify-email")
 def verify_email(data: ActionToken, db: Session = Depends(get_db)):
     user = consume_action(data, "verify", db)
     user.email_verified = True
@@ -345,7 +334,6 @@ def verify_email(data: ActionToken, db: Session = Depends(get_db)):
     return {"status": "Email verified. You can return to your account."}
 
 
-@router.post("/consume-ai")
 def consume_ai(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     if os.getenv("APP_ENV") == "production" and not user.email_verified:
         raise HTTPException(403, "Verify your email before using AI estimates.")

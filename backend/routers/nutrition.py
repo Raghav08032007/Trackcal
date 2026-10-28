@@ -1,7 +1,7 @@
 """nutrition.py — Nutrition dashboard: daily totals, trends, macro breakdown, water"""
 from datetime import datetime, date, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, Query
+from flask_app.params import Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -9,10 +9,8 @@ from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 
-@router.get("/daily")
 def daily_summary(
     target_date: Optional[date] = Query(None),
     user: models.User = Depends(get_current_active_user),
@@ -85,7 +83,6 @@ def daily_summary(
     }
 
 
-@router.get("/weekly")
 def weekly_summary(
     week_start: Optional[date] = Query(None),
     user: models.User = Depends(get_current_active_user),
@@ -117,7 +114,6 @@ def weekly_summary(
     return {"week_start": start.isoformat(), "week_end": end.isoformat(), "days": result}
 
 
-@router.get("/trends")
 def monthly_trends(
     months: int = Query(3, le=12),
     user: models.User = Depends(get_current_active_user),
@@ -155,7 +151,6 @@ class WaterCreate(BaseModel):
     logged_at: Optional[datetime] = None
 
 
-@router.post("/water", status_code=201)
 def log_water(
     data: WaterCreate,
     user: models.User = Depends(get_current_active_user),
@@ -171,7 +166,6 @@ def log_water(
     return {"id": entry.id, "amount_ml": entry.amount_ml, "logged_at": entry.logged_at.isoformat()}
 
 
-@router.get("/coach/recommend-fill")
 def recommend_macro_fill(
     user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),

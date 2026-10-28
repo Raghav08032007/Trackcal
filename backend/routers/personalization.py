@@ -2,7 +2,7 @@
 import uuid
 from datetime import datetime,timezone,date,timedelta
 from zoneinfo import ZoneInfo
-from fastapi import APIRouter,Depends,HTTPException
+from flask_app.params import Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from routers.auth import get_current_active_user
@@ -10,7 +10,6 @@ from services import adventure,gamification,personalization as rules
 from services.personalization_inputs import SaveProgress,Preferences,MeasurementInput,GeneratePlan,ActivityAction,PlanAction,ReminderAction,EducationInput
 from services.abuse_limits import consume
 import models
-router=APIRouter()
 
 def lock(db,user):db.query(models.User).filter_by(id=user.id).with_for_update().one()
 def profile(db,user,required=False):
@@ -37,7 +36,6 @@ def plan_view(db,plan):
  activities=db.query(models.PlanActivity).filter_by(plan_id=plan.id).order_by(models.PlanActivity.scheduled_day,models.PlanActivity.id).all()
  return {'id':plan.id,'week_start':plan.week_start,'status':plan.status,'explanation':plan.snapshot,'activities':[{'id':a.id,'template_id':a.template_id,'day':a.scheduled_day,'minutes':a.minutes,'status':a.status,'feedback':a.feedback,'template':{**rules.TEMPLATES[a.template_id],'recovery':rules.RECOVERY}} for a in activities]}
 
-@router.get('/state')
 def state(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);row=profile(db,user);prefs=prefs_for(row)
  if not row:
@@ -54,7 +52,6 @@ def state(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  data={'minor_account':bool(user.is_minor),'feedback_history':[{'id':a.id,'name':rules.TEMPLATES[a.template_id]['name'],'feedback':a.feedback} for a in feedback_rows],'preferences':prefs.model_dump(),'step':row.step if row else 1,'revision':row.revision if row else 0,'completed':bool(row and row.completed_at),'measurements':[measurement_view(m,prefs.units) for m in measurements],'bmi':rules.bmi(latest.get('height'),latest.get('weight'),prefs.age_group),'plan':plan_view(db,plan),'recommendations':rules.recommendations(prefs),'education':[{key:value for key,value in {'id':key,**module}.items() if key!='answer'} for key,module in rules.EDUCATION.items()],'eligible_templates':[{'id':key,**rules.TEMPLATES[key]} for key in rules.eligible_templates(prefs,include_camera=True)],'today':str(local_now(prefs).date())}
  db.commit();return data
 
-@router.post('/onboarding')
 def save_progress(data:SaveProgress,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'personalization-save',str(user.id),90,3600);lock(db,user);row=profile(db,user)
  if (row.revision if row else 0)!=data.revision:raise HTTPException(409,'Preferences changed on another page. Reload before saving; your draft is still on screen.')
@@ -70,7 +67,6 @@ def save_progress(data:SaveProgress,user=Depends(get_current_active_user),db:Ses
   points=reward(db,user,'onboarding',str(user.id),f'v2:onboarding:{user.id}')
  return result(db,user,revision=row.revision,step=row.step,completed=bool(row.completed_at),awarded_xp=points)
 
-@router.post('/measurements')
 def save_measurement(data:MeasurementInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'measurement-save',str(user.id),60,3600);lock(db,user)
  try:value=rules.normalize_measurement(data.kind,data.value,data.unit)
@@ -78,13 +74,11 @@ def save_measurement(data:MeasurementInput,user=Depends(get_current_active_user)
  row=models.WellnessMeasurement(user_id=user.id,kind=data.kind,value=data.value,unit=data.unit,canonical_value=value,recorded_at=data.recorded_at)
  db.add(row);db.commit();return measurement_view(row)
 
-@router.delete('/measurements/{identifier}')
 def remove_measurement(identifier:uuid.UUID,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  row=db.query(models.WellnessMeasurement).filter_by(id=str(identifier),user_id=user.id).first()
  if not row:raise HTTPException(404,'Measurement not found.')
  db.delete(row);db.commit();return {'status':'removed'}
 
-@router.post('/plans')
 def generate_plan(data:GeneratePlan,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'plan-generate',str(user.id),20,3600);lock(db,user);row=profile(db,user,True)
  if row.revision!=data.revision:raise HTTPException(409,'Reload your updated preferences before generating.')
@@ -104,13 +98,11 @@ def owned_plan(db,user,identifier):
  row=db.query(models.ActivityPlan).filter_by(id=str(identifier),user_id=user.id).with_for_update().first()
  if not row:raise HTTPException(404,'Plan not found.')
  return row
-@router.post('/plans/{identifier}')
 def update_plan(identifier:uuid.UUID,data:PlanAction,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);plan=owned_plan(db,user,identifier)
  if plan.status=='archived':raise HTTPException(409,'An archived plan cannot be resumed.')
  plan.status=data.status;db.commit();return {'plan':plan_view(db,plan)}
 
-@router.post('/activities/{identifier}')
 def update_activity(identifier:uuid.UUID,data:ActivityAction,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'plan-action',str(user.id),120,3600);lock(db,user);row=profile(db,user,True);prefs=prefs_for(row)
  activity=db.query(models.PlanActivity).join(models.ActivityPlan).filter(models.PlanActivity.id==str(identifier),models.ActivityPlan.user_id==user.id).with_for_update().first()
@@ -149,14 +141,12 @@ def update_activity(identifier:uuid.UUID,data:ActivityAction,user=Depends(get_cu
  if data.action=='complete' and activity.template_id!='recovery':workout={'id':activity.id,'date':activity.scheduled_day,'name':rules.TEMPLATES[activity.template_id]['name'],'minutes':activity.minutes,'sets':0,'reps':0,'load':0,'source':'Personal activity plan · self-reported'}
  return result(db,user,plan=plan_view(db,plan),awarded_xp=points,workout=workout)
 
-@router.post('/education')
 def education(data:EducationInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'education-check',str(user.id),30,3600);lock(db,user);profile(db,user,True)
  module=rules.EDUCATION[data.module];correct=data.answer==module['answer']
  points=reward(db,user,data.module+'_learning',f'v1:{data.module}',f'v2:lesson:{data.module}:{user.id}') if correct else 0
  return result(db,user,correct=correct,explanation=module['text'],awarded_xp=points)
 
-@router.get('/reminders')
 def due_reminders(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);row=profile(db,user)
  if not row:return {'items':[]}
@@ -174,7 +164,6 @@ def due_reminders(user=Depends(get_current_active_user),db:Session=Depends(get_d
   items.append({'id':delivery.id,'category':category,'message':message})
  db.commit();return {'items':items[:5],'timezone':prefs.timezone,'delivery':'in-app while open; no external push'}
 
-@router.post('/reminders/{identifier}')
 def reminder_action(identifier:uuid.UUID,data:ReminderAction,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);delivery=db.query(models.ReminderDelivery).filter_by(id=str(identifier),user_id=user.id).with_for_update().first()
  if not delivery:raise HTTPException(404,'Reminder not found.')

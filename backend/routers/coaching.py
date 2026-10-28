@@ -1,7 +1,7 @@
 """Private, transactional coach reservations. No nutrition records or email invitations are shared."""
 from datetime import datetime, timedelta, timezone
 import os
-from fastapi import APIRouter, Depends, HTTPException
+from flask_app.params import Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from database import get_db
@@ -13,7 +13,6 @@ def request_limit(user=Depends(get_current_active_user),db:Session=Depends(get_d
         from services.abuse_limits import consume
         consume(db,"coaching",str(user.id),120,3600)
 
-router = APIRouter(dependencies=[Depends(request_limit)])
 
 def coach_only(user):
     if user.role not in (models.UserRole.professional, models.UserRole.admin) or not user.email_verified:
@@ -37,12 +36,10 @@ class NewSlot(BaseModel):
 class Reserve(BaseModel):
     slot_id: str = Field(min_length=36, max_length=36)
 
-@router.get("/coaches")
 def coaches(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     rows=db.query(models.User).filter(models.User.role.in_([models.UserRole.professional,models.UserRole.admin]),models.User.email_verified.is_(True),models.User.is_active.is_(True),models.User.deleted_at.is_(None)).limit(100).all()
     return {"coaches":[{"id":row.id,"name":name(db,row.id)} for row in rows],"can_publish":user.role in (models.UserRole.professional,models.UserRole.admin) and user.email_verified}
 
-@router.post("/slots",status_code=201)
 def publish(data:NewSlot,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     coach_only(user)
     start=utc(data.starts_at);end=start+timedelta(minutes=data.minutes)
@@ -52,14 +49,12 @@ def publish(data:NewSlot,user=Depends(get_current_active_user),db:Session=Depend
     if overlap: raise HTTPException(409,"This availability overlaps an existing slot.")
     slot=models.CoachSlot(coach_id=user.id,starts_at=start,ends_at=end);db.add(slot);db.commit();db.refresh(slot);return slot_data(slot)
 
-@router.get("/slots")
 def slots(coach_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     coach=db.query(models.User).filter_by(id=coach_id,is_active=True,email_verified=True).first()
     if not coach or coach.deleted_at or coach.role not in (models.UserRole.professional,models.UserRole.admin): raise HTTPException(404,"Coach not found.")
     rows=db.query(models.CoachSlot).filter(models.CoachSlot.coach_id==coach_id,models.CoachSlot.active.is_(True),models.CoachSlot.starts_at>datetime.utcnow(),models.CoachSlot.reserved_booking_id.is_(None)).order_by(models.CoachSlot.starts_at).limit(200).all()
     return {"slots":[slot_data(row) for row in rows]}
 
-@router.delete("/slots/{slot_id}")
 def unpublish(slot_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     coach_only(user)
     slot=db.query(models.CoachSlot).filter_by(id=slot_id,coach_id=user.id).with_for_update().first()
@@ -77,7 +72,6 @@ def validate_slot(slot,user,db,exclude=None):
     if exclude: overlaps=overlaps.filter(models.CoachBooking.id!=exclude)
     if overlaps.with_for_update().first(): raise HTTPException(409,"This time overlaps one of your appointments.")
 
-@router.post("/bookings",status_code=201)
 def reserve(data:Reserve,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     if not user.email_verified: raise HTTPException(403,"Verify your email before booking a coach.")
     db.query(models.User).filter_by(id=user.id).with_for_update().first()
@@ -85,12 +79,10 @@ def reserve(data:Reserve,user=Depends(get_current_active_user),db:Session=Depend
     booking=models.CoachBooking(slot_id=slot.id,user_id=user.id);db.add(booking);db.flush();slot.reserved_booking_id=booking.id;db.commit();db.refresh(booking)
     return {**slot_data(slot),"id":booking.id,"status":booking.status,"slot_id":slot.id}
 
-@router.get("/bookings")
 def bookings(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     rows=db.query(models.CoachBooking,models.CoachSlot).join(models.CoachSlot,models.CoachBooking.slot_id==models.CoachSlot.id).filter((models.CoachBooking.user_id==user.id)|(models.CoachSlot.coach_id==user.id)).order_by(models.CoachSlot.starts_at.desc()).limit(200).all()
     return {"bookings":[{**slot_data(slot),"id":booking.id,"slot_id":slot.id,"status":booking.status,"coach_name":name(db,slot.coach_id),"member_name":name(db,booking.user_id) if slot.coach_id==user.id else None,"hosting":slot.coach_id==user.id} for booking,slot in rows]}
 
-@router.patch("/bookings/{booking_id}")
 def reschedule(booking_id:str,data:Reserve,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     db.query(models.User).filter_by(id=user.id).with_for_update().first()
     booking=db.query(models.CoachBooking).filter_by(id=booking_id,user_id=user.id,status="confirmed").with_for_update().first()
@@ -101,7 +93,6 @@ def reschedule(booking_id:str,data:Reserve,user=Depends(get_current_active_user)
     slot=next((row for row in locked if row.id==data.slot_id),None);validate_slot(slot,user,db,booking.id)
     old.reserved_booking_id=None;slot.reserved_booking_id=booking.id;booking.slot_id=slot.id;db.commit();return {"status":"Appointment rescheduled"}
 
-@router.delete("/bookings/{booking_id}")
 def cancel(booking_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     booking=db.query(models.CoachBooking).filter_by(id=booking_id).with_for_update().first()
     if not booking: raise HTTPException(404,"Appointment not found.")

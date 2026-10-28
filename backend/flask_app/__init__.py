@@ -77,7 +77,7 @@ def create_app():
     app = Flask(__name__)
     app.json.sort_keys = False; app.json.ensure_ascii = False
     app.url_map.strict_slashes = False
-    app.teardown_appcontext(binding.close_db_session)
+    app.teardown_appcontext(binding.close_dependencies)
     errors.register(app)
     _cors(app)
 

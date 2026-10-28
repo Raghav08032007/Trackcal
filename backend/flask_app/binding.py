@@ -1,47 +1,35 @@
 """Calls a handler function from a Flask view by binding its typed parameters to the request.
 
-Handlers keep the signatures they already have: a Pydantic model parameter is the JSON body, Form/File
-defaults come from multipart or urlencoded data, path values come from the URL rule, anything else is a
-query parameter, and Depends(...) defaults are resolved here (cached once per request, like the old stack).
-Validation failures raise the same 422 shape clients and tests already expect.
+Handlers declare what they need in their signatures (see flask_app.params): a Pydantic model parameter is
+the JSON body, Form/File defaults come from multipart or urlencoded data, values named in the URL rule come
+from the path, anything else is a query parameter, and Depends(...) is resolved here — once per request,
+with yield-style dependencies finished after the response. Validation failures raise the 422 shape
+({"detail": [{"type", "loc", "msg", "input", ...}]}) the web client and tests rely on.
 """
 import asyncio
+import copy
 import inspect
 import uuid
 from decimal import Decimal
 from enum import Enum
 from datetime import date, datetime, time
 from types import SimpleNamespace
-from typing import Annotated, Any, get_args, get_origin, Union
+from typing import Annotated, Any, Union, get_args, get_origin
 
 from flask import g, request
 from pydantic import BaseModel, ValidationError, create_model
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 
-import database
-from flask_app.errors import ApiError, RequestValidation
+from flask_app import params
+from flask_app.errors import RequestValidation
 
-# Dependency markers are recognised by class name so handlers can keep their current imports until the
-# final cleanup swaps them for flask_app.params equivalents with the same names.
-_FORM, _FILE, _DEPENDS = {'Form'}, {'File'}, {'Depends'}
-overrides = {}  # dependency -> replacement callable (tests), mirrors app.dependency_overrides
+overrides = {}  # dependency -> replacement callable (tests)
 
 
-def get_db_session():
-    if 'db' not in g: g.db = database.SessionLocal()
-    return g.db
-
-
-def close_db_session(_error=None):
+def close_dependencies(_error=None):
     for generator in reversed(g.pop('dependency_cleanups', [])):
         generator.close()
-    session = g.pop('db', None)
-    if session is not None: session.close()
-
-
-def _kind(default):
-    return type(default).__name__ if isinstance(default, FieldInfo) or type(default).__name__ in _DEPENDS else None
 
 
 def _is_model(annotation):
@@ -56,31 +44,24 @@ def _request_shim():
 
 
 class Upload:
-    """The subset of the old UploadFile interface handlers use."""
+    """What a handler receives for an UploadFile parameter."""
     def __init__(self, storage):
         self._storage, self.filename, self.content_type = storage, storage.filename, storage.mimetype
+
     async def read(self, size=-1):
         return self._storage.stream.read(size)
+
     async def seek(self, offset):
         self._storage.stream.seek(offset)
 
 
 def resolve(dependency):
-    """Resolve a dependency callable once per request."""
+    """Resolve a dependency once per request; yield-style dependencies are finished at teardown."""
     dependency = overrides.get(dependency, dependency)
     cache = g.setdefault('dependency_cache', {})
     if dependency in cache: return cache[dependency]
-    from routers.auth import get_current_user, get_current_active_user
-    if dependency is database.get_db and dependency not in overrides: value = get_db_session()
-    elif dependency is get_current_user:
-        header = request.headers.get('Authorization', '')
-        scheme, _, token = header.partition(' ')
-        if scheme.lower() != 'bearer' or not token:
-            raise ApiError(401, 'Not authenticated', {'WWW-Authenticate': 'Bearer'})
-        value = get_current_user(token=token, db=resolve(database.get_db))  # same session as the handler
-    elif dependency is get_current_active_user: value = get_current_active_user(resolve(get_current_user))
-    else: value = call(dependency)
-    if inspect.isgenerator(value):  # yield-style dependency: use the yielded value, finish it after the request
+    value = call(dependency)
+    if inspect.isgenerator(value):
         generator, value = value, next(value)
         g.setdefault('dependency_cleanups', []).append(generator)
     cache[dependency] = value
@@ -96,26 +77,28 @@ def _body():
 
 
 def call(fn, **path_values):
-    """Bind request data to fn's parameters, call it (awaiting coroutines) and return its result."""
+    """Bind request data to fn's parameters, call it (running coroutines to completion) and return the result."""
     kwargs, fields, raw, locations, errors = {}, {}, {}, {}, []
     for name, param in inspect.signature(fn).parameters.items():
         default, annotation = param.default, param.annotation
         annotation = Any if annotation is inspect.Parameter.empty else annotation
-        if get_origin(annotation) is Annotated:  # Annotated[str, Form()] carries the marker in metadata
+        if get_origin(annotation) is Annotated:  # Annotated[str, Form()] carries the marker in its metadata
             base, *metadata = get_args(annotation)
-            marker = next((m for m in metadata if _kind(m)), None)
+            marker = next((m for m in metadata if isinstance(m, (FieldInfo, params.Depends))), None)
             if marker is not None:
                 annotation = base
-                default = marker if _kind(marker) in _DEPENDS else FieldInfo.merge_field_infos(marker, default=PydanticUndefined if default is inspect.Parameter.empty else default)
-        kind = _kind(default)
-        if kind in _DEPENDS: kwargs[name] = resolve(default.dependency or annotation); continue
-        if annotation is SimpleNamespace or getattr(annotation, '__name__', '') == 'Request':
-            kwargs[name] = _request_shim(); continue
+                if isinstance(marker, FieldInfo):  # keep the marker subclass (merge_field_infos would not)
+                    marker = copy.copy(marker)
+                    marker.default = PydanticUndefined if default is inspect.Parameter.empty else default
+                default = marker
+        if isinstance(default, params.Depends): kwargs[name] = resolve(default.dependency or annotation); continue
+        if annotation is params.Request: kwargs[name] = _request_shim(); continue
         if name in path_values: source, value = 'path', path_values[name]
-        elif kind in _FILE:
+        elif isinstance(default, params.FileInfo):
             source, value = 'body', request.files.get(name, PydanticUndefined)
             if value is not PydanticUndefined: kwargs[name] = Upload(value); continue
-        elif kind in _FORM: source, value = 'body', request.form.get(name, PydanticUndefined)
+            annotation = Any
+        elif isinstance(default, params.FormInfo): source, value = 'body', request.form.get(name, PydanticUndefined)
         elif _is_model(annotation): source, value = 'body', _body()
         else:
             source = 'query'
@@ -139,7 +122,7 @@ def call(fn, **path_values):
 
 
 def encode(value):
-    """JSON-compatible conversion matching the previous API's encoder."""
+    """JSON-compatible conversion: ISO dates, string UUIDs, numeric Decimals, enum values, dumped models."""
     if isinstance(value, BaseModel): return encode(value.model_dump(mode='json'))
     if isinstance(value, dict): return {str(encode(k)): encode(v) for k, v in value.items()}
     if isinstance(value, (list, tuple, set, frozenset)): return [encode(v) for v in value]

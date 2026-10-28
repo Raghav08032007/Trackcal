@@ -1,7 +1,7 @@
 """foods.py — Food search, barcode lookup, custom foods, USDA + Open Food Facts integration"""
 import os
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from flask_app.params import Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import or_, func
 from sqlalchemy.orm import Session
@@ -10,7 +10,6 @@ from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 USDA_API_KEY = os.getenv("USDA_API_KEY", "DEMO_KEY")
 OFF_APP_NAME = os.getenv("OPEN_FOOD_FACTS_APP_NAME", "GlobalFoodAI")
@@ -100,7 +99,6 @@ def _parse_float(val) -> Optional[float]:
 
 # ── Endpoints ───────────────────────────────────────────────────
 
-@router.get("/search")
 async def search_foods(
     q: str = Query(..., min_length=1),
     limit: int = Query(20, ge=1, le=50),
@@ -146,7 +144,6 @@ async def search_foods(
     return {"results": results, "total": len(results), "query": q}
 
 
-@router.get("/barcode/{barcode}")
 async def lookup_barcode(
     barcode: str,
     db: Session = Depends(get_db),
@@ -167,7 +164,6 @@ async def lookup_barcode(
     raise HTTPException(404, detail="Product not found. You can submit it via Community > Add Missing Food.")
 
 
-@router.get("/{food_id}")
 def get_food(food_id: str, db: Session = Depends(get_db), user: models.User = Depends(get_current_active_user)):
     food = db.query(models.Food).filter(models.Food.id == food_id).first()
     if not food:
@@ -206,7 +202,6 @@ class CustomFoodCreate(BaseModel):
     notes: Optional[str] = None
 
 
-@router.post("/custom", status_code=201)
 def create_custom_food(
     data: CustomFoodCreate,
     user: models.User = Depends(get_current_active_user),
@@ -219,7 +214,6 @@ def create_custom_food(
     return {"id": food.id, "name": food.name, "status": "created"}
 
 
-@router.get("/custom/mine")
 def list_custom_foods(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     foods = db.query(models.CustomFood).filter(models.CustomFood.user_id == user.id).all()
     return [{"id": f.id, "name": f.name, "calories_per_100g": f.calories_per_100g} for f in foods]

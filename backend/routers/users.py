@@ -1,5 +1,5 @@
 """users.py — User profile, settings, allergens, data export, account deletion"""
-from fastapi import APIRouter, Depends, HTTPException
+from flask_app.params import Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from typing import Optional, List, Literal
@@ -11,7 +11,6 @@ import math
 import re
 import hashlib
 
-router = APIRouter()
 
 
 class WorkspaceBackup(BaseModel):
@@ -38,7 +37,6 @@ class WorkspaceBackup(BaseModel):
             check(value)
 
 
-@router.get("/workspace")
 def workspace(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     saved = db.get(models.UserWorkspace, user.id)
     return {"entries": saved.entries if saved else {}, "updated_at": saved.updated_at.isoformat() if saved else None, "revision": workspace_revision(saved)}
@@ -48,7 +46,6 @@ def workspace_revision(saved):
     return hashlib.sha256(json.dumps(saved.entries if saved else {}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-@router.put("/workspace")
 def save_workspace(data: WorkspaceBackup, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     if data.owner_id is not None and data.owner_id != str(user.id):
         raise HTTPException(403, "The queued backup belongs to another account. Sign in to its owner before syncing.")
@@ -92,7 +89,6 @@ class SettingsUpdate(BaseModel):
     show_calorie_counts: Optional[bool] = None
 
 
-@router.get("/profile")
 def get_profile(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user.id).first()
     if not profile:
@@ -115,7 +111,6 @@ def get_profile(user: models.User = Depends(get_current_active_user), db: Sessio
     }
 
 
-@router.patch("/profile")
 def update_profile(data: ProfileUpdate, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     profile = db.query(models.UserProfile).filter(models.UserProfile.user_id == user.id).first()
     if not profile:
@@ -126,7 +121,6 @@ def update_profile(data: ProfileUpdate, user: models.User = Depends(get_current_
     return {"status": "updated"}
 
 
-@router.get("/settings")
 def get_settings(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     s = db.query(models.UserSettings).filter(models.UserSettings.user_id == user.id).first()
     if not s:
@@ -145,7 +139,6 @@ def get_settings(user: models.User = Depends(get_current_active_user), db: Sessi
     }
 
 
-@router.patch("/settings")
 def update_settings(data: SettingsUpdate, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     s = db.query(models.UserSettings).filter(models.UserSettings.user_id == user.id).first()
     if not s:
@@ -164,7 +157,6 @@ def update_settings(data: SettingsUpdate, user: models.User = Depends(get_curren
     return {"status": "updated"}
 
 
-@router.delete("/account")
 def delete_account(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Soft-delete the user account."""
     from datetime import datetime
@@ -181,7 +173,6 @@ def delete_account(user: models.User = Depends(get_current_active_user), db: Ses
     return {"status": "account_scheduled_for_deletion"}
 
 
-@router.get("/export")
 def export_data(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Return a JSON dump of the user's data for GDPR portability."""
     logs = db.query(models.MealLog).filter(models.MealLog.user_id == user.id).all()
@@ -222,7 +213,6 @@ class OnboardingPlanRequest(BaseModel):
     dietary_preference: str = "standard"  # standard, vegetarian, vegan, halal, keto
 
 
-@router.post("/onboarding/calculate-plan")
 def calculate_onboarding_plan(
     data: OnboardingPlanRequest,
     user: models.User = Depends(get_current_active_user),

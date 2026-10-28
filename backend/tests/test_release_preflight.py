@@ -30,7 +30,7 @@ def test_preflight_fails_missing_settings_without_network_or_mail(monkeypatch):
 def test_legacy_subscription_cancellation_cannot_claim_provider_success():
     from types import SimpleNamespace
     import pytest
-    from fastapi import HTTPException
+    from flask_app.params import HTTPException
     from routers.subscriptions import cancel_subscription, CancelRequest
     subscription=SimpleNamespace(plan_id="professional",status="active")
     class Query:

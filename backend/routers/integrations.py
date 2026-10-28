@@ -10,7 +10,7 @@ import html
 from datetime import date
 from typing import Literal
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request
+from flask_app.params import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from database import get_db
 from pydantic import BaseModel, Field
@@ -24,7 +24,6 @@ def integration_limits(request: Request, user=Depends(get_current_active_user), 
         if media and not user.email_verified: raise HTTPException(403, "Verify your email before using connected tools.")
         consume(db, "tools-media" if media else "tools-read", str(user.id), 30 if media else 300, 86400 if media else 3600)
 
-router = APIRouter(dependencies=[Depends(integration_limits)])
 Number = float
 
 class IngredientRequest(BaseModel):
@@ -52,7 +51,6 @@ def parse_lines(lines):
             "preparation": item.preparation.text if item.preparation else None})
     return result
 
-@router.post("/ingredients")
 def ingredients(data: IngredientRequest):
     return {"source": "ingredient-parser-nlp", "ingredients": parse_lines(data.lines), "nutrition": None}
 
@@ -76,7 +74,6 @@ def extract_recipe(html: str, url: str):
     except HTTPException: raise
     except Exception: raise HTTPException(422, "No supported recipe found. Paste the ingredient list instead.")
 
-@router.post("/recipe-import")
 def import_recipe(data: RecipeImport):
     html, final_url = fetch_recipe_html(data.url)
     return extract_recipe(html, final_url)
@@ -105,7 +102,6 @@ class PlanRequest(BaseModel):
     max_minutes: int = Field(default=90, ge=0, le=1440)
     excluded_tags: list[str] = Field(default_factory=list, max_length=30)
 
-@router.post("/plan")
 def plan(data: PlanRequest, user=Depends(get_current_active_user), db:Session=Depends(get_db)):
     from ortools.sat.python import cp_model
     if data.calories_min > data.calories_max: raise HTTPException(422, "Minimum calories cannot exceed maximum calories")
@@ -154,7 +150,6 @@ class ShoppingRequest(BaseModel):
     pantry: list[PantryItem] = Field(max_length=300)
     today: date
 
-@router.post("/shopping")
 def shopping(data: ShoppingRequest):
     needed, stock, names = {}, {}, {}
     def key(name): return " ".join(name.strip().casefold().split())
@@ -188,7 +183,6 @@ def private_service(name: str, user):
         raise HTTPException(403, "This household connector is restricted to its configured owner")
     return os.environ[name + "_URL"], os.environ[name + "_API_KEY"]
 
-@router.get("/grocy")
 async def grocy(user=Depends(get_current_active_user)):
     url, key = private_service("GROCY", user)
     data = await service_json(url, "/api/stock", {"GROCY-API-KEY": key})
@@ -197,14 +191,12 @@ async def grocy(user=Depends(get_current_active_user)):
         "amount": item.get("amount"), "unit": item.get("product", {}).get("qu_id_stock"), "expires": item.get("best_before_date"),
         "grams": None} for item in data[:300]], "note": "Grocy amounts retain their stock units. Confirm grams before using them in a nutrition plan."}
 
-@router.get("/mealie")
 async def mealie(user=Depends(get_current_active_user)):
     url, key = private_service("MEALIE", user)
     data = await service_json(url, "/api/recipes", {"Authorization": f"Bearer {key}"}, {"perPage": 50, "page": 1})
     return {"source": "mealie-recipes/mealie", "recipes": [{"id": str(item.get("id", "")), "name": item.get("name", "Unnamed recipe"),
         "slug": item.get("slug", "")} for item in data.get("items", [])], "has_more": data.get("total", 0) > 50}
 
-@router.get("/mealie-recipe")
 async def mealie_recipe(slug: str = "", user=Depends(get_current_active_user)):
     if not re.fullmatch(r"[a-zA-Z0-9_-]{1,200}", slug): raise HTTPException(422, "Invalid recipe identifier")
     url, key = private_service("MEALIE", user)
@@ -216,7 +208,6 @@ async def mealie_recipe(slug: str = "", user=Depends(get_current_active_user)):
     return {"source": "mealie-recipes/mealie", "name": data.get("name", "Imported recipe"), "ingredients": parse_lines(lines),
         "instructions": "\n".join(item.get("text", "") for item in data.get("recipeInstructions", [])), "yield_text": data.get("recipeYield"), "nutrition": None}
 
-@router.get("/exercises")
 async def exercises(query: str = ""):
     if len(query) > 100: raise HTTPException(422, "Search is too long")
     data = await service_json(os.getenv("WGER_URL", "https://wger.de"), "/api/v2/exerciseinfo/", params={"limit": 100, "language": 2})
@@ -234,7 +225,6 @@ async def exercises(query: str = ""):
             "license_author": item.get("license_author", ""), "source_url": f"https://wger.de/en/exercise/{item.get('id')}/view/"})
     return {"source": "wger-project/wger", "exercises": items[:30], "note": "Search covers the returned exercise page. Exercise data has its own attribution/license."}
 
-@router.get("/prices")
 async def prices(code: str = "", currency: str = "INR"):
     if not re.fullmatch(r"\d{8,14}", code) or not re.fullmatch(r"[A-Z]{3}", currency): raise HTTPException(422, "Enter an 8–14 digit barcode and a three-letter currency")
     data = await service_json("https://prices.openfoodfacts.org", "/api/v1/prices", params={"product_code": code, "currency": currency, "size": 20, "order_by": "-date"})
@@ -258,7 +248,6 @@ def media_bytes(value, limit):
     if not raw or len(raw) > limit: raise HTTPException(413, "File exceeds the allowed size")
     return raw
 
-@router.post("/transcribe")
 async def transcribe(data: MediaRequest):
     raw = media_bytes(data.data, 10_000_000)
     try:
@@ -302,7 +291,6 @@ def parse_label(text: str):
     basis = "unknown" if per100 == serving else "per_100g" if per100 else "per_serving"
     return {"values": values, "basis": basis, "review_required": True}
 
-@router.post("/label")
 async def label(data: MediaRequest):
     raw = media_bytes(data.data, 8_000_000)
     try:
@@ -322,7 +310,6 @@ async def label(data: MediaRequest):
     except HTTPException: raise
     except Exception: raise HTTPException(502, "Local label recognition failed. Check the PaddleOCR worker.")
 
-@router.get("/status")
 def status():
     libraries = [("recipe-scrapers", "recipe_scrapers"), ("ingredient-parser-nlp", "ingredient_parser"), ("google/or-tools", "ortools")]
     items = [{"name": name, "state": "installed" if importlib.util.find_spec(module) else "missing", "kind": "library"} for name, module in libraries]

@@ -1,12 +1,11 @@
 """subscriptions.py — Subscription plans, entitlements, billing history"""
-from fastapi import APIRouter, Depends, HTTPException
+from flask_app.params import Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 def daily_ai_limit():
     import os
@@ -17,13 +16,11 @@ PLANS = {
 }
 
 
-@router.get("/plans")
 def list_plans():
     """Return all available subscription plans."""
     return {"plans": {"free": {**PLANS["free"], "ai_scans_per_day": daily_ai_limit()}}, "currency": "USD", "billing_enabled": False, "note": "TrackCal currently offers a free plan. Paid checkout is not connected; no unlimited AI usage is offered."}
 
 
-@router.get("/status")
 def subscription_status(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     sub = db.query(models.Subscription).filter(models.Subscription.user_id == user.id).first()
     if not sub:
@@ -42,7 +39,6 @@ def subscription_status(user: models.User = Depends(get_current_active_user), db
     }
 
 
-@router.get("/history")
 def billing_history(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     sub = db.query(models.Subscription).filter(models.Subscription.user_id == user.id).first()
     if not sub:
@@ -58,7 +54,6 @@ class CancelRequest(BaseModel):
     reason: str = ""
 
 
-@router.post("/cancel")
 def cancel_subscription(req: CancelRequest, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     sub = db.query(models.Subscription).filter(models.Subscription.user_id == user.id).first()
     if not sub or sub.plan_id == "free":

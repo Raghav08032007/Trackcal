@@ -1,5 +1,5 @@
 """community.py — Community food submissions"""
-from fastapi import APIRouter, Depends
+from flask_app.params import Depends
 from pydantic import BaseModel
 from typing import Any, Dict
 from sqlalchemy.orm import Session
@@ -7,7 +7,6 @@ from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 
 class SubmissionCreate(BaseModel):
@@ -15,7 +14,6 @@ class SubmissionCreate(BaseModel):
     data: Dict[str, Any]
 
 
-@router.post("", status_code=201)
 def submit(
     data: SubmissionCreate,
     user: models.User = Depends(get_current_active_user),
@@ -33,7 +31,6 @@ def submit(
             "message": "Thank you! A moderator will review your submission."}
 
 
-@router.get("/mine")
 def my_submissions(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     subs = db.query(models.CommunitySubmission).filter(models.CommunitySubmission.user_id == user.id).all()
     return [{"id": s.id, "type": s.submission_type, "status": s.status,

@@ -164,7 +164,7 @@ def test_mock_photo_job_and_correction(account, tmp_path, monkeypatch):
 def test_missing_ai_provider_is_not_a_fabricated_meal(monkeypatch):
     import asyncio
     from routers import ai_scan
-    from fastapi import HTTPException
+    from flask_app.params import HTTPException
     monkeypatch.setattr(ai_scan, "MOCK_MODE", False)
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)

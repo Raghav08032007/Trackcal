@@ -3,7 +3,7 @@ from datetime import timedelta
 import random
 from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from fastapi import APIRouter, Depends, HTTPException
+from flask_app.params import Depends, HTTPException
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Literal
 from sqlalchemy.orm import Session
@@ -13,12 +13,10 @@ from services import adventure as service
 from services.abuse_limits import consume
 import models
 
-router=APIRouter()
 
 class Initialize(BaseModel):
     timezone:str=Field(min_length=1,max_length=80)
 
-@router.post('/initialize')
 def initialize(data:Initialize,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     try: ZoneInfo(data.timezone)
     except (ZoneInfoNotFoundError,ValueError): raise HTTPException(422,'Choose a valid IANA timezone.')
@@ -27,7 +25,6 @@ def initialize(data:Initialize,user=Depends(get_current_active_user),db:Session=
     if not item: db.add(models.AdventureProfile(user_id=user.id,timezone=data.timezone));db.commit()
     return service.summary(db,user)
 
-@router.get('/summary')
 def summary(user=Depends(get_current_active_user),db:Session=Depends(get_db)): return service.summary(db,user)
 
 def require_profile(db,user):
@@ -45,7 +42,6 @@ class ReviewMeal(BaseModel):
     carbs:float=Field(ge=0,le=20000,allow_inf_nan=False)
     fat:float=Field(ge=0,le=20000,allow_inf_nan=False)
 
-@router.post('/review-meal')
 def review_meal(data:ReviewMeal,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     if str(data.owner_id)!=str(user.id): raise HTTPException(409,'Your account changed. Refresh before reviewing a meal.')
     consume(db,'adventure-review',str(user.id),60,3600)
@@ -73,7 +69,6 @@ QUESTIONS=[
  {'prompt':'A photo estimate misses an ingredient. What should you do?','options':['Treat the estimate as exact','Review the ingredients and correct the saved entry','Skip the meal to protect a streak','Earn more points by eating less'],'answer':1,'explanation':'Photo nutrition is an estimate. Review ingredients and portions; XP does not measure health.'},
 ]
 
-@router.post('/game/start')
 def game_start(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     consume(db,'label-game-start',str(user.id),12,3600)
     require_profile(db,user)
@@ -85,7 +80,6 @@ class Answers(BaseModel):
     id:UUID
     answers:list[int]=Field(min_length=3,max_length=3)
 
-@router.post('/game/submit')
 def game_submit(data:Answers,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     consume(db,'label-game-submit',str(user.id),60,3600)
     item=require_profile(db,user)
@@ -116,7 +110,6 @@ class WorkoutReview(BaseModel):
     reps:int=Field(ge=0,le=200)
     load:float=Field(ge=0,le=1000,allow_inf_nan=False)
 
-@router.post('/review-workout')
 def review_workout(data:WorkoutReview,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     if str(data.owner_id)!=str(user.id):raise HTTPException(409,'Your account changed. Refresh before reviewing a workout.')
     consume(db,'workout-review',str(user.id),30,3600)
@@ -131,7 +124,6 @@ class RestDay(BaseModel):
     model_config=ConfigDict(extra='forbid')
     day:str=Field(pattern=r'^\d{4}-\d{2}-\d{2}$')
 
-@router.post('/rest-day')
 def rest_day(data:RestDay,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     from services.gamification import policy
     consume(db,'rest-day',str(user.id),20,3600)
@@ -154,7 +146,6 @@ class CompanionSettings(BaseModel):
     position:Literal['left','right']='right'
     protection_enabled:bool=True
 
-@router.post('/companion-settings')
 def companion_settings(data:CompanionSettings,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     from services.gamification import customization
     consume(db,'companion-settings',str(user.id),90,3600)

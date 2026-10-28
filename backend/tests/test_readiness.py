@@ -2,7 +2,7 @@ import hashlib
 import uuid
 from datetime import datetime, timedelta
 import pytest
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 from tests.client import app, client
 from services import account_mail
 from services.abuse_limits import consume

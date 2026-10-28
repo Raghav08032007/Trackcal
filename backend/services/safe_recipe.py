@@ -5,7 +5,7 @@ import ssl
 from urllib.parse import urlparse, urljoin
 import certifi
 import urllib3
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 
 MAX_HTML = 2_000_000
 

@@ -29,20 +29,9 @@ def _respond(status, detail, headers=None):
 
 
 def register(app):
-    # Handlers still raise the HTTPException type of the previous framework until the final cleanup.
-    legacy = []
-    try:
-        from fastapi import HTTPException as Legacy
-        legacy.append(Legacy)
-    except ImportError:
-        pass
-
     @app.errorhandler(ApiError)
     def api_error(error):
         return _respond(error.status_code, error.detail, error.headers)
-
-    for kind in legacy:
-        app.register_error_handler(kind, lambda error: _respond(error.status_code, error.detail, getattr(error, 'headers', None)))
 
     @app.errorhandler(RequestValidation)
     def validation(error):

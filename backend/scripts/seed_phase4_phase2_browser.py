@@ -4,10 +4,8 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from database import engine
 if engine.url.database!='trackcal_phase3_test':raise RuntimeError('Use only the isolated test database.')
-from fastapi.testclient import TestClient
-from main import app
+from tests.client import client
 from services.personalization_inputs import Preferences
-client=TestClient(app)
 email='qa-phase4-plan-'+uuid.uuid4().hex+'@tests.example.com';password='Synthetic-phase4-'+uuid.uuid4().hex+'!'
 r=client.post('/api/v1/auth/signup',json={'email':email,'password':password});assert r.status_code==201,r.text
 h={'Authorization':'Bearer '+r.json()['access_token']}

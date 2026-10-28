@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Optional, List
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from flask_app.params import Depends, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from PIL import Image
@@ -20,7 +20,6 @@ from database import get_db
 import models
 from routers.auth import get_current_active_user
 
-router = APIRouter()
 
 MOCK_MODE = os.getenv("AI_MOCK_MODE", "false").lower() == "true"
 
@@ -226,7 +225,6 @@ def _check_scan_quota(user: models.User, db: Session) -> None:
 
 # ── Endpoints ───────────────────────────────────────────────────
 
-@router.post("/photo")
 async def scan_photo(
     file: UploadFile = File(...),
     context: Optional[str] = Form(None),
@@ -345,7 +343,6 @@ class CookingStyleAdjustRequest(BaseModel):
     cooking_style: str = "standard"
 
 
-@router.post("/adjust-cooking-style")
 def adjust_cooking_style(data: CookingStyleAdjustRequest):
     """Adjust macros based on portion grams and cooking oil/sauce density."""
     if data.cooking_style not in COOKING_STYLES:
@@ -373,7 +370,6 @@ def adjust_cooking_style(data: CookingStyleAdjustRequest):
     }
 
 
-@router.post("/text")
 async def scan_text(
     text: str = Form(..., min_length=1, max_length=4000),
     language: str = Form("en"),
@@ -431,7 +427,6 @@ async def scan_text(
     }
 
 
-@router.post("/corrections")
 async def submit_correction(
     prediction_id: str = Form(...),
     correction_type: str = Form(...),
@@ -464,7 +459,6 @@ async def submit_correction(
     return {"status": "correction_saved", "correction_id": correction.id}
 
 
-@router.get("/jobs/{job_id}")
 def get_scan_job(job_id: str, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Get status of an AI scan job."""
     job = db.query(models.AIScanJob).filter(
@@ -487,7 +481,6 @@ def get_scan_job(job_id: str, user: models.User = Depends(get_current_active_use
     }
 
 
-@router.get("/barcode/{barcode_value}")
 async def scan_barcode(
     barcode_value: str,
     user: models.User = Depends(get_current_active_user),
@@ -520,7 +513,6 @@ async def scan_barcode(
 
 
 
-@router.delete('/images/{image_id}')
 def delete_image(image_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     image=db.query(models.FoodImage).filter_by(id=image_id,user_id=user.id).first()
     if not image:raise HTTPException(404,'Image not found.')

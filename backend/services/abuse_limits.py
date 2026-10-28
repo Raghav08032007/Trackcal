@@ -4,7 +4,7 @@ import hmac
 import os
 import time
 from datetime import datetime
-from fastapi import HTTPException
+from flask_app.params import HTTPException
 from sqlalchemy.dialects.mysql import insert
 from models import RateBucket
 

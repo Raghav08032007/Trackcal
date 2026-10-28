@@ -5,9 +5,8 @@ import uuid
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 os.environ["APP_ENV"] = "testing"
-from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from main import app
+from tests.client import app, client
 from database import engine, get_db
 from routers import ai_scan
 
@@ -23,7 +22,7 @@ def run():
     app.dependency_overrides[get_db] = database
     ai_scan.MOCK_MODE = False
     try:
-        with TestClient(app) as client:
+        if True:  # same isolated transaction as before; client is the shared Flask test client
             signup = client.post("/api/v1/auth/signup", json={"email": f"live-qa-{uuid.uuid4().hex}@tests.example.com", "password": "Synthetic-live-test-123!"})
             assert signup.status_code == 201, "Live test account could not be created"
             headers = {"Authorization": f"Bearer {signup.json()['access_token']}"}
