@@ -23,6 +23,20 @@ const frameLike=(request)=>{
  return /^(image|video)\//.test(type)||type.includes('multipart')||type.includes('octet-stream')||(body&&body.length>200000)||(body&&/data:(image|video)\//.test(body.toString('latin1',0,Math.min(body.length,4096))));
 };
 
+// Chromium's fake camera is occasionally unavailable on first acquisition (NotFoundError or an ended track).
+// The app reports that and offers retry; the test retries through the same button, at most twice, and records it.
+evidence.camera_start_retries=[];
+const startCamera=async(page,label)=>{
+ for(let attempt=0;;attempt++){
+  await page.getByRole('button',{name:/Resume tracking|Enable camera/}).first().click();
+  try{await page.waitForFunction(()=>window.__live()>0,null,{timeout:8000});return;}
+  catch(error){
+   const shown=await page.locator('main').innerText(),reason=/requested device not found|camera disconnected/i.exec(shown);
+   if(attempt>=2||!reason)throw error;
+   evidence.camera_start_retries.push(`${label}: ${reason[0]}`);
+  }
+ }
+};
 const browser=await chromium.launch({executablePath:process.env.TRACKCAL_CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
 try{
  for(const [label,width,height] of [['mobile360',360,780],['desktop',1365,900]]){
@@ -42,19 +56,19 @@ try{
   assert.equal(await page.evaluate(()=>window.__gum.length),0);pass(`${label}: camera page opens without requesting the camera`);
 
   // 2. Tap starts the camera; tab hide stops every track.
-  await enable.click();await page.waitForFunction(()=>window.__live()>0);
+  await startCamera(page,label);
   pass(`${label}: camera starts after the user taps Enable camera`);
   await page.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=>'hidden'});Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
   await page.waitForFunction(()=>window.__live()===0);pass(`${label}: all media tracks stop when the tab is hidden`);
   await page.evaluate(()=>{delete document.visibilityState;delete document.hidden;});
 
   // 3. pagehide stops every track.
-  await page.getByRole('button',{name:/Resume tracking|Enable camera/}).first().click();await page.waitForFunction(()=>window.__live()>0);
+  await startCamera(page,label);
   await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:false})));
   await page.waitForFunction(()=>window.__live()===0);pass(`${label}: all media tracks stop on pagehide`);
 
   // 4. Client-side route change (unmount) stops every track.
-  await page.getByRole('button',{name:/Resume tracking|Enable camera/}).first().click();await page.waitForFunction(()=>window.__live()>0);
+  await startCamera(page,label);
   await page.waitForTimeout(2000); // let pose inference run on real frames before leaving
   await page.evaluate(()=>{const a=document.querySelector('a[href="/workouts"]');if(!a)throw Error('no in-app link to /workouts');a.click();});
   await page.waitForURL(u=>new URL(u).pathname==='/workouts');
@@ -76,8 +90,9 @@ try{
   // Positive control: after consent the detector does see the upload (intercepted, so nothing reaches a provider).
   await page.route('**/api/analyze**',r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"intercepted by test"}'}));
   await page.getByRole('checkbox',{name:/Allow this photo to be sent/}).check();
+  const analyzed=page.waitForRequest(r=>/\/api\/analyze/.test(r.url())); // armed before the click: a fast request must not be missed
   await page.getByRole('button',{name:/Analyze selected photo/}).click();
-  await page.waitForRequest(r=>/\/api\/analyze/.test(r.url()));pass(`${label}: positive control: consented analysis request is detected (intercepted locally)`);
+  await analyzed;pass(`${label}: positive control: consented analysis request is detected (intercepted locally)`);
   await context.close();
  }
 }catch(error){evidence.failures.push(String(error.stack||error));console.error('FAIL',error);process.exitCode=1;}
