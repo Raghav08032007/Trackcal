@@ -1,9 +1,14 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 const api = () => process.env.BACKEND_API_URL || "http://127.0.0.1:8000/api/v1";
 const access = "trackcal_access", refresh = "trackcal_refresh";
 export function json(value: unknown, status = 200) { return NextResponse.json(value, { status, headers: { "Cache-Control": "no-store" } }); }
-export async function upstream(path: string, init: RequestInit = {}, timeout = 12000) { return fetch(`${api()}${path}`, { ...init, cache: "no-store", signal: AbortSignal.timeout(timeout) }); }
+export async function upstream(path: string, init: RequestInit = {}, timeout = 12000) {
+  // Pass on the client address the HTTPS proxy recorded, so per-IP API limits see the user rather than this server.
+  let forwarded: string | null = null; try { forwarded = (await headers()).get("x-forwarded-for"); } catch { /* outside a request */ }
+  const merged = { ...(init.headers as Record<string, string> | undefined), ...(forwarded ? { "X-Forwarded-For": forwarded } : {}) };
+  return fetch(`${api()}${path}`, { ...init, headers: merged, cache: "no-store", signal: AbortSignal.timeout(timeout) });
+}
 export async function saveTokens(tokens: { access_token: string; refresh_token: string }) {
   const jar = await cookies(); const options = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/" };
   jar.set(access, tokens.access_token, { ...options, maxAge: 3600 }); jar.set(refresh, tokens.refresh_token, { ...options, maxAge: 30 * 86400 });
