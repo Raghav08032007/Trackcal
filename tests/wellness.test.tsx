@@ -1,4 +1,4 @@
-import {render,screen,fireEvent,waitFor} from '@testing-library/react';
+import {render,screen,fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {beforeEach,it,expect,vi} from 'vitest';
 vi.mock('../src/components/account-session',()=>({useAccount:()=>({user:{id:'p3-member'},ready:true}),useWorkspaceScope:()=> 'p3-member'}));
