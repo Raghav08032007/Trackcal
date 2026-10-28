@@ -1,0 +1,35 @@
+# Optional household services. All ports are bound to loopback.
+# Requires Docker; TrackCal itself continues to run locally without these containers.
+services:
+  grocy:
+    image: lscr.io/linuxserver/grocy:latest
+    profiles: [household]
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Asia/Kolkata
+    ports: ["127.0.0.1:9283:80"]
+    volumes: ["grocy-data:/config"]
+    restart: unless-stopped
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v3.29.0
+    profiles: [household]
+    environment:
+      ALLOW_SIGNUP: "false"
+      TZ: Asia/Kolkata
+      BASE_URL: http://127.0.0.1:9000
+    ports: ["127.0.0.1:9000:9000"]
+    volumes: ["mealie-data:/app/data"]
+    restart: unless-stopped
+  ocr:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.ocr
+    profiles: [ocr]
+    ports: ["127.0.0.1:8011:8011"]
+    volumes: ["ocr-models:/app/runtime"]
+    restart: unless-stopped
+volumes:
+  grocy-data:
+  mealie-data:
+  ocr-models:

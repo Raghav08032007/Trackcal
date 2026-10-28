@@ -2,7 +2,7 @@
 import os
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import or_, func
 from sqlalchemy.orm import Session
 from typing import Optional, List
@@ -46,7 +46,7 @@ async def search_usda(query: str, page_size: int = 10) -> list:
                 })
             return results
     except Exception as e:
-        print(f"USDA search error: {e}")
+        print("USDA search request failed")
         return []
 
 
@@ -85,7 +85,7 @@ async def lookup_barcode_off(barcode: str) -> Optional[dict]:
                 "completeness_score": product.get("completeness", 0),
             }
     except Exception as e:
-        print(f"OFF barcode error: {e}")
+        print("Open Food Facts lookup failed")
         return None
 
 
@@ -103,7 +103,7 @@ def _parse_float(val) -> Optional[float]:
 @router.get("/search")
 async def search_foods(
     q: str = Query(..., min_length=1),
-    limit: int = Query(20, le=50),
+    limit: int = Query(20, ge=1, le=50),
     cuisine: Optional[str] = None,
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_active_user),
@@ -193,13 +193,13 @@ def get_food(food_id: str, db: Session = Depends(get_db), user: models.User = De
 # ── Custom Foods ────────────────────────────────────────────────
 
 class CustomFoodCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=200)
     brand_name: Optional[str] = None
-    serving_size_g: float = 100.0
-    calories_per_100g: float
-    protein_per_100g: float = 0.0
-    carbs_per_100g: float = 0.0
-    fat_per_100g: float = 0.0
+    serving_size_g: float = Field(default=100.0, gt=0, le=20000, allow_inf_nan=False)
+    calories_per_100g: float = Field(ge=0, le=20000, allow_inf_nan=False)
+    protein_per_100g: float = Field(default=0.0, ge=0, le=2000, allow_inf_nan=False)
+    carbs_per_100g: float = Field(default=0.0, ge=0, le=2000, allow_inf_nan=False)
+    fat_per_100g: float = Field(default=0.0, ge=0, le=2000, allow_inf_nan=False)
     fiber_per_100g: Optional[float] = None
     sugar_per_100g: Optional[float] = None
     sodium_per_100g: Optional[float] = None

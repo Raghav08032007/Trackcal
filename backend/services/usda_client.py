@@ -56,5 +56,5 @@ async def search_usda_foods(query: str, page_size: int = 5) -> List[Dict[str, An
                 })
             return foods
     except Exception as exc:
-        print(f"[USDA] Error searching {query}: {exc}")
+        print("USDA search request failed")
         return []

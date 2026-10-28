@@ -162,3 +162,105 @@ def test_barcode_lookup_endpoint():
         app.dependency_overrides.clear()
 
 
+@pytest.fixture
+def persistent_test_user():
+    db = database.SessionLocal()
+    try:
+        user = db.query(models.User).filter_by(id="test-calai-suite-user").first()
+        if not user:
+            user = models.User(
+                id="test-calai-suite-user",
+                email="suite_test@trackcal.ai",
+                role=models.UserRole.user,
+                is_active=True,
+                is_minor=False
+            )
+            db.add(user)
+            # Create free subscription
+            sub = models.Subscription(
+                user_id=user.id,
+                plan_id="free",
+                status=models.SubscriptionStatus.free,
+                ai_scans_used_today=0
+            )
+            db.add(sub)
+            db.commit()
+            db.refresh(user)
+        return user
+    finally:
+        db.close()
+
+
+def test_text_scan_endpoint(persistent_test_user):
+    """Verify natural language / voice text meal parsing endpoint."""
+    from routers.auth import get_current_active_user
+    app.dependency_overrides[get_current_active_user] = lambda: persistent_test_user
+
+    try:
+        response = client.post(
+            "/api/v1/scan/text",
+            data={"text": "2 rotis and 1 bowl of dal tadka", "language": "en"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "predictions" in data
+        assert len(data["predictions"]) > 0
+        assert data["transcribed_text"] == "2 rotis and 1 bowl of dal tadka"
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_coach_macro_fill_endpoint(persistent_test_user):
+    """Verify AI Smart Coach macro fill recommendations."""
+    from routers.auth import get_current_active_user
+    app.dependency_overrides[get_current_active_user] = lambda: persistent_test_user
+
+    try:
+        response = client.get("/api/v1/nutrition/coach/recommend-fill")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "success"
+        assert "remaining_budget" in data
+        assert "coach_advice" in data
+        assert len(data["recommended_options"]) > 0
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_meal_creation_and_daily_summary(persistent_test_user):
+    """Verify creating a meal log updates daily nutrition totals."""
+    from routers.auth import get_current_active_user
+    app.dependency_overrides[get_current_active_user] = lambda: persistent_test_user
+
+    try:
+        meal_payload = {
+            "meal_type": "lunch",
+            "log_method": "manual",
+            "items": [
+                {
+                    "display_name": "Grilled Chicken Salad",
+                    "quantity_g": 250,
+                    "calories": 350.0,
+                    "protein_g": 38.0,
+                    "carbs_g": 12.0,
+                    "fat_g": 14.0
+                }
+            ]
+        }
+        res = client.post("/api/v1/meal-logs", json=meal_payload)
+        assert res.status_code == 201
+        log_id = res.json()["id"]
+        assert log_id is not None
+
+        # Check daily summary
+        summary_res = client.get("/api/v1/nutrition/daily")
+        assert summary_res.status_code == 200
+        summary_data = summary_res.json()
+        assert summary_data["totals"]["calories"] >= 350.0
+        assert summary_data["totals"]["protein_g"] >= 38.0
+    finally:
+        app.dependency_overrides.clear()
+
+
+
+

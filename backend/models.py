@@ -20,6 +20,155 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+class UserWorkspace(Base):
+    """Explicit account backup of the web workspace, isolated by owner."""
+    __tablename__ = "user_workspaces"
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    entries = Column(JSON, nullable=False)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AdventureProfile(Base):
+    __tablename__ = "adventure_profiles"
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    timezone = Column(String(80), nullable=False, default="UTC")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class RewardEvent(Base):
+    __tablename__ = "reward_events"
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    reward_key = Column(String(100), nullable=False)
+    kind = Column(String(30), nullable=False)
+    local_day = Column(String(10), nullable=False)
+    xp = Column(Integer, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("user_id", "reward_key", name="uq_reward_user_key"),)
+
+
+class AdventureMeal(Base):
+    __tablename__ = "adventure_meals"
+    id = Column(CHAR(36), primary_key=True)
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    local_day = Column(String(10), nullable=False)
+    snapshot = Column(JSON, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class GameSession(Base):
+    __tablename__ = "game_sessions"
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    challenge = Column(JSON, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    completed = Column(Boolean, nullable=False, default=False)
+    attempts = Column(Integer, nullable=False, default=0)
+
+
+class GamificationRule(Base):
+    __tablename__ = "gamification_rules"
+    key = Column(String(50), primary_key=True)
+    version = Column(Integer, nullable=False, default=1)
+    enabled = Column(Boolean, nullable=False, default=False)
+    xp = Column(Integer, nullable=False, default=0)
+    daily_cap = Column(Integer, nullable=False, default=0)
+    settings = Column(JSON, nullable=False, default=dict)
+
+
+class ActivityRewardEvent(Base):
+    __tablename__ = "activity_reward_events"
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    category = Column(String(50), nullable=False)
+    source_id = Column(String(100), nullable=False)
+    local_day = Column(String(10), nullable=False)
+    rule_version = Column(Integer, nullable=False)
+    awarded_xp = Column(Integer, nullable=False, default=0)
+    payload = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("user_id", "category", "source_id", name="uq_activity_reward_source"),)
+
+
+class AchievementDefinition(Base):
+    __tablename__ = "achievements"
+    code = Column(String(50), primary_key=True)
+    title = Column(String(100), nullable=False)
+    metric = Column(String(40), nullable=False)
+    threshold = Column(Integer, nullable=False)
+    enabled = Column(Boolean, nullable=False, default=True)
+
+
+class UserAchievement(Base):
+    __tablename__ = "user_achievements"
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    code = Column(String(50), ForeignKey("achievements.code"), primary_key=True)
+    unlocked_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class CharacterCustomization(Base):
+    __tablename__ = "character_customizations"
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    character_id = Column(String(20), nullable=False, default="pip")
+    accessory = Column(String(20), nullable=False, default="none")
+    enabled = Column(Boolean, nullable=False, default=True)
+    minimized = Column(Boolean, nullable=False, default=True)
+    muted = Column(Boolean, nullable=False, default=False)
+    position = Column(String(10), nullable=False, default="right")
+    protection_enabled = Column(Boolean, nullable=False, default=True)
+
+
+class CharacterUnlock(Base):
+    __tablename__ = "character_unlocks"
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    character_id = Column(String(20), primary_key=True)
+    unlocked_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class StreakRecord(Base):
+    __tablename__ = "streak_records"
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    local_day = Column(String(10), primary_key=True)
+    kind = Column(String(12), nullable=False, default="rest")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class AccountActionToken(Base):
+    __tablename__ = "account_action_tokens"
+    digest = Column(String(64), primary_key=True)
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    purpose = Column(String(20), nullable=False)
+    credential = Column(String(64), nullable=False)
+    expires_at = Column(DateTime, nullable=False, index=True)
+    used_at = Column(DateTime, nullable=True)
+
+
+class RateBucket(Base):
+    __tablename__ = "rate_buckets"
+    key = Column(String(64), primary_key=True)
+    hits = Column(Integer, nullable=False, default=0)
+    expires_at = Column(DateTime, nullable=False, index=True)
+
+
+class CoachSlot(Base):
+    __tablename__ = "coach_slots"
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    coach_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    starts_at = Column(DateTime, nullable=False, index=True)
+    ends_at = Column(DateTime, nullable=False)
+    active = Column(Boolean, nullable=False, default=True)
+    reserved_booking_id = Column(CHAR(36), nullable=True)
+
+
+class CoachBooking(Base):
+    __tablename__ = "coach_bookings"
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    slot_id = Column(CHAR(36), ForeignKey("coach_slots.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="confirmed")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
@@ -279,6 +428,7 @@ class Food(Base):
 
     __table_args__ = (
         Index("ix_foods_source_ext", "data_source", "external_id"),
+        Index("ix_food_category_name","category","name_normalized"),
     )
 
 
@@ -712,3 +862,111 @@ class AuditLog(Base):
     created_at = Column(DateTime, default=_now)
 
     __table_args__ = (Index("ix_audit_user_action", "user_id", "action"),)
+
+class PersonalizationProfile(Base):
+    __tablename__ = 'personalization_profiles'
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    preferences = Column(JSON, nullable=False)
+    step = Column(Integer, nullable=False, default=1)
+    revision = Column(Integer, nullable=False, default=1)
+    completed_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class WellnessMeasurement(Base):
+    __tablename__ = 'wellness_measurements'
+    id = Column(CHAR(36), primary_key=True, default=lambda:str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    kind = Column(String(20), nullable=False)
+    value = Column(Float, nullable=False)
+    unit = Column(String(12), nullable=False)
+    canonical_value = Column(Float, nullable=False)
+    recorded_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    __table_args__ = (Index('ix_measurement_user_kind_time','user_id','kind','recorded_at'),)
+
+class ActivityPlan(Base):
+    __tablename__ = 'activity_plans'
+    id = Column(CHAR(36), primary_key=True, default=lambda:str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    week_start = Column(String(10), nullable=False)
+    status = Column(String(12), nullable=False, default='active')
+    snapshot = Column(JSON, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+class PlanActivity(Base):
+    __tablename__ = 'plan_activities'
+    id = Column(CHAR(36), primary_key=True, default=lambda:str(uuid.uuid4()))
+    plan_id = Column(CHAR(36), ForeignKey('activity_plans.id', ondelete='CASCADE'), nullable=False, index=True)
+    template_id = Column(String(40), nullable=False)
+    scheduled_day = Column(String(10), nullable=False)
+    minutes = Column(Integer, nullable=False)
+    status = Column(String(12), nullable=False, default='pending')
+    feedback = Column(String(20), nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+
+class RecommendationHistory(Base):
+    __tablename__ = 'recommendation_history'
+    id = Column(CHAR(36), primary_key=True, default=lambda:str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    plan_id = Column(CHAR(36), ForeignKey('activity_plans.id', ondelete='CASCADE'), nullable=False)
+    explanation = Column(JSON, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+class ReminderDelivery(Base):
+    __tablename__ = 'reminder_deliveries'
+    id = Column(CHAR(36), primary_key=True, default=lambda:str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    category = Column(String(20), nullable=False)
+    local_day = Column(String(10), nullable=False)
+    status = Column(String(12), nullable=False, default='open')
+    snoozed_until = Column(DateTime, nullable=True)
+    __table_args__ = (UniqueConstraint('user_id','category','local_day',name='uq_reminder_category_day'),)
+
+class FoodAlias(Base):
+    __tablename__='food_aliases'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    food_id=Column(CHAR(36),ForeignKey('foods.id',ondelete='CASCADE'),nullable=False,index=True)
+    alias=Column(String(120),nullable=False,index=True)
+    __table_args__=(UniqueConstraint('food_id','alias',name='uq_food_alias'),)
+
+class FoodFavorite(Base):
+    __tablename__='food_favorites'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    food_key=Column(String(120),nullable=False)
+    snapshot=Column(JSON,nullable=False)
+    created_at=Column(DateTime,default=_now,nullable=False)
+    __table_args__=(UniqueConstraint('user_id','food_key',name='uq_food_favorite_owner'),)
+
+class FoodSearchHistory(Base):
+    __tablename__='food_search_history'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    query=Column(String(100),nullable=False)
+    updated_at=Column(DateTime,default=_now,onupdate=_now,nullable=False)
+    __table_args__=(UniqueConstraint('user_id','query',name='uq_food_search_owner'),)
+
+class WorkoutBlueprint(Base):
+    __tablename__='workout_blueprints'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    name=Column(String(120),nullable=False)
+    exercises=Column(JSON,nullable=False)
+    created_at=Column(DateTime,default=_now,nullable=False)
+
+class WorkoutSession(Base):
+    __tablename__='workout_sessions'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    plan_activity_id=Column(CHAR(36),ForeignKey('plan_activities.id',ondelete='SET NULL'),nullable=True,unique=True)
+    name=Column(String(120),nullable=False)
+    status=Column(String(16),nullable=False,default='active')
+    details=Column(JSON,nullable=False)
+    revision=Column(Integer,nullable=False,default=1)
+    active_seconds=Column(Integer,nullable=False,default=0)
+    recorded_minutes=Column(Float,nullable=False,default=0)
+    started_at=Column(DateTime,nullable=False,default=_now)
+    running_since=Column(DateTime,nullable=True,default=_now)
+    completed_at=Column(DateTime,nullable=True)
+    is_deleted=Column(Boolean,nullable=False,default=False)
+    __table_args__=(Index('ix_workout_owner_started','user_id','started_at'),)

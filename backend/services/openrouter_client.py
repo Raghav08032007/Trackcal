@@ -7,9 +7,29 @@ import json
 import base64
 import httpx
 from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
+DEFAULT_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+
+
+class FoodEstimate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="allow")
+    name: str = Field(min_length=1, max_length=200)
+    quantity_g: float = Field(gt=0, le=10000, allow_inf_nan=False)
+    confidence: float = Field(ge=0, le=1, allow_inf_nan=False)
+    calories: float = Field(ge=0, le=20000, allow_inf_nan=False)
+    protein_g: float = Field(ge=0, le=2000, allow_inf_nan=False)
+    carbs_g: float = Field(ge=0, le=2000, allow_inf_nan=False)
+    fat_g: float = Field(ge=0, le=2000, allow_inf_nan=False)
+
+
+def validate_food_estimates(parsed):
+    if isinstance(parsed, dict):
+        parsed = parsed.get("items", parsed.get("components", [parsed]))
+    if not isinstance(parsed, list) or not 1 <= len(parsed) <= 30:
+        raise ValueError("No food components found")
+    return [item.model_dump() for item in TypeAdapter(List[FoodEstimate]).validate_python(parsed)]
 
 
 async def analyze_food_image_openrouter(
@@ -67,6 +87,7 @@ async def analyze_food_image_openrouter(
             }
         ],
         "temperature": 0.2,
+        "max_tokens": 2500,
     }
 
     async with httpx.AsyncClient(timeout=45.0) as client:
@@ -85,11 +106,7 @@ async def analyze_food_image_openrouter(
             content = "\n".join(lines).strip()
 
         parsed = json.loads(content)
-        if isinstance(parsed, dict) and "items" in parsed:
-            return parsed["items"]
-        if isinstance(parsed, list):
-            return parsed
-        return [parsed]
+        return validate_food_estimates(parsed)
 
 
 async def parse_text_meal_openrouter(
@@ -131,6 +148,7 @@ async def parse_text_meal_openrouter(
         "model": target_model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2,
+        "max_tokens": 2500,
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -148,6 +166,4 @@ async def parse_text_meal_openrouter(
             content = "\n".join(lines).strip()
 
         parsed = json.loads(content)
-        if isinstance(parsed, list):
-            return parsed
-        return [parsed]
+        return validate_food_estimates(parsed)

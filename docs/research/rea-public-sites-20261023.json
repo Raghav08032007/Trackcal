@@ -1,0 +1,56 @@
+[
+  {
+    "evidence_id": "ev_a36f98359791acbff0a8bb14d07c6c9865dfa0f845fb63e8079aeb39a9b6c702",
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "156.0.8078.47"
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "artifacts": [
+      {
+        "step": "scenario_start",
+        "url": "https://www.calai.app/"
+      },
+      {
+        "step": "render",
+        "dom_sha256": "f8bb6750bfdf31642c7840d0e6a0de32b4b6005ccf401ca50fe2724a7781d09e",
+        "url": "https://www.calai.app/"
+      }
+    ]
+  },
+  {
+    "evidence_id": "ev_6d2eee9a5b76ab0efce8febd043bd19bcf1815059eb3c4da2bd3ce1210db67c5",
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "156.0.8078.47"
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "artifacts": [
+      {
+        "step": "scenario_start",
+        "url": "https://cal.com/apps/cal-ai"
+      },
+      {
+        "step": "render",
+        "dom_sha256": "610048b2683ee6a02db6a415aeae8298f58c46a796eac5b84a39c465bcd2c698",
+        "url": "https://cal.com/apps/cal-ai"
+      }
+    ]
+  }
+]

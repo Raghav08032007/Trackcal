@@ -1,0 +1,23 @@
+{
+  "real_model": true,
+  "input": "official MediaPipe public pose.jpg static test image",
+  "ready_ms": 635,
+  "samples_ms": [
+    158,
+    40.09999996423721,
+    34.5,
+    38.200000047683716,
+    44.80000001192093,
+    40.09999996423721,
+    48.5,
+    49.09999996423721,
+    34.69999998807907,
+    38.10000002384186,
+    33.40000003576279,
+    41.40000003576279
+  ],
+  "detected_people": 1,
+  "landmarks_per_person": [
+    33
+  ]
+}

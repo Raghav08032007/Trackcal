@@ -1,0 +1,325 @@
+[
+  {
+    "evidence_id": "ev_7067b6c03b007e3938531db5824446ed65eba2c425380c5cb9947a7deca20be3",
+    "environment": {
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "Asia/Calcutta",
+      "color_scheme": "light",
+      "reduced_motion": "no-preference",
+      "service_workers": "block"
+    },
+    "steps": [
+      {
+        "id": "scenario_start",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "name",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "email",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "password",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "register",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "onboarding",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "next-1",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "step-2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "next-2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "step-3",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "next-3",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "step-4",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "next-4",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "step-5",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "next-5",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "step-6",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "next-6",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "step-7",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "next-7",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "step-8",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "finish",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "plan-created",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "open-plan",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "plan-loaded",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "start",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "started",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "complete",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "reward",
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "page_errors": [],
+    "cleanup": "terminated-owned-process"
+  },
+  {
+    "evidence_id": "ev_d2c9cde668f941d05b51b69ae99d5888cf5a266d220689b84cdfa04fe437815f",
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "Asia/Calcutta",
+      "color_scheme": "dark",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "steps": [
+      {
+        "id": "scenario_start",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "email",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "password",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "login",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "signed-in",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "plan",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "plan-loaded",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "pause",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "paused",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "resume",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "resumed",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "regenerate",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "regenerated",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "new-date",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "reschedule",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "rescheduled",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "lesson-answer",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "lesson-check",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "learned",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "enable-hydration",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "reminder-time",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "quiet-start",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "quiet-end",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "save-reminders",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "reminder-due",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "snooze",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "snoozed",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "dashboard",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "dashboard-loaded",
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "page_errors": [],
+    "cleanup": "terminated-owned-process"
+  }
+]

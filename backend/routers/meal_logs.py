@@ -2,7 +2,7 @@
 from datetime import datetime, date
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from database import get_db
 import models
@@ -15,13 +15,13 @@ class MealItemCreate(BaseModel):
     food_id: Optional[str] = None
     custom_food_id: Optional[str] = None
     recipe_id: Optional[str] = None
-    display_name: str
-    quantity_g: float
+    display_name: str = Field(min_length=1, max_length=200)
+    quantity_g: float = Field(gt=0, le=20000, allow_inf_nan=False)
     serving_label: Optional[str] = None
-    calories: Optional[float] = None
-    protein_g: Optional[float] = None
-    carbs_g: Optional[float] = None
-    fat_g: Optional[float] = None
+    calories: Optional[float] = Field(default=None, ge=0, le=20000, allow_inf_nan=False)
+    protein_g: Optional[float] = Field(default=None, ge=0, le=20000, allow_inf_nan=False)
+    carbs_g: Optional[float] = Field(default=None, ge=0, le=20000, allow_inf_nan=False)
+    fat_g: Optional[float] = Field(default=None, ge=0, le=20000, allow_inf_nan=False)
     fiber_g: Optional[float] = None
     sugar_g: Optional[float] = None
     sodium_mg: Optional[float] = None
@@ -32,12 +32,12 @@ class MealItemCreate(BaseModel):
 
 class MealLogCreate(BaseModel):
     logged_at: Optional[datetime] = None
-    meal_type: str = "other"
-    log_method: str = "manual"
+    meal_type: models.MealType = models.MealType.other
+    log_method: models.LogMethod = models.LogMethod.manual
     notes: Optional[str] = None
     image_id: Optional[str] = None
     scan_job_id: Optional[str] = None
-    items: List[MealItemCreate] = []
+    items: List[MealItemCreate] = Field(min_length=1, max_length=100)
 
 
 def _calculate_totals(items: List[MealItemCreate]) -> dict:

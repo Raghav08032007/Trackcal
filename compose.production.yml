@@ -1,0 +1,88 @@
+name: trackcal
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: trackcal
+      MYSQL_USER: trackcal
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD}
+    volumes: ["mysql-data:/var/lib/mysql"]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    networks: [private]
+  migrate:
+    build: ./backend
+    env_file: .env.production
+    environment: &api-environment
+      APP_ENV: production
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: trackcal
+      DB_USER: trackcal
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?Set APP_SECRET_KEY}
+      CORS_ORIGINS: https://${APP_DOMAIN:?Set APP_DOMAIN}
+      PUBLIC_APP_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
+      AI_MOCK_MODE: "false"
+    depends_on:
+      mysql: { condition: service_healthy }
+    command: ["python", "scripts/bootstrap_schema.py"]
+    networks: [private]
+  api:
+    build: ./backend
+    env_file: .env.production
+    environment: *api-environment
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    volumes: ["uploads:/app/uploads", "models:/app/runtime"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks: [private, outbound]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: ["/tmp:size=128m,mode=1777"]
+  web:
+    build: ./frontend/web
+    env_file: .env.production
+    environment:
+      BACKEND_API_URL: http://api:8000/api/v1
+      ENABLE_AUTHENTICATED_AI: "true"
+      ENABLE_LOCAL_AI: "false"
+      PUBLIC_APP_URL: https://${APP_DOMAIN:?Set APP_DOMAIN}
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks: [private, outbound]
+    security_opt: ["no-new-privileges:true"]
+  edge:
+    image: caddy:2-alpine
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes: ["./infrastructure/Caddyfile:/etc/caddy/Caddyfile:ro", "caddy-data:/data", "caddy-config:/config"]
+    depends_on: [web]
+    restart: unless-stopped
+    networks: [private, outbound]
+volumes:
+  mysql-data:
+  uploads:
+  models:
+  caddy-data:
+  caddy-config:
+networks:
+  private: { internal: true }
+  outbound:

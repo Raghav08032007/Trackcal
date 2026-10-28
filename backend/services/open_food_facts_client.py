@@ -60,7 +60,7 @@ async def lookup_barcode(barcode: str) -> Optional[Dict[str, Any]]:
                 "data_source": "Open Food Facts"
             }
     except Exception as exc:
-        print(f"[OpenFoodFacts] Error looking up barcode {barcode}: {exc}")
+        print("Open Food Facts lookup failed")
         return None
 
 
@@ -98,5 +98,5 @@ async def search_packaged_foods(query: str, page_size: int = 10) -> List[Dict[st
                 })
             return results
     except Exception as exc:
-        print(f"[OpenFoodFacts] Search failed for {query}: {exc}")
+        print("Open Food Facts search failed")
         return []

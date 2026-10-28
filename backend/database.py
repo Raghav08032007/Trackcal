@@ -64,6 +64,6 @@ def verify_connection() -> bool:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return True
-    except Exception as exc:
-        print(f"[DB] Connection failed: {exc}")
+    except Exception:
+        print("[DB] Connection check failed")
         return False

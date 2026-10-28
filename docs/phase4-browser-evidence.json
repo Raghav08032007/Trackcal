@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-28",
+  "mode": "Chromium synthetic camera + synthetic landmark worker; real application, API and isolated MySQL",
+  "checks": [
+    "real sign-in session / initialized shared journey",
+    "permission explanation / no automatic camera or model loading",
+    "camera UI → synthetic low-confidence frames → real analyzer → one rep",
+    "pause shuts down tracks / explicit resume reacquires camera",
+    "overlay/feedback controls / manual correction / end releases camera",
+    "failed save keeps reviewed corrections and stable session identity",
+    "confirmation → MySQL history → shared achievement → companion response",
+    "one record / corrected and estimated counts distinct / replay awards zero XP",
+    "saved camera workout visible in existing history",
+    "denied camera permission / manual fallback / no active stream",
+    "pushup synthetic motion counted once",
+    "set boundary / rest / reset preserve earlier sets",
+    "curl synthetic motion counted once",
+    "same-app navigation releases every track",
+    "mobile responsive reduced-motion / companion outside view",
+    "mobile compact live controls / viewport fit / immediate pause cleanup",
+    "tablet responsive reduced-motion / companion outside view",
+    "no page errors / no external inference / no raw media or landmark uploads"
+  ],
+  "errors": [],
+  "external_inference_requests": 0,
+  "physical_camera": "NOT VERIFIED"
+}

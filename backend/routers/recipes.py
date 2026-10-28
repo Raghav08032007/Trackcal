@@ -1,7 +1,7 @@
 """recipes.py — Recipe CRUD with per-serving nutrient calculation"""
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from database import get_db
 import models
@@ -14,14 +14,14 @@ class IngredientIn(BaseModel):
     food_id: Optional[str] = None
     custom_food_id: Optional[str] = None
     name_override: Optional[str] = None
-    quantity_g: float
+    quantity_g: float = Field(gt=0, le=20000, allow_inf_nan=False)
     unit_label: Optional[str] = None
 
 
 class RecipeCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=200)
     description: Optional[str] = None
-    servings: int = 1
+    servings: int = Field(default=1, ge=1, le=100)
     preparation_method: Optional[str] = None
     cuisine_region: Optional[str] = None
     cooked_weight_g: Optional[float] = None
@@ -72,6 +72,13 @@ def create_recipe(
     user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    for ingredient in data.ingredients:
+        if ingredient.food_id and not db.query(models.Food).filter_by(id=ingredient.food_id).first():
+            raise HTTPException(404, "Ingredient food not found")
+        if ingredient.custom_food_id and not db.query(models.CustomFood).filter_by(id=ingredient.custom_food_id, user_id=user.id).first():
+            raise HTTPException(404, "Custom ingredient not found")
+        if not ingredient.food_id and not ingredient.custom_food_id:
+            raise HTTPException(422, "Select a food or custom food with nutrition values for each ingredient")
     recipe = models.Recipe(
         user_id=user.id,
         name=data.name,

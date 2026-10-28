@@ -4,7 +4,11 @@ __pycache__/
 *$py.class
 *.so
 .env
+.env.production
 .venv/
+.venv-ocr/
+backend/runtime/
+backend/nltk_data/
 env/
 venv/
 .pytest_cache/
@@ -24,3 +28,23 @@ backend/uploads/*
 # OS
 .DS_Store
 Thumbs.db
+
+# Not part of TrackCal: skill-installer and downloaded material
+/downloaded-repos/
+/digidara-leads/
+/.skill-installer-python/
+/python-runtime.zip
+/download_book.cjs
+/download_repos.cjs
+/inspect_repo_skills.cjs
+/inspect_repo_skills.py
+/install_discovered_skills.py
+/verify_skills.py
+/write_install_summary.py
+/finalize_book.py
+/repo-download-status.json
+/repo-skill-discovery.json
+/skill-install-report.json
+/skill-verification.json
+/SKILL-INSTALLATION.md
+/installers/

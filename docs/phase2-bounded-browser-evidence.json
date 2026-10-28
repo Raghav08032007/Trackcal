@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-28",
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "checks": [
+    "real login",
+    "owned activity substitution persisted",
+    "plan accessible names",
+    "keyboard focus and native form navigation",
+    "profile accessibility tree and reduced motion",
+    "live youth calculator bypass rejected",
+    "no page errors"
+  ],
+  "page_errors": [],
+  "method": "Existing Playwright runtime, loopback production app, synthetic account; bounded action timeouts"
+}

@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-28",
+  "database": "trackcal_phase3_test",
+  "checks": [
+    "real signup/login session",
+    "regional-capable food search",
+    "local photo preview with no external upload",
+    "manual scanner confirmation, real diary XP and companion reaction",
+    "diary correction scales known nutrients",
+    "owned saved meal and favorite",
+    "local image deletion",
+    "nutrition history survives refresh",
+    "session start, replacement, sets and durable pause",
+    "silent optional rest timer",
+    "completed session persists; duplicate completion gives zero XP",
+    "real badges, levels and shared ledger",
+    "session history survives application reload",
+    "larger desktop typography and real character CSS motion",
+    "mobile responsive layout, accessible names and reduced motion",
+    "tablet responsive layout, accessible names and reduced motion",
+    "no AI requests, page errors or customer-record access"
+  ],
+  "timings": [
+    {
+      "action": "catalog search + render",
+      "ms": 950
+    },
+    {
+      "action": "mobile workout heading ready",
+      "ms": 342
+    },
+    {
+      "action": "tablet workout heading ready",
+      "ms": 402
+    }
+  ],
+  "page_errors": [],
+  "external_ai_requests": 0
+}

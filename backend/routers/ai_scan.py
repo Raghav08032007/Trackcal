@@ -6,13 +6,15 @@ import os
 import uuid
 import base64
 import json
+import io
 from datetime import datetime
 from typing import Optional, List
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from PIL import Image
 
 from database import get_db
 import models
@@ -20,11 +22,14 @@ from routers.auth import get_current_active_user
 
 router = APIRouter()
 
-MOCK_MODE = os.getenv("AI_MOCK_MODE", "true").lower() == "true"
+MOCK_MODE = os.getenv("AI_MOCK_MODE", "false").lower() == "true"
+
+def _provider_name():
+    return "mock" if MOCK_MODE else "openrouter" if os.getenv("OPENROUTER_API_KEY") else "gemini" if os.getenv("GEMINI_API_KEY") else "unconfigured"
 STORAGE_PATH = Path(os.getenv("LOCAL_STORAGE_PATH", "./uploads"))
 STORAGE_PATH.mkdir(parents=True, exist_ok=True)
 
-SUPPORTED_MIME = {"image/jpeg", "image/png", "image/webp", "image/heic"}
+SUPPORTED_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
@@ -119,43 +124,47 @@ async def _gemini_analyze_image(image_bytes: bytes, mime_type: str, context: Opt
                 text = text[4:]
         return json.loads(text)
     except Exception as e:
-        print(f"Gemini error: {e}")
-        return await _mock_analyze_image(context)
+        print("Gemini request failed")
+        raise HTTPException(502, "Gemini image analysis failed. Retry or log manually.")
 
 
 async def _analyze_image(image_bytes: bytes, mime_type: str, context: Optional[str] = None) -> List[dict]:
+    if MOCK_MODE:
+        return await _mock_analyze_image(context)
     # Priority 1: OpenRouter API (if configured)
     if os.getenv("OPENROUTER_API_KEY"):
         try:
             from services.openrouter_client import analyze_food_image_openrouter
             return await analyze_food_image_openrouter(image_bytes, mime_type, context)
         except Exception as e:
-            print(f"[OpenRouter Vision] Error: {e}")
+            print("OpenRouter vision request failed")
             if MOCK_MODE:
                 return await _mock_analyze_image(context)
-            raise HTTPException(502, f"OpenRouter vision inference failed: {e}")
+            raise HTTPException(502, "OpenRouter vision inference failed. Retry or log manually.")
 
     # Priority 2: Gemini API directly
     if not MOCK_MODE and os.getenv("GEMINI_API_KEY"):
         return await _gemini_analyze_image(image_bytes, mime_type, context)
 
     # Priority 3: Mock development mode
-    return await _mock_analyze_image(context)
+    raise HTTPException(503, "Configure an AI provider or explicitly enable development mock mode.")
 
 
 async def _parse_text_meal(text: str, language: str = "en") -> List[dict]:
     """Parse natural-language meal description into food items."""
+    if MOCK_MODE:
+        return [{"name": "Development sample meal", "quantity_g": 200, "confidence": 0.6, "calories": 350, "protein_g": 15, "carbs_g": 45, "fat_g": 10}]
     # Priority 1: OpenRouter API
     if os.getenv("OPENROUTER_API_KEY"):
         try:
             from services.openrouter_client import parse_text_meal_openrouter
             return await parse_text_meal_openrouter(text, language)
         except Exception as e:
-            print(f"[OpenRouter NLP] Error: {e}")
+            print("OpenRouter text request failed")
             if MOCK_MODE:
                 return [{"name": f"Meal from: {text[:50]}", "quantity_g": 200, "confidence": 0.6,
                          "calories": 350, "protein_g": 15, "carbs_g": 45, "fat_g": 10}]
-            raise HTTPException(502, f"OpenRouter text parsing failed: {e}")
+            raise HTTPException(502, "OpenRouter text parsing failed. Retry or log manually.")
 
     # Priority 2: Gemini API
     if not MOCK_MODE and os.getenv("GEMINI_API_KEY"):
@@ -174,15 +183,17 @@ async def _parse_text_meal(text: str, language: str = "en") -> List[dict]:
                 text_resp = text_resp.split("```")[1].lstrip("json").strip()
             return json.loads(text_resp)
         except Exception as e:
-            print(f"Text parse error: {e}")
+            print("Text estimate request failed")
+            raise HTTPException(502, "Gemini text analysis failed. Retry or log manually.")
 
-    return [{"name": f"Meal from: {text[:50]}", "quantity_g": 200, "confidence": 0.6,
-             "calories": 350, "protein_g": 15, "carbs_g": 45, "fat_g": 10}]
+    raise HTTPException(503, "Configure an AI provider or explicitly enable development mock mode.")
 
 
 def _save_image(file_bytes: bytes, original_name: str, user_id: str) -> str:
     """Save uploaded image and return storage path."""
-    ext = Path(original_name).suffix.lower() or ".jpg"
+    ext = Path(original_name).suffix.lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+        ext = ".jpg"
     filename = f"{user_id}_{uuid.uuid4().hex}{ext}"
     dest = STORAGE_PATH / filename
     dest.write_bytes(file_bytes)
@@ -191,6 +202,11 @@ def _save_image(file_bytes: bytes, original_name: str, user_id: str) -> str:
 
 def _check_scan_quota(user: models.User, db: Session) -> None:
     """Enforce free-tier daily scan limit."""
+    if os.getenv("APP_ENV") == "production":
+        if not user.email_verified: raise HTTPException(403, "Verify your email before using AI estimates.")
+        from services.abuse_limits import consume
+        consume(db, "web-ai", str(user.id), int(os.getenv("DAILY_AI_LIMIT", "15")), 86400)
+        return
     sub = db.query(models.Subscription).filter(models.Subscription.user_id == user.id).first()
     if not sub:
         return
@@ -203,7 +219,7 @@ def _check_scan_quota(user: models.User, db: Session) -> None:
         sub.ai_scans_reset_at = datetime.utcnow()
     FREE_LIMIT = 5
     if sub.ai_scans_used_today >= FREE_LIMIT:
-        raise HTTPException(429, f"Daily free scan limit ({FREE_LIMIT}) reached. Upgrade to Premium for unlimited scans.")
+        raise HTTPException(429, f"Daily scan limit ({FREE_LIMIT}) reached. Please try again tomorrow; manual logging remains available.")
     sub.ai_scans_used_today += 1
     db.add(sub)
 
@@ -215,6 +231,7 @@ async def scan_photo(
     file: UploadFile = File(...),
     context: Optional[str] = Form(None),
     meal_type: str = Form("other"),
+    consent: bool = Form(False),
     user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
@@ -222,10 +239,18 @@ async def scan_photo(
     if file.content_type not in SUPPORTED_MIME:
         raise HTTPException(400, f"Unsupported file type: {file.content_type}. Use JPEG, PNG, or WebP.")
 
-    file_bytes = await file.read()
+    file_bytes = await file.read(MAX_FILE_SIZE + 1)
     if len(file_bytes) > MAX_FILE_SIZE:
         raise HTTPException(413, "File too large. Maximum 10 MB.")
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as image:
+            if image.format not in {"JPEG", "PNG", "WEBP"} or image.width * image.height > 25_000_000:
+                raise ValueError("Unsupported image")
+            image.verify()
+    except Exception:
+        raise HTTPException(400, "Upload a valid JPEG, PNG or WebP image under 25 megapixels.")
 
+    if not MOCK_MODE and not consent:raise HTTPException(400,"Confirm consent before sending a photo to the AI provider.")
     _check_scan_quota(user, db)
 
     # Save image
@@ -248,7 +273,7 @@ async def scan_photo(
         image_id=img.id,
         scan_type="photo",
         status=models.ScanStatus.processing,
-        provider="mock" if MOCK_MODE else "gemini",
+        provider=_provider_name(),
     )
     db.add(job)
     db.flush()
@@ -271,7 +296,7 @@ async def scan_photo(
         db.add(p)
         db.flush()
         nova_info = infer_nova_score(p.predicted_name)
-        allergens = detect_allergens(p.predicted_name)
+        allergens = []  # Photos do not establish ingredient or allergen safety.
         predictions_out.append({
             "prediction_id": p.id,
             "name": p.predicted_name,
@@ -298,7 +323,7 @@ async def scan_photo(
         "image_id": img.id,
         "status": "completed",
         "provider": job.provider,
-        "is_mock": MOCK_MODE,
+        "is_mock": job.provider == "mock",
         "available_cooking_styles": [
             {"key": k, "label": v["label"]} for k, v in COOKING_STYLES.items()
         ],
@@ -311,19 +336,21 @@ async def scan_photo(
 
 
 class CookingStyleAdjustRequest(BaseModel):
-    base_calories: float
-    base_protein_g: float
-    base_carbs_g: float
-    base_fat_g: float
-    base_grams: float
-    adjusted_grams: float
+    base_calories: float = Field(ge=0, le=20000, allow_inf_nan=False)
+    base_protein_g: float = Field(ge=0, le=20000, allow_inf_nan=False)
+    base_carbs_g: float = Field(ge=0, le=20000, allow_inf_nan=False)
+    base_fat_g: float = Field(ge=0, le=20000, allow_inf_nan=False)
+    base_grams: float = Field(gt=0, le=20000, allow_inf_nan=False)
+    adjusted_grams: float = Field(gt=0, le=20000, allow_inf_nan=False)
     cooking_style: str = "standard"
 
 
 @router.post("/adjust-cooking-style")
 def adjust_cooking_style(data: CookingStyleAdjustRequest):
     """Adjust macros based on portion grams and cooking oil/sauce density."""
-    style_info = COOKING_STYLES.get(data.cooking_style, COOKING_STYLES["standard"])
+    if data.cooking_style not in COOKING_STYLES:
+        raise HTTPException(422, "Unknown cooking style")
+    style_info = COOKING_STYLES[data.cooking_style]
     portion_factor = (data.adjusted_grams / data.base_grams) if data.base_grams > 0 else 1.0
 
     cal_mult = style_info["cal_mult"]
@@ -348,7 +375,7 @@ def adjust_cooking_style(data: CookingStyleAdjustRequest):
 
 @router.post("/text")
 async def scan_text(
-    text: str = Form(...),
+    text: str = Form(..., min_length=1, max_length=4000),
     language: str = Form("en"),
     meal_type: str = Form("other"),
     user: models.User = Depends(get_current_active_user),
@@ -362,7 +389,7 @@ async def scan_text(
         scan_type="text",
         status=models.ScanStatus.processing,
         input_text=text,
-        provider="mock" if MOCK_MODE else "gemini",
+        provider=_provider_name(),
     )
     db.add(job)
     db.flush()
@@ -400,7 +427,7 @@ async def scan_text(
         "transcribed_text": text,
         "language": language,
         "predictions": predictions_out,
-        "is_mock": MOCK_MODE,
+        "is_mock": job.provider == "mock",
     }
 
 
@@ -409,7 +436,7 @@ async def submit_correction(
     prediction_id: str = Form(...),
     correction_type: str = Form(...),
     corrected_name: Optional[str] = Form(None),
-    corrected_quantity_g: Optional[float] = Form(None),
+    corrected_quantity_g: Optional[float] = Form(None, gt=0, le=20000),
     user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
@@ -491,3 +518,13 @@ async def scan_barcode(
 
     raise HTTPException(404, f"Barcode '{barcode_value}' not found in global Open Food Facts registry or local database.")
 
+
+
+@router.delete('/images/{image_id}')
+def delete_image(image_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    image=db.query(models.FoodImage).filter_by(id=image_id,user_id=user.id).first()
+    if not image:raise HTTPException(404,'Image not found.')
+    target=Path(image.storage_path).resolve();root=STORAGE_PATH.resolve()
+    if target.parent!=root or not target.name.startswith(str(user.id)+'_'):raise HTTPException(409,'Image location requires operator review; no unrelated file was removed.')
+    target.unlink(missing_ok=True);image.is_deleted=True;image.deleted_at=datetime.utcnow();db.commit()
+    return {'status':'deleted','note':'Image file removed. Private scan/review records remain under account retention policy.'}

@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-28",
+  "database": "trackcal_phase3_test",
+  "catalog_rows": 31,
+  "metrics": {
+    "food_search": {
+      "samples": 12,
+      "p50_ms": 21.03,
+      "p95_ms": 22.62,
+      "max_ms": 22.62
+    },
+    "exercise_library": {
+      "samples": 12,
+      "p50_ms": 4.31,
+      "p95_ms": 13.22,
+      "max_ms": 13.22
+    },
+    "workout_history": {
+      "samples": 12,
+      "p50_ms": 14.15,
+      "p95_ms": 17.17,
+      "max_ms": 17.17
+    }
+  },
+  "prefix_query_index": "ix_foods_name_normalized",
+  "scope": "Loopback synthetic-account timings on a small test catalog; not production, physical-mobile or large-catalog certification."
+}

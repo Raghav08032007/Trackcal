@@ -1,0 +1,110 @@
+- complementary "Your journey companion":
+  - button "pip, level 1 companion Level 1":
+    - img "pip, level 1 companion"
+    - strong: Level 1
+- banner:
+  - link "trackcal ✳":
+    - /url: /
+  - navigation "Wellness workspace":
+    - link "Today":
+      - /url: /
+    - link "Nutrition":
+      - /url: /nutrition
+    - link "Movement":
+      - /url: /workouts
+    - link "Camera":
+      - /url: /workouts/camera
+    - link "My plan":
+      - /url: /plan
+    - link "Play":
+      - /url: /play
+- main:
+  - link "My personal plan ↗":
+    - /url: /plan
+  - paragraph: YOUR PERSONAL JOURNEY · STEP 2 OF 8
+  - progressbar "Onboarding progress"
+  - heading "Basic profile" [level=1]
+  - text: Display name
+  - textbox "Display name"
+  - text: Age group
+  - combobox "Age group":
+    - option "Prefer not to say"
+    - option "Under 18"
+    - option "18–19"
+    - option "20–64" [selected]
+    - option "65+"
+  - text: Preferred language
+  - combobox "Preferred language Language preference is saved; interface translations are not yet available.":
+    - option "English" [selected]
+    - option "Hindi"
+    - option "Tamil"
+    - option "Telugu"
+    - option "Other"
+  - text: Language preference is saved; interface translations are not yet available. Country
+  - textbox "Country"
+  - text: Personalization timezone
+  - textbox "Personalization timezone Reminders and personal plans use this zone. Your established XP journey timezone stays unchanged.":
+    - /placeholder: Asia/Kolkata
+    - text: UTC
+  - text: Reminders and personal plans use this zone. Your established XP journey timezone stays unchanged. Measurement units
+  - combobox "Measurement units":
+    - option "Metric" [selected]
+    - option "Imperial"
+  - group "Optional private measurements":
+    - text: Optional private measurements
+    - paragraph: Skip these freely. Measurements never earn XP or change exercise intensity.
+    - text: Measurement type
+    - combobox "Measurement type":
+      - option "height" [selected]
+      - option "weight"
+      - option "duration"
+      - option "repetitions"
+      - option "frequency"
+      - option "hydration"
+      - option "sleep"
+    - text: Value (cm)
+    - spinbutton "Value (cm)"
+    - button "Save optional measurement" [disabled]
+    - status
+  - button "Back"
+  - button "Save & resume later"
+  - button "Next"
+  - paragraph:
+    - text: Optional questions may be left blank.
+    - link "Continue tracking without finishing":
+      - /url: /
+- contentinfo "Product links":
+  - text: Appearance
+  - combobox "Appearance":
+    - option "System" [selected]
+    - option "Light"
+    - option "Dark"
+  - checkbox "Reduce motion"
+  - text: Reduce motion
+  - link "Guided test drive":
+    - /url: /guide
+  - link "Cloud nutrition":
+    - /url: /nutrition
+  - link "Workout sessions":
+    - /url: /workouts
+  - link "Camera workouts":
+    - /url: /workouts/camera
+  - link "My personal plan":
+    - /url: /plan
+  - link "Quests & play":
+    - /url: /play
+  - link "Reminders & coaching":
+    - /url: /routine
+  - link "Smart tools":
+    - /url: /tools
+  - link "Getting started":
+    - /url: /onboarding
+  - link "Account & data":
+    - /url: /account
+  - link "Privacy":
+    - /url: /privacy
+  - link "Terms":
+    - /url: /terms
+  - link "Help":
+    - /url: /help
+- alert: TrackCal — Food & Nutrition Journal

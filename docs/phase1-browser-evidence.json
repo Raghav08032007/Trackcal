@@ -1,0 +1,215 @@
+[
+  {
+    "evidence_id": "ev_94aa802e61621d4b5c4c5a63f82fbf74087f0aad10911166cce154f1c85bcba7",
+    "environment": {
+      "viewport": {
+        "width": 1440,
+        "height": 1000,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "Asia/Calcutta",
+      "color_scheme": "light",
+      "reduced_motion": "no-preference",
+      "service_workers": "block"
+    },
+    "steps": [
+      {
+        "id": "scenario_start",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "email",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "password",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "login",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "signed-in",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "play",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "loaded",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "initialize",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "initialized",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "expand",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "expanded",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "rest",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "saved-rest",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "settings",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "dock-left",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "saved-settings",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "navigate-tools",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "tools",
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "page_errors": [],
+    "cleanup": "terminated-owned-process"
+  },
+  {
+    "evidence_id": "ev_6fae231e3edf9f74d2a93e16facbc55895e39c4e2e0a5516552c395da6c5d2f6",
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "Asia/Calcutta",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "steps": [
+      {
+        "id": "scenario_start",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "email",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "password",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "login",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "signed-in",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "minimize",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "tools",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "loaded",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "workouts",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "session-name",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "save-session",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "review",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "reward",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "retry-review",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "idempotent",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "expand",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "id": "final",
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "page_errors": [],
+    "cleanup": "terminated-owned-process"
+  }
+]

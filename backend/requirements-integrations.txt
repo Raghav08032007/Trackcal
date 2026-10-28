@@ -1,0 +1,7 @@
+# Core libraries, tested with Python 3.12. Install after requirements.txt.
+recipe-scrapers==15.13.0
+ingredient-parser-nlp==2.9.1
+ortools==9.12.4544
+protobuf>=5.29.3,<5.30
+pywhispercpp==1.5.1
+# This solver version shares protobuf 5 with the existing optional Google SDKs.

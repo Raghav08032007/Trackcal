@@ -1,0 +1,7 @@
+-- Phase 4 uses existing workout_sessions.details JSON, no new table/column.
+-- Missing tracking_method on legacy rows means manual; no historical rewrite.
+-- Apply scripts/migrate_camera.py to seed missing centralized achievements.
+-- Camera snapshot v1: tracking_method=camera, tracking={exercise_type, engine,
+-- version, confidence_mean, sampled_frames, low_confidence_frames,
+-- sets:[{estimated_reps, corrected_reps}]}. No media or raw landmarks.
+-- Replay safe; retain JSON metadata on application rollback, do not DROP history.

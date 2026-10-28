@@ -1,32 +1,90 @@
 """users.py — User profile, settings, allergens, data export, account deletion"""
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
-from typing import Optional, List
+from typing import Optional, List, Literal
 from database import get_db
 import models
 from routers.auth import get_current_active_user
+import json
+import math
+import re
+import hashlib
 
 router = APIRouter()
 
 
+class WorkspaceBackup(BaseModel):
+    entries: dict
+    expected_revision: str | None = Field(default=None, max_length=64)
+    owner_id: str | None = Field(default=None, max_length=36)
+
+    @classmethod
+    def validate_entries(cls, entries):
+        if len(json.dumps(entries)) > 900000 or len(entries) > 1500:
+            raise HTTPException(413, "Backup exceeds the size limit")
+        for key, value in entries.items():
+            if not re.fullmatch(r"trackcal:(play:(calm|character|theme|motion)|appearance|reminders|preferences|journal:\d{4}-\d{2}-\d{2}|wellness:\d{4}-\d{2}-\d{2}|target:[a-zA-Z_]+|recipe:(name|servings|ingredients)|studio:(recipes|pantry|shopping|workouts|plans))", key):
+                raise HTTPException(422, "Unsupported workspace key")
+            def check(node, depth=0):
+                if depth > 8:
+                    raise HTTPException(422, "Invalid workspace structure")
+                if isinstance(node, float) and not math.isfinite(node):
+                    raise HTTPException(422, "Invalid number")
+                if isinstance(node, dict):
+                    for item in node.values(): check(item, depth + 1)
+                if isinstance(node, list):
+                    for item in node: check(item, depth + 1)
+            check(value)
+
+
+@router.get("/workspace")
+def workspace(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    saved = db.get(models.UserWorkspace, user.id)
+    return {"entries": saved.entries if saved else {}, "updated_at": saved.updated_at.isoformat() if saved else None, "revision": workspace_revision(saved)}
+
+
+def workspace_revision(saved):
+    return hashlib.sha256(json.dumps(saved.entries if saved else {}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+@router.put("/workspace")
+def save_workspace(data: WorkspaceBackup, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    if data.owner_id is not None and data.owner_id != str(user.id):
+        raise HTTPException(403, "The queued backup belongs to another account. Sign in to its owner before syncing.")
+    WorkspaceBackup.validate_entries(data.entries)
+    # Lock the owner row too: this serializes concurrent first-backup creation.
+    db.query(models.User).filter_by(id=user.id).with_for_update().first()
+    saved = db.query(models.UserWorkspace).filter_by(user_id=user.id).with_for_update().first()
+    if data.expected_revision is not None and data.expected_revision != workspace_revision(saved):
+        raise HTTPException(409, "Your cloud backup changed on another device. Review it before replacing it.")
+    if saved:
+        saved.entries = data.entries
+    else:
+        saved = models.UserWorkspace(user_id=user.id, entries=data.entries)
+        db.add(saved)
+    db.commit()
+    db.refresh(saved)
+    return {"status": "Backup saved", "updated_at": saved.updated_at.isoformat(), "revision": workspace_revision(saved)}
+
+
 class ProfileUpdate(BaseModel):
-    display_name: Optional[str] = None
-    country_code: Optional[str] = None
-    language_code: Optional[str] = None
-    timezone: Optional[str] = None
-    measurement_system: Optional[str] = None
-    height_cm: Optional[float] = None
-    weight_kg: Optional[float] = None
-    dietary_preferences: Optional[List[str]] = None
+    display_name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    country_code: Optional[str] = Field(default=None, min_length=2, max_length=2)
+    language_code: Optional[str] = Field(default=None, min_length=2, max_length=10)
+    timezone: Optional[str] = Field(default=None, max_length=100)
+    measurement_system: Optional[Literal["metric", "imperial"]] = None
+    height_cm: Optional[float] = Field(default=None, ge=30, le=300, allow_inf_nan=False)
+    weight_kg: Optional[float] = Field(default=None, ge=1, le=500, allow_inf_nan=False)
+    dietary_preferences: Optional[List[str]] = Field(default=None, max_length=30)
 
 
 class SettingsUpdate(BaseModel):
-    daily_calorie_goal: Optional[int] = None
-    daily_protein_goal_g: Optional[float] = None
-    daily_carb_goal_g: Optional[float] = None
-    daily_fat_goal_g: Optional[float] = None
-    daily_water_goal_ml: Optional[float] = None
+    daily_calorie_goal: Optional[int] = Field(default=None, gt=0, le=20000)
+    daily_protein_goal_g: Optional[float] = Field(default=None, ge=0, le=2000, allow_inf_nan=False)
+    daily_carb_goal_g: Optional[float] = Field(default=None, ge=0, le=2000, allow_inf_nan=False)
+    daily_fat_goal_g: Optional[float] = Field(default=None, ge=0, le=2000, allow_inf_nan=False)
+    daily_water_goal_ml: Optional[float] = Field(default=None, gt=0, le=20000, allow_inf_nan=False)
     notifications_enabled: Optional[bool] = None
     high_contrast_mode: Optional[bool] = None
     reduce_motion: Optional[bool] = None
@@ -94,6 +152,9 @@ def update_settings(data: SettingsUpdate, user: models.User = Depends(get_curren
         raise HTTPException(404, "Settings not found")
     updates = data.model_dump(exclude_none=True)
     # Minors cannot enable calorie goals or counts
+    personalization=db.get(models.PersonalizationProfile,user.id)
+    if personalization and personalization.preferences.get("age_group") not in ("20_64","65plus"):
+        raise HTTPException(400,"Restrictive calorie plans are unavailable for this age group.")
     if user.is_minor:
         updates.pop("daily_calorie_goal", None)
         updates.pop("show_calorie_counts", None)
@@ -107,6 +168,13 @@ def update_settings(data: SettingsUpdate, user: models.User = Depends(get_curren
 def delete_account(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     """Soft-delete the user account."""
     from datetime import datetime
+    own_slots=db.query(models.CoachSlot.id).filter(models.CoachSlot.coach_id==user.id)
+    appointments=db.query(models.CoachBooking).filter((models.CoachBooking.user_id==user.id)|(models.CoachBooking.slot_id.in_(own_slots))).with_for_update().all()
+    for appointment in appointments:
+        appointment.status="cancelled"
+        slot=db.query(models.CoachSlot).filter_by(id=appointment.slot_id).with_for_update().first()
+        if slot and slot.reserved_booking_id==appointment.id:slot.reserved_booking_id=None
+    for slot in db.query(models.CoachSlot).filter_by(coach_id=user.id).with_for_update().all():slot.active=False
     user.deleted_at = datetime.utcnow()
     user.is_active = False
     db.commit()
@@ -118,22 +186,39 @@ def export_data(user: models.User = Depends(get_current_active_user), db: Sessio
     """Return a JSON dump of the user's data for GDPR portability."""
     logs = db.query(models.MealLog).filter(models.MealLog.user_id == user.id).all()
     recipes = db.query(models.Recipe).filter(models.Recipe.user_id == user.id).all()
+    def row(value):
+        return {column.name: getattr(value, column.name) for column in value.__table__.columns} if value is not None else None
     return {
         "user_id": user.id,
         "email": user.email,
-        "meal_logs": [{"id": l.id, "logged_at": str(l.logged_at), "meal_type": l.meal_type.value} for l in logs],
-        "recipes": [{"id": r.id, "name": r.name, "servings": r.servings} for r in recipes],
-        "note": "Full data export available on request via support.",
+        "meal_logs": [{**row(log), "items": [row(item) for item in log.items]} for log in logs],
+        "recipes": [{**row(recipe), "ingredients": [row(item) for item in recipe.ingredients]} for recipe in recipes],
+        "profile": row(db.query(models.UserProfile).filter_by(user_id=user.id).first()),
+        "settings": row(db.query(models.UserSettings).filter_by(user_id=user.id).first()),
+        "water_entries": [row(entry) for entry in db.query(models.WaterEntry).filter_by(user_id=user.id).all()],
+        "custom_foods": [row(food) for food in db.query(models.CustomFood).filter_by(user_id=user.id).all()],
+        "web_workspace_backup": row(db.get(models.UserWorkspace, user.id)),
+        "phase3":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('food_favorites',models.FoodFavorite),('food_search_history',models.FoodSearchHistory),('workout_blueprints',models.WorkoutBlueprint),('workout_sessions',models.WorkoutSession)]},
+        "personalization":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('preferences',models.PersonalizationProfile),('measurements',models.WellnessMeasurement),('plans',models.ActivityPlan),('recommendations',models.RecommendationHistory),('reminder_deliveries',models.ReminderDelivery)]},
+        "plan_activities":[row(item) for item in db.query(models.PlanActivity).join(models.ActivityPlan).filter(models.ActivityPlan.user_id==user.id).all()],
+        "gamification": {name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('activity_events',models.ActivityRewardEvent),('achievements',models.UserAchievement),('character_unlocks',models.CharacterUnlock),('customization',models.CharacterCustomization),('streak_records',models.StreakRecord)]},
+        "adventure": {
+            "profile": row(db.get(models.AdventureProfile,user.id)),
+            "rewards": [row(event) for event in db.query(models.RewardEvent).filter_by(user_id=user.id).all()],
+            "reviewed_meals": [row(meal) for meal in db.query(models.AdventureMeal).filter_by(user_id=user.id).all()],
+            "game_sessions": [{"id":game.id,"expires_at":game.expires_at,"completed":game.completed,"attempts":game.attempts} for game in db.query(models.GameSession).filter_by(user_id=user.id).all()],
+        },
+        "note": "Nutrition and optional adventure data export. Uploaded image files are referenced by ID and are not embedded.",
     }
 
 
 class OnboardingPlanRequest(BaseModel):
-    biological_sex: str = "male"  # male or female
-    age: int = 25
-    weight_kg: float = 70.0
-    height_cm: float = 175.0
-    activity_level: str = "moderate"  # sedentary, light, moderate, very_active
-    goal: str = "lose_weight"  # lose_weight, maintain, build_muscle
+    biological_sex: Literal["male", "female"] = "male"
+    age: int = Field(default=25, ge=20, le=100)
+    weight_kg: float = Field(default=70.0, ge=30, le=350, allow_inf_nan=False)
+    height_cm: float = Field(default=175.0, ge=100, le=230, allow_inf_nan=False)
+    activity_level: Literal["sedentary", "light", "moderate", "very_active"] = "moderate"
+    goal: Literal["lose_weight", "maintain", "build_muscle"] = "lose_weight"
     dietary_preference: str = "standard"  # standard, vegetarian, vegan, halal, keto
 
 
@@ -148,6 +233,9 @@ def calculate_onboarding_plan(
     Calculates Basal Metabolic Rate (BMR via Mifflin-St Jeor), Total Daily Energy Expenditure (TDEE),
     and sets recommended daily calorie and macro goals.
     """
+    personalization=db.get(models.PersonalizationProfile,user.id)
+    if personalization and personalization.preferences.get("age_group") not in ("20_64","65plus"):
+        raise HTTPException(400,"Restrictive calorie plans are unavailable for this age group.")
     if user.is_minor:
         raise HTTPException(400, "Calorie goals are disabled for minor accounts in compliance with safety policy.")
 

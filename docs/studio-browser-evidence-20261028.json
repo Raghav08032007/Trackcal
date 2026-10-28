@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-28",
+  "passed": 14,
+  "checks": [
+    "desktop: focused home destinations, no nav bar/scanner clutter or horizontal overflow",
+    "desktop: guest companion explains how/why/next without reward side effects",
+    "mobile: focused home destinations, no nav bar/scanner clutter or horizontal overflow",
+    "mobile: guest companion explains how/why/next without reward side effects",
+    "mobile390: focused home destinations, no nav bar/scanner clutter or horizontal overflow",
+    "mobile390: guest companion explains how/why/next without reward side effects",
+    "/scanner: focused page title, collapsible tool buttons and no horizontal overflow",
+    "/barcode: focused page title, collapsible tool buttons and no horizontal overflow",
+    "/describe: focused page title, collapsible tool buttons and no horizontal overflow",
+    "/food-library: focused page title, collapsible tool buttons and no horizontal overflow",
+    "/journal: focused page title, collapsible tool buttons and no horizontal overflow",
+    "/recipes: focused page title, collapsible tool buttons and no horizontal overflow",
+    "offline journal 320px: heading and fields fit viewport",
+    "offline journal 390px: heading and fields fit viewport"
+  ],
+  "page_errors": [],
+  "scope": "Production Chromium desktop and mobile viewport emulation; synthetic guest session; no physical device, camera or customer data."
+}

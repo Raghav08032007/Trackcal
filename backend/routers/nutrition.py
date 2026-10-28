@@ -2,7 +2,7 @@
 from datetime import datetime, date, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from database import get_db
@@ -94,6 +94,7 @@ def weekly_summary(
     """Return per-day totals for the past 7 days."""
     end = date.today()
     start = week_start or (end - timedelta(days=6))
+    end = start + timedelta(days=6)
 
     result = []
     current = start
@@ -150,7 +151,7 @@ def monthly_trends(
 # ── Water logging ────────────────────────────────────────────────
 
 class WaterCreate(BaseModel):
-    amount_ml: float
+    amount_ml: float = Field(gt=0, le=10000, allow_inf_nan=False)
     logged_at: Optional[datetime] = None
 
 
