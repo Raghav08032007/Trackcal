@@ -9,12 +9,10 @@ from unittest.mock import AsyncMock
 import httpx
 import pytest
 from fastapi import HTTPException
-from fastapi.testclient import TestClient
-from main import app
+from tests.client import app, client
 from routers import integrations
 from services import safe_recipe
 
-client = TestClient(app)
 
 @pytest.fixture
 def account_headers():

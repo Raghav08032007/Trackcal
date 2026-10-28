@@ -3,15 +3,13 @@ import uuid
 from datetime import datetime, timedelta
 import pytest
 from fastapi import HTTPException
-from fastapi.testclient import TestClient
-from main import app
+from tests.client import app, client
 from services import account_mail
 from services.abuse_limits import consume
 from services.production_config import validate_production
 import database
 import models
 
-client = TestClient(app)
 
 def account():
     email = f"qa-readiness-{uuid.uuid4().hex}@tests.example.com"
@@ -114,7 +112,8 @@ def test_plan_catalog_does_not_sell_unconnected_features(monkeypatch):
     assert client.get("/api/v1/subscriptions/plans").json()["plans"]["free"]["ai_scans_per_day"]==17
 
 def test_readiness_is_not_success_when_database_is_unavailable(monkeypatch):
-    import main
-    monkeypatch.setattr(main,"verify_connection",lambda:False)
+    import sys, database
+    monkeypatch.setattr(database,"verify_connection",lambda:False)
+    if "main" in sys.modules: monkeypatch.setattr(sys.modules["main"],"verify_connection",lambda:False)
     response=client.get("/api/health");assert response.status_code==503 and response.headers.get("X-Request-ID")
     assert client.get("/api/live").status_code==200

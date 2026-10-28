@@ -4,7 +4,7 @@ os.environ["APP_ENV"] = "testing"
 import pytest
 from sqlalchemy.orm import Session
 import database
-from main import app
+from tests.client import app, client
 
 
 @pytest.fixture(autouse=True)

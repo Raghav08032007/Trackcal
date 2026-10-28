@@ -1,14 +1,12 @@
 """Real database/API workflows. All writes are rolled back by conftest."""
 import uuid
 import pytest
-from fastapi.testclient import TestClient
-from main import app
-client = TestClient(app)
+from tests.client import app, client, private_routes
 
 def _requires_login(dependant):
     return any(getattr(child.call, "__name__", "") == "get_current_active_user" or _requires_login(child) for child in dependant.dependencies)
 
-PRIVATE_ROUTES = [(method.upper(), path) for path, operations in app.openapi()["paths"].items() for method, operation in operations.items() if isinstance(operation, dict) and operation.get("security")]
+PRIVATE_ROUTES = private_routes()
 assert len(PRIVATE_ROUTES) >= 50, "Private-route discovery lost coverage; inspect framework schema changes."
 
 @pytest.mark.parametrize("method,path", PRIVATE_ROUTES)

@@ -1,5 +1,5 @@
 {
- "run_at": "2026-10-28T16:10:44.702Z",
+ "run_at": "2026-10-28T17:03:51.889Z",
  "camera": "SIMULATED (Chromium --use-fake-device-for-media-stream)",
  "checks": [
   "mobile360: camera page opens without requesting the camera",
@@ -19,5 +19,6 @@
   "desktop: selecting a photo without AI consent sends nothing and says why",
   "desktop: positive control: consented analysis request is detected (intercepted locally)"
  ],
- "failures": []
+ "failures": [],
+ "camera_start_retries": []
 }

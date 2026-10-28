@@ -1,7 +1,5 @@
 import uuid
-from fastapi.testclient import TestClient
-from main import app
-client = TestClient(app)
+from tests.client import app, client
 
 def signup():
     email = f"qa-{uuid.uuid4().hex}@tests.example.com"

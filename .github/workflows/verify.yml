@@ -20,6 +20,10 @@ jobs:
         working-directory: frontend/web
   api:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [flask, fastapi]  # parity during the Flask migration; drop fastapi when it is removed
     services:
       mysql:
         image: mysql:8.4
@@ -37,6 +41,7 @@ jobs:
       DB_PASSWORD: ci-only-disposable-password
       DB_NAME: trackcal_test
       AI_MOCK_MODE: "true"
+      TRACKCAL_BACKEND: ${{ matrix.backend }}
       NLTK_DATA: nltk_data
     defaults:
       run: { working-directory: backend }

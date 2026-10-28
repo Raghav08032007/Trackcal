@@ -8,4 +8,5 @@ COPY . .
 RUN python -m nltk.downloader -d /app/nltk_data averaged_perceptron_tagger_eng && useradd --uid 10001 --create-home trackcal && mkdir -p uploads runtime && chown -R trackcal:trackcal /app
 USER trackcal
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]
+# Flask app under gunicorn. Access logging stays off (gunicorn's default) so recovery links are never logged.
+CMD ["gunicorn", "flask_app:create_app()", "--bind", "0.0.0.0:8000", "--worker-class", "gthread", "--workers", "2", "--threads", "4", "--timeout", "60", "--error-logfile", "-"]

@@ -1,11 +1,9 @@
 from datetime import datetime,timezone,timedelta,date
 import uuid
-from fastapi.testclient import TestClient
-from main import app
+from tests.client import app, client
 from services import adventure
 import database,models
 
-client=TestClient(app)
 def account():
     response=client.post('/api/v1/auth/signup',json={'email':f'qa-play-{uuid.uuid4().hex}@tests.example.com','password':'Synthetic-play-test-123!'})
     assert response.status_code==201

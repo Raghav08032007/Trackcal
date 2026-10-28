@@ -1,11 +1,9 @@
 import pytest
-from fastapi.testclient import TestClient
-from main import app
+from tests.client import app, client
 from routers.ai_scan import infer_nova_score, detect_allergens, COOKING_STYLES
 import database
 import models
 
-client = TestClient(app)
 
 
 def test_health_endpoint():

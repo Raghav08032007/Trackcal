@@ -1,9 +1,7 @@
 import uuid
 from datetime import datetime,timedelta,timezone
-from fastapi.testclient import TestClient
-from main import app
+from tests.client import app, client
 import database,models
-client=TestClient(app)
 
 def account(coach=False,verified=True):
     data=client.post('/api/v1/auth/signup',json={'email':f'qa-coach-{uuid.uuid4().hex}@tests.example.com','password':'Booking-test-123!','display_name':'Test coach' if coach else 'Test member'}).json()
