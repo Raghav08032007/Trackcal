@@ -1,0 +1,23 @@
+{
+ "run_at": "2026-10-28T16:10:44.702Z",
+ "camera": "SIMULATED (Chromium --use-fake-device-for-media-stream)",
+ "checks": [
+  "mobile360: camera page opens without requesting the camera",
+  "mobile360: camera starts after the user taps Enable camera",
+  "mobile360: all media tracks stop when the tab is hidden",
+  "mobile360: all media tracks stop on pagehide",
+  "mobile360: all media tracks stop when navigating away (unmount)",
+  "mobile360: no request carried video or frame data (1 non-GET requests inspected)",
+  "mobile360: selecting a photo without AI consent sends nothing and says why",
+  "mobile360: positive control: consented analysis request is detected (intercepted locally)",
+  "desktop: camera page opens without requesting the camera",
+  "desktop: camera starts after the user taps Enable camera",
+  "desktop: all media tracks stop when the tab is hidden",
+  "desktop: all media tracks stop on pagehide",
+  "desktop: all media tracks stop when navigating away (unmount)",
+  "desktop: no request carried video or frame data (1 non-GET requests inspected)",
+  "desktop: selecting a photo without AI consent sends nothing and says why",
+  "desktop: positive control: consented analysis request is detected (intercepted locally)"
+ ],
+ "failures": []
+}
