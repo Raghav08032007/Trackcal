@@ -1,0 +1,39 @@
+import {render,screen,fireEvent,waitFor} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import {beforeEach,it,expect,vi} from 'vitest';
+vi.mock('../src/components/account-session',()=>({useAccount:()=>({user:{id:'p3-member'},ready:true}),useWorkspaceScope:()=> 'p3-member'}));
+import {NutritionDashboard} from '../src/components/nutrition-dashboard';
+import {WorkoutDashboard} from '../src/components/workout-dashboard';
+import {portionTotal,type FoodItem,type Session} from '../src/lib/wellness';
+const food:FoodItem={name:'Reviewed rice',grams:150,nutrients:{calories:100,protein:2,carbs:20,fat:1},estimated:false,source:'User reviewed fixture',manual_override:true};
+const diary={today:'2026-10-28',day:'2026-10-28',timezone:'UTC',entries:[],has_more:false,favorites:[],saved_meals:[],recent:[],recent_searches:[],suggestions:{nutrition_note:'Review ingredients.',meals:[]}};
+const exercise={id:'walk',name:'Comfortable walk',instructions:'Move at a comfortable pace.',equipment:[],category:'endurance',movement:'locomotion',difficulty:'gentle',safety:'Rest as needed.',alternative:'recovery',accessibility:['no_floor'],review:'Application review'};
+beforeEach(()=>{window.history.replaceState(null,'','/');});
+it('calculates reviewed portions while preserving unknown nutrition',()=>{expect(portionTotal([food],'calories')).toBe(150);expect(portionTotal([{...food,nutrients:{...food.nutrients,protein:null}}],'protein')).toBeNull();});
+it('searches and explicitly confirms a meal with a stable ID and transparent reward',async()=>{
+ const fetcher=vi.fn(async(url,options)=>Response.json(options?.body?{awarded_xp:10,entry:{id:'entry'}}:String(url).includes('/foods?')?{results:[food],has_more:false,regional_names:[]}:diary));vi.stubGlobal('fetch',fetcher);render(<NutritionDashboard/>);await screen.findByRole('heading',{name:'Your food diary'});
+ fireEvent.change(screen.getByLabelText('Food search'),{target:{value:'rice'}});await userEvent.click(screen.getByRole('button',{name:'Search catalog'}));await screen.findByRole('button',{name:'Choose Reviewed rice'});await userEvent.click(screen.getByRole('button',{name:'Choose Reviewed rice'}));await userEvent.click(screen.getByRole('button',{name:'Confirm diary entry'}));await screen.findByText(/Meal saved · \+10/);
+ const call=fetcher.mock.calls.find(([url,options])=>String(url).endsWith('/diary')&&options?.body);const body=JSON.parse(call![1].body);expect(body.items[0].grams).toBe(150);expect(body.xp).toBeUndefined();expect(body.id).toMatch(/^[0-9a-f-]{36}$/);
+});
+it('shows an honest empty cloud diary and retains a failed meal draft',async()=>{
+ const fetcher=vi.fn(async(_url,options)=>options?.body?Response.json({error:'Network unavailable'},{status:503}):Response.json(diary));vi.stubGlobal('fetch',fetcher);render(<NutritionDashboard/>);await screen.findByRole('heading',{name:'Your food diary'});
+ fireEvent.change(screen.getByLabelText('Food name 1'),{target:{value:'Keep my draft'}});await userEvent.click(screen.getByRole('button',{name:'Confirm diary entry'}));await screen.findByRole('alert');expect((screen.getByLabelText('Food name 1') as HTMLInputElement).value).toBe('Keep my draft');
+ expect(screen.getAllByText('No entry here. Log whenever it is useful for you.').length).toBe(6);
+});
+it('starts, records sets, pauses and completes a server-owned workout session',async()=>{
+ let session:Session|null=null;
+ const fetcher=vi.fn(async(url,options)=>{if(String(url).includes('/exercises'))return Response.json({results:[exercise]});if(options?.body){const body=JSON.parse(options.body);if(options.method==='PUT'){session={...session!,status:body.action==='complete'?'completed':body.action==='pause'?'paused':'active',revision:session!.revision+1,minutes:body.minutes,details:{exercises:body.exercises,notes:body.notes}};return Response.json({session,awarded_xp:body.action==='complete'?20:0});}session={id:body.id,name:body.name,status:'active',revision:1,minutes:0,active_seconds:0,started_at:'2026-10-28T10:00:00Z',completed_at:null,plan_activity_id:null,details:{exercises:[{exercise_id:'walk',sets:[]}],notes:''}};return Response.json({session});}return Response.json({sessions:session?[session]:[],current:session&&session.status!=='completed'?session:null,templates:[],plan:null,has_more:false,insights:{completed:session?.status==='completed'?1:0,recorded_minutes:0,note:'Self report'}});});
+ vi.stubGlobal('fetch',fetcher);render(<WorkoutDashboard/>);await screen.findByRole('button',{name:'Add Comfortable walk'});await userEvent.click(screen.getByRole('button',{name:'Add Comfortable walk'}));await userEvent.click(screen.getByRole('button',{name:'Start workout'}));await screen.findByRole('button',{name:'Add set for exercise 1'});
+ fireEvent.change(screen.getByLabelText('Recorded session minutes'),{target:{value:'10'}});await userEvent.click(screen.getByRole('button',{name:'Add set for exercise 1'}));fireEvent.change(screen.getByLabelText('reps · exercise 1 set 1'),{target:{value:'8'}});await userEvent.click(screen.getByRole('button',{name:'Pause session'}));await screen.findByRole('button',{name:'Resume session'});await userEvent.click(screen.getByRole('button',{name:'Resume session'}));await screen.findByRole('button',{name:'Pause session'});await userEvent.click(screen.getByRole('button',{name:'Complete workout'}));await screen.findByText(/Session complete · \+20/);
+ expect(session!.details.exercises[0].sets[0].reps).toBe(8);expect(session!.minutes).toBe(10);expect(session!.status).toBe('completed');
+});
+it('keeps an optional rest timer silent and stoppable',async()=>{
+ const session={id:'session',name:'Saved session',status:'active',revision:1,minutes:0,active_seconds:0,started_at:'2026-10-28T10:00:00Z',completed_at:null,plan_activity_id:null,details:{exercises:[{exercise_id:'walk',sets:[]}],notes:''}};
+ vi.stubGlobal('fetch',vi.fn(async(url)=>Response.json(String(url).includes('exercises')?{results:[exercise]}:{sessions:[session],current:session,templates:[],plan:null,has_more:false,insights:{completed:0,recorded_minutes:0,note:'Self report'}})));render(<WorkoutDashboard/>);await screen.findByRole('button',{name:'Start 30-second rest timer'});await userEvent.click(screen.getByRole('button',{name:'Start 30-second rest timer'}));expect(screen.getByText('Optional rest timer: 30s')).toBeTruthy();await userEvent.click(screen.getByRole('button',{name:'Stop rest timer'}));expect(screen.getByText('Optional rest timer: 0s')).toBeTruthy();
+});
+it('retains workout edits across a failed save and remount without overwriting the account version',async()=>{
+ const session={id:'network-session',name:'Resumable session',status:'active',revision:1,minutes:0,active_seconds:0,started_at:'2026-10-28T10:00:00Z',completed_at:null,plan_activity_id:null,details:{exercises:[{exercise_id:'walk',sets:[]}],notes:''}};
+ vi.stubGlobal('fetch',vi.fn(async(url,options)=>options?.body?Response.json({error:'Offline save failed'},{status:503}):Response.json(String(url).includes('exercises')?{results:[exercise]}:{sessions:[session],current:session,templates:[],plan:null,has_more:false,insights:{completed:0,recorded_minutes:0,note:'Self report'}})));
+ const first=render(<WorkoutDashboard/>);await screen.findByLabelText('Recorded session minutes');fireEvent.change(screen.getByLabelText('Recorded session minutes'),{target:{value:'12'}});await userEvent.click(screen.getByRole('button',{name:'Save progress'}));await screen.findByRole('alert');expect((screen.getByLabelText('Recorded session minutes') as HTMLInputElement).value).toBe('12');first.unmount();
+ render(<WorkoutDashboard/>);await screen.findByLabelText('Recorded session minutes');expect((screen.getByLabelText('Recorded session minutes') as HTMLInputElement).value).toBe('12');expect(screen.getByText('Changes saved on this device. Save progress to sync to your account.')).toBeTruthy();
+});

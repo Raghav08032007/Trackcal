@@ -1,0 +1,4 @@
+"use client";
+import {useSyncExternalStore} from 'react';
+const subscribe=(notify:()=>void)=>{window.addEventListener('popstate',notify);return()=>window.removeEventListener('popstate',notify);};
+export function MealIdeaTransfer({onChoose}:{onChoose:(idea:string)=>void}){const query=useSyncExternalStore(subscribe,()=>window.location.search,()=> '');const idea=new URLSearchParams(query).get('mealIdea');return idea&&idea.length<=200?<section className="account-card"><h2>Review your meal idea</h2><p>{idea}</p><p>Add actual ingredients and quantities, then review the estimate before logging. No nutrition is invented or logged automatically.</p><button className="account-primary" onClick={()=>onChoose(idea)}>Review this meal idea</button></section>:null;}

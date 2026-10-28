@@ -1,0 +1,17 @@
+import type {AdventureSummary} from './adventure';
+export type Nutrients={calories:number|null;protein:number|null;carbs:number|null;fat:number|null};
+export type FoodItem={id?:string;name:string;grams:number;nutrients:Nutrients;food_id?:string|null;manual_override?:boolean;estimated:boolean;source:string;category?:string;cuisine?:string};
+export type CloudEntry={id:string;day:string;meal_type:string;method:string;notes:string;items:FoodItem[];totals:Nutrients};
+export type SavedMeal={id:string;name:string;meal_type:string;items:FoodItem[];requires_review:boolean};
+export type NutritionData={today:string;day:string;timezone:string;entries:CloudEntry[];has_more:boolean;favorites:{id:string;food_key:string;item:FoodItem}[];saved_meals:SavedMeal[];recent:CloudEntry[];recent_searches:string[];suggestions:{meals:{id:string;name:string;tip:string;substitution:string}[];nutrition_note:string}};
+export type Exercise={id:string;name:string;instructions:string;equipment:string[];category:string;movement:string;difficulty:string;safety:string;alternative:string;accessibility:string[];review:string};
+export type ExerciseRecord={exercise_id:string;sets:{reps:number;load:number;minutes:number}[]};
+export type Session={id:string;name:string;plan_activity_id:string|null;status:string;revision:number;minutes:number;active_seconds:number;started_at:string;completed_at:string|null;details:{exercises:ExerciseRecord[];notes:string;tracking_method?:'manual'|'camera';tracking?:{exercise_type:string;confidence_mean:number;sampled_frames:number;sets:{estimated_reps:number;corrected_reps:number|null}[]}}};
+export type TrainingData={today?:string;calendar?:{day:string;count:number;minutes:number}[];achievements?:{code:string;title:string;status:string;progress:number;required:number;operational:boolean}[];sessions:Session[];has_more:boolean;current:Session|null;templates:{id:string;name:string;exercises:string[]}[];plan:import('./personalization').Plan|null;insights:{completed:number;recorded_minutes:number;note:string}};
+export const emptyItem=():FoodItem=>({name:'',grams:100,nutrients:{calories:null,protein:null,carbs:null,fat:null},estimated:false,source:'User reviewed input',manual_override:true});
+export function inputItem(item:FoodItem):FoodItem{return {name:item.name,grams:item.grams,nutrients:item.nutrients,food_id:item.food_id||null,manual_override:item.manual_override??!item.food_id,estimated:item.estimated,source:item.source.slice(0,90)};}
+export function portionTotal(items:FoodItem[],key:keyof Nutrients){return items.every(i=>i.nutrients[key]!==null)?Math.round(items.reduce((s,i)=>s+i.nutrients[key]!*i.grams/100,0)*10)/10:null;}
+export async function wellnessRequest<T>(path:string,body?:unknown,method?:string):Promise<T>{
+ const response=await fetch('/api/wellness/'+path,{method:method||(body===undefined?'GET':'POST'),headers:body===undefined?{}:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw new Error(data.error||'Check the entries and try again.');
+ if(body!==undefined||method==='DELETE'){if(data.summary)window.dispatchEvent(new CustomEvent('trackcal-gamification',{detail:data.summary as AdventureSummary}));window.dispatchEvent(new Event('trackcal-wellness'));window.dispatchEvent(new Event('trackcal-personalization'));}return data;
+}

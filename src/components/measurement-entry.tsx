@@ -1,0 +1,8 @@
+"use client";
+import {useState} from 'react';
+import {personalRequest} from '@/lib/personalization';
+export function MeasurementEntry({imperial=false}:{imperial?:boolean}){
+ const [kind,setKind]=useState('height'),[value,setValue]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
+ const unit=kind==='height'?(imperial?'in':'cm'):kind==='weight'?(imperial?'lb':'kg'):({duration:'minutes',repetitions:'reps',frequency:'days/week',hydration:'ml',sleep:'hours'} as Record<string,string>)[kind];
+ return <fieldset className="personal-measurement"><legend>Optional private measurements</legend><p>Skip these freely. Measurements never earn XP or change exercise intensity.</p><label>Measurement type<select value={kind} onChange={e=>{setKind(e.target.value);setValue('');}}>{['height','weight','duration','repetitions','frequency','hydration','sleep'].map(k=><option key={k} value={k}>{k}</option>)}</select></label><label>Value ({unit})<input type="number" min="0" step="any" value={value} onChange={e=>setValue(e.target.value)}/></label><button type="button" disabled={busy||!value} className="account-secondary" onClick={async()=>{setBusy(true);try{await personalRequest('measurements',{kind,value:Number(value),unit,recorded_at:new Date().toISOString()});setValue('');setMessage('Private measurement saved. No XP awarded.');}catch(e){setMessage(e instanceof Error?e.message:'Could not save measurement.');}finally{setBusy(false);}}}>Save optional measurement</button><p role="status">{message}</p></fieldset>;
+}
