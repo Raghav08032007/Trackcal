@@ -28,6 +28,7 @@ const pages: Record<string, () => Promise<PageModule>> = {
   "/recipes": () => import("@/app/recipes/page"),
   "/reset-password": () => import("@/app/reset-password/page"),
   "/routine": () => import("@/app/routine/page"),
+  "/premium": () => import("@/app/premium/page"),
   "/scanner": () => import("@/app/scanner/page"),
   "/signup": () => import("@/app/signup/page"),
   "/terms": () => import("@/app/terms/page"),

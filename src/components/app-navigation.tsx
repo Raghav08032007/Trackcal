@@ -12,7 +12,7 @@ export const SECTIONS: Section[] = [
   { id: "food", label: "Food", href: "/nutrition", icon: Utensils, pages: [["/nutrition", "Diary"], ["/scanner", "Scanner"], ["/barcode", "Barcode"], ["/describe", "Describe"], ["/food-library", "Library"], ["/journal", "Journal"], ["/recipes", "Recipes"]] },
   { id: "move", label: "Move", href: "/workouts", icon: Activity, pages: [["/workouts", "Workouts"], ["/workouts/camera", "Camera"], ["/plan", "My plan"]] },
   { id: "play", label: "Play", href: "/play", icon: Sparkles, pages: [["/play", "Quests"], ["/progress", "Progress"]] },
-  { id: "me", label: "Me", href: "/account", icon: UserRound, pages: [["/account", "Account"], ["/routine", "Reminders"], ["/tools", "Smart tools"], ["/onboarding", "Setup"], ["/guide", "Test drive"], ["/help", "Help"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
+  { id: "me", label: "Me", href: "/account", icon: UserRound, pages: [["/account", "Account"], ["/routine", "Reminders"], ["/premium", "Premium"], ["/tools", "Smart tools"], ["/onboarding", "Setup"], ["/guide", "Test drive"], ["/help", "Help"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
 ];
 const BARE = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/offline"];
 

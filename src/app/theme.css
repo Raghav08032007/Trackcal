@@ -136,3 +136,15 @@ html[data-theme=dark] .camera-experimental, html[data-theme=dark] .camera-paused
 html[data-theme=dark] .push-card .push-note, html[data-theme=dark] .motivation-card, html[data-theme=dark] .install-note { background: #203b2c; color: #eef5e4; border-color: #557044; }
 .push-card .account-actions button, .push-card details button { min-height: 44px; padding: 0 16px; border: 1px solid #bccdb0; border-radius: 12px; background: var(--card, #fafcf5); color: inherit; font-weight: 600; }
 .push-card details { margin: 12px 0; } .push-card details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+
+/* Phase 5: Premium. */
+.premium-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 20px; }
+.premium-plan { position: relative; }
+.premium-plan h2 { font-size: 2.2rem; } .premium-plan h2 small { font-size: 1rem; font-weight: 600; opacity: .75; }
+.premium-badge { position: absolute; top: 16px; right: 16px; padding: 4px 12px; border-radius: 999px; background: #d7ef92; color: #1d3a2a; font-weight: 800; font-size: .85rem; }
+.premium-trial { background: #fff4d6; border: 1px solid #e3c36c; color: #5a4310; }
+.premium-confirm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 14px; border-radius: 14px; background: #f6efe2; }
+.premium-confirm p { flex: 1 1 100%; margin: 0; }
+.premium-page button:not(.account-primary) { min-height: 44px; padding: 0 16px; border: 1px solid #bccdb0; border-radius: 12px; background: var(--card, #fafcf5); color: inherit; font-weight: 600; }
+.premium-link { margin: 8px 0; } .premium-early { color: #6f5bc8; font-weight: 600; }
+html[data-theme=dark] .premium-trial, html[data-theme=dark] .premium-confirm { background: #4a3a17; color: #fff1cc; border-color: #8a6d2a; }
