@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
+import { forgetAdventureSummary } from "@/lib/adventure";
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 beforeEach(() => {
+  forgetAdventureSummary(); // no cached progress may leak between tests
   if (typeof window === "undefined") return;
   localStorage.clear();
   vi.stubGlobal("scrollTo", vi.fn());

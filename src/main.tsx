@@ -1,6 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
+// Fonts are bundled with the app (no requests to third-party font services).
+import "@fontsource-variable/geist";
+import "@fontsource-variable/geist-mono";
 import "@/app/globals.css";
 import "@/app/studio.css";
 import "@/app/focused.css";

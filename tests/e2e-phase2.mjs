@@ -39,6 +39,6 @@ try{
  await page.goto(root+'/',{waitUntil:'domcontentloaded'});await page.getByRole('button',{name:'My goals',exact:true}).click();await page.getByRole('button',{name:'Calculate & Apply Targets'}).click();await page.getByRole('alert').filter({hasText:'confirmed adult age group'}).waitFor();checks.push('live youth calculator bypass rejected');
  state=(await api('/api/personalization/state')).data;saved=await api('/api/personalization/onboarding','POST',{preferences:original,step:state.step,revision:state.revision,complete:false});assert.equal(saved.status,200);
  assert.deepEqual(errors,[]);checks.push('no page errors');
- await fs.writeFile('../../docs/phase2-bounded-browser-evidence.json',JSON.stringify({date:'2026-10-28',viewport:{width:768,height:1024},checks,page_errors:errors,method:'Existing Playwright runtime, loopback production app, synthetic account; bounded action timeouts'},null,2));
+ await fs.writeFile('../../docs/phase2-bounded-browser-evidence.json',JSON.stringify({date:new Date().toISOString().slice(0,10),viewport:{width:768,height:1024},checks,page_errors:errors,method:'Existing Playwright runtime, loopback production app, synthetic account; bounded action timeouts'},null,2));
  console.log(JSON.stringify({passed:checks}));
 }finally{await browser.close();console.log('Owned tablet browser closed');}

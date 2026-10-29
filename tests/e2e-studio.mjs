@@ -39,7 +39,7 @@ try{
   checks.push(`offline journal ${width}px: heading and fields fit viewport`);
  }
  assert.deepEqual(errors,[]);
- const evidence={date:'2026-10-28',passed:checks.length,checks,page_errors:errors,scope:'Production Chromium desktop and mobile viewport emulation; synthetic guest session; no physical device, camera or customer data.'};
+ const evidence={date:new Date().toISOString().slice(0,10),passed:checks.length,checks,page_errors:errors,scope:'Production Chromium desktop and mobile viewport emulation; synthetic guest session; no physical device, camera or customer data.'};
  await fs.writeFile('../../docs/studio-browser-evidence-20261028.json',JSON.stringify(evidence,null,2));
  console.log(JSON.stringify(evidence));await context.close();
 }finally{await browser.close();}

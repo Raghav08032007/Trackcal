@@ -9,9 +9,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  /* Geist is loaded in index.html; these were previously injected by the Next font loader. */
-  --font-geist-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-geist-mono: "Geist Mono", ui-monospace, monospace;
+  /* Geist is bundled via @fontsource-variable (imported in main.tsx); previously injected by the Next font loader. */
+  --font-geist-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: "Geist Mono Variable", ui-monospace, monospace;
 }
 
 @theme inline {

@@ -1,11 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import Link from "@/lib/navigation";
+import { forgetAdventureSummary } from "@/lib/adventure";
 type User = { id: string; email: string; email_verified?: boolean; profile: { display_name?: string } };
 const Session = createContext<{ user: User | null; ready: boolean; reload: () => Promise<void> }>({ user: null, ready: true, reload: async () => {} });
 export function AccountSession({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<{ user: User | null; ready: boolean }>({ user: null, ready: false });
   const reload = useCallback(async () => { const response = await fetch("/api/account/session"); if (!response.ok && response.status !== 401) throw new Error("Account service is unavailable."); setSession({ user: response.ok ? await response.json() : null, ready: true }); }, []);
   useEffect(() => { const controller = new AbortController(); fetch("/api/account/session", { signal: controller.signal }).then(async response => setSession({ user: response.ok ? await response.json() : null, ready: true })).catch(() => { if (!controller.signal.aborted) setSession({ user: null, ready: true }); }); return () => controller.abort(); }, []);
+  // A different (or no) account must never see the previous account's cached progress.
+  const userId = session.user?.id;
+  useEffect(() => { forgetAdventureSummary(); }, [userId]);
   return <Session.Provider value={{ ...session, reload }}>{children}</Session.Provider>;
 }
 export const useAccount = () => useContext(Session);
