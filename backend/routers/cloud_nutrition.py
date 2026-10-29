@@ -3,7 +3,8 @@ from datetime import datetime,timezone,timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 from flask_app.params import Depends, HTTPException, Query
-from sqlalchemy import or_
+import re
+from sqlalchemy import case,or_,text
 from sqlalchemy.orm import Session,selectinload
 from database import get_db
 from routers.auth import get_current_active_user
@@ -12,7 +13,16 @@ from services.personalization_inputs import Preferences
 from services.wellness_inputs import DiaryInput,DiaryItem,Nutrients,SaveMealInput,FavoriteInput
 from services.abuse_limits import consume
 import models
-SYNONYMS={'dosai':'dosa','chapathi':'chapati','roti':'chapati','idly':'idli','sambhar':'sambar','dhal':'dal','biryani':'rice','lentils':'dal'}
+SOURCE_LABELS={'ifct':'IFCT 2017, National Institute of Nutrition, Hyderabad','usda':'USDA FoodData Central','open_food_facts':'Open Food Facts (community data)'}
+LANGUAGE_NAMES={'hi':'Hindi','ta':'Tamil','te':'Telugu','kn':'Kannada','ml':'Malayalam','mr':'Marathi','bn':'Bengali','gu':'Gujarati','pa':'Punjabi','or':'Odia','as':'Assamese','ur':'Urdu','ks':'Kashmiri','mni':'Manipuri','ne':'Nepali','sa':'Sanskrit','kha':'Khasi','kok':'Konkani','en':'English'}
+def canonical_term(db,query):
+ """Spelling variants (idly, dosai, thayir...) map to one term via the search_synonyms table."""
+ row=db.get(models.SearchSynonym,query) if query else None
+ return row.canonical if row else query
+def fulltext_terms(term):
+ """Boolean-mode prefix terms for MySQL FULLTEXT; operators are stripped so user input cannot change the query."""
+ words=[w for w in re.findall(r'[\w]+',term,flags=re.UNICODE) if len(w)>=3]
+ return ' '.join(w+'*' for w in words)
 def lock(db,user):db.query(models.User).filter_by(id=user.id).with_for_update().one()
 def prefs(db,user):
  row=db.get(models.PersonalizationProfile,user.id)
@@ -32,23 +42,41 @@ def award_meal(db,user,source):
 
 def food_view(food):
  nutrients={n.nutrient_def.slug:n.amount_per_100g for n in food.nutrients if n.nutrient_def}
- return {'id':food.id,'food_id':food.id,'name':food.name,'grams':food.serving_size_g or 100,'nutrients':{'calories':nutrients.get('energy_kcal'),'protein':nutrients.get('protein'),'carbs':nutrients.get('carbohydrates'),'fat':nutrients.get('fat')},'estimated':not food.is_verified or any(n.is_estimated for n in food.nutrients),'source':food.data_source.value if food.data_source else 'Catalog source unspecified','category':food.category,'cuisine':food.cuisine_region}
+ return {'id':food.id,'food_id':food.id,'name':food.name,'grams':food.serving_size_g or 100,'nutrients':{'calories':nutrients.get('energy_kcal'),'protein':nutrients.get('protein'),'carbs':nutrients.get('carbohydrates'),'fat':nutrients.get('fat')},'estimated':not food.is_verified or any(n.is_estimated for n in food.nutrients),'source':food.data_source.value if food.data_source else 'Catalog source unspecified','source_label':SOURCE_LABELS.get(food.data_source.value if food.data_source else '','Catalog'),'category':food.category,'cuisine':food.cuisine_region}
 
 def search(q:str=Query('',max_length=100),category:str=Query('',max_length=100),offset:int=Query(0,ge=0,le=10000),limit:int=Query(12,ge=1,le=50),user=Depends(get_current_active_user),db:Session=Depends(get_db)):
- query=q.strip().lower();term=SYNONYMS.get(query,query)
+ query=q.strip().lower();term=canonical_term(db,query)
  base=db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def))
- if term:
-  aliases=db.query(models.FoodAlias.food_id).filter(models.FoodAlias.alias.like(f'{term}%'))
-  translations=db.query(models.FoodTranslation.food_id).filter(models.FoodTranslation.name.like(f'{term}%'))
-  base=base.filter(or_(models.Food.name_normalized.like(f'{term}%'),models.Food.name.like(f'{term}%'),models.Food.id.in_(aliases),models.Food.id.in_(translations)))
+ # Search the typed word and its canonical form: catalogs name foods differently (IFCT says "Ragi", the synonym says "finger millet").
+ terms=[t for t in dict.fromkeys((query,term)) if t]
+ if terms:
+  conditions=[]
+  for i,t in enumerate(terms):
+   aliases=db.query(models.FoodAlias.food_id).filter(models.FoodAlias.alias.like(f'{t}%'))
+   translations=db.query(models.FoodTranslation.food_id).filter(models.FoodTranslation.name.like(f'{t}%'))
+   conditions+=[models.Food.name_normalized.like(f'{t}%'),models.Food.name.like(f'{t}%'),models.Food.id.in_(aliases),models.Food.id.in_(translations)]
+   ft=fulltext_terms(t)
+   if ft:conditions.append(text(f'MATCH (foods.name) AGAINST (:ft{i} IN BOOLEAN MODE)').bindparams(**{f'ft{i}':ft}))
+  base=base.filter(or_(*conditions))
  if category:base=base.filter(models.Food.category==category)
- rows=base.order_by(models.Food.name_normalized,models.Food.id).offset(offset).limit(limit+1).all()
+ # Ranking: the user's favourites, then foods they logged recently, then verified catalog foods, then the rest.
+ favorites=[k for (k,) in db.query(models.FoodFavorite.food_key).filter_by(user_id=user.id).limit(200)]
+ recent=[f for (f,) in db.query(models.MealItem.food_id).join(models.MealLog,models.MealItem.meal_log_id==models.MealLog.id).filter(models.MealLog.user_id==user.id,models.MealItem.food_id.isnot(None)).order_by(models.MealLog.logged_at.desc()).limit(50)]
+ rank=case((models.Food.id.in_(favorites or ['']),0),(models.Food.id.in_(recent or ['']),1),(models.Food.is_verified.is_(True),2),else_=3)
+ rows=base.order_by(rank,models.Food.name_normalized,models.Food.id).offset(offset).limit(limit+1).all()
  mode='indexed prefix / aliases'
  if not rows and len(term)>=3 and offset==0:
-  fallback=db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def)).filter(models.Food.name_normalized.like(f'%{term}%'))
+  fallback=db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def)).filter(or_(*[models.Food.name_normalized.like(f'%{t}%') for t in terms]))
   if category:fallback=fallback.filter(models.Food.category==category)
   rows=fallback.order_by(models.Food.name_normalized,models.Food.id).limit(limit+1).all();mode='bounded substring fallback'
  result=[food_view(f) for f in rows[:limit]]
+ if terms and result:  # say which local name matched, e.g. "Arisi (Tamil)"
+  hits={}
+  for t in db.query(models.FoodTranslation).filter(models.FoodTranslation.food_id.in_([r['id'] for r in result]),or_(*[models.FoodTranslation.name.like(f'%{w}%') for w in terms])):
+   name=next((n for n in t.name.split(' / ') if any(w in n.lower() for w in terms)),t.name)
+   hits.setdefault(t.food_id,f"{name} ({LANGUAGE_NAMES.get(t.language_code,t.language_code)})")
+  for r in result:
+   if r['id'] in hits and not any(w in r['name'].lower() for w in terms):r['matched_name']=hits[r['id']]
  if query:
   consume(db,'cloud-food-search',str(user.id),240,3600);lock(db,user)
   history=db.query(models.FoodSearchHistory).filter_by(user_id=user.id,query=query).first()

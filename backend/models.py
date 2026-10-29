@@ -259,6 +259,7 @@ class NutritionDataSource(str, enum.Enum):
     ocr_extracted = "ocr_extracted"
     ai_estimated = "ai_estimated"
     restaurant_official = "restaurant_official"
+    ifct = "ifct"  # Indian Food Composition Tables 2017, NIN Hyderabad (docs/DATA_SOURCES.md)
 
 
 class ConsentType(str, enum.Enum):
@@ -448,6 +449,7 @@ class Food(Base):
     __table_args__ = (
         Index("ix_foods_source_ext", "data_source", "external_id"),
         Index("ix_food_category_name","category","name_normalized"),
+        Index("ft_foods_name", "name", mysql_prefix="FULLTEXT"),  # word-anywhere search ("milled" in "Rice, raw, milled")
     )
 
 
@@ -940,6 +942,13 @@ class ReminderDelivery(Base):
     status = Column(String(12), nullable=False, default='open')
     snoozed_until = Column(DateTime, nullable=True)
     __table_args__ = (UniqueConstraint('user_id','category','local_day',name='uq_reminder_category_day'),)
+
+class SearchSynonym(Base):
+    """Spelling variants mapped to one search term (idly -> idli, thayir -> curd). Editable data, not code."""
+    __tablename__ = "search_synonyms"
+    term = Column(String(60), primary_key=True)
+    canonical = Column(String(60), nullable=False)
+
 
 class FoodAlias(Base):
     __tablename__='food_aliases'
