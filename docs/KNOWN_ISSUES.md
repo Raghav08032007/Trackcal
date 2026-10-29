@@ -87,6 +87,14 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-38 | 3 | No notifications for follows, comments or reactions; people find them by opening the feed | — | Add opt-in `social` notification types if the beta asks for them |
 | KI-39 | 3 | Discover is newest-first public posts with no ranking or spam scoring; at scale it will need pagination by recency windows and spam controls beyond rate limits | `feed()` | Revisit after the beta |
 
+## Found during Phase 8 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-40 | 2 | Community owners and moderators are volunteers with real power over who belongs. There is no appeal path for a person banned from a community, and no site-level view of how communities are moderated | `routers/communities.py` | Before enabling: an "appeal to TrackCal" link on the ban notice, and a site admin list of communities with open-report counts |
+| KI-41 | 3 | Anyone with a feed profile can create a community (5 each); names and descriptions aren't screened beyond reports | — | Add communities to the keyword pre-screen planned in KI-37 |
+| KI-36 | — | The under-18 launch gate (Phase 7) applies to communities too | KI-36 | Decide once for feed and communities |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |

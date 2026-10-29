@@ -231,6 +231,8 @@ ACCOUNT_RECORDS = [
     ('following', models.Follow, (), 'follower_id'),
     ('blocks_and_mutes', models.SocialBlock, ()),
     ('reports_you_made', models.ContentReport, (), 'reporter_id'),
+    ('communities_you_own', models.Community, (), 'owner_id'),
+    ('community_memberships', models.CommunityMember, ()),
 ]
 EXPORTED_TABLES = {
     'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',

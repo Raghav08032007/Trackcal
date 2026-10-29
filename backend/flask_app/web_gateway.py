@@ -300,6 +300,33 @@ def social_routes(path):
         return error('The feed is unavailable right now. Nothing was changed; retry later.', 503)
 
 
+# ── Communities (flag communities) ────────────────────────────────────────
+
+SLUG = r'[a-z0-9-]{3,40}'
+COMMUNITY = [('GET', r''), ('POST', r''), ('GET', SLUG), ('PUT', SLUG), ('POST', SLUG + r'/membership'), ('DELETE', SLUG + r'/membership'),
+             ('GET', SLUG + r'/members'), ('POST', SLUG + r'/members/[a-z0-9_.]{1,30}'), ('GET', SLUG + r'/posts'), ('POST', SLUG + r'/posts'),
+             ('GET', SLUG + r'/moderation'), ('POST', SLUG + r'/moderation')]
+
+
+@bp.route('/communities', defaults={'path': ''}, methods=['GET', 'POST'])
+@bp.route('/communities/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def community_routes(path):
+    method = request.method
+    if not any(m == method and re.fullmatch(p, path) for m, p in COMMUNITY): return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        body = None
+        if method in ('POST', 'PUT'):
+            if not request.get_data(cache=True): body = {}
+            else:
+                body, failed = json_object(6000, ('Request too large', 413), 'Invalid JSON')
+                if failed: return failed
+        query = {k: request.args[k] for k in ('q', 'category', 'mine', 'before', 'status') if k in request.args}
+        return forward(authenticated(method, '/communities' + (f'/{path}' if path else '') + (f'?{urlencode(query)}' if query else ''), body))
+    except Exception:
+        return error('Communities are unavailable right now. Nothing was changed; retry later.', 503)
+
+
 # ── Beta feedback ─────────────────────────────────────────────────────────
 
 @bp.post('/feedback')

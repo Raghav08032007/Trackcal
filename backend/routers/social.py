@@ -63,9 +63,20 @@ def follows(db, follower, followee):
     return row.status if row else None
 
 
+def community_access(db, viewer_id, community_id):
+    """Can this viewer see a community's posts? Public communities: anyone not banned. Private: active members."""
+    community = db.get(models.Community, community_id)
+    if not community or not is_enabled(db, 'communities'): return False
+    member = db.get(models.CommunityMember, (community_id, str(viewer_id)))
+    if member and member.status == 'banned': return False
+    return (community.visibility == 'public' and not community.archived) or bool(member and member.status == 'active')
+
+
 def can_view(db, viewer_id, post, author=None):
+    if post.community_id and not community_access(db, viewer_id, post.community_id): return False
     if post.author_id == viewer_id: return True
     if post.deleted_at or post.hidden or blocks_between(db, viewer_id, post.author_id): return False
+    if post.community_id: return True  # the community's rules decide, not the author's account privacy
     author = author or profile_of(db, post.author_id)
     if author is None: return False
     if post.visibility == 'followers' or author.private: return follows(db, viewer_id, post.author_id) == 'active'
@@ -97,7 +108,7 @@ def posts_view(db, rows, viewer_id):
     for p in rows:
         a = authors.get(p.author_id)
         if not a: continue
-        out.append({'id': p.id, 'author': {'handle': a.handle, 'display_name': a.display_name, 'character_id': a.character_id},
+        out.append({'id': p.id, 'community_id': p.community_id, 'author': {'handle': a.handle, 'display_name': a.display_name, 'character_id': a.character_id},
                     'body': p.body, 'milestone': p.milestone, 'visibility': p.visibility, 'created_at': p.created_at.isoformat() + 'Z',
                     'reactions': {k: reactions.get(p.id, {}).get(k, 0) for k in REACTIONS}, 'my_reaction': mine.get(p.id),
                     'comment_count': comments.get(p.id, 0), 'mine': p.author_id == viewer_id, 'hidden': p.hidden})
@@ -162,7 +173,7 @@ def profile(handle: str, before: str | None = None, user=Depends(get_current_act
     if row.user_id != user.id and blocks_between(db, user.id, row.user_id): raise HTTPException(404, 'Profile not found.')
     view = profile_view(db, row, user.id)
     locked = row.private and row.user_id != user.id and follows(db, user.id, row.user_id) != 'active'
-    posts = {'posts': [], 'next': None} if locked else page(db, db.query(models.Post).filter(models.Post.author_id == row.user_id), user.id, before)
+    posts = {'posts': [], 'next': None} if locked else page(db, db.query(models.Post).filter(models.Post.author_id == row.user_id, models.Post.community_id.is_(None)), user.id, before)
     return {'profile': view, 'locked': locked, **posts}
 
 
@@ -296,7 +307,7 @@ def delete_post(post_id: str, user=Depends(get_current_active_user), db: Session
 def feed(tab: Literal['following', 'discover'] = Query('following'), before: str | None = None, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     require_flag(db); my_profile(db, user)
     hidden = blocked_ids(db, user.id)
-    query = db.query(models.Post).filter(models.Post.deleted_at.is_(None), models.Post.hidden.is_(False))
+    query = db.query(models.Post).filter(models.Post.deleted_at.is_(None), models.Post.hidden.is_(False), models.Post.community_id.is_(None))  # community posts stay in their community
     if hidden: query = query.filter(models.Post.author_id.notin_(hidden))
     if tab == 'following':
         followed = db.query(models.Follow.followee_id).filter_by(follower_id=user.id, status='active')

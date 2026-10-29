@@ -1059,6 +1059,7 @@ class Post(Base):
     body = Column(String(500), nullable=False, default='')
     milestone = Column(JSON, nullable=True)  # server-made snapshot of an achievement, workout or level
     visibility = Column(String(10), nullable=False, default='public')  # public, followers
+    community_id = Column(CHAR(36), ForeignKey('communities.id', ondelete='CASCADE'), nullable=True, index=True)  # set: shown only in that community
     hidden = Column(Boolean, nullable=False, default=False)  # by reports or a moderator
     deleted_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=utcnow, index=True)
@@ -1095,6 +1096,30 @@ class ContentReport(Base):
     created_at = Column(DateTime, nullable=False, default=utcnow)
     resolved_at = Column(DateTime, nullable=True)
     __table_args__ = (UniqueConstraint('reporter_id', 'target_type', 'target_id', name='uq_report_once'),)
+
+
+class Community(Base):
+    """A group with its own feed (Phase 8, flag communities). Private communities need approval to join."""
+    __tablename__ = 'communities'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    slug = Column(String(40), nullable=False, unique=True)
+    name = Column(String(80), nullable=False)
+    description = Column(String(500), nullable=False, default='')
+    category = Column(String(20), nullable=False, default='other')
+    visibility = Column(String(10), nullable=False, default='public')  # public, private
+    rules = Column(Text, nullable=False)
+    owner_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    archived = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class CommunityMember(Base):
+    __tablename__ = 'community_members'
+    community_id = Column(CHAR(36), ForeignKey('communities.id', ondelete='CASCADE'), primary_key=True)
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True)
+    role = Column(String(10), nullable=False, default='member')  # owner, moderator, member
+    status = Column(String(10), nullable=False, default='active')  # active, pending, banned
+    joined_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 class SearchSynonym(Base):
