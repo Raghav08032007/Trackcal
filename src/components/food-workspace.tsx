@@ -135,6 +135,9 @@ const SAMPLE_DATABASE: FoodItem[] = [
   }
 ];
 
+type PhotoRange = { grams: [number, number]; calories: [number, number]; confidence: "High" | "Medium" | "Low"; fromModel: boolean };
+type ScanView = (typeof SCAN_PRESETS)[number];
+const confidenceLabel = (value: number): PhotoRange["confidence"] => value >= 0.75 ? "High" : value >= 0.45 ? "Medium" : "Low";
 const SCAN_PRESETS = [
   {
     label: "Chicken Biryani Plate",
@@ -258,7 +261,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [activeTab, setActiveTab] = useState<AppTab>(initialTab);
   const [selectedPreset, setSelectedPreset] = useState(0);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState(SCAN_PRESETS[0]);
+  const [scanResult, setScanResult] = useState<ScanView>(SCAN_PRESETS[0]);
   const [portionGrams, setPortionGrams] = useState(360);
   const [searchQuery, setSearchQuery] = useState("");
   const [remoteFoods, setRemoteFoods] = useState<FoodItem[]>([]);
@@ -305,12 +308,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [scanError, setScanError] = useState("");
   const [scanReady, setScanReady] = useState(true);
   const [photoConsent,setPhotoConsent]=useState(false);
+  const [photoRange,setPhotoRange]=useState<PhotoRange|null>(null);
   const [pendingPhoto,setPendingPhoto]=useState<File|null>(null);
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>10*1024*1024){setScanError('Use a nonempty JPEG, PNG or WebP under 10 MB.');setScanReady(false);return;}
-      setPendingPhoto(file);
+      setPendingPhoto(file); setPhotoRange(null);
       const requestId = ++photoRequest.current;
       if (uploadedImageUrl) URL.revokeObjectURL(uploadedImageUrl);
       const url = URL.createObjectURL(file);
@@ -337,6 +341,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
           allergens: [],
           method: `AI estimate · ${result.model}. Review portions and nutrition before logging. Allergens not assessed.`
         });
+        const mean = result.components.reduce((sum, item) => sum + item.confidence, 0) / result.components.length;
+        if (result.calorie_range && result.components.every(item => item.portion_range_g)) setPhotoRange({ grams: [0, 1].map(i => Math.round(result.components.reduce((sum, item) => sum + item.portion_range_g[i], 0))) as [number, number],
+          calories: [Math.round(result.calorie_range[0]), Math.round(result.calorie_range[1])], confidence: confidenceLabel(mean), fromModel: result.components.every(item => item.range_basis === "model") });
         setPortionGrams(grams); setCookingStyle("standard"); setScanReady(true);
       } catch (error) { if (requestId === photoRequest.current) setScanError(error instanceof Error ? error.message : "Photo analysis failed."); }
       finally { if (requestId === photoRequest.current) setIsScanning(false); e.target.value = ""; }
@@ -779,6 +786,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     onChange={(e) => setPortionGrams(Number(e.target.value))}
                     className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
                   />
+                  {photoRange && scanResult.label === "Uploaded Meal" && (
+                    <p role="note" className="photo-range mt-2 text-xs text-slate-300">
+                      Likely <strong>{photoRange.grams[0]}–{photoRange.grams[1]} g</strong> (about {photoRange.calories[0]}–{photoRange.calories[1]} kcal) · {photoRange.confidence} confidence.{" "}
+                      {photoRange.fromModel ? "A photo can't weigh food; " : "The range is wider when the AI is less sure; "}set the grams you actually ate.
+                    </p>
+                  )}
                   <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                     <span>100g (Light snack)</span>
                     <span>350g (Standard)</span>

@@ -28,3 +28,6 @@ body:has(.app-tabbar) { --tabbar-offset: calc(72px + env(safe-area-inset-bottom)
   .app-tabbar a { flex-direction: row; gap: 8px; min-height: 44px; padding: 0 18px; font-size: 14px; }
 }
 @media (prefers-reduced-motion: no-preference) { .app-tabbar a, .app-section-pages a { transition: background-color .15s ease, color .15s ease, opacity .15s ease; } }
+/* Page notices float under the bar so they stay visible; their own buttons (e.g. Undo delete) must stay clickable. */
+.wellness-feedback button { pointer-events: auto; margin: 0 0 12px; }
+@media (min-width: 860px) { .wellness-feedback { top: 72px; } }

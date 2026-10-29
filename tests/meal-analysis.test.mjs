@@ -21,3 +21,10 @@ test("array output and zero calorie items remain valid", () => {
   assert.equal(meal.total_nutrition.calories, 0);
   assert.equal(meal.dish_name, "Water");
 });
+
+test("portion range: the model's valid range, else a band that widens as confidence falls (same as the server)", () => {
+  const model = normalizeMeal([{ ...food, quantity_g_low: 40, quantity_g_high: 70 }], "test").components[0];
+  assert.deepEqual([model.portion_range_g, model.range_basis], [[40, 70], "model"]);
+  const unsure = normalizeMeal([{ ...food, confidence: 0, quantity_g_low: 90, quantity_g_high: 20 }], "test").components[0];
+  assert.deepEqual([unsure.portion_range_g, unsure.range_basis], [[25, 75], "confidence"]);
+});
