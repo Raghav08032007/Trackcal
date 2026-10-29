@@ -1,22 +1,61 @@
 import type {Observation,TrackingResult} from './types';
-/** Heuristic participation estimates, never a form/medical-safety assessment. */
+import {REJECTION_TIPS,type ExerciseConfig,type RejectionReason} from './exercise-config';
+/** Heuristic participation estimates, never a form/medical-safety assessment.
+ *  SETUP -> UP -> GOING_DOWN -> DOWN -> GOING_UP -> UP. A rep counts only on a full cycle: enough range of motion, a
+ *  sane duration and the body visible throughout. Thresholds use hysteresis and must hold for minDwellMs, so jitter
+ *  around a threshold never flips the phase. The count only ever goes up (or back to 0 on reset()). */
+export type Phase='SETUP'|'UP'|'GOING_DOWN'|'DOWN'|'GOING_UP';
+const GAP_MS=750,TIP_MS=2500,MAX_REPS=100;
 export class RepCounter{
- reps=0;phase='starting';private last=-Infinity;private candidate='';private stableAt=0;private samples=0;private cycleAt=0;private bentAt=0;
- constructor(private extended=155,private bent=95){}
- resetMovement(){this.phase='starting';this.candidate='';this.samples=0;}
- reset(){this.reps=0;this.last=-Infinity;this.resetMovement();}
+ reps=0;phase:Phase='SETUP';rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0};
+ private last=-Infinity;private held:{key:string;since:number;frames:number}|null=null;
+ private cycle:{start:number;top:number;bottom:number;crossings:number;below:boolean}|null=null;private top=0;private rejected:{reason:RejectionReason;at:number}|null=null;
+ constructor(private config:ExerciseConfig){}
+ /** Forget the movement in progress (pause, camera switch, rotation); the count stays. */
+ resetMovement(){this.phase='SETUP';this.held=null;this.cycle=null;}
+ reset(){this.reps=0;this.last=-Infinity;this.rejected=null;for(const k in this.rejections)this.rejections[k as RejectionReason]=0;this.resetMovement();}
+ private reject(reason:RejectionReason,t:number){this.rejections[reason]++;this.rejected={reason,at:t};this.cycle=null;}
+ /** True once `key` has held for the dwell time (at least two frames). */
+ private hold(key:string,on:boolean,t:number){
+  if(!on){if(this.held?.key===key)this.held=null;return false;}
+  if(this.held?.key!==key)this.held={key,since:t,frames:0};
+  this.held.frames++;return this.held.frames>=2&&t-this.held.since>=this.config.minDwellMs;
+ }
  update(o:Observation,t:number):TrackingResult{
-  const out=(accepted:boolean,message:string):TrackingResult=>({reps:this.reps,phase:this.phase,confidence:o.confidence,message,accepted});
+  const c=this.config,inCycle=()=>this.phase==='GOING_DOWN'||this.phase==='DOWN'||this.phase==='GOING_UP';
+  const out=(accepted:boolean,message:string,paused=false):TrackingResult=>({reps:this.reps,phase:this.phase,confidence:o.confidence,message,accepted,paused,rejection:this.rejected&&t-this.rejected.at<TIP_MS?this.rejected.reason:null});
   if(!Number.isFinite(t)||t<=this.last)return out(false,'Duplicate or stale frame ignored.');
-  if(t-this.last>750)this.resetMovement();this.last=t;
-  if(!o.valid||o.confidence<.65){this.resetMovement();return out(false,o.reason||'Tracking confidence is low.');}
-  const target=o.angle>=this.extended?'extended':o.angle<=this.bent?'bent':'middle';
-  if(target!==this.candidate){this.candidate=target;this.stableAt=t;this.samples=1;}else this.samples++;
-  if(this.samples>=3&&t-this.stableAt>=150){
-   if(this.phase==='starting'&&target==='extended'){this.phase='ready';this.cycleAt=t;}
-   else if(this.phase==='ready'&&target==='bent'&&t-this.cycleAt>=250){this.phase='return';this.bentAt=t;}
-   else if(this.phase==='return'&&target==='extended'&&t-this.bentAt>=250&&t-this.cycleAt>=700){this.reps=Math.min(100,this.reps+1);this.phase='ready';this.cycleAt=t;}
+  if(t-this.last>GAP_MS&&this.phase!=='SETUP'){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();}
+  this.last=t;
+  if(!o.valid){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();return out(false,o.reason||'Tracking paused.',true);}
+  const a=o.angle;
+  if(this.cycle){this.cycle.bottom=Math.min(this.cycle.bottom,a);const below=a<(c.up+c.down)/2;if(below!==this.cycle.below){this.cycle.below=below;this.cycle.crossings++;}}
+  if(this.cycle&&t-this.cycle.start>c.maxRepMs){this.reject('too_slow',t);this.phase='SETUP';}
+  switch(this.phase){
+   case 'SETUP':if(this.hold('up',a>=c.up,t)){this.phase='UP';this.top=a;}break;
+   case 'UP':
+    this.top=Math.max(this.top,a);
+    if(a<c.up-c.hysteresis){this.phase='GOING_DOWN';this.cycle={start:t,top:this.top,bottom:a,crossings:0,below:false};this.held=null;}break;
+   case 'GOING_DOWN':
+    if(this.hold('down',a<=c.down,t))this.phase='DOWN';
+    else if(this.hold('up',a>=c.up,t)){
+     // Came back up without reaching the bottom: a half rep, or quick bobbing that never settles at the top or the
+     // bottom (several mid-angle crossings in one cycle). A wobble under 15 degrees is ignored.
+     if(this.cycle&&this.cycle.top-this.cycle.bottom>=15)this.reject(this.cycle.crossings>2||t-this.cycle.start<c.minRepMs?'too_fast':'too_shallow',t);else this.cycle=null;
+     this.phase='UP';this.top=a;}
+    break;
+   case 'DOWN':if(a>c.down+c.hysteresis){this.phase='GOING_UP';this.held=null;}break;
+   case 'GOING_UP':
+    if(this.hold('down',a<=c.down,t))this.phase='DOWN';
+    else if(this.hold('up',a>=c.up,t)&&this.cycle){
+     const duration=t-this.cycle.start,range=Math.max(this.cycle.top,a)-this.cycle.bottom;
+     if(this.cycle.crossings>2||duration<c.minRepMs)this.reject('too_fast',t);
+     else if(range<c.minRangeDeg)this.reject('too_shallow',t);
+     else{this.reps=Math.min(MAX_REPS,this.reps+1);this.rejected=null;this.cycle=null;}
+     this.phase='UP';this.top=a;}
+    break;
   }
-  return out(true,this.phase==='starting'?'Return to a comfortable starting position.':'Tracking is active. You can pause whenever you need.');
+  const tip=this.rejected&&t-this.rejected.at<TIP_MS?REJECTION_TIPS[this.rejected.reason]:'';
+  return out(true,tip||(this.phase==='SETUP'?'Return to a comfortable starting position.':'Tracking is active. You can pause whenever you need.'));
  }
 }

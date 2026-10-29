@@ -2,8 +2,8 @@ import {render,screen,fireEvent,waitFor,act} from '@testing-library/react';
 import {it,expect,vi,beforeEach} from 'vitest';
 import {pose} from './fixtures/pose';
 vi.mock('../src/components/account-session',()=>({useAccount:()=>({user:{id:'p4-member'},ready:true}),useWorkspaceScope:()=> 'p4-member'}));
-const mock=vi.hoisted(()=>({start:vi.fn(),stop:vi.fn(),frame:null as null|((f:unknown)=>void)}));
-vi.mock('../src/lib/pose/detection-service',()=>({PoseDetectionService:class{constructor(frame:(f:unknown)=>void){mock.frame=frame;}start=mock.start;stop=mock.stop;}}));
+const mock=vi.hoisted(()=>({start:vi.fn(),stop:vi.fn(),frame:null as null|((f:unknown)=>void),stats:null as null|((s:unknown)=>void)}));
+vi.mock('../src/lib/pose/detection-service',()=>({PoseDetectionService:class{constructor(frame:(f:unknown)=>void,_error:unknown,stats:(s:unknown)=>void){mock.frame=frame;mock.stats=stats;}start=mock.start;stop=mock.stop;}}));
 import {CameraWorkout} from '../src/components/camera-workout';
 beforeEach(()=>{vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(null);mock.start.mockImplementation(async(_v,_d,_f,ready)=>ready());mock.stop.mockClear();Object.defineProperty(navigator,'mediaDevices',{value:{enumerateDevices:async()=>[]},configurable:true});vi.stubGlobal('fetch',vi.fn(async()=>Response.json({sessions:[],current:null,plan:null,templates:[],insights:{completed:0}})));});
 it('never opens camera automatically; pause and unmount clean up resources',async()=>{const {unmount}=render(<CameraWorkout/>);await screen.findByRole('heading',{name:'Make room for movement.'});expect(mock.start).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'Enable camera'}));await screen.findByRole('button',{name:'Pause tracking'});fireEvent.click(screen.getByRole('button',{name:'Pause camera tracking'}));await screen.findByRole('button',{name:'Resume tracking'});expect(mock.stop).toHaveBeenCalled();const before=mock.stop.mock.calls.length;unmount();expect(mock.stop.mock.calls.length).toBeGreaterThan(before);});
@@ -11,4 +11,24 @@ it('feeds actual synthetic landmarks into the analyzer, permits corrections and 
 it('permission errors offer manual tracking and clear active status',async()=>{mock.start.mockRejectedValueOnce(new Error('Camera permission denied'));render(<CameraWorkout/>);fireEvent.click(screen.getByRole('button',{name:'Enable camera'}));await screen.findByRole('alert');expect(screen.getByRole('alert').textContent).toContain('Camera permission denied');expect(screen.getByRole('link',{name:'Open manual workouts →'})).toBeTruthy();await waitFor(()=>expect(screen.getByRole('button',{name:'Resume tracking'})).toBeTruthy());});
 it('discarding an interrupted confirmation clears its incomplete server session',async()=>{
  const fetcher=vi.fn(async(url,options)=>{if(options?.method==='PUT')return Response.json({error:'Synthetic interrupted confirmation'},{status:503});if(options?.method==='DELETE')return Response.json({status:'removed'});if(String(url).includes('/sessions'))return Response.json({session:{id:'synthetic',revision:1,status:'active'}});return Response.json({sessions:[],current:null,plan:null,templates:[],insights:{completed:0}});});vi.stubGlobal('fetch',fetcher);render(<CameraWorkout/>);fireEvent.click(screen.getByRole('button',{name:'Enable camera'}));await screen.findByRole('button',{name:'Pause tracking'});fireEvent.click(screen.getByRole('button',{name:'End & review session'}));fireEvent.change(screen.getByLabelText('Recorded session minutes'),{target:{value:'2'}});fireEvent.click(screen.getByRole('button',{name:'Confirm & save workout'}));await screen.findByRole('alert');fireEvent.click(screen.getByRole('button',{name:'Discard camera review'}));await screen.findByRole('button',{name:'Enable camera'});expect(fetcher.mock.calls.some(([,o])=>o?.method==='DELETE')).toBe(true);expect(screen.getByText('Draft discarded. No XP was awarded.')).toBeTruthy();
+});
+it('always offers +/- correction, labels estimates honestly and shows low performance mode',async()=>{
+ render(<CameraWorkout/>);await screen.findByRole('heading',{name:'Make room for movement.'});
+ expect(screen.getByText(/Counting accuracy hasn.t been measured on real phones yet/)).toBeTruthy();expect(screen.getByText('Estimated reps')).toBeTruthy();
+ const plus=screen.getAllByRole('button',{name:'Add one rep'})[0],minus=screen.getAllByRole('button',{name:'Remove one rep'})[0];
+ expect(minus.hasAttribute('disabled')).toBe(true);fireEvent.click(plus);fireEvent.click(plus);expect(screen.getByLabelText('Current repetitions').textContent).toBe('2');
+ fireEvent.click(screen.getAllByRole('button',{name:'Remove one rep'})[0]);expect(screen.getByLabelText('Current repetitions').textContent).toBe('1');expect(screen.getByText(/You corrected this/)).toBeTruthy();
+ fireEvent.click(screen.getByRole('button',{name:'Enable camera'}));await screen.findByRole('button',{name:'Pause tracking'});
+ act(()=>mock.stats!({fps:15,averageMs:80,delegate:'CPU',lowPerformance:true}));expect(screen.getByText('Low performance mode · 15 fps')).toBeTruthy();
+});
+it('pauses counting with a clear instruction when the body leaves the frame',async()=>{
+ render(<CameraWorkout/>);fireEvent.click(await screen.findByRole('button',{name:'Enable camera'}));await screen.findByRole('button',{name:'Pause tracking'});
+ const out=pose('squat',false,100);out.landmarks[0][27].x=1;act(()=>mock.frame!(out));
+ expect(screen.getByText(/Counting paused: Step back so your whole body is in frame/)).toBeTruthy();
+});
+it('plays the optional rep cue only when switched on and a rep is counted',async()=>{
+ const vibrate=vi.fn();Object.defineProperty(navigator,'vibrate',{value:vibrate,configurable:true});
+ render(<CameraWorkout/>);fireEvent.click(await screen.findByLabelText(/Sound or vibration for each counted rep/));fireEvent.click(screen.getByRole('button',{name:'Enable camera'}));await screen.findByRole('button',{name:'Pause tracking'});
+ let t=0;const send=(bent:boolean,n:number)=>{for(let i=0;i<n;i++)act(()=>mock.frame!(pose('squat',bent,t+=100)));};
+ send(false,6);send(true,8);expect(vibrate).not.toHaveBeenCalled();send(false,8);expect(vibrate).toHaveBeenCalledOnce();
 });
