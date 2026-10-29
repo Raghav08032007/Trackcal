@@ -32,6 +32,8 @@ const pages: Record<string, () => Promise<PageModule>> = {
   "/feed": () => import("@/app/feed/page"),
   "/u/:handle": () => import("@/app/profile/page"),
   "/moderation": () => import("@/app/moderation/page"),
+  "/communities": () => import("@/app/communities/page"),
+  "/c/:slug": () => import("@/app/community/page"),
   "/scanner": () => import("@/app/scanner/page"),
   "/signup": () => import("@/app/signup/page"),
   "/terms": () => import("@/app/terms/page"),
