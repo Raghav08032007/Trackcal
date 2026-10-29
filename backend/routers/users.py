@@ -220,6 +220,9 @@ ACCOUNT_RECORDS = [
     ('coach_bookings', models.CoachBooking, ()),
     ('subscription', models.Subscription, ()),
     ('devices', models.UserDevice, ('device_token',)),  # a push credential, not personal content
+    ('notification_settings', models.NotificationSettings, ()),
+    ('push_subscriptions', models.PushSubscription, ('endpoint', 'endpoint_hash', 'p256dh', 'auth')),  # push credentials
+    ('scheduled_notifications', models.ScheduledNotification, ('idempotency_key',)),  # internal job key
 ]
 EXPORTED_TABLES = {
     'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',

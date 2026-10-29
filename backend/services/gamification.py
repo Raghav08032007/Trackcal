@@ -80,6 +80,7 @@ def state(db,user,day,xp,events):
         value=metrics.get(definition.metric,0)
         if definition.enabled and value>=definition.threshold and definition.code not in earned:
             row=models.UserAchievement(user_id=user.id,code=definition.code);db.add(row);db.flush();earned[definition.code]=row
+            from services import notifications;notifications.enqueue_milestone(db,user.id,definition.code)  # opt-in push only
         achievements.append({'code':definition.code,'title':definition.title,'status':'unlocked' if definition.code in earned else 'in_progress' if definition.enabled and value else 'locked','progress':min(value,definition.threshold),'required':definition.threshold,'operational':definition.enabled,'unlocked_at':earned[definition.code].unlocked_at.isoformat()+'Z' if definition.code in earned else None})
     unlocks={r.character_id for r in db.query(models.CharacterUnlock).filter_by(user_id=user.id).with_for_update().all()}
     milestones=[]

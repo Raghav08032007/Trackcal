@@ -15,6 +15,10 @@
 	handle /api/* {
 		reverse_proxy api:8000
 	}
+	# Scheduler trigger and metrics: the API refuses requests without the X-Tick-Secret header.
+	handle /internal/* {
+		reverse_proxy api:8000
+	}
 	handle {
 		reverse_proxy web:3000
 	}

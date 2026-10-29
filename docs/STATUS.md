@@ -28,7 +28,7 @@ No other gaps were found between the owner's feature list and the code.
 | Events | **Missing** | No event or QR check-in models. Rule `verified_event_attendance` exists but is disabled | — |
 | Challenges | **Missing** | No models. Rule `verified_challenge_completion` exists but is disabled | — |
 | Gamification | **Implemented** | `services/gamification.py`, `services/adventure.py`, `routers/adventure.py`; `tests/test_gamification.py`, `test_adventure.py`, `test_phase1_integrity.py` | Idempotent ledger, server caps, quests, streaks, achievements, six characters. Concurrency safe, but can raise a deadlock 500 under load (KI-01) |
-| Companion / reminders | **Partial** | `components/character-companion.tsx`, `journey-companion.tsx`, `feature-companion.tsx`, `personal-reminder-*.tsx`; web `feature-companion.test.tsx`, `routine.test.tsx` | Companion guidance and reactions; in-app and ICS reminders. **No web push** (D3; your Phase 4) |
+| Companion / reminders | **Implemented (Phase 4, flag `web_push` off by default)** | `services/notifications.py`, `routers/push.py`, `public/sw.js`, `components/push-settings.tsx`, `app-updates.tsx`; `tests/test_push.py`, web `push-ui.test.tsx`, `service-worker.test.ts`, `e2e-p4-push.mjs` | Opt-in web push with time zones, quiet hours, daily limit, pause, two-tap off; installable app with safe update prompt; daily motivation. Real-device push NOT VERIFIED (`TEST_REPORT_P4.md`) |
 | Business | **Partial** | `routers/coaching.py`, `routers/subscriptions.py`; `tests/test_coaching.py`; web `coach-booking.test.tsx` | Coach slots and booking work. Billing is **not connected**: `billing_enabled: False`, no Razorpay/Stripe code. No organizer/trainer SaaS |
 
 ## Not in the blueprint, but present

@@ -1,0 +1,220 @@
+"""Opt-in web push reminders (Phase 4, behind the `web_push` flag).
+
+Flow, run every minute by POST /internal/tick:
+  1. plan():  for people with notifications on and at least one device, create today's and tomorrow's rows in
+     scheduled_notifications at their chosen local times (IANA time zone, so daylight saving is handled). The
+     idempotency key user:type:local day:slot makes re-planning harmless. Times inside quiet hours are not planned.
+  2. claim(): take due rows with SELECT ... FOR UPDATE SKIP LOCKED and mark them 'sending', so a second worker
+     running at the same moment skips them.
+  3. deliver(): re-check the switch, snooze, quiet hours and the daily cap at send time, then push to each device.
+     404/410 removes the device; 5xx/429/network errors retry with exponential backoff, then give up.
+Payloads hold only a title, a neutral body and a link: never health details. Logs hold no personal data.
+"""
+import hashlib
+import json
+import logging
+import os
+from datetime import date, datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
+
+from sqlalchemy import func
+from sqlalchemy.dialects.mysql import insert
+
+import models
+from services.feature_flags import is_enabled
+from services.personalization import quiet
+
+log = logging.getLogger('trackcal.push')
+MAX_ATTEMPTS, STALE_MINUTES, LATE_HOURS, TTL_SECONDS = 5, 10, 2, 4 * 3600
+
+# Copy reviewed against the engagement ethics: optional, no guilt, no streak pressure, no health details.
+TYPES = {
+    'daily_plan': {'time': '08:00', 'title': "Today's plan is ready", 'body': 'Open TrackCal whenever it suits you.', 'url': '/plan'},
+    'workout': {'time': '18:00', 'title': 'Your activity reminder', 'body': "The one you set. Skip or move it if today isn't the day.", 'url': '/workouts'},
+    'meal_log': {'time': '13:00', 'title': 'Meal check-in', 'body': 'Log a meal if you like. Missing one is fine.', 'url': '/nutrition'},
+    'rest_day': {'time': '20:00', 'title': 'Rest counts too', 'body': 'Recovery is part of every plan.', 'url': '/plan'},
+    'motivation': {'time': '09:00', 'title': 'A thought for today', 'body': None, 'url': '/'},
+    'milestone': {'time': None, 'title': 'Something to celebrate', 'body': "You've unlocked something new in TrackCal.", 'url': '/play'},
+}
+SCHEDULED = [t for t, v in TYPES.items() if v['time']]
+DEFAULT_TYPES = {t: {'enabled': t in ('daily_plan', 'milestone'), 'time': v['time']} for t, v in TYPES.items()}
+
+
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def event(db, kind):
+    db.add(models.NotificationEvent(kind=kind))
+
+
+def settings_for(db, user_id, lock=False):
+    query = db.query(models.NotificationSettings).filter_by(user_id=str(user_id))
+    row = (query.with_for_update() if lock else query).first()
+    if row: row.types = {**DEFAULT_TYPES, **(row.types or {})}
+    return row
+
+
+def preferences(db, user_id):
+    """Time zone and quiet hours from the person's existing preferences (one source of truth)."""
+    from services.personalization_inputs import Preferences
+    row = db.get(models.PersonalizationProfile, str(user_id))
+    prefs = Preferences.model_validate(row.preferences) if row else Preferences()
+    try: zone = ZoneInfo(prefs.timezone)
+    except Exception: zone = ZoneInfo('UTC')
+    return zone, prefs.reminders.quiet_start, prefs.reminders.quiet_end
+
+
+def local_slot_utc(day: date, hhmm: str, zone: ZoneInfo) -> datetime:
+    """Local wall-clock time on `day` → naive UTC. A time that doesn't exist (spring-forward gap) resolves to the
+    same instant as the hour before the change, i.e. it fires one hour 'early' by the new clock, never twice."""
+    hour, minute = map(int, hhmm.split(':'))
+    return datetime.combine(day, time(hour, minute), zone).astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def motivation_for(day: date) -> str:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'motivation.json'), encoding='utf-8') as handle:
+        messages = json.load(handle)['messages']
+    return messages[day.toordinal() % len(messages)]
+
+
+def payload(row) -> dict:
+    spec = TYPES[row.type]
+    body = spec['body'] or motivation_for(date.fromisoformat(row.local_day))
+    return {'id': row.id, 'type': row.type, 'title': spec['title'], 'body': body, 'url': spec['url']}
+
+
+def plan(db, now=None):
+    """Create upcoming rows for everyone with notifications on. Safe to run every minute."""
+    now = now or utcnow(); created = 0
+    rows = db.query(models.NotificationSettings).filter_by(enabled=True).all()
+    for settings in rows:
+        if not db.query(models.PushSubscription.id).filter_by(user_id=settings.user_id).first(): continue
+        zone, quiet_start, quiet_end = preferences(db, settings.user_id)
+        today = now.replace(tzinfo=timezone.utc).astimezone(zone).date()
+        types = {**DEFAULT_TYPES, **(settings.types or {})}
+        for day in (today, today + timedelta(days=1)):
+            for kind in SCHEDULED:
+                choice = types[kind]
+                if not choice.get('enabled'): continue
+                if quiet(choice['time'], quiet_start, quiet_end): continue
+                when = local_slot_utc(day, choice['time'], zone)
+                if when < now - timedelta(minutes=5): continue  # turned on after today's time: start tomorrow
+                result = db.execute(insert(models.ScheduledNotification).prefix_with('IGNORE').values(
+                    id=_uuid(), user_id=settings.user_id, type=kind, local_day=str(day), scheduled_for_utc=when,
+                    idempotency_key=f'{settings.user_id}:{kind}:{day}:{choice["time"]}', status='pending', attempts=0, created_at=now))
+                created += result.rowcount
+    db.commit()
+    return created
+
+
+def enqueue_milestone(db, user_id, code, now=None):
+    """Called when an achievement unlocks. Sent at the next tick, or after quiet hours end."""
+    if not is_enabled(db, 'web_push'): return
+    settings = settings_for(db, user_id)
+    if not settings or not settings.enabled or not settings.types['milestone'].get('enabled'): return
+    now = now or utcnow(); zone, quiet_start, quiet_end = preferences(db, user_id)
+    local = now.replace(tzinfo=timezone.utc).astimezone(zone)
+    when = now
+    if quiet(local.strftime('%H:%M'), quiet_start, quiet_end):
+        end = local_slot_utc(local.date(), quiet_end, zone)
+        when = end if end > now else local_slot_utc(local.date() + timedelta(days=1), quiet_end, zone)
+    db.execute(insert(models.ScheduledNotification).prefix_with('IGNORE').values(
+        id=_uuid(), user_id=str(user_id), type='milestone', local_day=str(local.date()), scheduled_for_utc=when,
+        idempotency_key=f'{user_id}:milestone:{code}'[:120], status='pending', attempts=0, created_at=now))
+
+
+def claim(db, now=None, limit=50):
+    """Lock due rows (skipping any another worker holds), mark them 'sending' and commit. Returns their ids."""
+    now = now or utcnow()
+    due = (db.query(models.ScheduledNotification)
+           .filter(((models.ScheduledNotification.status == 'pending') & (models.ScheduledNotification.scheduled_for_utc <= now)
+                    & ((models.ScheduledNotification.next_attempt_at.is_(None)) | (models.ScheduledNotification.next_attempt_at <= now)))
+                   | ((models.ScheduledNotification.status == 'sending') & (models.ScheduledNotification.next_attempt_at <= now - timedelta(minutes=STALE_MINUTES))))
+           .order_by(models.ScheduledNotification.scheduled_for_utc).limit(limit).with_for_update(skip_locked=True).all())
+    for row in due:
+        row.status, row.attempts, row.next_attempt_at = 'sending', row.attempts + 1, now  # next_attempt_at marks the claim time
+    ids = [row.id for row in due]
+    db.commit()
+    return ids
+
+
+def _finish(row, status, error=None, now=None):
+    row.status, row.last_error = status, (error or None) and error[:200]
+    if status == 'sent': row.sent_at = now
+
+
+def deliver(db, notification_id, send, now=None):
+    """Send one claimed row. `send(subscription, payload) -> HTTP status (0 for a network error)`."""
+    now = now or utcnow()
+    row = db.query(models.ScheduledNotification).filter_by(id=notification_id).with_for_update().first()
+    if not row or row.status != 'sending': db.commit(); return None
+    settings = settings_for(db, row.user_id)
+    zone, quiet_start, quiet_end = preferences(db, row.user_id)
+    local = now.replace(tzinfo=timezone.utc).astimezone(zone)
+    sent_today = db.query(func.count(models.ScheduledNotification.id)).filter_by(user_id=row.user_id, local_day=row.local_day, status='sent').scalar()
+    reason = ('feature off' if not is_enabled(db, 'web_push') else 'turned off' if not settings or not settings.enabled or not settings.types.get(row.type, {}).get('enabled')
+              else 'snoozed' if settings.snooze_until and settings.snooze_until > now
+              else 'quiet hours' if quiet(local.strftime('%H:%M'), quiet_start, quiet_end)
+              else 'daily cap' if sent_today >= settings.max_per_day
+              else 'too late' if now - row.scheduled_for_utc > timedelta(hours=LATE_HOURS) else None)
+    if reason: _finish(row, 'skipped', reason); db.commit(); return 'skipped'
+    devices = db.query(models.PushSubscription).filter_by(user_id=row.user_id).all()
+    if not devices: _finish(row, 'skipped', 'no device'); db.commit(); return 'skipped'
+    body, delivered, transient, permanent = payload(row), 0, 0, None
+    for device in devices:
+        status = send(device, body)
+        if 200 <= status < 300: delivered += 1; device.last_success_at = now
+        elif status in (404, 410): db.delete(device); event(db, 'expired')  # the browser dropped this subscription
+        elif status == 0 or status == 429 or status >= 500: transient += 1
+        else: permanent = f'push service refused ({status})'
+        if not 200 <= status < 300: log.warning('push failed', extra={'status': status, 'type': row.type})
+    if delivered: _finish(row, 'sent', now=now); event(db, 'sent')
+    elif transient and row.attempts < MAX_ATTEMPTS:
+        row.status, row.next_attempt_at, row.last_error = 'pending', now + timedelta(minutes=2 ** row.attempts), 'temporary failure, will retry'
+    elif transient or permanent: _finish(row, 'failed', permanent or 'gave up after retries'); event(db, 'failed')
+    else: _finish(row, 'skipped', 'no device')  # every device had expired
+    db.commit()
+    return row.status
+
+
+def tick(session_factory, send, now=None, batch=50, max_batches=10):
+    """One scheduler run: plan, then claim and send due rows in batches."""
+    counts = {'planned': 0, 'sent': 0, 'skipped': 0, 'failed': 0, 'pending': 0}
+    with session_factory() as db:
+        if not is_enabled(db, 'web_push'): return {**counts, 'enabled': False}
+        counts['planned'] = plan(db, now)
+    for _ in range(max_batches):
+        with session_factory() as db: ids = claim(db, now, batch)
+        if not ids: break
+        for identifier in ids:
+            with session_factory() as db: result = deliver(db, identifier, send, now)
+            if result in counts: counts[result] += 1
+    return {**counts, 'enabled': True}
+
+
+def webpush_sender():
+    """The real sender (pywebpush). Returns None when VAPID keys are not configured."""
+    private_key, subject = os.getenv('VAPID_PRIVATE_KEY'), os.getenv('VAPID_SUBJECT')
+    if not private_key or not subject: return None
+    from pywebpush import WebPushException, webpush
+
+    def send(device, body):
+        try:
+            response = webpush(subscription_info={'endpoint': device.endpoint, 'keys': {'p256dh': device.p256dh, 'auth': device.auth}},
+                               data=json.dumps(body), vapid_private_key=private_key, vapid_claims={'sub': subject}, ttl=TTL_SECONDS, timeout=10)
+            return getattr(response, 'status_code', 201)
+        except WebPushException as failure:
+            return failure.response.status_code if failure.response is not None else 0
+        except Exception:
+            return 0
+    return send
+
+
+def endpoint_hash(endpoint: str) -> str:
+    return hashlib.sha256(endpoint.encode()).hexdigest()
+
+
+def _uuid():
+    import uuid
+    return str(uuid.uuid4())

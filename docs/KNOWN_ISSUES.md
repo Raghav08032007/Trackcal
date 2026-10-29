@@ -52,6 +52,16 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-23 | 3 | The fixtures are synthetic skeletons posed from known angle curves, not recordings of people. They prove the counting logic, not real-world accuracy | `tests/fixtures/pose/generate.mjs` | Add recorded landmark sequences (landmarks only, with consent) from the device matrix runs |
 | KI-24 | 3 | `e2e-p3-camera.mjs` passed 17 of 19 runs with Chrome's fake camera; the 2 failures were not reproducible (same family as KI-14) | Phase 3 runs | Watch in CI; re-run on failure before investigating |
 
+## Found during Phase 4 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-25 | 2 | Real push delivery is not verified on a phone or after the app has been closed for hours. Headless Chrome cannot subscribe to a push service, so the browser journey fakes `pushManager.subscribe`. Encryption and VAPID signing are proven against a local receiver | `TEST_REPORT_P4.md` manual checklist | Owner: Android Chrome, one desktop browser, one installed iOS app, before turning the flag on for beta |
+| KI-26 | 2 | Scheduled notifications need the tick every minute. On free hosting the app sleeps, and GitHub Actions schedules run at most every 5 minutes, often late | `PUSH_NOTIFICATIONS.md` | Before launch: an always-on worker or a paid plan that doesn't sleep |
+| KI-27 | 3 | `VAPID_SUBJECT` in `backend/.env` is a placeholder (`mailto:push-admin@example.com`) | `.env` | Owner: set a real contact before enabling push |
+| KI-28 | 3 | `vite-plugin-pwa` was not adopted: the existing hand-written service worker was extended instead (it already never caches private data). Built assets are not precached for offline use; offline still serves the journal page | `public/sw.js` | Revisit if full offline use of the app shell is wanted |
+| KI-29 | 3 | `pywebpush` and `py-vapid` are MPL-2.0 (file-level copyleft). Used unmodified, which is compatible with closed source; any change to their files must be published | `requirements.txt` | Keep unmodified; note in the third-party notices |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |

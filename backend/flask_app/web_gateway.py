@@ -49,6 +49,7 @@ class Unavailable(Exception):
 def api(method, path, token=None, body=None, form=None):
     """Call the versioned API in-process, as the browser's client address."""
     headers = {'Authorization': f'Bearer {token}'} if token else {}
+    if request.headers.get('User-Agent'): headers['User-Agent'] = request.headers['User-Agent'][:200]  # labels push devices
     kwargs = {'json': body} if body is not None else {'data': form} if form is not None else {}
     response = current_app.test_client().open('/api/v1' + path, method=method, headers=headers,
                                               environ_base={'REMOTE_ADDR': request.remote_addr or '127.0.0.1'}, **kwargs)
@@ -266,6 +267,36 @@ def wellness(path):
         return forward(authenticated(method, '/wellness/' + path + (f'?{urlencode(search)}' if search else ''), body))
     except Exception:
         return error('Your saved records are safe. The service is unavailable; keep this draft open and retry.', 503)
+
+
+# ── Push notifications (flag web_push) ────────────────────────────────────
+
+PUSH = {('GET', 'config'), ('GET', 'settings'), ('PUT', 'settings'), ('POST', 'subscribe'), ('DELETE', 'subscribe')}
+
+
+@bp.route('/push/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def push_routes(path):
+    method = request.method
+    opened = method == 'POST' and re.fullmatch(r'opened/[0-9a-f-]{36}', path)
+    if (method, path) not in PUSH and not opened: return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        if path == 'config': return forward(api('GET', '/push/config'))
+        body = None
+        if method in ('PUT', 'POST', 'DELETE') and not opened:
+            body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+            if failed: return failed
+        return forward(authenticated(method, '/push/' + path, body))
+    except Exception:
+        return error('Notification settings are unavailable right now. Nothing was changed; retry later.', 503)
+
+
+@bp.get('/motivation/today')
+def motivation_today():
+    day = request.args.get('day', '')
+    if day and not re.fullmatch(r'\d{4}-\d{2}-\d{2}', day): return error('Use YYYY-MM-DD.', 400)
+    try: return forward(api('GET', '/motivation/today' + (f'?day={day}' if day else '')))
+    except Exception: return error('Unavailable', 503)
 
 
 # ── Tools ───────────────────────────────────────────────────────────────────

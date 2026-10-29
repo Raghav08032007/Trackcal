@@ -943,6 +943,59 @@ class ReminderDelivery(Base):
     snoozed_until = Column(DateTime, nullable=True)
     __table_args__ = (UniqueConstraint('user_id','category','local_day',name='uq_reminder_category_day'),)
 
+class PushSubscription(Base):
+    """One browser or installed app that agreed to receive push. Endpoint URLs can be long, so uniqueness is on a hash."""
+    __tablename__ = 'push_subscriptions'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    endpoint = Column(Text, nullable=False)
+    endpoint_hash = Column(CHAR(64), nullable=False, unique=True)
+    p256dh = Column(String(200), nullable=False)
+    auth = Column(String(100), nullable=False)
+    user_agent = Column(String(200), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    last_success_at = Column(DateTime, nullable=True)
+
+
+class NotificationSettings(Base):
+    """Push preferences. Time zone and quiet hours come from the person's existing preferences (one source of truth)."""
+    __tablename__ = 'notification_settings'
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    enabled = Column(Boolean, nullable=False, default=False)  # global switch: off sends nothing
+    types = Column(JSON, nullable=False)  # {type: {"enabled": bool, "time": "HH:MM"}}
+    max_per_day = Column(Integer, nullable=False, default=2)
+    snooze_until = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ScheduledNotification(Base):
+    """Job table for the push scheduler. idempotency_key (user:type:local day:slot) makes planning repeatable, and
+    workers claim due rows with SELECT ... FOR UPDATE SKIP LOCKED so two workers never send the same one."""
+    __tablename__ = 'scheduled_notifications'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    type = Column(String(20), nullable=False)
+    local_day = Column(String(10), nullable=False)
+    scheduled_for_utc = Column(DateTime, nullable=False)
+    idempotency_key = Column(String(120), nullable=False, unique=True)
+    status = Column(String(12), nullable=False, default='pending')  # pending, sending, sent, failed, skipped
+    attempts = Column(Integer, nullable=False, default=0)
+    next_attempt_at = Column(DateTime, nullable=True)
+    last_error = Column(String(200), nullable=True)
+    sent_at = Column(DateTime, nullable=True)
+    opened_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    __table_args__ = (Index('ix_scheduled_notifications_due', 'status', 'scheduled_for_utc'),)
+
+
+class NotificationEvent(Base):
+    """Guardrail metrics (opt-in, opt-out, sent, failed, opened, expired). No user id: counts only."""
+    __tablename__ = 'notification_events'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    kind = Column(String(20), nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+
 class SearchSynonym(Base):
     """Spelling variants mapped to one search term (idly -> idli, thayir -> curd). Editable data, not code."""
     __tablename__ = "search_synonyms"
