@@ -1,6 +1,6 @@
 // TrackCal Premium (flag billing). Honest by design: price and renewal in plain words, the trial end date before
 // anyone pays, cancelling as easy as subscribing, and the core habit tools always free.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { billingRequest, dateText, rupees, subscribe, type BillingStatus, type PlanKey, type Plans } from "@/lib/billing";
@@ -11,20 +11,21 @@ export default function Page() {
   const { ready, user } = useAccount();
   const [plans, setPlans] = useState<Plans | null>(null), [status, setStatus] = useState<BillingStatus | null>(null), [payments, setPayments] = useState<{ id: string; amount: number; currency: string; status: string; created_at: string }[]>([]);
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState(""), [error, setError] = useState(""), [confirmCancel, setConfirmCancel] = useState(false);
+  const acted = useRef(false);  // a checkout or cancel result is newer than the page-load status: never overwrite it
   useEffect(() => { billingRequest<Plans>("plans").then(setPlans).catch(e => setError(e instanceof Error ? e.message : "Unavailable.")); }, []);
   useEffect(() => {
     if (!user) return;
-    billingRequest<BillingStatus>("status").then(setStatus).catch(() => {});
+    billingRequest<BillingStatus>("status").then(value => { if (!acted.current) setStatus(value); }).catch(() => {});
     billingRequest<{ payments: typeof payments }>("history").then(v => setPayments(v.payments)).catch(() => {});
   }, [user]);
   async function start(plan: PlanKey) {
     if (busy) return; setBusy(true); setError(""); setNotice("");
-    try { const result = await subscribe(plan); if (result) { setStatus(result); setNotice(result.status === "trialing" ? `Premium is on. Your free trial runs until ${dateText(result.trial_ends_at)}.` : "Premium is on. Thank you!"); } }
+    try { const result = await subscribe(plan); if (result) { acted.current = true; setStatus(result); setNotice(result.status === "trialing" ? `Premium is on. Your free trial runs until ${dateText(result.trial_ends_at)}.` : "Premium is on. Thank you!"); } }
     catch (e) { setError(e instanceof Error ? e.message : "Checkout failed. You haven't been charged."); } finally { setBusy(false); }
   }
   async function cancel() {
     if (busy) return; setBusy(true); setError("");
-    try { const result = await billingRequest<BillingStatus>("cancel", { reason: "" }); setStatus(result); setConfirmCancel(false); setNotice(`Cancelled. You keep Premium until ${dateText(result.current_period_end || result.trial_ends_at)}, and you won't be charged again.`); }
+    try { const result = await billingRequest<BillingStatus>("cancel", { reason: "" }); acted.current = true; setStatus(result); setConfirmCancel(false); setNotice(`Cancelled. You keep Premium until ${dateText(result.current_period_end || result.trial_ends_at)}, and you won't be charged again.`); }
     catch (e) { setError(e instanceof Error ? e.message : "Couldn't cancel. Nothing changed; please retry."); } finally { setBusy(false); }
   }
   if (!ready || !plans) return <main className="account-loading">{error || "Opening Premium…"}</main>;

@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.TRACKCAL_PLAYWRIGHT_PATH||'C:/Users/ragha/AppData/Roaming/npm/node_modules/rea-agents/node_modules/playwright-core');
-const root='http://127.0.0.1:3003',api='http://127.0.0.1:8003',stamp=Date.now(),password=`Synthetic-p5-${stamp}-safe!`;
+const root=process.env.TRACKCAL_E2E_URL||'http://127.0.0.1:3003',api=process.env.TRACKCAL_API_DIRECT||'http://127.0.0.1:8003',stamp=Date.now(),password=`Synthetic-p5-${stamp}-safe!`;
 const KEY_SECRET='e2e-test-key-secret-0123456789',WEBHOOK_SECRET='e2e-test-webhook-secret-0123456789';
 const ledgerPath='../../backend/runtime/phase3-qa.json',checks=[],errors=[];
 // Stand-in for Razorpay Checkout: "pays" when opened and signs payment_id|subscription_id like Razorpay does.

@@ -51,9 +51,9 @@ it("keeps failed sign-in on the page with a clear error", async () => {
   expect((await screen.findByRole("alert")).textContent).toContain("Invalid credentials"); expect(push).not.toHaveBeenCalled();
 });
 it("registers an account with a name and permits checking the password", async () => {
-  const fetcher = vi.fn().mockResolvedValue(Response.json({ status: "Account created" })); vi.stubGlobal("fetch", fetcher);
+  const fetcher = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async url => Response.json(url.endsWith("/signup-config") ? { invite_required: false } : { status: "Account created" })); vi.stubGlobal("fetch", fetcher);
   const user = userEvent.setup(); render(<AuthForm signup />);
   await user.type(screen.getByLabelText("Your name"), "QA"); await user.type(screen.getByLabelText("Email address"), "qa@example.com"); await user.type(screen.getByLabelText(/^Password/), "Test-password-123");
   await user.click(screen.getByRole("button", { name: "Show password" })); expect(screen.getByLabelText(/^Password/).getAttribute("type")).toBe("text");
-  await user.click(screen.getByRole("button", { name: "Create free account" })); await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding")); expect(JSON.parse(fetcher.mock.calls[0][1].body).display_name).toBe("QA");
+  await user.click(screen.getByRole("button", { name: "Create free account" })); await waitFor(() => expect(push).toHaveBeenCalledWith("/onboarding")); expect(JSON.parse(fetcher.mock.calls.find(([url]) => url.endsWith("/signup"))![1]!.body as string).display_name).toBe("QA");
 });

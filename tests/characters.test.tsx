@@ -10,7 +10,7 @@ const summary:AdventureSummary={initialized:true,timezone:'UTC',today:'2026-10-2
 it('offers six selectable personalities, persists choice and restores it without client XP',async()=>{
  render(<CharacterCompanion summary={summary} signedIn/>);
  for(const name of ['Pip','Nova','Milo','Luna','Rio','Sage'])expect(screen.getAllByRole('button',{name:new RegExp(name)}).length).toBeGreaterThan(0);
- await userEvent.click(screen.getByRole('button',{name:/Sage: unlocked/}));
+ await userEvent.click(screen.getByRole('button',{name:/^Sage(?!.*Locked)/}));
  expect(screen.getByRole('heading',{name:'Sage is on your team.'})).toBeTruthy();
  await userEvent.click(screen.getByRole('button',{name:'Wave to Sage'}));
  expect(screen.getByRole('status').textContent).toContain('Steady progress');
@@ -39,15 +39,15 @@ it('prevents restored locked choices and previews requirements without granting 
  localStorage.setItem('trackcal:play:character',JSON.stringify('sage'));
  render(<CharacterCompanion summary={{...summary,xp:249,level:1,level_xp:249}} signedIn/>);
  expect(screen.getByRole('heading',{name:'Pip is on your team.'})).toBeTruthy();
- await userEvent.click(screen.getByRole('button',{name:'Nova: locked, level 2 required'}));
+ await userEvent.click(screen.getByRole('button',{name:/^Nova.*Locked · Level 2 · Preview$/}));
  expect(screen.getByText(/1 XP to go/)).toBeTruthy();
  expect(screen.getByRole('heading',{name:'Pip is on your team.'})).toBeTruthy();
 });
 it('unlocks a companion exactly at its earned XP threshold',async()=>{
  render(<CharacterCompanion summary={{...summary,xp:250,level:2,level_xp:0}} signedIn/>);
- await userEvent.click(screen.getByRole('button',{name:'Nova: unlocked'}));
+ await userEvent.click(screen.getByRole('button',{name:/^Nova(?!.*Locked)/}));
  expect(screen.getByRole('heading',{name:'Nova is on your team.'})).toBeTruthy();
- expect(screen.getByRole('button',{name:'Milo: locked, level 3 required'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:/^Milo.*Locked · Level 3 · Preview$/})).toBeTruthy();
 });
 
 it('follows the page when away and can be dismissed',async()=>{

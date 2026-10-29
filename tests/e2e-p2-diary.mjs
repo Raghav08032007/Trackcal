@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.TRACKCAL_PLAYWRIGHT_PATH||'C:/Users/ragha/AppData/Roaming/npm/node_modules/rea-agents/node_modules/playwright-core');
-const root='http://127.0.0.1:3003';
+const root=process.env.TRACKCAL_E2E_URL||'http://127.0.0.1:3003';
 const email=`qa-p2diary-${Date.now()}@tests.example.com`,password=`Synthetic-p2-${Date.now()}-safe!`;
 const ledgerPath='../../backend/runtime/phase3-qa.json';let qa=[];try{qa=JSON.parse(await fs.readFile(ledgerPath,'utf8'));}catch{/* no ledger yet */}await fs.writeFile(ledgerPath,JSON.stringify([...qa,email]));
 const checks=[],errors=[];

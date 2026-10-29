@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.TRACKCAL_PLAYWRIGHT_PATH||'C:/Users/ragha/AppData/Roaming/npm/node_modules/rea-agents/node_modules/playwright-core');
-const root='http://127.0.0.1:3003',stamp=Date.now(),password=`Synthetic-p4-${stamp}-safe!`;
+const root=process.env.TRACKCAL_E2E_URL||'http://127.0.0.1:3003',stamp=Date.now(),password=`Synthetic-p4-${stamp}-safe!`;
 const ledgerPath='../../backend/runtime/phase3-qa.json';
 const checks=[],errors=[];
 // Count permission requests and fake the push service (see header).

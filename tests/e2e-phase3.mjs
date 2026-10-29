@@ -6,7 +6,7 @@ import {performance} from 'node:perf_hooks';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.TRACKCAL_PLAYWRIGHT_PATH||'C:/Users/ragha/AppData/Roaming/npm/node_modules/rea-agents/node_modules/playwright-core');
 const root=process.env.PHASE3_TEST_URL||'http://127.0.0.1:3003';
-assert(root==='http://127.0.0.1:3003','Use the isolated local test web service.');
+assert(/^http:\/\/127\.0\.0\.1:\d+$/.test(root),'Use an isolated local test web service.');
 const email=`qa-phase3-${Date.now()}@tests.example.com`,password=`Synthetic-phase3-${Date.now()}-safe!`;
 const ledgerPath='../../backend/runtime/phase3-qa.json';let qa=[];try{qa=JSON.parse(await fs.readFile(ledgerPath,'utf8'));}catch{/* no ledger yet: start a new one */}await fs.writeFile(ledgerPath,JSON.stringify([...qa,email]));
 const checks=[],timings=[],errors=[],external=[];

@@ -49,3 +49,14 @@ it('reminds about the first charge when the trial ends within two days',async()=
  api({...trialing,trial_ends_at:new Date(Date.now()+86400000).toISOString()});render(<PremiumNotice/>);
  await screen.findByText(/Your free trial ends on/);expect(screen.getByText(/charged then unless you cancel/)).toBeTruthy();
 });
+it('a slow page-load status never overwrites a newer checkout result',async()=>{
+ let release:()=>void=()=>{};const late=new Promise<void>(r=>{release=r;});
+ api(free);
+ const base=globalThis.fetch as unknown as (u:string,o?:RequestInit)=>Promise<Response>;
+ vi.stubGlobal('fetch',vi.fn(async(u:string,o?:RequestInit)=>{if(u.endsWith('/status')){await late;return Response.json(free);}return base(u,o);}));
+ render(<Premium/>);fireEvent.click((await screen.findAllByRole('button',{name:'Start free trial'}))[0]);await waitFor(()=>expect(opened).not.toBeNull());
+ opened!.handler({razorpay_payment_id:'pay_1',razorpay_subscription_id:'sub_test123',razorpay_signature:'sig'});
+ await screen.findByRole('heading',{name:"You're on the free trial"});
+ release();await new Promise(r=>setTimeout(r,50));
+ expect(screen.getByRole('heading',{name:"You're on the free trial"})).toBeTruthy();
+});

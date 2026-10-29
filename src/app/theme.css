@@ -148,3 +148,17 @@ html[data-theme=dark] .push-card .push-note, html[data-theme=dark] .motivation-c
 .premium-page button:not(.account-primary) { min-height: 44px; padding: 0 16px; border: 1px solid #bccdb0; border-radius: 12px; background: var(--card, #fafcf5); color: inherit; font-weight: 600; }
 .premium-link { margin: 8px 0; } .premium-early { color: #6f5bc8; font-weight: 600; }
 html[data-theme=dark] .premium-trial, html[data-theme=dark] .premium-confirm { background: #4a3a17; color: #fff1cc; border-color: #8a6d2a; }
+
+/* Phase 6 accessibility (axe, WCAG 2.2 AA contrast). Light theme only; dark mode has its own rules. */
+html:not([data-theme="dark"]) .trackcal-app :is([class*="bg-slate-950/"], [class*="bg-slate-900/"]) { background-color: #efedf9 !important; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="text-amber-"], [class*="text-orange-"], [class*="text-yellow-"]) { color: #7a4f0e !important; }
+.play-stat-orange small, .play-stat-blue small { color: #263020 !important; }
+a[href="/forgot-password"] { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* Phase 6: beta feedback. */
+.feedback-button { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--tab-line, #c9d6ba); background: var(--card, #fafcf5); color: inherit; font-weight: 600; }
+.feedback-dialog { width: min(520px, calc(100vw - 32px)); border: 0; border-radius: 22px; padding: 22px; box-shadow: 0 24px 60px #10261b44; }
+.feedback-dialog::backdrop { background: #10261b66; }
+.feedback-dialog textarea { width: 100%; min-height: 120px; border-radius: 12px; padding: 12px; border: 1px solid #bccdb0; font: inherit; }
+.feedback-dialog label { display: grid; gap: 8px; }
+.feedback-dialog button { min-height: 44px; padding: 0 16px; border-radius: 12px; }
