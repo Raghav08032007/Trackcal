@@ -41,22 +41,20 @@ export interface OnboardingPlanResult {
 export interface BarcodeProductResult {
   source: string;
   barcode: string;
-  product_name: string;
-  brand?: string;
-  serving_size: string;
+  product_name: string | null;
+  brand: string | null;
+  serving_size: string | null;
+  serving_g: number | null;
   nova_group: number | null;
-  nutriscore_grade?: string;
-  nutrients_per_100g: {
-    energy_kcal: number;
-    protein_g: number;
-    carbs_g: number;
-    fat_g: number;
-    fiber_g: number;
-    sugars_g?: number;
-    sodium_mg?: number;
-  };
-  allergens?: string[];
-  ingredients_text?: string;
+  /** Per 100 g. null means Open Food Facts does not list it (unknown, never 0). */
+  nutrients_per_100g: { energy_kcal: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null; fiber_g: number | null; sugar_g: number | null; sodium_mg: number | null; saturated_fat_g: number | null };
+  complete: boolean;
+  consistency_warning: boolean;
+  allergens: string[];
+  ingredients_text: string | null;
+  attribution: string;
+  community_data: boolean;
+  cached: boolean;
 }
 
 export async function calculateOnboardingPlan(params: OnboardingParams): Promise<OnboardingPlanResult> {

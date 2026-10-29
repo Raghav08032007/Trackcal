@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { consistencyWarning, FIELDS as NUTRIENT_FIELDS, rounded, scale, type Nutrients } from "@/lib/nutrition-math";
 import { useAccount } from "@/components/account-session";
 import {personalRequest,assertAdultCalculatorAllowed,type PersonalState} from "@/lib/personalization";
 import { MealIdeaTransfer } from "@/components/meal-idea-transfer";
@@ -193,7 +194,9 @@ const SCAN_PRESETS = [
   }
 ];
 
-const PACKAGED_BARCODE_PRODUCTS = [
+type BarcodeKey = "caloriesPer100g" | "proteinPer100g" | "carbsPer100g" | "fatPer100g";
+type BarcodeView = { code: string; name: string; brand: string; serving: string; caloriesPer100g: number | null; proteinPer100g: number | null; carbsPer100g: number | null; fatPer100g: number | null; servingCalories?: number; novaGroup: number; novaLabel: string; allergens: string[]; attribution?: string };
+const PACKAGED_BARCODE_PRODUCTS: BarcodeView[] = [
   {
     code: "3017620422003",
     name: "Nutella Hazelnut Cocoa Spread",
@@ -421,7 +424,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   };
 
   // Barcode State & Open Food Facts Lookup
-  const [selectedBarcodeProduct, setSelectedBarcodeProduct] = useState(PACKAGED_BARCODE_PRODUCTS[0]);
+  const [selectedBarcodeProduct, setSelectedBarcodeProduct] = useState<BarcodeView>(PACKAGED_BARCODE_PRODUCTS[0]);
+  // Values the user typed from the packaging label for nutrients Open Food Facts does not list.
+  const [barcodeOverrides, setBarcodeOverrides] = useState<Partial<Record<BarcodeKey, number>>>({});
+  const barcodeValues: Nutrients = {
+    energy_kcal: barcodeOverrides.caloriesPer100g ?? selectedBarcodeProduct.caloriesPer100g, protein_g: barcodeOverrides.proteinPer100g ?? selectedBarcodeProduct.proteinPer100g,
+    carbs_g: barcodeOverrides.carbsPer100g ?? selectedBarcodeProduct.carbsPer100g, fat_g: barcodeOverrides.fatPer100g ?? selectedBarcodeProduct.fatPer100g,
+  };
+  const barcodeComplete = NUTRIENT_FIELDS.every(field => barcodeValues[field] !== null);
+  const barcodeValueCell = (key: BarcodeKey, label: string, unit: string, tone: string) => {
+    if (selectedBarcodeProduct[key] !== null) return <p className={`text-lg font-bold mt-0.5 ${tone}`}>{selectedBarcodeProduct[key]}{unit}</p>;
+    return <input aria-label={`${label} per 100 g from the label`} type="number" min="0" step="0.1" inputMode="decimal" placeholder="Unknown" value={barcodeOverrides[key] ?? ""}
+      onChange={event => { const value = event.target.value === "" ? NaN : Number(event.target.value); setBarcodeOverrides(current => { const next = { ...current }; if (Number.isFinite(value) && value >= 0) next[key] = value; else delete next[key]; return next; }); }}
+      className="mt-1 w-full rounded-lg bg-slate-950 border border-amber-500/50 px-2 py-1 text-center text-white" />;
+  };
   const [barcodeInput, setBarcodeInput] = useState("3017620422003");
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState<string | null>(null);
@@ -441,19 +457,19 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       if (requestId !== barcodeRequest.current) return;
       setSelectedBarcodeProduct({
         code: res.barcode,
-        name: res.product_name,
-        brand: res.brand || "Packaged Food",
-        serving: res.serving_size || "100g",
+        name: res.product_name || "Unnamed product",
+        brand: res.brand || "Brand not listed",
+        serving: res.serving_size || "Not stated",
         caloriesPer100g: res.nutrients_per_100g.energy_kcal,
         proteinPer100g: res.nutrients_per_100g.protein_g,
         carbsPer100g: res.nutrients_per_100g.carbs_g,
         fatPer100g: res.nutrients_per_100g.fat_g,
-        servingCalories: Math.round(res.nutrients_per_100g.energy_kcal),
+        attribution: res.attribution,
         novaGroup: res.nova_group || 0,
         novaLabel: res.nova_group === null ? "NOVA not assessed" : res.nova_group === 1 ? "Unprocessed / Whole Food" : (res.nova_group === 4 ? "Ultra-Processed Food (UPF)" : "Processed Food"),
         allergens: res.allergens || []
       });
-      setBarcodeReady(true); setBarcodeSource(res.source);
+      setBarcodeOverrides({}); setBarcodeReady(true); setBarcodeSource(res.cached ? `${res.source} (saved copy)` : res.source);
     } catch (err) {
       if (requestId === barcodeRequest.current) setBarcodeError(err instanceof Error ? err.message : "Barcode not found in Open Food Facts.");
     } finally {
@@ -904,7 +920,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   key={prod.code}
                   onClick={() => {
                     barcodeRequest.current++; setBarcodeReady(true); setBarcodeError(null); setBarcodeLoading(false); setBarcodeSource("Demo product — sample data");
-                    setSelectedBarcodeProduct(prod);
+                    setSelectedBarcodeProduct(prod); setBarcodeOverrides({});
                     setBarcodeInput(prod.code);
                   }}
                   className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
@@ -938,19 +954,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 </div>
 
                 <button
-                  disabled={!barcodeReady || barcodeLoading}
+                  disabled={!barcodeReady || barcodeLoading || !barcodeComplete}
                   onClick={() => {
-                    if (!barcodeReady || barcodeLoading) return;
+                    if (!barcodeReady || barcodeLoading || !barcodeComplete) return;
+                    const portion = rounded(scale(barcodeValues, barcodeGrams));
                     setNotice(`Product added to your journal for ${journalDate}.`);
                     setLoggedMeals([
                       ...loggedMeals,
                       {
                         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                         name: `${selectedBarcodeProduct.name} (${barcodeGrams}g)`,
-                        calories: Math.round(selectedBarcodeProduct.caloriesPer100g * barcodeGrams / 100),
-                        protein: Math.round(selectedBarcodeProduct.proteinPer100g * barcodeGrams / 100 * 10) / 10,
-                        carbs: Math.round(selectedBarcodeProduct.carbsPer100g * barcodeGrams / 100 * 10) / 10,
-                        fat: Math.round(selectedBarcodeProduct.fatPer100g * barcodeGrams / 100 * 10) / 10,
+                        calories: portion.energy_kcal as number,
+                        protein: portion.protein_g as number,
+                        carbs: portion.carbs_g as number,
+                        fat: portion.fat_g as number,
                         method: `Barcode (${barcodeSource})`
                       }
                     ]);
@@ -965,23 +982,26 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="grid grid-cols-4 gap-3 mt-6">
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
                   <p className="text-[10px] text-slate-400">Calories (100g)</p>
-                  <p className="text-lg font-bold text-white mt-0.5">{selectedBarcodeProduct.caloriesPer100g}</p>
+                  {barcodeValueCell("caloriesPer100g", "Calories", "", "text-white")}
                   <span className="text-[10px] text-slate-400">kcal</span>
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
                   <p className="text-[10px] text-slate-400">Protein (100g)</p>
-                  <p className="text-lg font-bold text-sky-400 mt-0.5">{selectedBarcodeProduct.proteinPer100g}g</p>
+                  {barcodeValueCell("proteinPer100g", "Protein", "g", "text-sky-400")}
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
                   <p className="text-[10px] text-slate-400">Carbs (100g)</p>
-                  <p className="text-lg font-bold text-amber-400 mt-0.5">{selectedBarcodeProduct.carbsPer100g}g</p>
+                  {barcodeValueCell("carbsPer100g", "Carbs", "g", "text-amber-400")}
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 text-center">
                   <p className="text-[10px] text-slate-400">Fat (100g)</p>
-                  <p className="text-lg font-bold text-rose-400 mt-0.5">{selectedBarcodeProduct.fatPer100g}g</p>
+                  {barcodeValueCell("fatPer100g", "Fat", "g", "text-rose-400")}
                 </div>
               </div>
 
+              {!barcodeComplete && <p role="status" className="mt-4 text-xs text-amber-300">Open Food Facts doesn&apos;t list every value for this product. Enter the missing values from the packaging label to log it.</p>}
+              {barcodeComplete && consistencyWarning(barcodeValues) && <p role="status" className="mt-4 text-xs text-amber-300">These values don&apos;t add up (calories compared with protein, carbs and fat). Please double-check the label.</p>}
+              {selectedBarcodeProduct.attribution && <p className="mt-3 text-[11px] text-slate-400">{selectedBarcodeProduct.attribution}</p>}
               {selectedBarcodeProduct.allergens.length > 0 && (
                 <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 text-xs text-amber-300">
                   <AlertTriangle className="w-4 h-4 flex-shrink-0" />

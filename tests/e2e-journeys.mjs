@@ -12,7 +12,7 @@ const root=process.env.JOURNEYS_URL||'http://127.0.0.1:3003';
 const evidence={date:new Date().toISOString().slice(0,10),stack:'Vite + Flask (isolated test schema)',providers:'stubbed in the browser',checks:[],page_errors:[]};
 const pass=name=>{evidence.checks.push(name);console.log('PASS',name);};
 
-const BARCODE={source:'Open Food Facts',barcode:'3017620422003',product_name:'Journey Hazelnut Spread',brand:'QA',serving_size:'15g',nova_group:4,nutrients_per_100g:{energy_kcal:539,protein_g:6.3,carbs_g:57.5,fat_g:30.9,fiber_g:0},allergens:['nuts'],ingredients_text:'sugar, hazelnuts'};
+const BARCODE={source:'Open Food Facts',barcode:'3017620422003',product_name:'Journey Hazelnut Spread',brand:'QA',serving_size:'15g',nova_group:4,nutrients_per_100g:{energy_kcal:539,protein_g:6.3,carbs_g:57.5,fat_g:30.9,fiber_g:0,sugar_g:null,sodium_mg:null,saturated_fat_g:null},serving_g:15,complete:true,consistency_warning:false,allergens:['nuts'],ingredients_text:'sugar, hazelnuts',attribution:'Data from Open Food Facts contributors (ODbL).',community_data:true,cached:false};
 const MEAL={dish_name:'Journey idli plate',components:[{name:'Journey idli',quantity_g:120,calories:140,protein_g:4,carbs_g:28,fat_g:0.5,confidence:0.7}],total_nutrition:{calories:140,protein_g:4,carbs_g:28,fat_g:0.5},model:'stub',is_mock:false};
 const FOODS={results:[{id:'usda-1',name:'Journey banana',cuisine:'USDA',category:'Food',serving_size:'100g',calories:89,protein:1.1,carbs:22.8,fat:0.3,fiber:2.6,source:'USDA FoodData Central',verified:false,allergens:[]}],source:'USDA FoodData Central',note:'Values per 100g.'};
 const json=body=>route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});

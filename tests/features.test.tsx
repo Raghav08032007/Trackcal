@@ -55,6 +55,26 @@ describe("complete feature flows", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ source: "Open Food Facts", barcode: "12345678", product_name: "Test yogurt", nova_group: null, serving_size: "100g", nutrients_per_100g: { energy_kcal: 200, protein_g: 12, carbs_g: 20, fat_g: 8 }, allergens: [] })));
     render(<Home />); navigate("Barcode scan"); value("Barcode number", "12345678"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" })); await screen.findByRole("heading", { name: "Test yogurt" }); value("Barcode amount in grams", "50"); fireEvent.click(screen.getByRole("button", { name: "+ Log to Journal" })); expect(journal()[0]).toMatchObject({ calories: 100, protein: 6, carbs: 10, fat: 4 });
   });
+  it("shows unknown barcode values as label inputs and logs only once they are filled", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ source: "Open Food Facts", barcode: "12345670", product_name: "Mystery bar", brand: null, nova_group: null, serving_size: null, serving_g: null, complete: false, consistency_warning: false, allergens: [], cached: false, community_data: true, attribution: "Data from Open Food Facts contributors (ODbL).", nutrients_per_100g: { energy_kcal: 400, protein_g: 10, carbs_g: null, fat_g: null, fiber_g: null, sugar_g: null, sodium_mg: null, saturated_fat_g: null } })));
+    render(<Home />); navigate("Barcode scan"); value("Barcode number", "12345670"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" }));
+    await screen.findByRole("heading", { name: "Mystery bar" });
+    const log = screen.getByRole("button", { name: "+ Log to Journal" });
+    expect(log.hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText(/Enter the missing values from the packaging label/)).toBeTruthy();
+    expect(screen.getByText(/Data from Open Food Facts contributors/)).toBeTruthy();
+    value("Carbs per 100 g from the label", "60"); expect(log.hasAttribute("disabled")).toBe(true);
+    value("Fat per 100 g from the label", "13"); expect(log.hasAttribute("disabled")).toBe(false);
+    value("Barcode amount in grams", "50"); fireEvent.click(log);
+    expect(journal()[0]).toMatchObject({ calories: 200, protein: 5, carbs: 30, fat: 6.5 });
+  });
+  it("warns when a product's values do not add up", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ source: "Open Food Facts", barcode: "96385074", product_name: "Odd label", brand: "QA", nova_group: null, serving_size: "30 g", serving_g: 30, complete: true, consistency_warning: true, allergens: [], cached: true, community_data: true, attribution: "Data from Open Food Facts contributors (ODbL).", nutrients_per_100g: { energy_kcal: 100, protein_g: 10, carbs_g: 50, fat_g: 20, fiber_g: null, sugar_g: null, sodium_mg: null, saturated_fat_g: null } })));
+    render(<Home />); navigate("Barcode scan"); value("Barcode number", "96385074"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" }));
+    await screen.findByRole("heading", { name: "Odd label" });
+    expect(screen.getByText(/These values don.t add up/)).toBeTruthy();
+    expect(screen.getByText(/saved copy/)).toBeTruthy();
+  });
   it("invalid barcode prevents logging a stale prior product", async () => {
     render(<Home />); navigate("Barcode scan"); value("Barcode number", "invalid"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" })); await screen.findByRole("alert"); expect(screen.getByRole("button", { name: "+ Log to Journal" }).hasAttribute("disabled")).toBe(true);
   });
