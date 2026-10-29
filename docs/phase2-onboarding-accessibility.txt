@@ -3,21 +3,39 @@
     - img "pip, level 1 companion"
     - strong: Level 1
 - banner:
-  - link "trackcal ✳":
+  - link "TrackCal home":
     - /url: /
-  - navigation "Wellness workspace":
-    - link "Today":
-      - /url: /
-    - link "Nutrition":
-      - /url: /nutrition
-    - link "Movement":
-      - /url: /workouts
-    - link "Camera":
-      - /url: /workouts/camera
-    - link "My plan":
-      - /url: /plan
-    - link "Play":
-      - /url: /play
+    - text: trackcal.
+  - complementary "Feature companion":
+    - button "Ask Pip Level 1 · your companion"
+  - navigation "Me pages":
+    - link "Account":
+      - /url: /account
+    - link "Reminders":
+      - /url: /routine
+    - link "Smart tools":
+      - /url: /tools
+    - link "Setup":
+      - /url: /onboarding
+    - link "Test drive":
+      - /url: /guide
+    - link "Help":
+      - /url: /help
+    - link "Privacy":
+      - /url: /privacy
+    - link "Terms":
+      - /url: /terms
+- navigation "Main":
+  - link "Home":
+    - /url: /
+  - link "Food":
+    - /url: /nutrition
+  - link "Move":
+    - /url: /workouts
+  - link "Play":
+    - /url: /play
+  - link "Me":
+    - /url: /account
 - main:
   - link "My personal plan ↗":
     - /url: /plan
@@ -73,6 +91,7 @@
     - text: Optional questions may be left blank.
     - link "Continue tracking without finishing":
       - /url: /
+  - status: Progress saved to your private account.
 - contentinfo "Product links":
   - text: Appearance
   - combobox "Appearance":
@@ -83,28 +102,9 @@
   - text: Reduce motion
   - link "Guided test drive":
     - /url: /guide
-  - link "Cloud nutrition":
-    - /url: /nutrition
-  - link "Workout sessions":
-    - /url: /workouts
-  - link "Camera workouts":
-    - /url: /workouts/camera
-  - link "My personal plan":
-    - /url: /plan
-  - link "Quests & play":
-    - /url: /play
-  - link "Reminders & coaching":
-    - /url: /routine
-  - link "Smart tools":
-    - /url: /tools
-  - link "Getting started":
-    - /url: /onboarding
-  - link "Account & data":
-    - /url: /account
+  - link "Help":
+    - /url: /help
   - link "Privacy":
     - /url: /privacy
   - link "Terms":
     - /url: /terms
-  - link "Help":
-    - /url: /help
-- alert: TrackCal — Food & Nutrition Journal

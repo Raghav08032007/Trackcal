@@ -27,6 +27,13 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-13 | 3 | `tests/test_api.py::test_barcode_lookup_endpoint` can reach the live Open Food Facts API ("mock or live"), so it depends on the network | Test docstring; about 1.8 s per run | Stub the provider in Phase 2 (barcode reliability), which rewrites this path |
 | KI-14 | 3 | The browser privacy check is flaky with Chromium's fake camera: 13 of 16 runs passed after each viewport got its own browser. Failures were browser-side (the fake device reporting "Requested device not found", or an early failure that did not reproduce); server logs showed no errors | `docs/phase1-privacy-browser-evidence.json` records retries and the page text on failure | Re-run on a CI browser image; confirm camera lifecycle on real phones (manual test list) |
 
+## Found during step 4 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-15 | 2 | `GET /adventure/summary` locks the user row (`SELECT … FOR UPDATE`) on every read, because it can also persist newly earned achievements. Reads queue behind each other and behind account changes. The client now sends one request per page (fixed), but the server design remains | Staircase timings (0.7 → 1.9 s) for three concurrent reads; 56 s password change under SQL echo | Phase 6: compute the summary without locks and take locks only when an unlock must be written; load-test with realistic history (also covers P1-04) |
+| KI-16 | 3 | `APP_ENV=development` turns on SQL echo for every statement, which slows a busy server dramatically (52,000 log lines in one test session) | Test server log | Make SQL echo opt-in (`SQL_ECHO=true`) rather than tied to development mode |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |

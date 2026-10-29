@@ -1,0 +1,31 @@
+{
+ "date": "2026-10-29",
+ "stack": "Vite + Flask (isolated test schema)",
+ "providers": "stubbed in the browser",
+ "checks": [
+  "mobile360: Play journey starts and persists after reload",
+  "mobile360: barcode lookup shows the product and logs it",
+  "mobile360: describing a meal shows the estimated breakdown",
+  "mobile360: global food search shows complete results",
+  "mobile360: recipe serving can be logged",
+  "mobile360: journal lists the logged barcode product",
+  "mobile360: reminder saved and exported as .ics",
+  "mobile360: profile change persists after reload",
+  "mobile360: account export downloads the user's own data",
+  "mobile360: password change works and the new password signs in",
+  "mobile360: closing the account signs out and blocks the session",
+  "desktop: Play journey starts and persists after reload",
+  "desktop: barcode lookup shows the product and logs it",
+  "desktop: describing a meal shows the estimated breakdown",
+  "desktop: global food search shows complete results",
+  "desktop: recipe serving can be logged",
+  "desktop: journal lists the logged barcode product",
+  "desktop: reminder saved and exported as .ics",
+  "desktop: profile change persists after reload",
+  "desktop: account export downloads the user's own data",
+  "desktop: password change works and the new password signs in",
+  "desktop: closing the account signs out and blocks the session",
+  "no page errors"
+ ],
+ "page_errors": []
+}

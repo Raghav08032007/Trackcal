@@ -37,6 +37,36 @@ Not verified: a real meal **photo** through the live model (the stubbed tests co
 
 358/358 backend, 168/168 web, TypeScript, lint 0 errors / 2 accepted warnings. In Chromium: studio 14/14 (now expecting exactly one main navigation), all 27 routes and the 404 page clean at 360 px, and privacy 16/16.
 
-## Remaining in step 4
+## Part 2: feature journeys in a real browser (29 October 2026)
 
-End-to-end UI journeys for every feature while signed in: diary add/edit/delete, saved meals, workouts and camera save, plan and onboarding, quests and XP, reminders, coach booking, smart tools, export, password change and account closure. Each runs at 360 px and desktop, including failure paths.
+All journeys ran on the Vite + Flask stack against the isolated `trackcal_phase3_test` schema (your app data was not used).
+
+| Journey suite | Result | Covers |
+|---|---|---|
+| `tests/e2e-phase2.mjs` | **7/7** | Login, plan activity substitution persisted, accessible plan names, keyboard navigation, reduced motion, youth-calculator bypass rejected |
+| `tests/e2e-phase3.mjs` | **17/17** | Signup, food search, local photo preview (no upload), scanner confirmation with XP and companion reaction, diary correction, saved meal and favorite, workout sessions and sets, duplicate-completion zero XP, badges and levels, mobile/tablet/desktop layouts |
+| `tests/e2e-phase4.mjs` | **18/18** (SIMULATED camera) | Camera permission flow, rep counting for squat/push-up/curl, pause/resume, corrections, saved history, denied permission fallback, same-app navigation releases the camera |
+| `tests/e2e-journeys.mjs` (new) | **23/23** at 360 px and desktop | Play start persists; barcode, describe, food library and recipe logging; journal; reminder saved and exported as `.ics`; profile change persists; account export; password change then sign-in with the new password; account closure blocks the session |
+| Studio, privacy, all-route crawl | **14/14, 16/16, 28/28** | |
+
+Public providers are stubbed inside `e2e-journeys.mjs` for determinism; they were verified live in part 1.
+
+### Defects found by the journeys and fixed
+
+| Defect | Severity | Fix |
+|---|---|---|
+| **The camera stayed on after tapping a link away from the camera page** until the next page's code had loaded (React Router keeps the old page during loading) | Sev-1 privacy | The camera page stops all tracks on any same-site link click and on Back/Forward, before navigation starts |
+| **The Vite app loaded fonts from Google Fonts**, sending every visitor's IP address to Google (Next.js had self-hosted them) | Sev-1 privacy | Geist is bundled with the app (`@fontsource-variable/geist` 5.3.0, OFL-1.1); no third-party font requests |
+| Each page asked the server for the XP summary up to three times; the summary takes row locks, so the requests queued and delayed other account actions (Phase 1 limitation P1-05) | Sev-2 | One shared request, reused for 1.5 s; any XP change or account switch clears it; tests reset it between cases |
+| The phase 4 script still used the removed "Workout history" header link | Test | Uses the Move section navigation |
+| Evidence files carried a hard-coded date | Test | Use the run date |
+
+### Not covered by a browser journey
+
+- **Coach booking:** needs an approved professional account; covered by API tests (`tests/test_coaching.py`).
+- **Smart tools** (pantry, shopping, recipe import, label OCR, local speech): they need the optional Grocy, Mealie, OCR and Whisper services, which were not running; covered by API tests with recorded fixtures.
+- **Real phones and real photos:** see the manual test list in the reports.
+
+### Timing note
+
+During this run the computer was heavily loaded by other applications (CPU 66%; a plain Python loop ran about 20× slower than normal). bcrypt password hashing took 2–5 s and one password change took 56 s while SQL echo logging (`APP_ENV=development`) was on. Timings in this session are not representative; Phase 6 includes a proper load test.
