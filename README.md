@@ -106,7 +106,7 @@ Scan the QR code with the Expo Go app on iOS or Android to test the native mobil
 
 AI estimates and browser-local tracking do not need MySQL, but they do need the Flask API running:
 
-1. In `backend/.env`, set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL=openrouter/free`. The key stays on the server; never give it a `VITE_` prefix, which would publish it in the browser bundle. `frontend/web/.env.local` is no longer read and can be deleted.
+1. In `backend/.env`, set `OPENROUTER_API_KEY`, and optionally `OPENROUTER_MODEL` (one model or a comma-separated fallback list; the default is two named free vision models). Do not use `openrouter/free`: it picks any free model, including ones that cannot read food. The key stays on the server; never give it a `VITE_` prefix, which would publish it in the browser bundle. `frontend/web/.env.local` is no longer read and can be deleted.
 2. Start the API, then run `npm install` and `npm run dev` in `frontend/web`.
 3. Upload a meal or nutrition-label photo, describe a meal, scan/type a barcode, or use manual entry in Journal & Coach.
 

@@ -188,7 +188,16 @@ def test_ai_recomputes_nutrition_and_keeps_credentials_out(internet):
     data = response.get_json()
     assert response.status_code == 200 and data['total_nutrition']['calories'] == 78 and data['is_mock'] is False
     assert 'unit-test-key' not in response.get_data(as_text=True)
-    assert calls[0]['json']['model'] == 'openrouter/free'
+    # Named free vision models in fallback order, never the any-free-model router.
+    from services.openrouter_client import DEFAULT_MODELS
+    assert calls[0]['json']['models'] == list(DEFAULT_MODELS) and 'model' not in calls[0]['json']
+
+
+def test_ai_sends_a_single_configured_model_as_one_model(internet, monkeypatch):
+    monkeypatch.setenv('OPENROUTER_MODEL', 'example/vision-model:free')
+    calls, replies = internet; replies.append(model_reply(json.dumps({'components': [ITEM]})))
+    assert post(browser(), '/api/analyze', {'text': 'Egg'}).status_code == 200
+    assert calls[0]['json']['model'] == 'example/vision-model:free' and 'models' not in calls[0]['json']
 
 
 @pytest.mark.parametrize('status', [401, 429, 503])

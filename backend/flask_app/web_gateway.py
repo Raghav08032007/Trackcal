@@ -17,6 +17,7 @@ import httpx
 from flask import Blueprint, current_app, g, jsonify, request
 
 from services.meal_analysis import normalize_meal
+from services.openrouter_client import model_fields
 
 bp = Blueprint('web', __name__, url_prefix='/api')
 ACCESS, REFRESH = 'trackcal_access', 'trackcal_refresh'
@@ -341,7 +342,7 @@ def analyze():
                 if not quota.ok: return forward(quota)
             except Exception: return error('Account verification is unavailable. Please try again.', 503)
         content = [{'type': 'text', 'text': text or 'Analyze this meal photo.'}, {'type': 'image_url', 'image_url': {'url': image}}] if image else text
-        payload = {'model': os.getenv('OPENROUTER_MODEL') or 'openrouter/free', 'messages': [{'role': 'system', 'content': SYSTEM_PROMPT}, {'role': 'user', 'content': content}],
+        payload = {**model_fields(), 'messages': [{'role': 'system', 'content': SYSTEM_PROMPT}, {'role': 'user', 'content': content}],
                    'response_format': {'type': 'json_object'}, 'temperature': 0.1, 'max_tokens': 2500}
         for attempt in range(2):
             try:
@@ -354,7 +355,7 @@ def analyze():
                 body = response.json(); raw = (body.get('choices') or [{}])[0].get('message', {}).get('content')
                 if not isinstance(raw, str): raise ValueError('No response')
                 cleaned = re.sub(r'\s*```$', '', re.sub(r'^```(?:json)?\s*', '', raw.strip(), flags=re.I))
-                return reply(normalize_meal(json.loads(cleaned), body.get('model') or 'openrouter/free'))
+                return reply(normalize_meal(json.loads(cleaned), body.get('model') or 'unknown model'))
             except Exception as failure:
                 if str(failure).startswith('No readable food found'): return error(str(failure), 422)
                 if attempt == 1: break

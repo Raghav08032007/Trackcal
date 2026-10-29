@@ -1,5 +1,5 @@
 {
- "run_at": "2026-10-29T01:44:43.331Z",
+ "run_at": "2026-10-29T02:22:54.125Z",
  "camera": "SIMULATED (Chromium --use-fake-device-for-media-stream)",
  "checks": [
   "mobile360: camera page opens without requesting the camera",

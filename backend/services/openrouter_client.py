@@ -10,7 +10,15 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DEFAULT_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+# Named models, tried in order (OpenRouter fallback). Never the bare "openrouter/free" router: it picks any free
+# model per request, including classifiers that cannot read food (found 29 October 2026).
+DEFAULT_MODELS = ("google/gemma-4-31b-it:free", "nvidia/nemotron-3.5-super-vl:free")
+
+
+def model_fields(model=None):
+    """Request fields for the configured model(s): OPENROUTER_MODEL may be one model or a comma-separated list."""
+    names = [name.strip() for name in (model or os.getenv("OPENROUTER_MODEL") or "").split(",") if name.strip()] or list(DEFAULT_MODELS)
+    return {"model": names[0]} if len(names) == 1 else {"models": names}
 
 
 class FoodEstimate(BaseModel):
@@ -46,7 +54,6 @@ async def analyze_food_image_openrouter(
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY is not configured in .env")
 
-    target_model = model or os.getenv("OPENROUTER_MODEL", DEFAULT_MODEL)
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
     data_url = f"data:{mime_type};base64,{b64_image}"
 
@@ -76,7 +83,7 @@ async def analyze_food_image_openrouter(
     }
 
     payload = {
-        "model": target_model,
+        **model_fields(model),
         "messages": [
             {
                 "role": "user",
@@ -122,7 +129,6 @@ async def parse_text_meal_openrouter(
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY is not configured in .env")
 
-    target_model = model or os.getenv("OPENROUTER_MODEL", DEFAULT_MODEL)
 
     prompt = (
         f"You are a nutritional nutrition parser. Parse this user meal description into individual food components: '{text}' (Language: {language}).\n"
@@ -145,7 +151,7 @@ async def parse_text_meal_openrouter(
     }
 
     payload = {
-        "model": target_model,
+        **model_fields(model),
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2,
         "max_tokens": 2500,
