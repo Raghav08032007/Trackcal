@@ -1,7 +1,7 @@
 import { announceXp } from "@/lib/celebrate";
 import type {AdventureSummary} from './adventure';
 export type Nutrients={calories:number|null;protein:number|null;carbs:number|null;fat:number|null};
-export type FoodItem={id?:string;name:string;grams:number;nutrients:Nutrients;food_id?:string|null;manual_override?:boolean;estimated:boolean;source:string;category?:string;cuisine?:string};
+export type FoodItem={id?:string;name:string;grams:number;nutrients:Nutrients;food_id?:string|null;manual_override?:boolean;estimated:boolean;source:string;category?:string;cuisine?:string;source_label?:string;matched_name?:string|null};
 export type CloudEntry={id:string;day:string;meal_type:string;method:string;notes:string;items:FoodItem[];totals:Nutrients};
 export type SavedMeal={id:string;name:string;meal_type:string;items:FoodItem[];requires_review:boolean};
 export type NutritionData={today:string;day:string;timezone:string;entries:CloudEntry[];has_more:boolean;favorites:{id:string;food_key:string;item:FoodItem}[];saved_meals:SavedMeal[];recent:CloudEntry[];recent_searches:string[];suggestions:{meals:{id:string;name:string;tip:string;substitution:string}[];nutrition_note:string}};

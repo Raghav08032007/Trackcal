@@ -15,6 +15,17 @@ it('searches and explicitly confirms a meal with a stable ID and transparent rew
  fireEvent.change(screen.getByLabelText('Food search'),{target:{value:'rice'}});await userEvent.click(screen.getByRole('button',{name:'Search catalog'}));await screen.findByRole('button',{name:'Choose Reviewed rice'});await userEvent.click(screen.getByRole('button',{name:'Choose Reviewed rice'}));await userEvent.click(screen.getByRole('button',{name:'Confirm diary entry'}));await screen.findByText(/Meal saved · \+10/);
  const call=fetcher.mock.calls.find(([url,options])=>String(url).endsWith('/diary')&&options?.body);const body=JSON.parse(call![1].body);expect(body.items[0].grams).toBe(150);expect(body.xp).toBeUndefined();expect(body.id).toMatch(/^[0-9a-f-]{36}$/);
 });
+it('says which spelling and local name matched, and which source the values come from',async()=>{
+ const ragi={...food,id:'ragi',food_id:'ragi',name:'Ragi (Finger millet)',source:'ifct',source_label:'IFCT 2017, National Institute of Nutrition, Hyderabad',matched_name:'Kelvaragu (Tamil)'};
+ vi.stubGlobal('fetch',vi.fn(async(url)=>Response.json(String(url).includes('/foods?')?{results:[ragi],has_more:false,regional_names:[],matched_term:'finger millet'}:diary)));render(<NutritionDashboard/>);await screen.findByRole('heading',{name:'Your food diary'});
+ fireEvent.change(screen.getByLabelText('Food search'),{target:{value:'ragi'}});await userEvent.click(screen.getByRole('button',{name:'Search catalog'}));
+ await screen.findByText('Showing results for “finger millet”.');expect(screen.getByText('Also called Kelvaragu (Tamil)')).toBeTruthy();expect(screen.getByText(/IFCT 2017, National Institute of Nutrition/)).toBeTruthy();
+});
+it('offers to add a food that the catalog does not have, with unknown values left blank',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url)=>Response.json(String(url).includes('/foods?')?{results:[],has_more:false,regional_names:[]}:diary)));render(<NutritionDashboard/>);await screen.findByRole('heading',{name:'Your food diary'});
+ fireEvent.change(screen.getByLabelText('Food search'),{target:{value:'Kozhukattai'}});await userEvent.click(screen.getByRole('button',{name:'Search catalog'}));
+ await userEvent.click(await screen.findByRole('button',{name:'Add “Kozhukattai” yourself'}));expect((screen.getByLabelText('Food name 1') as HTMLInputElement).value).toBe('Kozhukattai');
+});
 it('shows an honest empty cloud diary and retains a failed meal draft',async()=>{
  const fetcher=vi.fn(async(_url,options)=>options?.body?Response.json({error:'Network unavailable'},{status:503}):Response.json(diary));vi.stubGlobal('fetch',fetcher);render(<NutritionDashboard/>);await screen.findByRole('heading',{name:'Your food diary'});
  fireEvent.change(screen.getByLabelText('Food name 1'),{target:{value:'Keep my draft'}});await userEvent.click(screen.getByRole('button',{name:'Confirm diary entry'}));await screen.findByRole('alert');expect((screen.getByLabelText('Food name 1') as HTMLInputElement).value).toBe('Keep my draft');
@@ -36,4 +47,10 @@ it('retains workout edits across a failed save and remount without overwriting t
  vi.stubGlobal('fetch',vi.fn(async(url,options)=>options?.body?Response.json({error:'Offline save failed'},{status:503}):Response.json(String(url).includes('exercises')?{results:[exercise]}:{sessions:[session],current:session,templates:[],plan:null,has_more:false,insights:{completed:0,recorded_minutes:0,note:'Self report'}})));
  const first=render(<WorkoutDashboard/>);await screen.findByLabelText('Recorded session minutes');fireEvent.change(screen.getByLabelText('Recorded session minutes'),{target:{value:'12'}});await userEvent.click(screen.getByRole('button',{name:'Save progress'}));await screen.findByRole('alert');expect((screen.getByLabelText('Recorded session minutes') as HTMLInputElement).value).toBe('12');first.unmount();
  render(<WorkoutDashboard/>);await screen.findByLabelText('Recorded session minutes');expect((screen.getByLabelText('Recorded session minutes') as HTMLInputElement).value).toBe('12');expect(screen.getByText('Changes saved on this device. Save progress to sync to your account.')).toBeTruthy();
+});
+it('clears the previous empty state when a later search fails',async()=>{
+ let fail=false;vi.stubGlobal('fetch',vi.fn(async(url)=>String(url).includes('/foods?')?(fail?Response.json({error:'Service unavailable'},{status:503}):Response.json({results:[],has_more:false,regional_names:[]})):Response.json(diary)));render(<NutritionDashboard/>);await screen.findByRole('heading',{name:'Your food diary'});
+ fireEvent.change(screen.getByLabelText('Food search'),{target:{value:'zzqq'}});await userEvent.click(screen.getByRole('button',{name:'Search catalog'}));await screen.findByRole('button',{name:'Add “zzqq” yourself'});
+ fail=true;fireEvent.change(screen.getByLabelText('Food search'),{target:{value:'rice'}});await userEvent.click(screen.getByRole('button',{name:'Search catalog'}));await screen.findByRole('alert');
+ expect(screen.queryByRole('button',{name:/yourself/})).toBeNull();
 });

@@ -11,6 +11,7 @@ import {foodRoutes,foodNames} from "@/lib/feature-guide";
 import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
+import { wellnessRequest } from "@/lib/wellness";
 import {
   Camera,
   Flame,
@@ -427,6 +428,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [selectedBarcodeProduct, setSelectedBarcodeProduct] = useState<BarcodeView>(PACKAGED_BARCODE_PRODUCTS[0]);
   // Values the user typed from the packaging label for nutrients Open Food Facts does not list.
   const [barcodeOverrides, setBarcodeOverrides] = useState<Partial<Record<BarcodeKey, number>>>({});
+  const [savingBarcode, setSavingBarcode] = useState(false);
   const barcodeValues: Nutrients = {
     energy_kcal: barcodeOverrides.caloriesPer100g ?? selectedBarcodeProduct.caloriesPer100g, protein_g: barcodeOverrides.proteinPer100g ?? selectedBarcodeProduct.proteinPer100g,
     carbs_g: barcodeOverrides.carbsPer100g ?? selectedBarcodeProduct.carbsPer100g, fat_g: barcodeOverrides.fatPer100g ?? selectedBarcodeProduct.fatPer100g,
@@ -976,6 +978,26 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 >
                   + Log to Journal
                 </button>
+                {user && barcodeComplete && !barcodeSource.startsWith("Demo") && (
+                  <button
+                    disabled={barcodeLoading || savingBarcode}
+                    onClick={async () => {
+                      setSavingBarcode(true);
+                      try {
+                        // Saved as a favourite: it keeps the corrected per-100 g values and appears first in food search.
+                        await wellnessRequest("favorites", { food_key: `barcode-${selectedBarcodeProduct.code}`, item: {
+                          name: [selectedBarcodeProduct.name, selectedBarcodeProduct.brand].filter(Boolean).join(" — ").slice(0, 200), grams: 100,
+                          nutrients: { calories: barcodeValues.energy_kcal, protein: barcodeValues.protein_g, carbs: barcodeValues.carbs_g, fat: barcodeValues.fat_g },
+                          manual_override: Object.keys(barcodeOverrides).length > 0, estimated: false, source: `Barcode ${selectedBarcodeProduct.code}`.slice(0, 90) } });
+                        setNotice("Saved to your foods. Find it under favourites on the Nutrition page.");
+                      } catch (error) { setNotice(error instanceof Error ? error.message : "Couldn't save this food. Try again."); }
+                      finally { setSavingBarcode(false); }
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/60 text-emerald-300"
+                  >
+                    {savingBarcode ? "Saving…" : "Save to my foods"}
+                  </button>
+                )}
               </div>
 
               {/* Per 100g Nutrients Grid */}
