@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor, within, cleanup } from "@testing-library/react";
 import {FoodWorkspace as Home} from "../src/components/food-workspace";
-vi.mock("next/navigation",()=>({useRouter:()=>({push:vi.fn()}),usePathname:()=>"/scanner"}));
+vi.mock("@/lib/navigation", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/navigation")>()),useRouter:()=>({push:vi.fn()}),usePathname:()=>"/scanner"}));
 const journal = () => JSON.parse(localStorage.getItem(`trackcal:journal:${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}-${String(new Date().getDate()).padStart(2,"0")}`) || "[]");
 function navigate(name: string) { const picker=screen.getByText("Choose another food tool").closest("details")!;if(!picker.open)fireEvent.click(screen.getByText("Choose another food tool"));fireEvent.click(screen.getByRole("button", { name })); }
 function value(label: string, text: string) { fireEvent.change(screen.getByLabelText(label, { exact: true }), { target: { value: text } }); }

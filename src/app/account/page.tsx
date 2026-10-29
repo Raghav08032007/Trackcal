@@ -1,8 +1,7 @@
-"use client";
 import { useState } from "react";
 import { AccountSecurity } from "@/components/account-security";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/lib/navigation";
+import { useRouter } from "@/lib/navigation";
 import { ArrowLeft, CloudUpload, Download, Leaf, LogOut, ShieldCheck } from "lucide-react";
 import { useAccount } from "@/components/account-session";
 import { exportLocalEntries, restoreLocalEntries } from "@/lib/use-local-state";

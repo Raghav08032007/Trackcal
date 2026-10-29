@@ -1,6 +1,5 @@
-"use client";
 import {useState} from 'react';
-import Link from 'next/link';
+import Link from "@/lib/navigation";
 import {useAccount} from './account-session';
 import {usePersonalState} from '@/lib/use-personal-state';
 import {personalRequest,type Preferences,type Plan} from '@/lib/personalization';

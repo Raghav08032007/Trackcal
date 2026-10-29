@@ -1,4 +1,3 @@
-"use client";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useLocalState, useStorageWarning, exportLocalEntries } from "@/lib/use-local-state";
 import { useWorkspaceScope } from "./account-session";

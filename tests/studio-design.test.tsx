@@ -2,7 +2,7 @@ import {render,screen,fireEvent} from '@testing-library/react';
 import {it,expect,vi} from 'vitest';
 const route=vi.hoisted(()=>({path:'/nutrition'}));
 const router=vi.hoisted(()=>({push:vi.fn(),replace:vi.fn()}));
-vi.mock('next/navigation',()=>({usePathname:()=>route.path,useRouter:()=>router}));
+vi.mock("@/lib/navigation", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/navigation")>()),usePathname:()=>route.path,useRouter:()=>router}));
 import {TestingGuide} from '../src/components/testing-guide';
 import {StudioNavigation} from '../src/components/studio-navigation';
 import {ThemeControl} from '../src/components/theme-control';

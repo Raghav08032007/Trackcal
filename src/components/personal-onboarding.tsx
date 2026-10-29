@@ -1,6 +1,5 @@
-"use client";
 import {useEffect,useState} from 'react';
-import Link from 'next/link';
+import Link from "@/lib/navigation";
 import {personalRequest,defaultPreferences,type Preferences,type PersonalState} from '@/lib/personalization';
 import {useLocalState} from '@/lib/use-local-state';
 import {MeasurementEntry} from './measurement-entry';

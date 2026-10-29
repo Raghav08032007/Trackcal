@@ -1,5 +1,4 @@
-"use client";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 import { Reminders } from "@/components/reminders";
 import { CoachBooking } from "@/components/coach-booking";
 import { HistoryExport } from "@/components/history-export";

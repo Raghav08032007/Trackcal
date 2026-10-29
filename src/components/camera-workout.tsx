@@ -1,6 +1,5 @@
-'use client';
 import {useEffect,useRef,useState} from 'react';
-import Link from 'next/link';
+import Link from "@/lib/navigation";
 import {useAccount} from './account-session';
 import {useLocalState} from '@/lib/use-local-state';
 import {wellnessRequest,type Session,type TrainingData} from '@/lib/wellness';

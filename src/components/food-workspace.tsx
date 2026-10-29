@@ -1,13 +1,11 @@
-"use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import Image from "next/image";
 import { useAccount } from "@/components/account-session";
 import {personalRequest,assertAdultCalculatorAllowed,type PersonalState} from "@/lib/personalization";
 import { MealIdeaTransfer } from "@/components/meal-idea-transfer";
 import { VoiceInput } from "@/components/voice-input";
 import {type AppTab} from "@/components/app-design";
-import {useRouter} from "next/navigation";
+import {useRouter} from "@/lib/navigation";
 import {foodRoutes,foodNames} from "@/lib/feature-guide";
 import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
@@ -598,12 +596,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div className="scan-privacy-card"><label className="scanner-consent"><input type="checkbox" aria-label="Allow this photo to be sent to the configured AI provider" checked={photoConsent} onChange={e=>setPhotoConsent(e.target.checked)}/> Send this photo for AI analysis</label><p className="scanner-privacy-note">Optional transfer to the configured AI provider. Without consent, your preview stays local. Review estimates; allergens are not assessed.</p><div className="account-actions"><a className="destination-button" href="/nutrition#photo-review">Private photo & manual food selection ↗</a>{pendingPhoto&&photoConsent&&<button type="button" disabled={isScanning} onClick={()=>void handleImageFileChange({target:{files:[pendingPhoto],value:''}} as unknown as React.ChangeEvent<HTMLInputElement>)}>Analyze selected photo</button>}{uploadedImageUrl&&<button type="button" onClick={()=>{photoRequest.current++;setUploadedImageUrl(null);setPendingPhoto(null);if(fileInputRef.current)fileInputRef.current.value='';setScanReady(false);setScanError('Local photo removed.');}}>Delete selected photo</button>}</div></div>
                 <div className="aspect-[4/3] rounded-xl bg-slate-950 border border-slate-800 relative flex flex-col items-center justify-center p-6 text-center overflow-hidden group">
                   {uploadedImageUrl ? (
-                    <Image
+                    <img
                       src={uploadedImageUrl}
                       alt="Uploaded Food"
-                      fill
-                      unoptimized
-                      sizes="(max-width: 1024px) 100vw, 40vw"
                       className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity"
                     />
                   ) : (

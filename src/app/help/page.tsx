@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/lib/navigation";
 const features = [
   ["Photo & label scans", "Upload a clear meal or nutrition-label image. Review the AI estimate and portion before adding it to your journal. Estimates can be corrected in the journal."],
   ["Barcodes & food search", "Scan with your camera or enter a barcode. Search the food library for USDA results, check the portion, then log your food. Camera use needs browser permission."],

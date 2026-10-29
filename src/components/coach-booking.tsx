@@ -1,6 +1,5 @@
-"use client";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 import { useAccount } from "./account-session";
 import { downloadCalendar } from "@/lib/calendar";
 type Coach={id:string;name:string};type Slot={id:string;starts_at:string;ends_at:string};type Booking=Slot&{slot_id:string;status:string;coach_name:string;member_name:string|null;hosting:boolean};

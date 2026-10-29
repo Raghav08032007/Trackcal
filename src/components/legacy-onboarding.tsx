@@ -1,6 +1,5 @@
-"use client";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 
 import { useLocalState } from "@/lib/use-local-state";
 function Setup() {

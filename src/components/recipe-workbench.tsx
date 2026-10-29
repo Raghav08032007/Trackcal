@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { recipeTotals, nutrientKeys, toolRequest, type DraftIngredient, type SavedRecipe } from "@/lib/smart-tools";
 import { useLocalState } from "@/lib/use-local-state";

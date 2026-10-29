@@ -1,6 +1,5 @@
-"use client";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 import { deviceDb, deviceWarning, discardPendingBackup, flushDeviceWrites, pendingBackup, queueBackup, sendPendingBackup, subscribeDevice, type PendingBackup } from "@/lib/offline-db";
 import { exportLocalEntries } from "@/lib/use-local-state";
 import { toolRequest } from "@/lib/smart-tools";

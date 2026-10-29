@@ -1,7 +1,5 @@
-"use client";
 import { useEffect,useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import Link from "@/lib/navigation";
 import { ArrowUpRight,Check,ChevronRight,Flame,Leaf,LoaderCircle,Lock,ShieldCheck,Sparkles,Star,Trophy } from "lucide-react";
 import { useAccount } from "./account-session";
 import { useLocalState } from "@/lib/use-local-state";
@@ -9,7 +7,7 @@ import { adventureRequest,type AdventureSummary,type LabelRound } from "@/lib/ad
 import { CharacterCompanion } from "./character-companion";
 import type { MealLog } from "./journal-tools";
 
-export function SeedMascot({level=1}:{level?:number}){return <div className="seed-world" role="img" aria-label="Pip, a cheerful seed growing a little garden"><span className="seed-orbit"/><span className="seed-spark seed-spark-a">✦</span><span className="seed-spark seed-spark-b">✧</span><div className="seed-ground"/><Image className="seed-realistic" src="/characters/pip-v2.png" alt="" width={350} height={350} priority/>{level>=2&&<span className="garden-flower" aria-label="Level 2 wildflower unlocked">✿</span>}{level>=5&&<span className="garden-crown" aria-label="Level 5 golden canopy unlocked">♛</span>}{level>=10&&<span className="garden-sun" aria-label="Level 10 sunshine unlocked">☀</span>}<span className="seed-label">{level>1?`PIP’S GARDEN · LEVEL ${level}`:"MEET PIP. YOUR GROWING BUDDY."}</span></div>;}
+export function SeedMascot({level=1}:{level?:number}){return <div className="seed-world" role="img" aria-label="Pip, a cheerful seed growing a little garden"><span className="seed-orbit"/><span className="seed-spark seed-spark-a">✦</span><span className="seed-spark seed-spark-b">✧</span><div className="seed-ground"/><img className="seed-realistic" src="/characters/pip-v2.png" alt="" width={350} height={350} fetchPriority="high"/>{level>=2&&<span className="garden-flower" aria-label="Level 2 wildflower unlocked">✿</span>}{level>=5&&<span className="garden-crown" aria-label="Level 5 golden canopy unlocked">♛</span>}{level>=10&&<span className="garden-sun" aria-label="Level 10 sunshine unlocked">☀</span>}<span className="seed-label">{level>1?`PIP’S GARDEN · LEVEL ${level}`:"MEET PIP. YOUR GROWING BUDDY."}</span></div>;}
 
 export function AdventureHub(){
   const {ready,user}=useAccount();

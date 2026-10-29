@@ -1,4 +1,3 @@
-"use client";
 import {useEffect,useState} from 'react';
 import {useAccount} from './account-session';
 import {personalRequest} from '@/lib/personalization';

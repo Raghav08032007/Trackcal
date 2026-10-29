@@ -1,4 +1,3 @@
-"use client";
 import { useEffect,useRef,useState } from "react";
 import type { IScannerControls } from "@zxing/browser";
 async function reader(){

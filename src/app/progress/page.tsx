@@ -1,6 +1,5 @@
-"use client";
 import { useSyncExternalStore } from "react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 import { useAccount, useWorkspaceScope } from "@/components/account-session";
 import { exportLocalEntries, useLocalDate } from "@/lib/use-local-state";
 import type { MealLog } from "@/components/journal-tools";

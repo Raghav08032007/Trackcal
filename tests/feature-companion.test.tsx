@@ -1,7 +1,7 @@
 import {render,screen,fireEvent,waitFor} from '@testing-library/react';
 import {it,expect,vi} from 'vitest';
 const state=vi.hoisted(()=>({path:'/nutrition',user:null as null|{id:string}}));
-vi.mock('next/navigation',()=>({usePathname:()=>state.path}));
+vi.mock("@/lib/navigation", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/navigation")>()),usePathname:()=>state.path}));
 vi.mock('../src/components/account-session',()=>({useAccount:()=>({ready:true,user:state.user})}));
 vi.mock('../src/lib/adventure',()=>({adventureRequest:vi.fn()}));
 import {PageCompanion} from '../src/components/feature-companion';

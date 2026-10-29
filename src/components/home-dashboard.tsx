@@ -1,5 +1,4 @@
-'use client';
-import {useEffect} from 'react';import Link from 'next/link';import {useRouter} from 'next/navigation';import {Camera,Utensils,Activity,Sparkles,CalendarDays,ScanLine,ArrowUpRight,Leaf} from 'lucide-react';
+import {useEffect} from 'react';import Link from "@/lib/navigation";import {useRouter} from "@/lib/navigation";import {Camera,Utensils,Activity,Sparkles,CalendarDays,ScanLine,ArrowUpRight,Leaf} from 'lucide-react';
 import {useAccount,AccountLink} from './account-session';import {DailyProgressHub} from './daily-progress-hub';import {useLocalDate,useLocalState} from '@/lib/use-local-state';import type {MealLog} from './journal-tools';import {PageCompanion} from './feature-companion';
 const destinations=[
  ['/nutrition','Nutrition diary','Review a meal, save a favorite, or correct an entry.',Utensils],['/workouts','Workout sessions','Record familiar movement and revisit your sets.',Activity],['/workouts/camera','Camera studio','Try optional private rep estimates and review your results.',ScanLine],['/plan','My personal plan','Make your week fit your needs, with room for rest.',CalendarDays],['/play','Quests & companions','Learn, earn participation XP, and meet your unlocked crew.',Sparkles],['/scanner','Food photo scanner','Choose a photo and review the estimate before logging.',Camera]

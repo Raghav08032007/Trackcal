@@ -1,4 +1,3 @@
-"use client";
 import {useEffect,useState} from 'react';
 import {personalRequest,type PersonalState} from '@/lib/personalization';
 export function usePersonalState(){

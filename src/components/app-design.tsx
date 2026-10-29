@@ -1,6 +1,5 @@
-"use client";
 import { Camera, ScanBarcode, MessageSquare, Search, BookOpen, ChefHat, ArrowUpRight, Leaf, SlidersHorizontal, CircleHelp, Sparkles, ArrowRight, Home, Activity, CalendarDays, Gamepad2 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 import { AccountLink } from "./account-session";
 export type AppTab = "scanner" | "barcode" | "voice_text" | "database" | "logs" | "recipes";
 const navigation = [

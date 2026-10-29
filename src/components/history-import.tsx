@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { useWorkspaceScope } from "./account-session";
 import { exportLocalEntries,restoreLocalEntries,workspaceKey } from "@/lib/use-local-state";

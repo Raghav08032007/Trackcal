@@ -43,3 +43,6 @@ next-env.d.ts
 
 # local runtime logs
 /runtime/
+
+# vite build output
+/dist/

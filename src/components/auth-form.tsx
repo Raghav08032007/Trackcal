@@ -1,7 +1,6 @@
-"use client";
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/lib/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useAccount } from "./account-session";
 import { ArrowUpRight, Check, Eye, EyeOff, Leaf, LoaderCircle, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 export function AuthForm({ signup = false }: { signup?: boolean }) {

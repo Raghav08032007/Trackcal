@@ -1,13 +1,12 @@
-"use client";
 import {useState,useEffect,useRef} from 'react';
-import Link from 'next/link';
+import Link from "@/lib/navigation";
 import {useAccount} from './account-session';
 import {wellnessRequest,emptyItem,inputItem,portionTotal,type FoodItem,type NutritionData,type CloudEntry} from '@/lib/wellness';
 export function NutritionDashboard(){const {user,ready}=useAccount();return !ready?<main className="account-loading">Opening nutrition…</main>:user?<MemberNutrition key={user.id}/>:<main className="account-page"><section className="account-card"><h1>Your meals, with a little more clarity.</h1><p>Sign in for an account-saved diary, favorites and reusable meals. Your existing device journal is still available.</p><Link href="/login">Sign in →</Link><Link href="/">Open device journal & scanner</Link></section></main>;}
 function MemberNutrition(){
  const [data,setData]=useState<NutritionData|null>(null),[day,setDay]=useState(''),[offset,setOffset]=useState(0),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const [query,setQuery]=useState(''),[category,setCategory]=useState(''),[results,setResults]=useState<FoodItem[]|null>(null),[searchOffset,setSearchOffset]=useState(0),[moreSearch,setMoreSearch]=useState(false),[regional,setRegional]=useState<string[]>([]);
- const [items,setItems]=useState<FoodItem[]>([emptyItem()]),[mealType,setMealType]=useState('breakfast'),[entryId,setEntryId]=useState(()=>crypto.randomUUID()),[editing,setEditing]=useState(false),[notes,setNotes]=useState(''),[mealName,setMealName]=useState(''),[savedId,setSavedId]=useState(()=>crypto.randomUUID());
+ const [items,setItems]=useState<FoodItem[]>([emptyItem()]),[mealType,setMealType]=useState('breakfast'),[entryId,setEntryId]=useState<string>(()=>crypto.randomUUID()),[editing,setEditing]=useState(false),[notes,setNotes]=useState(''),[mealName,setMealName]=useState(''),[savedId,setSavedId]=useState<string>(()=>crypto.randomUUID());
  const [photo,setPhoto]=useState(''),[photoName,setPhotoName]=useState('');const composer=useRef<HTMLElement>(null);
  useEffect(()=>{let alive=true;wellnessRequest<NutritionData>('diary?offset='+offset+(day?'&day='+day:'')).then(v=>{if(alive){setData(v);setError('');}}).catch(e=>{if(alive)setError(e instanceof Error?e.message:'Could not load diary.');});return()=>{alive=false;};},[day,offset]);
  useEffect(()=>()=>{if(photo)URL.revokeObjectURL(photo);},[photo]);

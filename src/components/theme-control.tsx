@@ -1,4 +1,3 @@
-"use client";
 import { useEffect } from "react";
 import { useLocalState } from "@/lib/use-local-state";
 export function ThemeControl(){

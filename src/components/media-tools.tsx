@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { VoiceRecorder } from "./voice-recorder";
 import { readFileData, toolRequest, type Nutrients } from "@/lib/smart-tools";

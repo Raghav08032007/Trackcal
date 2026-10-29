@@ -32,14 +32,17 @@ const startCamera=async(page,label)=>{
   try{await page.waitForFunction(()=>window.__live()>0,null,{timeout:8000});return;}
   catch(error){
    const shown=await page.locator('main').innerText(),reason=/requested device not found|camera disconnected/i.exec(shown);
-   if(attempt>=2||!reason)throw error;
+   if(attempt>=2||!reason){evidence.camera_start_failure={label,attempt,status:(shown.match(/Session: [^\n]+/)||['?'])[0],page_text:shown.slice(0,600)};throw error;}
    evidence.camera_start_retries.push(`${label}: ${reason[0]}`);
   }
  }
 };
-const browser=await chromium.launch({executablePath:process.env.TRACKCAL_CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
+// One browser per viewport: Chromium's fake camera can stay held inside a browser process after a context closes.
+const launch=()=>chromium.launch({executablePath:process.env.TRACKCAL_CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
+let browser;
 try{
  for(const [label,width,height] of [['mobile360',360,780],['desktop',1365,900]]){
+  browser=await launch();
   const context=await browser.newContext({viewport:{width,height},serviceWorkers:'block',permissions:['camera']});
   await context.addInitScript(probe);
   const page=await context.newPage();page.setDefaultTimeout(20000);
@@ -93,7 +96,7 @@ try{
   const analyzed=page.waitForRequest(r=>/\/api\/analyze/.test(r.url())); // armed before the click: a fast request must not be missed
   await page.getByRole('button',{name:/Analyze selected photo/}).click();
   await analyzed;pass(`${label}: positive control: consented analysis request is detected (intercepted locally)`);
-  await context.close();
+  await context.close();await browser.close();browser=null;
  }
 }catch(error){evidence.failures.push(String(error.stack||error));console.error('FAIL',error);process.exitCode=1;}
-finally{await browser.close();await fs.writeFile(new URL('../../../docs/phase1-privacy-browser-evidence.json',import.meta.url),JSON.stringify(evidence,null,1));}
+finally{if(browser)await browser.close();await fs.writeFile(new URL('../../../docs/phase1-privacy-browser-evidence.json',import.meta.url),JSON.stringify(evidence,null,1));}

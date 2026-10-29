@@ -4,7 +4,7 @@ import {it,expect,vi} from 'vitest';
 vi.mock('../src/components/account-session',()=>({useAccount:()=>({ready:true,user:{id:'minor-member'}}),useWorkspaceScope:()=> 'minor-member',AccountLink:()=> <a href="/account">Account</a>}));
 vi.mock('../src/components/personal-dashboard',()=>({PersonalPlanPreview:()=>null}));
 import {FoodWorkspace as Home} from '../src/components/food-workspace';
-vi.mock('next/navigation',()=>({useRouter:()=>({push:vi.fn()})}));
+vi.mock("@/lib/navigation", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/navigation")>()),useRouter:()=>({push:vi.fn()})}));
 import {assertAdultCalculatorAllowed,defaultPreferences} from '../src/lib/personalization';
 import {calculatePlan} from '../src/lib/nutrition';
 it('blocks signed-in youth from the legacy local calculator even when its age field says adult',async()=>{

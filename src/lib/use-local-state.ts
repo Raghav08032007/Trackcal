@@ -1,4 +1,3 @@
-"use client";
 import { useCallback, useSyncExternalStore, type Dispatch, type SetStateAction } from "react";
 import { validStoredValue } from "./storage-validation";
 import { useWorkspaceScope } from "@/components/account-session";

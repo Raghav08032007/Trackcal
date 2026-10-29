@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import {beforeEach,it,expect,vi} from 'vitest';
 const state=vi.hoisted(()=>({id:'member',path:'/'}));
 vi.mock('../src/components/account-session',()=>({useAccount:()=>({user:state.id?{id:state.id}:null}),useWorkspaceScope:()=>state.id||'guest'}));
-vi.mock('next/navigation',()=>({usePathname:()=>state.path}));
+vi.mock("@/lib/navigation", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/navigation")>()),usePathname:()=>state.path}));
 import {JourneyCompanion} from '../src/components/journey-companion';
 const initial={initialized:true,owner_id:'member',xp:20,level:1,level_xp:20,level_step:250,today:'2026-10-28',customization:{character_id:'pip',accessory:'none',enabled:true,minimized:true,muted:false,position:'right',protection_enabled:true},achievements:[{code:'first_workout',title:'First Workout',status:'unlocked',progress:1,required:1,operational:true}],companion_unlocks:[{id:'pip',level:1,required_xp:0,unlocked:true},{id:'nova',level:2,required_xp:250,unlocked:false}],engagement_streak:{current:1,best:1,history:[{day:'2026-10-28',status:'engaged'}]},rest_days_remaining:2,rest_today:false};
 beforeEach(()=>{state.id='member';state.path='/';vi.stubGlobal('fetch',vi.fn(async(_url,options)=>{if(options?.body){const body=JSON.parse(options.body);return Response.json({...initial,customization:body});}return Response.json(initial);}));});

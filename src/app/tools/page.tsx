@@ -1,6 +1,5 @@
-"use client";
 import { useCallback, useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 import { Leaf, ArrowLeft, Sparkles } from "lucide-react";
 import { useAccount, useWorkspaceScope } from "@/components/account-session";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";

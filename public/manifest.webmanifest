@@ -1,0 +1,40 @@
+{
+  "name": "TrackCal — Food & Nutrition Journal",
+  "short_name": "TrackCal",
+  "description": "Review meals, plan around your pantry and build daily habits.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f6ef",
+  "theme_color": "#214c38",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Smart tools",
+      "url": "/tools"
+    },
+    {
+      "name": "Offline journal",
+      "url": "/offline.html"
+    }
+  ]
+}

@@ -1,6 +1,5 @@
-"use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 export function AccountRecovery({ mode }: { mode: "forgot-password" | "reset-password" | "verify-email" }) {
   const [token, setToken] = useState(""), [busy, setBusy] = useState(false), [message, setMessage] = useState(""), [error, setError] = useState("");
   const captured = useRef(false);

@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { compareFoodCost, expiryState, toolRequest, type PantryEntry, type ShoppingEntry } from "@/lib/smart-tools";
 import { lookupBarcodeNutrition } from "@/lib/api";

@@ -1,7 +1,6 @@
-"use client";
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/lib/navigation";
+import { useRouter } from "@/lib/navigation";
 import { useAccount } from "./account-session";
 import { exportLocalEntries, forgetWorkspaceMemory } from "@/lib/use-local-state";
 import { deviceDb, flushDeviceWrites } from "@/lib/offline-db";

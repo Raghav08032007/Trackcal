@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 const push = vi.hoisted(() => vi.fn());
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("@/lib/navigation", async importOriginal => ({ ...(await importOriginal<typeof import("@/lib/navigation")>()), useRouter: () => ({ push }) }));
 import { AuthForm } from "../src/components/auth-form";
 beforeEach(() => { push.mockReset(); });
 it("recovers from an authentication timeout without inviting duplicate signup", async () => {

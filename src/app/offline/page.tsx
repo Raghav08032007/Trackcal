@@ -1,2 +1,2 @@
-import Link from "next/link";
+import Link from "@/lib/navigation";
 export default function OfflinePage() { return <main className="account-page"><div className="account-card"><h1>Your offline journal is ready.</h1><p>Record meals in the standalone guest journal, including after reopening without a connection. Transfer guest entries to your account when you reconnect. Private account data stays separate.</p><a href="/offline.html">Open offline journal →</a><p>Queued backups retry across the app when your signed-in session reconnects.</p><Link href="/">Open my workspace →</Link></div></main>; }

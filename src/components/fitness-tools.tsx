@@ -1,4 +1,3 @@
-"use client";
 import { useAccount } from "./account-session";
 import { adventureRequest, type AdventureSummary } from "@/lib/adventure";
 import { useState } from "react";

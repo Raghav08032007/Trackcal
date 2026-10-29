@@ -1,4 +1,3 @@
-"use client";
 import {useState} from 'react';
 import {personalRequest} from '@/lib/personalization';
 export function MeasurementEntry({imperial=false}:{imperial?:boolean}){

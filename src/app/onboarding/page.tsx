@@ -1,4 +1,3 @@
-"use client";
 import {useAccount} from "@/components/account-session";
 import {LegacyOnboarding} from "@/components/legacy-onboarding";
 import {PersonalOnboarding} from "@/components/personal-onboarding";

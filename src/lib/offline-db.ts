@@ -1,4 +1,3 @@
-"use client";
 import { Dexie, type EntityTable } from "dexie";
 type CacheRow = { key: string; raw: string; updated: number };
 export type PendingBackup = { scope: string; token: string; entries: Record<string, unknown>; expected_revision: string; status: "queued" | "conflict"; updated: number };

@@ -1,6 +1,5 @@
-"use client";
 import {useState,useEffect,useRef} from 'react';
-import Link from 'next/link';
+import Link from "@/lib/navigation";
 import {useAccount} from './account-session';
 import {useLocalState} from '@/lib/use-local-state';
 import {wellnessRequest,type Exercise,type Session,type ExerciseRecord,type TrainingData} from '@/lib/wellness';
@@ -8,7 +7,7 @@ type Draft={id:string;revision:number;minutes:number;notes:string;exercises:Exer
 export function WorkoutDashboard(){const {user,ready}=useAccount();return !ready?<main className="account-loading">Opening workouts…</main>:user?<MemberWorkouts key={user.id}/>:<main className="account-page"><section className="account-card"><h1>Movement that fits your life.</h1><p>Sign in for resumable workouts, saved templates and private history.</p><Link href="/login">Sign in →</Link><Link href="/tools">Existing local workout tools</Link></section></main>;}
 function MemberWorkouts(){
  const [data,setData]=useState<TrainingData|null>(null),[library,setLibrary]=useState<Exercise[]>([]),[query,setQuery]=useState(''),[category,setCategory]=useState(''),[equipment,setEquipment]=useState(''),[offset,setOffset]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
- const [selection,setSelection]=useState<string[]>([]),[name,setName]=useState('My comfortable session'),[templateId,setTemplateId]=useState(()=>crypto.randomUUID()),[sessionId,setSessionId]=useState(()=>crypto.randomUUID()),[selected,setSelected]=useState<Session|null>(null);
+ const [selection,setSelection]=useState<string[]>([]),[name,setName]=useState('My comfortable session'),[templateId,setTemplateId]=useState<string>(()=>crypto.randomUUID()),[sessionId,setSessionId]=useState<string>(()=>crypto.randomUUID()),[selected,setSelected]=useState<Session|null>(null);
  const [draft,setDraft]=useLocalState<Draft|null>('trackcal:training:draft',null);const [rest,setRest]=useState(0);const editor=useRef<HTMLElement>(null);const [dirty,setDirty]=useState(false);
  async function load(){const v=await wellnessRequest<TrainingData>('training?offset='+offset);setData(v);return v;}
  useEffect(()=>{let alive=true;Promise.all([wellnessRequest<TrainingData>('training?offset='+offset),wellnessRequest<{results:Exercise[]}>('exercises')]).then(([v,l])=>{if(alive){setData(v);setLibrary(l.results);setError('');}}).catch(e=>{if(alive)setError(e instanceof Error?e.message:'Could not load workouts.');});return()=>{alive=false;};},[offset]);

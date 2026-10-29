@@ -1,5 +1,4 @@
-'use client';
-import {useState} from 'react';import Link from 'next/link';
+import {useState} from 'react';import Link from "@/lib/navigation";
 const steps=[
  {title:'Make the space yours',phase:'Foundation',href:'/',action:'Open your workspace',checks:['Try light and dark appearance in the footer.','Use Pause motion or your device’s reduced-motion setting.','On a phone, open the workspace menu and check each destination.'],expected:'Readable text, clear focus, no sideways page scrolling.'},
  {title:'Set up your personal plan',phase:'Phase 2',href:'/onboarding',action:'Open onboarding',checks:['Sign in or create an account you control.','Save your preferences; skip optional measurements if you prefer.','Open My plan, substitute a suitable activity, then reload.'],expected:'Your saved preferences and activity choice remain after reload. Regeneration does not repeat first-time XP.'},

@@ -1,6 +1,5 @@
-"use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/navigation";
 type User = { id: string; email: string; email_verified?: boolean; profile: { display_name?: string } };
 const Session = createContext<{ user: User | null; ready: boolean; reload: () => Promise<void> }>({ user: null, ready: true, reload: async () => {} });
 export function AccountSession({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { useLocalState } from "@/lib/use-local-state";
 import { downloadCalendar,type Reminder } from "@/lib/calendar";

@@ -1,4 +1,3 @@
-"use client";
 import type {Preferences,ReminderChoice} from '@/lib/personalization';
 export function ReminderFields({value,onChange}:{value:Preferences['reminders'];onChange:(v:Preferences['reminders'])=>void}){
  const update=(key:'hydration'|'workout'|'recovery'|'sleep'|'motivation',patch:Partial<ReminderChoice>)=>onChange({...value,[key]:{...value[key],...patch}});
