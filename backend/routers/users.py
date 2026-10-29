@@ -10,6 +10,7 @@ import json
 import math
 import re
 import hashlib
+from timeutil import utcnow
 
 
 
@@ -167,7 +168,7 @@ def delete_account(user: models.User = Depends(get_current_active_user), db: Ses
         slot=db.query(models.CoachSlot).filter_by(id=appointment.slot_id).with_for_update().first()
         if slot and slot.reserved_booking_id==appointment.id:slot.reserved_booking_id=None
     for slot in db.query(models.CoachSlot).filter_by(coach_id=user.id).with_for_update().all():slot.active=False
-    user.deleted_at = datetime.utcnow().replace(microsecond=0)  # DATETIME keeps whole seconds and MySQL rounds, not truncates
+    user.deleted_at = utcnow().replace(microsecond=0)  # DATETIME keeps whole seconds and MySQL rounds, not truncates
     user.is_active = False
     db.commit()
     from services.account_erasure import erase_after

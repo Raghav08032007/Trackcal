@@ -13,6 +13,7 @@ from sqlalchemy import text
 
 import models
 from database import Base
+from timeutil import utcnow
 
 OWNER_COLUMNS = ('user_id', 'owner_id', 'client_id', 'coach_id')
 SET_NULL_CONTENT = (models.AuditLog, models.CommunitySubmission, models.SupportTicket)
@@ -68,5 +69,5 @@ def erase_account(db, user_id):
 
 
 def due_accounts(db, now=None):
-    cutoff = (now or datetime.utcnow()) - timedelta(days=erasure_days())
+    cutoff = (now or utcnow()) - timedelta(days=erasure_days())
     return [row.id for row in db.query(models.User.id).filter(models.User.deleted_at.isnot(None), models.User.is_active.is_(False), models.User.deleted_at <= cutoff)]

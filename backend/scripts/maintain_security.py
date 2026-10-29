@@ -1,12 +1,10 @@
-"""Remove expired security metadata. Does not remove customer nutrition/account records."""
+"""Daily maintenance: remove expired security metadata and apply the data retention policy (services/retention.py).
+Does not remove customer nutrition, workout or account records."""
 import sys
 from pathlib import Path
-from datetime import datetime
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from database import SessionLocal
-from models import AccountActionToken, RateBucket
+from database import SessionLocal  # noqa: E402
+from services import retention  # noqa: E402
 with SessionLocal() as db:
-    tokens = db.query(AccountActionToken).filter(AccountActionToken.expires_at < datetime.utcnow()).delete(synchronize_session=False)
-    buckets = db.query(RateBucket).filter(RateBucket.expires_at < datetime.utcnow()).delete(synchronize_session=False)
-    db.commit()
-print(f"Expired security metadata removed: {tokens} action tokens, {buckets} request buckets.")
+    counts = retention.apply(db)
+print('Retention applied: ' + ', '.join(f'{count} {name}' for name, count in counts.items()) + '.')

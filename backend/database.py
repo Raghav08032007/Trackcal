@@ -29,7 +29,7 @@ engine = create_engine(
     max_overflow=20,
     pool_pre_ping=True,
     pool_recycle=3600,
-    echo=os.getenv("APP_ENV") == "development",
+    echo=os.getenv("SQL_ECHO") == "1",  # opt-in: echoing every statement made development servers crawl (KI-16)
 )
 
 

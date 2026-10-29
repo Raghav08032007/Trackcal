@@ -14,10 +14,10 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-05 | ~~2~~ **Resolved** | Migrations cannot be reversed: plain additive SQL with no down scripts. Master Rule 2 requires reversible migrations for every later phase | `backend/migrations/*.sql`; dry run in TEST_REPORT_P1.md §9 | **Blocks later phases.** First task of the Flask port: adopt Flask-Migrate (Alembic), using the current 57-table schema as the baseline revision |
 | KI-06 | ~~2~~ **Resolved** | No per-module feature-flag system. Master Rule 8 requires every new module behind a flag that defaults to off in production. Only two AI environment flags and per-rule `gamification_rules.enabled` exist | INVENTORY.md "Feature flags" | **Blocks later phases.** Add a small server-side flag table and client hook during the Flask port, before any new module |
 | KI-07 | 2 | Production AI uses free OpenRouter models, which may log or train on meal photos and descriptions | `OPENROUTER_MODEL=openrouter/free` in README local mode; `app/api/analyze/route.ts` | Owner decision before public launch: a paid no-retention model, or a consent notice that names the provider's terms |
-| KI-08 | 3 | `/api/analyze` is unauthenticated and unlimited outside production, and in production when `ENABLE_LOCAL_AI=true` | `app/api/analyze/route.ts:8` | Move behind the backend's authenticated quota in the Flask port. Never set `ENABLE_LOCAL_AI` on a public host |
+| KI-08 | ~~3~~ **Resolved (Phase 6)** | `/api/analyze` is unauthenticated and unlimited outside production, and in production when `ENABLE_LOCAL_AI=true` | `app/api/analyze/route.ts:8` | Phase 2 added per-account, per-guest and service-wide daily caps in every environment; photos are shrunk and stripped first |
 | KI-09 | ~~3~~ **Resolved** | Migration file order: `20261028_gamification_foundation.sql` sorts after the files that depend on it. Harmless today because `bootstrap_schema.py` runs `create_all` first | Dry run | Superseded by Alembic (KI-05) |
 | KI-10 | 3 | Accepted lint warnings (2 since the Vite migration removed the Next `<img>` rule; originally 3): `camera-workout.tsx:22` (ref is a request counter, not a DOM node), `journey-companion.tsx:29` (guarded one-shot effect), `nutrition-dashboard.tsx:24` `<img>` (local `blob:` photos) | `npx eslint .` | Re-check after the Vite migration; the `<img>` warning is Next-specific |
-| KI-11 | 3 | About 1,800 deprecation warnings per backend run, now almost all `datetime.utcnow` (the Starlette TestClient warnings left with FastAPI) | pytest output | Clears with the Flask port; replace `utcnow` with timezone-aware times |
+| KI-11 | ~~3~~ **Resolved (Phase 6)** | About 1,800 deprecation warnings per backend run, now almost all `datetime.utcnow` (the Starlette TestClient warnings left with FastAPI) | pytest output | `timeutil.utcnow()` replaces all 59 `datetime.utcnow` uses in app code; warnings per run 3,156 → 463 (the rest are from tests and libraries) |
 | KI-12 | 3 | `POST /scan/adjust-cooking-style` is public. It is pure arithmetic with no database or provider call | `routers/ai_scan.py:348` | Acceptable; keep public or add a light rate limit |
 
 ## Found during the frontend migration (29 October 2026)
@@ -31,8 +31,8 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 
 | ID | Sev | Issue | Evidence | Plan |
 |---|---|---|---|---|
-| KI-15 | 2 | `GET /adventure/summary` locks the user row (`SELECT … FOR UPDATE`) on every read, because it can also persist newly earned achievements. Reads queue behind each other and behind account changes. The client now sends one request per page (fixed), but the server design remains | Staircase timings (0.7 → 1.9 s) for three concurrent reads; 56 s password change under SQL echo | Phase 6: compute the summary without locks and take locks only when an unlock must be written; load-test with realistic history (also covers P1-04) |
-| KI-16 | 3 | `APP_ENV=development` turns on SQL echo for every statement, which slows a busy server dramatically (52,000 log lines in one test session) | Test server log | Make SQL echo opt-in (`SQL_ECHO=true`) rather than tied to development mode |
+| KI-15 | ~~2~~ **Resolved (Phase 6)** | `GET /adventure/summary` locks the user row (`SELECT … FOR UPDATE`) on every read, because it can also persist newly earned achievements. Reads queue behind each other and behind account changes. The client now sends one request per page (fixed), but the server design remains | Staircase timings (0.7 → 1.9 s) for three concurrent reads; 56 s password change under SQL echo | Summary reads run lock-free first and fall back to the locked path only when something new must be saved (`services/read_only.py`; test proves no locks on a steady-state read) |
+| KI-16 | ~~3~~ **Resolved (Phase 6)** | `APP_ENV=development` turns on SQL echo for every statement, which slows a busy server dramatically (52,000 log lines in one test session) | Test server log | SQL echo is opt-in (`SQL_ECHO=1`) |
 
 ## Found during Phase 2 (29 October 2026)
 
@@ -70,6 +70,13 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-31 | 2 | GST, terms of sale and a refund policy are not decided or published; Razorpay Live activation needs them | `BILLING.md` | Owner, before Live keys |
 | KI-32 | 3 | If the browser closes between Razorpay success and our verify call, Premium starts only when the webhook arrives (`subscription.authenticated`/`activated`), usually within seconds | `services/billing.py` | Accepted; the webhook is the source of truth |
 | KI-33 | 3 | The trial-end reminder is in-app (account page) plus Razorpay's own customer emails; no push notification for it yet | `premium-notice.tsx` | Add a `billing` notification type if beta users miss it |
+
+## Found during Phase 6 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-34 | 3 | `nltk` 3.10.3 (pulled in only by the optional recipe-ingredient parser) has two advisories: GHSA-j456-xh4h-cpf2 (fixed in 3.10.4, released 21 Oct 2026, under the two-week rule) and GHSA-8mgp-746c-j5xp (no fix yet). TrackCal never passes user input to the affected model-loading or Weka APIs | OSV scan, `TEST_REPORT_P6.md` | Upgrade to 3.10.4 after 4 November 2026; recheck OSV monthly |
+| KI-35 | 3 | The browser journeys now take their URLs from `TRACKCAL_E2E_URL` / `PHASE3_TEST_URL` / `TRACKCAL_API_DIRECT`; defaults still point at 3003/8003, which another local tool was using during Phase 6 | `tests/*.mjs` | Set the variables when running them |
 
 ## Resolved during the backend migration (28 October 2026)
 

@@ -9,6 +9,7 @@ import models
 
 REGISTRY = {
     'web_push': 'Opt-in web push reminders (Phase 4)',
+    'closed_beta': 'Invite-only sign-up for the closed beta (Phase 6); existing accounts are unaffected',
     'billing': 'Paid plans, checkout and entitlements (Phase 5)',
     'social_feed': 'Social feed (Phase 7)',
     'communities': 'Communities (Phase 8)',

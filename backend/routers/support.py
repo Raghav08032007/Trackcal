@@ -1,7 +1,7 @@
 """support.py — Support ticket submission and status"""
 from flask_app.params import Depends, HTTPException
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Literal, Optional
 from sqlalchemy.orm import Session
 from database import get_db
 import models
@@ -10,10 +10,10 @@ from routers.auth import get_current_active_user
 
 
 class TicketCreate(BaseModel):
-    subject: str
-    body: str
-    category: str = "other"  # billing, scan, bug, account, other
-    priority: str = "normal"
+    subject: str = Field(min_length=1, max_length=150)
+    body: str = Field(min_length=1, max_length=4000)
+    category: Literal["billing", "scan", "bug", "account", "other", "general", "beta_feedback"] = "other"
+    priority: Literal["low", "normal", "high"] = "normal"
 
 
 def create_ticket(
@@ -21,6 +21,8 @@ def create_ticket(
     user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    from services.abuse_limits import consume
+    consume(db, "support-ticket", str(user.id), 20, 3600)
     ticket = models.SupportTicket(user_id=user.id, **data.model_dump())
     db.add(ticket)
     db.commit()

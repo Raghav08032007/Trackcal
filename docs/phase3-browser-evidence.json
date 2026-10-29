@@ -23,15 +23,15 @@
   "timings": [
     {
       "action": "catalog search + render",
-      "ms": 992
+      "ms": 1031
     },
     {
       "action": "mobile workout heading ready",
-      "ms": 575
+      "ms": 404
     },
     {
       "action": "tablet workout heading ready",
-      "ms": 476
+      "ms": 472
     }
   ],
   "page_errors": [],

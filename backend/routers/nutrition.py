@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 from routers.auth import get_current_active_user
+from timeutil import utcnow
 
 
 
@@ -121,7 +122,7 @@ def monthly_trends(
 ):
     """Return 30/60/90-day average nutrient trends."""
     days = months * 30
-    since = datetime.utcnow() - timedelta(days=days)
+    since = utcnow() - timedelta(days=days)
     logs = db.query(models.MealLog).filter(
         models.MealLog.user_id == user.id,
         models.MealLog.logged_at >= since,
@@ -159,7 +160,7 @@ def log_water(
     entry = models.WaterEntry(
         user_id=user.id,
         amount_ml=data.amount_ml,
-        logged_at=data.logged_at or datetime.utcnow(),
+        logged_at=data.logged_at or utcnow(),
     )
     db.add(entry)
     db.commit()

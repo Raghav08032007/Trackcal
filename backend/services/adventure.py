@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta, date
 from zoneinfo import ZoneInfo
 from flask_app.params import HTTPException
 import models
+from services.read_only import READ_ONLY, locked
 
 COMPANION_UNLOCKS = (("pip", 0), ("nova", 250), ("milo", 500), ("luna", 750), ("rio", 1000), ("sage", 1250))
 
@@ -36,10 +37,10 @@ def streak_days(days,today):
     return current,best
 
 def summary(db,user):
-    item=profile(db,user,locked=True)
+    item=profile(db,user,locked=not READ_ONLY.get())
     if not item: return {"initialized":False}
     day=local_day(item)
-    events=db.query(models.RewardEvent).filter_by(user_id=user.id).order_by(models.RewardEvent.created_at.desc()).with_for_update().all()
+    events=locked(db.query(models.RewardEvent).filter_by(user_id=user.id).order_by(models.RewardEvent.created_at.desc())).all()
     meal_days=sorted({event.local_day for event in events if event.kind=="meal"})
     current,best=streak_days(meal_days,day)
     daily_actions={}

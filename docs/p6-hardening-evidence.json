@@ -1,0 +1,222 @@
+{
+ "date": "2026-10-29",
+ "policy": "from frontend/web/Caddyfile",
+ "summary": [
+  {
+   "page": "desktop guest /",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop guest /login",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop guest /signup",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop guest /privacy",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop guest /terms",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop guest /help",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /nutrition",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /scanner",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /workouts",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /workouts/camera",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /plan",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /play",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /routine",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /premium",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /account",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop member /guide",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "desktop camera running",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px guest /",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px guest /login",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px guest /signup",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px guest /privacy",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px guest /terms",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px guest /help",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /nutrition",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /scanner",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /workouts",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /workouts/camera",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /plan",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /play",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /routine",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /premium",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /account",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px member /guide",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  },
+  {
+   "page": "360px camera running",
+   "csp": 0,
+   "errors": 0,
+   "axe": []
+  }
+ ]
+}

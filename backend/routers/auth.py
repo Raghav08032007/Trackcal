@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 import models
+from timeutil import utcnow
 
 
 # ── Security setup ──────────────────────────────────────────────
@@ -37,6 +38,7 @@ class SignupRequest(BaseModel):
     display_name: Optional[str] = Field(default=None, max_length=100)
     country_code: Optional[str] = "US"
     language_code: Optional[str] = "en"
+    invite_code: Optional[str] = Field(default=None, max_length=40)  # required only while the closed_beta flag is on
 
     @field_validator("password")
     @classmethod
@@ -78,7 +80,7 @@ def _verify_password(raw: str, hashed: str) -> bool:
 
 
 def _create_token(data: dict, expires_delta: timedelta) -> str:
-    payload = {**data, "exp": datetime.utcnow() + expires_delta}
+    payload = {**data, "exp": utcnow() + expires_delta}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -139,6 +141,12 @@ def get_current_active_user(current_user: models.User = Depends(get_current_user
 
 # ── Endpoints ───────────────────────────────────────────────────
 
+def signup_config(db: Session = Depends(get_db)):
+    """Public: whether sign-up currently needs an invite code."""
+    from services.feature_flags import is_enabled
+    return {"invite_required": is_enabled(db, "closed_beta")}
+
+
 def signup(req: SignupRequest, request: Request, db: Session = Depends(get_db)):
     """Register a new user."""
     production_limit(db, "signup", req.email.lower(), 3, 3600)
@@ -147,6 +155,8 @@ def signup(req: SignupRequest, request: Request, db: Session = Depends(get_db)):
     existing = db.query(models.User).filter(models.User.email == req.email.lower()).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
+    from services import invites
+    invites.redeem(db, req.invite_code, request.client.host or "unknown")  # no-op unless the closed beta is on
 
     user = models.User(
         email=req.email.lower(),
@@ -283,7 +293,7 @@ def issue_action(user, purpose, db):
     try: account_mail.configuration()
     except RuntimeError: raise HTTPException(503, "Email delivery is not configured. Please contact support.")
     raw = secrets.token_urlsafe(48)
-    record = models.AccountActionToken(digest=hashlib.sha256(raw.encode()).hexdigest(), user_id=user.id, purpose=purpose, credential=credential_stamp(user.hashed_password), expires_at=datetime.utcnow() + (timedelta(minutes=30) if purpose == "reset" else timedelta(hours=24)))
+    record = models.AccountActionToken(digest=hashlib.sha256(raw.encode()).hexdigest(), user_id=user.id, purpose=purpose, credential=credential_stamp(user.hashed_password), expires_at=utcnow() + (timedelta(minutes=30) if purpose == "reset" else timedelta(hours=24)))
     db.add(record)
     db.flush()
     try: account_mail.deliver(user.email, purpose, raw)
@@ -295,12 +305,12 @@ def issue_action(user, purpose, db):
 
 def consume_action(data, purpose, db):
     record = db.query(models.AccountActionToken).filter_by(digest=hashlib.sha256(data.token.encode()).hexdigest(), purpose=purpose).with_for_update().first()
-    if not record or record.used_at or record.expires_at < datetime.utcnow():
+    if not record or record.used_at or record.expires_at < utcnow():
         raise HTTPException(400, "This link is invalid or expired. Request a new one.")
     user = db.query(models.User).filter_by(id=record.user_id, is_active=True).with_for_update().first()
     if not user or user.deleted_at or not hmac.compare_digest(record.credential, credential_stamp(user.hashed_password)):
         raise HTTPException(400, "This link is invalid or expired. Request a new one.")
-    record.used_at = datetime.utcnow()
+    record.used_at = utcnow()
     return user
 
 

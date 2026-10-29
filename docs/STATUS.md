@@ -31,6 +31,12 @@ No other gaps were found between the owner's feature list and the code.
 | Companion / reminders | **Implemented (Phase 4, flag `web_push` off by default)** | `services/notifications.py`, `routers/push.py`, `public/sw.js`, `components/push-settings.tsx`, `app-updates.tsx`; `tests/test_push.py`, web `push-ui.test.tsx`, `service-worker.test.ts`, `e2e-p4-push.mjs` | Opt-in web push with time zones, quiet hours, daily limit, pause, two-tap off; installable app with safe update prompt; daily motivation. Real-device push NOT VERIFIED (`TEST_REPORT_P4.md`) |
 | Business | **Implemented (Phase 5, flag `billing` off by default)** | `services/billing.py`, `routers/subscriptions.py`, `routers/coaching.py`; web `app/premium/page.tsx`, `lib/billing.ts`; `tests/test_billing.py`, web `premium.test.tsx`, `e2e-p5-premium.mjs` | Premium ₹99/month or ₹799/year with a 7-day first trial via Razorpay Subscriptions; webhook-driven entitlements; coach slots with Premium early access. Real Razorpay Test Mode checkout NOT VERIFIED (no keys yet). No organizer/trainer SaaS |
 
+## Hardening and closed beta (Phase 6)
+
+Content Security Policy and security headers on every page (no violations across all journeys); dependency scan
+(npm 0, Python 1 accepted: KI-34); axe WCAG 2.2 AA clean on 36 page views; invite-only sign-up (`closed_beta` flag),
+in-app feedback, retention policy, privacy page updated. Go/no-go list: `BETA_RUNBOOK.md`; report: `TEST_REPORT_P6.md`.
+
 ## Not in the blueprint, but present
 
 Household integrations (Grocy, Mealie adapters), label OCR and local Whisper speech (need local workers), recipe URL import, pantry and shopping, price observations, PWA manifest and offline guest journal, and the `/guide` interactive test drive.

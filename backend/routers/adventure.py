@@ -25,7 +25,14 @@ def initialize(data:Initialize,user=Depends(get_current_active_user),db:Session=
     if not item: db.add(models.AdventureProfile(user_id=user.id,timezone=data.timezone));db.commit()
     return service.summary(db,user)
 
-def summary(user=Depends(get_current_active_user),db:Session=Depends(get_db)): return service.summary(db,user)
+def summary(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    """Lock-free when nothing new needs saving; otherwise the locked path persists new achievements (KI-15)."""
+    from services.read_only import READ_ONLY,NeedsWrite
+    token=READ_ONLY.set(True)
+    try: return service.summary(db,user)
+    except NeedsWrite: db.rollback()
+    finally: READ_ONLY.reset(token)
+    return service.summary(db,user)
 
 def require_profile(db,user):
     item=service.profile(db,user,locked=True)

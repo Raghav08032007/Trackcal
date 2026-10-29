@@ -142,3 +142,14 @@ def test_complete_day_streak_requires_every_daily_quest(monkeypatch):
     monkeypatch.setattr(adventure,'now',lambda:datetime(2026,10,30,12,tzinfo=timezone.utc))
     data=client.get('/api/v1/adventure/summary',headers=headers).json()
     assert data['task_streak']==0 and data['best_task_streak']==3
+
+
+def test_reading_the_summary_takes_no_row_locks_once_everything_is_saved(monkeypatch):
+    # KI-15: the first read may persist new unlocks (locked path); later reads must not lock anything.
+    from sqlalchemy.orm import Query
+    _, h = account(); init(h)
+    assert client.get('/api/v1/adventure/summary', headers=h).status_code == 200
+    def refuse(self, *args, **kwargs): raise AssertionError('summary read took a row lock')
+    monkeypatch.setattr(Query, 'with_for_update', refuse)
+    second = client.get('/api/v1/adventure/summary', headers=h)
+    assert second.status_code == 200 and second.json()['initialized'] is True

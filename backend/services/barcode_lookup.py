@@ -18,6 +18,7 @@ from sqlalchemy.dialects.mysql import insert as mysql_insert
 
 import models
 from services import nutrition_math
+from timeutil import utcnow
 
 OFF_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
 # Open Food Facts asks for "AppName/Version (contact)". Set OPEN_FOOD_FACTS_CONTACT to an operator email before launch.
@@ -155,7 +156,7 @@ _inflight, _inflight_lock = {}, threading.Lock()
 
 def lookup(db, raw_code, now=None):
     """Product dict (with 'cached'), or raises LookupError_. Concurrent lookups of one code make one live call."""
-    code, now = normalize(raw_code), now or datetime.utcnow()
+    code, now = normalize(raw_code), now or utcnow()
     row = db.get(models.BarcodeCache, code)
     if row and row.expires_at > now:
         if not row.found: raise LookupError_("not_found", "Product not found in Open Food Facts. Enter its nutrition from the label.")

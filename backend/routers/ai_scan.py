@@ -19,6 +19,7 @@ from PIL import Image
 from database import get_db
 import models
 from routers.auth import get_current_active_user
+from timeutil import utcnow
 
 
 MOCK_MODE = os.getenv("AI_MOCK_MODE", "false").lower() == "true"
@@ -212,11 +213,11 @@ def _check_scan_quota(user: models.User, db: Session) -> None:
         return
     if sub.plan_id != "free":
         return  # premium users: no limit enforced here
-    today = datetime.utcnow().date()
+    today = utcnow().date()
     reset_date = sub.ai_scans_reset_at.date() if sub.ai_scans_reset_at else None
     if reset_date != today:
         sub.ai_scans_used_today = 0
-        sub.ai_scans_reset_at = datetime.utcnow()
+        sub.ai_scans_reset_at = utcnow()
     FREE_LIMIT = 5
     if sub.ai_scans_used_today >= FREE_LIMIT:
         raise HTTPException(429, f"Daily scan limit ({FREE_LIMIT}) reached. Please try again tomorrow; manual logging remains available.")
@@ -314,7 +315,7 @@ async def scan_photo(
         })
 
     job.status = models.ScanStatus.completed
-    job.completed_at = datetime.utcnow()
+    job.completed_at = utcnow()
     db.commit()
 
     return {
@@ -416,7 +417,7 @@ async def scan_text(
         })
 
     job.status = models.ScanStatus.completed
-    job.completed_at = datetime.utcnow()
+    job.completed_at = utcnow()
     db.commit()
 
     return {
@@ -529,5 +530,5 @@ def delete_image(image_id:str,user=Depends(get_current_active_user),db:Session=D
     if not image:raise HTTPException(404,'Image not found.')
     target=Path(image.storage_path).resolve();root=STORAGE_PATH.resolve()
     if target.parent!=root or not target.name.startswith(str(user.id)+'_'):raise HTTPException(409,'Image location requires operator review; no unrelated file was removed.')
-    target.unlink(missing_ok=True);image.is_deleted=True;image.deleted_at=datetime.utcnow();db.commit()
+    target.unlink(missing_ok=True);image.is_deleted=True;image.deleted_at=utcnow();db.commit()
     return {'status':'deleted','note':'Image file removed. Private scan/review records remain under account retention policy.'}

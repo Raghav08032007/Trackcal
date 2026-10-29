@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import date,timedelta
 from flask_app.params import HTTPException
 import models
+from services.read_only import locked, writing
 
 KINDS={'saved_meal':'saved_meal_created','onboarding':'onboarding_completed','activity_plan':'activity_plan_created','planner_learning':'planner_education_completed','fitness_learning':'exercise_skill_learned','nutrition_learning':'personal_nutrition_education_completed','recovery':'recovery_activity_completed','meal':'nutrition_log_completed','quiz':'nutrition_education_completed','plan':'personal_plan_activity_completed','workout':'workout_completed','weekly':'weekly_consistency'}
 RULES=[('saved_meal',10,10,True),('onboarding',10,10,True),('activity_plan',10,10,True),('planner_learning',10,10,True),('fitness_learning',10,10,True),('nutrition_learning',10,10,True),('recovery',5,5,True),('meal',10,10,True),('quiz',10,10,True),('plan',10,10,True),('workout',20,20,True),('weekly',25,25,True),('community_contribution',0,0,False),('verified_event_attendance',50,50,False),('verified_challenge_completion',40,40,False)]
@@ -26,8 +27,8 @@ def policy(db):
     return {'level_step':max(1,int(settings.get('level_step',250))),'daily_cap':max(0,row.daily_cap),'rest_days_per_week':max(0,min(7,int(settings.get('rest_days_per_week',2)))),'protected_days_per_week':max(0,min(2,int(settings.get('protected_days_per_week',1))))}
 
 def customization(db,user):
-    item=db.query(models.CharacterCustomization).filter_by(user_id=user.id).with_for_update().first()
-    if not item:item=models.CharacterCustomization(user_id=user.id);db.add(item);db.flush()
+    item=locked(db.query(models.CharacterCustomization).filter_by(user_id=user.id)).first()
+    if not item:writing();item=models.CharacterCustomization(user_id=user.id);db.add(item);db.flush()
     return item
 
 def award(db,user,kind,day,xp=None,key=None,source_id=None,payload=None):
@@ -68,25 +69,25 @@ def state(db,user,day,xp,events):
     config=policy(db);prefs=customization(db,user)
     qualifying=[e for e in events if e.kind in KINDS and e.kind!='weekly' and e.xp>0]
     engaged={e.local_day for e in qualifying}
-    rests=[r.local_day for r in db.query(models.StreakRecord).filter_by(user_id=user.id,kind='rest').with_for_update().all()]
+    rests=[r.local_day for r in locked(db.query(models.StreakRecord).filter_by(user_id=user.id,kind='rest')).all()]
     metrics={'activities':len(qualifying),'workouts':sum(e.kind=='workout' for e in qualifying),'engaged_days':len(engaged),'rest_days':len(rests),'skills':0,'contributions':0,'events':0,'challenges':0}
     audits=db.query(models.ActivityRewardEvent).filter_by(user_id=user.id).all()
     camera=[e for e in audits if e.category=='workout_completed' and (e.payload or {}).get('tracking_method')=='camera']
     metrics.update({'camera_sessions':len(camera),'camera_exercises':len({e.payload.get('exercise') for e in camera}),'camera_days':len({e.local_day for e in camera})})
     metrics.update({'saved_meals':sum(e.category=='saved_meal_created' for e in audits),'wellness_lessons':sum(e.category in ('planner_education_completed','exercise_skill_learned','personal_nutrition_education_completed') for e in audits),'recovery_sessions':sum(e.category=='recovery_activity_completed' and e.awarded_xp>0 for e in audits),'onboardings':sum(e.category=='onboarding_completed' for e in audits),'activity_plans':sum(e.category=='activity_plan_created' for e in audits),'fitness_lessons':sum(e.category=='exercise_skill_learned' for e in audits)})
-    earned={r.code:r for r in db.query(models.UserAchievement).filter_by(user_id=user.id).with_for_update().all()}
+    earned={r.code:r for r in locked(db.query(models.UserAchievement).filter_by(user_id=user.id)).all()}
     achievements=[]
     for definition in db.query(models.AchievementDefinition).order_by(models.AchievementDefinition.code).all():
         value=metrics.get(definition.metric,0)
         if definition.enabled and value>=definition.threshold and definition.code not in earned:
-            row=models.UserAchievement(user_id=user.id,code=definition.code);db.add(row);db.flush();earned[definition.code]=row
+            writing();row=models.UserAchievement(user_id=user.id,code=definition.code);db.add(row);db.flush();earned[definition.code]=row
             from services import notifications;notifications.enqueue_milestone(db,user.id,definition.code)  # opt-in push only
         achievements.append({'code':definition.code,'title':definition.title,'status':'unlocked' if definition.code in earned else 'in_progress' if definition.enabled and value else 'locked','progress':min(value,definition.threshold),'required':definition.threshold,'operational':definition.enabled,'unlocked_at':earned[definition.code].unlocked_at.isoformat()+'Z' if definition.code in earned else None})
-    unlocks={r.character_id for r in db.query(models.CharacterUnlock).filter_by(user_id=user.id).with_for_update().all()}
+    unlocks={r.character_id for r in locked(db.query(models.CharacterUnlock).filter_by(user_id=user.id)).all()}
     milestones=[]
     for index,identifier in enumerate(CHARACTERS):
         required=index*config['level_step']
-        if xp>=required and identifier not in unlocks:db.add(models.CharacterUnlock(user_id=user.id,character_id=identifier));unlocks.add(identifier)
+        if xp>=required and identifier not in unlocks:writing();db.add(models.CharacterUnlock(user_id=user.id,character_id=identifier));unlocks.add(identifier)
         milestones.append({'id':identifier,'level':index+1,'required_xp':required,'unlocked':identifier in unlocks})
     streak=flexible_streak(engaged,rests,day,prefs.protection_enabled,config['protected_days_per_week'])
     monday=day-timedelta(days=day.weekday());rest_used=sum(str(monday)<=v<=str(day) for v in rests)

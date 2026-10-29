@@ -18,6 +18,7 @@ from sqlalchemy.dialects.mysql import CHAR, LONGTEXT, MEDIUMTEXT
 from sqlalchemy.orm import relationship
 
 from database import Base
+from timeutil import utcnow
 
 
 class UserWorkspace(Base):
@@ -25,14 +26,14 @@ class UserWorkspace(Base):
     __tablename__ = "user_workspaces"
     user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     entries = Column(JSON, nullable=False)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=utcnow, onupdate=utcnow)
 
 
 class AdventureProfile(Base):
     __tablename__ = "adventure_profiles"
     user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     timezone = Column(String(80), nullable=False, default="UTC")
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 class RewardEvent(Base):
@@ -43,7 +44,7 @@ class RewardEvent(Base):
     kind = Column(String(30), nullable=False)
     local_day = Column(String(10), nullable=False)
     xp = Column(Integer, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
     __table_args__ = (UniqueConstraint("user_id", "reward_key", name="uq_reward_user_key"),)
 
 
@@ -53,7 +54,7 @@ class AdventureMeal(Base):
     user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     local_day = Column(String(10), nullable=False)
     snapshot = Column(JSON, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 class GameSession(Base):
@@ -72,7 +73,7 @@ class BarcodeCache(Base):
     barcode = Column(String(14), primary_key=True)
     found = Column(Boolean, nullable=False)
     product = Column(JSON, nullable=True)
-    fetched_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    fetched_at = Column(DateTime, nullable=False, default=utcnow)
     expires_at = Column(DateTime, nullable=False, index=True)
 
 
@@ -81,7 +82,7 @@ class FeatureFlag(Base):
     __tablename__ = "feature_flags"
     key = Column(String(64), primary_key=True)
     enabled = Column(Boolean, nullable=False, default=False)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=utcnow, onupdate=utcnow)
     updated_by = Column(String(100), nullable=True)
 
 
@@ -105,7 +106,7 @@ class ActivityRewardEvent(Base):
     rule_version = Column(Integer, nullable=False)
     awarded_xp = Column(Integer, nullable=False, default=0)
     payload = Column(JSON, nullable=False, default=dict)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
     __table_args__ = (UniqueConstraint("user_id", "category", "source_id", name="uq_activity_reward_source"),)
 
 
@@ -122,7 +123,7 @@ class UserAchievement(Base):
     __tablename__ = "user_achievements"
     user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     code = Column(String(50), ForeignKey("achievements.code"), primary_key=True)
-    unlocked_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    unlocked_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 class CharacterCustomization(Base):
@@ -141,7 +142,7 @@ class CharacterUnlock(Base):
     __tablename__ = "character_unlocks"
     user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     character_id = Column(String(20), primary_key=True)
-    unlocked_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    unlocked_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 class StreakRecord(Base):
@@ -149,7 +150,7 @@ class StreakRecord(Base):
     user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     local_day = Column(String(10), primary_key=True)
     kind = Column(String(12), nullable=False, default="rest")
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 class AccountActionToken(Base):
@@ -186,7 +187,7 @@ class CoachBooking(Base):
     slot_id = Column(CHAR(36), ForeignKey("coach_slots.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(CHAR(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     status = Column(String(20), nullable=False, default="confirmed")
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 # ──────────────────────────────────────────────
@@ -198,7 +199,7 @@ def _uuid() -> str:
 
 
 def _now() -> datetime:
-    return datetime.utcnow()
+    return utcnow()
 
 
 # ──────────────────────────────────────────────
@@ -892,7 +893,7 @@ class PersonalizationProfile(Base):
     step = Column(Integer, nullable=False, default=1)
     revision = Column(Integer, nullable=False, default=1)
     completed_at = Column(DateTime, nullable=True)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=utcnow, onupdate=utcnow)
 
 class WellnessMeasurement(Base):
     __tablename__ = 'wellness_measurements'
@@ -903,7 +904,7 @@ class WellnessMeasurement(Base):
     unit = Column(String(12), nullable=False)
     canonical_value = Column(Float, nullable=False)
     recorded_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
     __table_args__ = (Index('ix_measurement_user_kind_time','user_id','kind','recorded_at'),)
 
 class ActivityPlan(Base):
@@ -913,7 +914,7 @@ class ActivityPlan(Base):
     week_start = Column(String(10), nullable=False)
     status = Column(String(12), nullable=False, default='active')
     snapshot = Column(JSON, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
 
 class PlanActivity(Base):
     __tablename__ = 'plan_activities'
@@ -932,7 +933,7 @@ class RecommendationHistory(Base):
     user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
     plan_id = Column(CHAR(36), ForeignKey('activity_plans.id', ondelete='CASCADE'), nullable=False)
     explanation = Column(JSON, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
 
 class ReminderDelivery(Base):
     __tablename__ = 'reminder_deliveries'
@@ -954,7 +955,7 @@ class PushSubscription(Base):
     p256dh = Column(String(200), nullable=False)
     auth = Column(String(100), nullable=False)
     user_agent = Column(String(200), nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
     last_success_at = Column(DateTime, nullable=True)
 
 
@@ -966,7 +967,7 @@ class NotificationSettings(Base):
     types = Column(JSON, nullable=False)  # {type: {"enabled": bool, "time": "HH:MM"}}
     max_per_day = Column(Integer, nullable=False, default=2)
     snooze_until = Column(DateTime, nullable=True)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=utcnow, onupdate=utcnow)
 
 
 class ScheduledNotification(Base):
@@ -985,7 +986,7 @@ class ScheduledNotification(Base):
     last_error = Column(String(200), nullable=True)
     sent_at = Column(DateTime, nullable=True)
     opened_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
     __table_args__ = (Index('ix_scheduled_notifications_due', 'status', 'scheduled_for_utc'),)
 
 
@@ -994,7 +995,7 @@ class NotificationEvent(Base):
     __tablename__ = 'notification_events'
     id = Column(Integer, primary_key=True, autoincrement=True)
     kind = Column(String(20), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, nullable=False, default=utcnow, index=True)
 
 
 class BillingEvent(Base):
@@ -1004,7 +1005,19 @@ class BillingEvent(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     provider_event_id = Column(String(100), nullable=False, unique=True)
     event = Column(String(60), nullable=False)
-    received_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    received_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class InviteCode(Base):
+    """Closed-beta invite. Only the SHA-256 of the code is stored; the code itself is shown once when created."""
+    __tablename__ = 'invite_codes'
+    code_hash = Column(CHAR(64), primary_key=True)
+    label = Column(String(80), nullable=False)
+    max_uses = Column(Integer, nullable=False, default=1)
+    uses = Column(Integer, nullable=False, default=0)
+    expires_at = Column(DateTime, nullable=True)
+    revoked = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
 class SearchSynonym(Base):

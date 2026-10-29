@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from routers.auth import get_current_active_user
 import models
+from timeutil import utcnow
 
 def request_limit(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     if os.getenv("APP_ENV")=="production":
@@ -32,7 +33,7 @@ def priority_until(slot,db):
     from services.feature_flags import is_enabled
     if not slot.published_at or not is_enabled(db,"billing"): return None
     until=slot.published_at+timedelta(hours=PRIORITY_HOURS)
-    return until if until>datetime.utcnow() else None
+    return until if until>utcnow() else None
 
 def slot_data(slot,db=None):
     until=priority_until(slot,db) if db is not None else None
@@ -52,16 +53,16 @@ def coaches(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
 def publish(data:NewSlot,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     coach_only(user)
     start=utc(data.starts_at);end=start+timedelta(minutes=data.minutes)
-    if not datetime.utcnow()+timedelta(minutes=5)<start<datetime.utcnow()+timedelta(days=180): raise HTTPException(422,"Publish slots between five minutes and 180 days in the future.")
+    if not utcnow()+timedelta(minutes=5)<start<utcnow()+timedelta(days=180): raise HTTPException(422,"Publish slots between five minutes and 180 days in the future.")
     db.query(models.User).filter_by(id=user.id).with_for_update().first()
     overlap=db.query(models.CoachSlot).filter(models.CoachSlot.coach_id==user.id,models.CoachSlot.active.is_(True),models.CoachSlot.starts_at<end,models.CoachSlot.ends_at>start).with_for_update().first()
     if overlap: raise HTTPException(409,"This availability overlaps an existing slot.")
-    slot=models.CoachSlot(coach_id=user.id,starts_at=start,ends_at=end,published_at=datetime.utcnow());db.add(slot);db.commit();db.refresh(slot);return slot_data(slot,db)
+    slot=models.CoachSlot(coach_id=user.id,starts_at=start,ends_at=end,published_at=utcnow());db.add(slot);db.commit();db.refresh(slot);return slot_data(slot,db)
 
 def slots(coach_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     coach=db.query(models.User).filter_by(id=coach_id,is_active=True,email_verified=True).first()
     if not coach or coach.deleted_at or coach.role not in (models.UserRole.professional,models.UserRole.admin): raise HTTPException(404,"Coach not found.")
-    rows=db.query(models.CoachSlot).filter(models.CoachSlot.coach_id==coach_id,models.CoachSlot.active.is_(True),models.CoachSlot.starts_at>datetime.utcnow(),models.CoachSlot.reserved_booking_id.is_(None)).order_by(models.CoachSlot.starts_at).limit(200).all()
+    rows=db.query(models.CoachSlot).filter(models.CoachSlot.coach_id==coach_id,models.CoachSlot.active.is_(True),models.CoachSlot.starts_at>utcnow(),models.CoachSlot.reserved_booking_id.is_(None)).order_by(models.CoachSlot.starts_at).limit(200).all()
     return {"slots":[slot_data(row,db) for row in rows]}
 
 def unpublish(slot_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
@@ -72,7 +73,7 @@ def unpublish(slot_id:str,user=Depends(get_current_active_user),db:Session=Depen
     slot.active=False;db.commit();return {"status":"Availability removed"}
 
 def validate_slot(slot,user,db,exclude=None):
-    if not slot or not slot.active or slot.starts_at<=datetime.utcnow(): raise HTTPException(409,"This slot is no longer available.")
+    if not slot or not slot.active or slot.starts_at<=utcnow(): raise HTTPException(409,"This slot is no longer available.")
     coach=db.get(models.User,slot.coach_id)
     if not coach or not coach.is_active or coach.deleted_at or not coach.email_verified or coach.role not in (models.UserRole.professional,models.UserRole.admin): raise HTTPException(409,"Coach unavailable.")
     if coach.id==user.id: raise HTTPException(422,"Choose another coach to book an appointment.")
@@ -102,7 +103,7 @@ def reschedule(booking_id:str,data:Reserve,user=Depends(get_current_active_user)
     if not booking: raise HTTPException(404,"Active appointment not found.")
     locked=db.query(models.CoachSlot).filter(models.CoachSlot.id.in_([booking.slot_id,data.slot_id])).order_by(models.CoachSlot.id).with_for_update().all()
     old=next((row for row in locked if row.id==booking.slot_id),None)
-    if not old or old.starts_at<=datetime.utcnow(): raise HTTPException(409,"Past appointments cannot be rescheduled.")
+    if not old or old.starts_at<=utcnow(): raise HTTPException(409,"Past appointments cannot be rescheduled.")
     slot=next((row for row in locked if row.id==data.slot_id),None);validate_slot(slot,user,db,booking.id)
     old.reserved_booking_id=None;slot.reserved_booking_id=booking.id;booking.slot_id=slot.id;db.commit();return {"status":"Appointment rescheduled"}
 
@@ -111,7 +112,7 @@ def cancel(booking_id:str,user=Depends(get_current_active_user),db:Session=Depen
     if not booking: raise HTTPException(404,"Appointment not found.")
     slot=db.query(models.CoachSlot).filter_by(id=booking.slot_id).with_for_update().first()
     if booking.user_id!=user.id and slot.coach_id!=user.id: raise HTTPException(404,"Appointment not found.")
-    if slot.starts_at<=datetime.utcnow(): raise HTTPException(409,"Past appointments cannot be cancelled.")
+    if slot.starts_at<=utcnow(): raise HTTPException(409,"Past appointments cannot be cancelled.")
     booking.status="cancelled"
     if slot.reserved_booking_id==booking.id:slot.reserved_booking_id=None
     db.commit();return {"status":"Appointment cancelled"}

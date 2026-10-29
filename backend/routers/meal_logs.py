@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 from routers.auth import get_current_active_user
+from timeutil import utcnow
 
 
 
@@ -57,7 +58,7 @@ def create_meal_log(
     totals = _calculate_totals(data.items)
     log = models.MealLog(
         user_id=user.id,
-        logged_at=data.logged_at or datetime.utcnow(),
+        logged_at=data.logged_at or utcnow(),
         meal_type=data.meal_type,
         log_method=data.log_method,
         notes=data.notes,
@@ -202,7 +203,7 @@ def copy_meal_log(log_id: str, user: models.User = Depends(get_current_active_us
 
     new_log = models.MealLog(
         user_id=user.id,
-        logged_at=datetime.utcnow(),
+        logged_at=utcnow(),
         meal_type=original.meal_type,
         log_method="copied",
         total_calories=original.total_calories,

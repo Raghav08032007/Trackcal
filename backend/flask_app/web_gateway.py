@@ -132,6 +132,9 @@ ACCOUNT_DOWN = 'Account service is unavailable. Please try again shortly.'
 
 @bp.get('/account/<action>')
 def account_read(action):
+    if action == 'signup-config':  # public: does sign-up need an invite code?
+        try: return forward(api('GET', '/auth/signup-config'))
+        except Exception: return error(ACCOUNT_DOWN, 503)
     if action not in ACCOUNT_READS: return error('Not found', 404)
     try: return forward(authenticated('GET', ACCOUNT_READS[action]))
     except Exception: return error(ACCOUNT_DOWN, 503)
@@ -157,7 +160,7 @@ def account_write(action):
         if action in ('login', 'signup'):
             if not isinstance(body.get('email'), str) or not isinstance(body.get('password'), str): return error('Email and password are required.', 400)
             response = api('POST', '/auth/login', form={'username': body['email'], 'password': body['password']}) if action == 'login' \
-                else api('POST', '/auth/signup', body=pick(body, 'email', 'password', 'display_name'))
+                else api('POST', '/auth/signup', body=pick(body, 'email', 'password', 'display_name', 'invite_code'))
             if not response.ok: return forward(response)
             save_tokens(response.data)
             return reply({'status': 'Signed in' if action == 'login' else 'Account created'})
@@ -267,6 +270,21 @@ def wellness(path):
         return forward(authenticated(method, '/wellness/' + path + (f'?{urlencode(search)}' if search else ''), body))
     except Exception:
         return error('Your saved records are safe. The service is unavailable; keep this draft open and retry.', 503)
+
+
+# ── Beta feedback ─────────────────────────────────────────────────────────
+
+@bp.post('/feedback')
+def feedback():
+    """In-app feedback, stored as a support ticket. Only what the person typed and the page path are sent."""
+    if not same_origin(): return error('Origin rejected', 403)
+    body, failed = json_object(6000, ('Feedback is too long.', 413), 'Invalid JSON')
+    if failed: return failed
+    message, page = body.get('message'), body.get('page')
+    if not isinstance(message, str) or not message.strip(): return error('Write a short message first.', 400)
+    page = page if isinstance(page, str) and re.fullmatch(r'/[A-Za-z0-9/_-]{0,80}', page) else '/'
+    try: return forward(authenticated('POST', '/support', {'subject': f'Beta feedback from {page}'[:150], 'body': message.strip()[:4000], 'category': 'beta_feedback'}))
+    except Exception: return error('Feedback could not be sent. Your text is still here; please retry.', 503)
 
 
 # ── Premium (flag billing) ────────────────────────────────────────────────
