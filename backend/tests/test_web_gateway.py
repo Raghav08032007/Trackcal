@@ -42,6 +42,8 @@ def internet(monkeypatch):
         if isinstance(reply, Exception): raise reply
         return reply
     monkeypatch.setattr(web_gateway, '_external', fake)
+    from services import barcode_lookup  # barcode lookups go through the shared service
+    monkeypatch.setattr(barcode_lookup, '_http_get', lambda url: fake('GET', url)); monkeypatch.setattr(barcode_lookup, 'breaker', barcode_lookup._Breaker())
     return calls, replies
 
 
@@ -261,15 +263,18 @@ def test_barcode_keeps_legitimate_zeros_and_unknown_nova(internet):
     assert response.status_code == 200 and data['nutrients_per_100g']['energy_kcal'] == 0 and data['nova_group'] is None
 
 
-def test_barcode_rejects_missing_nutrients_rather_than_inventing_zeros(internet):
+def test_barcode_returns_unknowns_as_null_rather_than_inventing_zeros(internet):
     _, replies = internet; replies.append(Fake(200, {'status': 1, 'product': {'nutriments': {}}}))
-    assert browser().get('/api/barcode?code=3017620422003').status_code == 422
+    response = browser().get('/api/barcode?code=3017620422003'); data = response.get_json()
+    assert response.status_code == 200 and data['complete'] is False
+    assert set(data['nutrients_per_100g'].values()) == {None} and 'Open Food Facts' in data['attribution']
 
 
 def test_barcode_reports_not_found_and_timeouts(internet):
-    _, replies = internet; replies += [Fake(200, {'status': 0}), TimeoutError('timeout')]
+    import httpx
+    _, replies = internet; replies += [Fake(200, {'status': 0}), httpx.ReadTimeout('slow'), httpx.ReadTimeout('slow')]
     assert browser().get('/api/barcode?code=3017620422003').status_code == 404
-    assert browser().get('/api/barcode?code=3017620422003').status_code == 502
+    assert browser().get('/api/barcode?code=5449000000996').status_code == 502  # a timeout, retried once
 
 
 def test_food_search_validates_and_keeps_only_complete_records(internet):

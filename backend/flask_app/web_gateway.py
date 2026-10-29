@@ -368,39 +368,18 @@ def analyze():
 
 @bp.get('/barcode')
 def barcode():
-    code = request.args.get('code', '')
-    if not re.fullmatch(r'\d{8,14}', code): return error('Enter an 8–14 digit UPC/EAN barcode.', 400)
-    not_found = 'Product not found. Enter its nutrition manually in your journal.'
+    """Open Food Facts product per 100 g. Unknown nutrients are null (never 0); `complete` says whether calories and
+    all three macros are known, so the app can ask the user to fill gaps from the label."""
+    import database
+    from services import barcode_lookup
+    status = {'invalid': 400, 'not_found': 404, 'unavailable': 502}
     try:
-        response = _external('GET', f'https://world.openfoodfacts.org/api/v2/product/{code}.json', headers={'User-Agent': 'TrackCal/1.0 (local nutrition journal)'}, timeout=12)
-        if response.status_code == 404: return error(not_found, 404)
-        if response.status_code >= 400: return error('Open Food Facts is unavailable. Retry later or enter nutrition manually.', 502)
-        data = response.json()
-        if data.get('status') != 1 or not data.get('product'): return error(not_found, 404)
-        product = data['product']; n = product.get('nutriments') or {}
-        calories = n.get('energy-kcal_100g')
-        if calories is None and 'energy_100g' in n:  # kJ only: convert (missing kcal is unknown, never zero)
-            kilojoules = 0.0 if n['energy_100g'] in (None, '') else _number(n['energy_100g'])
-            calories = float('nan') if kilojoules is None else kilojoules / 4.184
-        values = [calories, n.get('proteins_100g'), n.get('carbohydrates_100g'), n.get('fat_100g')]
-        if any(v is None or v == '' or _number(v) is None or _number(v) < 0 for v in values):
-            return error('This product has incomplete nutrition. Use the packaging label and manual entry.', 422)
-        tags = product.get('allergens_tags') if isinstance(product.get('allergens_tags'), list) else []
-        return reply({'source': 'Open Food Facts', 'barcode': code, 'product_name': product.get('product_name') or 'Packaged food', 'brand': product.get('brands') or '',
-                      'serving_size': product.get('serving_size') or '100g', 'nova_group': product.get('nova_group') if product.get('nova_group') in (1, 2, 3, 4) else None,
-                      'nutrients_per_100g': {'energy_kcal': _number(calories), 'protein_g': _number(n['proteins_100g']), 'carbs_g': _number(n['carbohydrates_100g']),
-                                             'fat_g': _number(n['fat_100g']), 'fiber_g': _number(n.get('fiber_100g')) or 0},
-                      'allergens': [re.sub(r'^[a-z]{2}:', '', tag).replace('-', ' ') for tag in tags if isinstance(tag, str)], 'ingredients_text': product.get('ingredients_text') or ''})
+        with database.SessionLocal() as db:
+            return reply(barcode_lookup.lookup(db, request.args.get('code', '')))
+    except barcode_lookup.LookupError_ as failure:
+        return error(str(failure), status[failure.status])
     except Exception:
-        return error('Product lookup timed out or lost its connection. Retry or log manually.', 502)
-
-
-def _number(value):
-    """JavaScript Number(): finite numbers and numeric strings; None for anything else."""
-    if isinstance(value, bool): return float(value)
-    try: number = float(value)
-    except (TypeError, ValueError): return None
-    return number if number == number and abs(number) != float('inf') else None
+        return error('Product lookup failed. Retry or enter nutrition from the label.', 502)
 
 
 @bp.get('/foods')

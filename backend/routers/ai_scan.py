@@ -490,10 +490,20 @@ async def scan_barcode(
     Live Barcode Scanner (Open Food Facts open-source API integration):
     Resolves UPC/EAN barcodes to verified calories, macros, NOVA classification, and allergen tags.
     """
-    from services.open_food_facts_client import lookup_barcode
-    product = await lookup_barcode(barcode_value)
+    from services import barcode_lookup
+    try:
+        product = barcode_lookup.lookup(db, barcode_value)
+    except barcode_lookup.LookupError_ as failure:
+        if failure.status == "invalid": raise HTTPException(400, str(failure))
+        if failure.status == "unavailable": raise HTTPException(502, str(failure))
+        product = None
     if product:
-        return product
+        n = product["nutrients_per_100g"]  # unknown values stay None (never 0)
+        return {"barcode": product["barcode"], "product_name": product["product_name"], "brand": product["brand"],
+                "serving_size": product["serving_size"], "serving_quantity_g": product["serving_g"], "nova_group": product["nova_group"],
+                "allergens": product["allergens"], "complete": product["complete"], "attribution": product["attribution"], "data_source": "Open Food Facts",
+                "nutrients_per_100g": {"calories": n["energy_kcal"], "protein_g": n["protein_g"], "carbs_g": n["carbs_g"], "fat_g": n["fat_g"],
+                                       "fiber_g": n["fiber_g"], "sugar_g": n["sugar_g"], "sodium_mg": n["sodium_mg"]}}
 
     # Fallback to local DB barcodes table
     db_barcode = db.query(models.Barcode).filter(models.Barcode.barcode_value == barcode_value).first()

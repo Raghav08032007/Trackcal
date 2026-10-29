@@ -66,6 +66,16 @@ class GameSession(Base):
     attempts = Column(Integer, nullable=False, default=0)
 
 
+class BarcodeCache(Base):
+    """Open Food Facts lookups: found products for 30 days, "not found" for 24 hours (services.barcode_lookup)."""
+    __tablename__ = "barcode_cache"
+    barcode = Column(String(14), primary_key=True)
+    found = Column(Boolean, nullable=False)
+    product = Column(JSON, nullable=True)
+    fetched_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False, index=True)
+
+
 class FeatureFlag(Base):
     """Runtime switch for a module listed in services.feature_flags.REGISTRY. No row means the registry default (off)."""
     __tablename__ = "feature_flags"

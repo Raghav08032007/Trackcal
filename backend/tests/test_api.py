@@ -135,8 +135,13 @@ def test_onboarding_tdee_calculation():
         app.dependency_overrides.clear()
 
 
-def test_barcode_lookup_endpoint():
-    """Verify barcode lookup endpoint with mock or live Open Food Facts."""
+def test_barcode_lookup_endpoint(monkeypatch):
+    """Barcode endpoint maps a stubbed Open Food Facts product (no network: KI-13); unknowns stay None."""
+    from services import barcode_lookup
+    class Reply:
+        status_code = 200
+        def json(self): return {"status": 1, "product": {"product_name": "Hazelnut spread", "nutriments": {"energy-kcal_100g": 539, "proteins_100g": 6.3, "carbohydrates_100g": 57.5, "fat_100g": 30.9}}}
+    monkeypatch.setattr(barcode_lookup, "_http_get", lambda url: Reply()); monkeypatch.setattr(barcode_lookup, "breaker", barcode_lookup._Breaker())
     from routers.auth import get_current_active_user
     mock_user = models.User(
         id="test-user-id",
@@ -148,14 +153,12 @@ def test_barcode_lookup_endpoint():
     app.dependency_overrides[get_current_active_user] = lambda: mock_user
 
     try:
-        # Testing a known product barcode (Nutella 3017620422003 or generic 404 test)
         response = client.get("/api/v1/scan/barcode/3017620422003")
-        # In test environment with network access it will return 200 from OpenFoodFacts, or 404 if offline
-        assert response.status_code in [200, 404]
-        if response.status_code == 200:
-            data = response.json()
-            assert "product_name" in data
-            assert "nutrients_per_100g" in data
+        assert response.status_code == 200, response.text
+        data = response.json()
+        assert data["product_name"] == "Hazelnut spread" and data["complete"] is True
+        assert data["nutrients_per_100g"]["calories"] == 539 and data["nutrients_per_100g"]["fiber_g"] is None  # unknown, not 0
+        assert client.get("/api/v1/scan/barcode/3017620422004").status_code == 400  # bad check digit
     finally:
         app.dependency_overrides.clear()
 

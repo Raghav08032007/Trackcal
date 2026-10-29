@@ -50,7 +50,8 @@ def drift():
 
 
 def lost(before, after):
-    return {n: [before[n], after.get(n)] for n in before if n != 'alembic_version' and after.get(n, -1) < before[n]}
+    # Only rows that existed count: a downgrade removing a newer, empty table loses no data.
+    return {n: [before[n], after.get(n)] for n in before if n != 'alembic_version' and before[n] > 0 and (after.get(n) or 0) < before[n]}
 
 
 report = {'source': SOURCE, 'target': TARGET, 'head': HEAD, 'baseline': BASELINE}

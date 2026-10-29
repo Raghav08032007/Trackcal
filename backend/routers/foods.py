@@ -12,7 +12,6 @@ from routers.auth import get_current_active_user
 
 
 USDA_API_KEY = os.getenv("USDA_API_KEY", "DEMO_KEY")
-OFF_APP_NAME = os.getenv("OPEN_FOOD_FACTS_APP_NAME", "GlobalFoodAI")
 
 
 # ── USDA FoodData Central ───────────────────────────────────────
@@ -47,54 +46,6 @@ async def search_usda(query: str, page_size: int = 10) -> list:
     except Exception as e:
         print("USDA search request failed")
         return []
-
-
-async def lookup_barcode_off(barcode: str) -> Optional[dict]:
-    url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
-    headers = {"User-Agent": f"{OFF_APP_NAME}/1.0"}
-    try:
-        async with httpx.AsyncClient(timeout=8) as client:
-            r = await client.get(url, headers=headers)
-            if r.status_code != 200:
-                return None
-            data = r.json()
-            if data.get("status") != 1:
-                return None
-            product = data["product"]
-            n = product.get("nutriments", {})
-            return {
-                "id": f"off_{barcode}",
-                "name": product.get("product_name", "Unknown Product"),
-                "brand": product.get("brands"),
-                "barcode": barcode,
-                "serving_size_g": _parse_float(product.get("serving_size")),
-                "calories": n.get("energy-kcal_100g", n.get("energy-kcal")),
-                "protein_g": n.get("proteins_100g"),
-                "carbs_g": n.get("carbohydrates_100g"),
-                "fat_g": n.get("fat_100g"),
-                "fiber_g": n.get("fiber_100g"),
-                "sugar_g": n.get("sugars_100g"),
-                "sodium_mg": (n.get("sodium_100g") or 0) * 1000,
-                "saturated_fat_g": n.get("saturated-fat_100g"),
-                "ingredients_text": product.get("ingredients_text"),
-                "allergens": product.get("allergens_tags", []),
-                "image_url": product.get("image_url"),
-                "source": "Open Food Facts",
-                "data_source": "open_food_facts",
-                "completeness_score": product.get("completeness", 0),
-            }
-    except Exception as e:
-        print("Open Food Facts lookup failed")
-        return None
-
-
-def _parse_float(val) -> Optional[float]:
-    if val is None:
-        return None
-    try:
-        return float(str(val).replace("g", "").replace("ml", "").strip())
-    except (ValueError, TypeError):
-        return None
 
 
 # ── Endpoints ───────────────────────────────────────────────────
@@ -144,24 +95,32 @@ async def search_foods(
     return {"results": results, "total": len(results), "query": q}
 
 
-async def lookup_barcode(
+def lookup_barcode(
     barcode: str,
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_active_user),
 ):
-    """Look up a product by barcode via local DB or Open Food Facts."""
-    # Check local DB first
+    """Look up a product by barcode: the local catalog first, then Open Food Facts (cached, see services.barcode_lookup).
+    Unknown nutrients are None, never 0."""
+    from services import barcode_lookup
     local = db.query(models.Barcode).filter(models.Barcode.barcode_value == barcode).first()
     if local and local.food:
         f = local.food
         return {"source": "local", "food": {"id": f.id, "name": f.name}}
-
-    # Open Food Facts
-    result = await lookup_barcode_off(barcode)
-    if result:
-        return {"source": "open_food_facts", "food": result}
-
-    raise HTTPException(404, detail="Product not found. You can submit it via Community > Add Missing Food.")
+    try:
+        product = barcode_lookup.lookup(db, barcode)
+    except barcode_lookup.LookupError_ as failure:
+        if failure.status == "not_found":
+            raise HTTPException(404, detail="Product not found. You can submit it via Community > Add Missing Food.")
+        raise HTTPException(400 if failure.status == "invalid" else 502, detail=str(failure))
+    n = product["nutrients_per_100g"]
+    return {"source": "open_food_facts", "food": {
+        "id": f"off_{product['barcode']}", "name": product["product_name"], "brand": product["brand"], "barcode": product["barcode"],
+        "serving_size_g": product["serving_g"], "calories": n["energy_kcal"], "protein_g": n["protein_g"], "carbs_g": n["carbs_g"],
+        "fat_g": n["fat_g"], "fiber_g": n["fiber_g"], "sugar_g": n["sugar_g"], "sodium_mg": n["sodium_mg"], "saturated_fat_g": n["saturated_fat_g"],
+        "ingredients_text": product["ingredients_text"], "allergens": product["allergens"], "source": "Open Food Facts",
+        "data_source": "open_food_facts", "complete": product["complete"], "attribution": product["attribution"],
+    }}
 
 
 def get_food(food_id: str, db: Session = Depends(get_db), user: models.User = Depends(get_current_active_user)):
