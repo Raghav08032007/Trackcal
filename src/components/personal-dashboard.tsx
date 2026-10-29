@@ -8,7 +8,7 @@ import type {WorkoutEntry} from '@/lib/smart-tools';
 import {MeasurementEntry} from './measurement-entry';
 import {ReminderFields} from './personal-reminder-fields';
 
-export function PersonalDashboard(){const {user,ready}=useAccount();return !ready?<main className="account-loading">Loading your plan…</main>:user?<MemberPlan key={user.id}/>:<main className="account-page"><section className="account-card"><h1>A routine made for your day.</h1><p>Sign in to save a personalized weekly plan. Guest nutrition tracking remains available.</p><Link href="/login">Sign in →</Link><Link href="/">Continue tracking</Link></section></main>;}
+export function PersonalDashboard(){const {user,ready}=useAccount();return !ready?<main className="account-loading">Loading your plan…</main>:user?<MemberPlan key={user.id}/>:<main className="account-page"><section className="account-card"><h1>A routine made for your day.</h1><p>Sign in to save a personalized weekly plan. Guest nutrition tracking remains available.</p><div className="gate-actions"><Link className="gate-primary" href="/login">Sign in</Link><Link className="gate-secondary" href="/">Continue tracking</Link></div></section></main>;}
 function MemberPlan(){
  const {data,error}=usePersonalState();const [notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[actionError,setActionError]=useState('');
  const [,setWorkouts]=useLocalState<WorkoutEntry[]>('trackcal:studio:workouts',[]);

@@ -1,6 +1,6 @@
 import { useEffect,useState } from "react";
 import Link from "@/lib/navigation";
-import { ArrowUpRight,Check,ChevronRight,Flame,Leaf,LoaderCircle,Lock,ShieldCheck,Sparkles,Star,Trophy } from "lucide-react";
+import { ArrowUpRight,Check,ChevronRight,Flame,LoaderCircle,Lock,ShieldCheck,Sparkles,Star,Trophy } from "lucide-react";
 import { useAccount } from "./account-session";
 import { useLocalState } from "@/lib/use-local-state";
 import { adventureRequest,type AdventureSummary,type LabelRound } from "@/lib/adventure";
@@ -34,7 +34,7 @@ function Journey({userId}:{userId?:string}){
     const result=await adventureRequest<{awarded_xp:number;summary:AdventureSummary}>('review',{id:mealId,owner_id:userId,day:summary.today,name:eligible.name,calories:eligible.calories,protein:eligible.protein,carbs:eligible.carbs,fat:eligible.fat});
     setSummary(result.summary);setNotice(result.awarded_xp?`+${result.awarded_xp} XP. One thoughtful review, one growing habit.`:'Today’s meal reward is already saved. No duplicate XP.');
   }
-  return <main className={`play-hub${calm?' play-calm':''}`}><header className="play-nav"><Link href="/" className="play-brand"><Leaf size={27}/>trackcal<span>PLAY</span></Link><nav aria-label="Adventure navigation"><Link href="/">Journal <ArrowUpRight size={15}/></Link><Link href="/tools">Planner</Link><Link href="/progress">Nutrition report</Link></nav><button className="play-small" aria-pressed={calm} onClick={()=>setCalm(value=>!value)}>{calm?'Calm mode on':'Calm mode'}</button></header>
+  return <main className={`play-hub${calm?' play-calm':''}`}><div className="play-controls"><button className="play-small" aria-pressed={calm} onClick={()=>setCalm(value=>!value)}>{calm?'Calm mode on':'Calm mode'}</button></div>
     <section className="play-hero"><div><span className="play-sticker"><Sparkles size={14}/> SMALL HABITS. BIG POSSIBILITIES.</span><h1>Good habits.<br/><em>Great adventures.</em></h1><p>Grow a little every day. Log a meal, solve a mystery, and make room for progress at your own pace.</p><div className="play-hero-actions"><a className="play-button" href="#daily-quests">Pick your quest <ChevronRight size={18}/></a><a className="play-button play-button-white" href="#label-detective">Let’s play <Star size={17}/></a></div><span className="play-fine"><ShieldCheck size={14}/> No calorie competitions. No perfect days required.</span></div><SeedMascot level={summary?.level||1}/></section>
     <CharacterCompanion summary={summary} signedIn={!!userId} celebration={notice}/>
     <div className="play-ticker" aria-hidden="true">LOG A LITTLE ✦ LEARN A LITTLE ✦ GROW AT YOUR PACE ✦ LOG A LITTLE ✦ LEARN A LITTLE</div>

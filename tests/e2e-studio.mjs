@@ -13,10 +13,10 @@ try{
   const context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce',serviceWorkers:'block'}),page=await context.newPage();
   page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(name+': '+e.message));
   await page.goto(root);await page.getByRole('heading',{name:'What would help you today?'}).waitFor();
-  assert.equal(await page.getByRole('navigation').count(),0);
+  assert.equal(await page.getByRole('navigation',{name:'Main'}).count(),1);
   for(const path of ['/nutrition','/workouts','/workouts/camera','/plan','/play','/scanner'])assert.equal(await page.locator(`a.destination-card[href="${path}"]`).count(),1);
   assert.equal(await page.locator('input[type=file]').count(),0);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
-  checks.push(`${name}: focused home destinations, no nav bar/scanner clutter or horizontal overflow`);
+  checks.push(`${name}: focused home destinations, one main tab bar, no scanner clutter or horizontal overflow`);
   await page.getByRole('button',{name:/Ask Pip/}).click();await page.getByRole('heading',{name:'Find your next useful step'}).waitFor();
   await page.getByRole('button',{name:'Next step'}).click();await page.getByRole('button',{name:'Why is this useful?'}).click();await page.getByRole('button',{name:'What next?'}).click();
   await page.getByText(/does not award XP/).waitFor();await page.getByRole('button',{name:'Close guidance'}).click();
