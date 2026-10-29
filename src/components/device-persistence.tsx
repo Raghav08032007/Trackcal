@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAccount, useWorkspaceScope } from "./account-session";
 import { hydrateDevice, sendPendingBackup } from "@/lib/offline-db";
+import { registerServiceWorker } from "./app-updates";
 export function DevicePersistence() {
   const { ready, user } = useAccount(); const scope = useWorkspaceScope();
   useEffect(() => { if (ready) void hydrateDevice(scope); }, [ready, scope]);
@@ -13,6 +14,6 @@ export function DevicePersistence() {
     const timer = window.setInterval(retry, 60000);
     return () => { window.removeEventListener("online", retry); window.removeEventListener("focus", retry); window.clearInterval(timer); };
   }, [ready, scope, user]);
-  useEffect(() => { if ("serviceWorker" in navigator && import.meta.env.PROD) void navigator.serviceWorker.register("/sw.js").catch(() => {}); }, []);
+  useEffect(() => { if (import.meta.env.PROD) registerServiceWorker(); }, []);
   return null;
 }

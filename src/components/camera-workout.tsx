@@ -8,6 +8,7 @@ import {EXERCISES,type ExerciseKind,type PoseFrame,type TrackingResult} from '@/
 import {formFeedback} from '@/lib/pose/feedback';
 import type {PoseDetectionService,PoseStats} from '@/lib/pose/detection-service';
 import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
+import {markWorkoutActive} from './app-updates';
 type CameraSet=ReturnType<SessionTracker['summary']>&{corrected_reps:number|null};
 export type CameraDraft={id:string;exercise:ExerciseKind;sets:CameraSet[];minutes:number;planId:string;server_started?:boolean};
 type Status='setup'|'loading'|'tracking'|'paused'|'review'|'saved';
@@ -17,6 +18,7 @@ function MemberCamera(){
  const video=useRef<HTMLVideoElement>(null),canvas=useRef<HTMLCanvasElement>(null),service=useRef<PoseDetectionService|null>(null),tracker=useRef(new SessionTracker('squat')),request=useRef(0),elapsed=useRef(0),lastTick=useRef(0);
  const [exercise,setExercise]=useState<ExerciseKind>('squat'),[status,setStatus]=useState<Status>('setup'),[result,setResult]=useState<TrackingResult|null>(null),[active,setActive]=useState(false),[seconds,setSeconds]=useState(0),[sets,setSets]=useState<CameraSet[]>([]),[correction,setCorrection]=useState<number|null>(null),[overlay,setOverlay]=useState(true),[feedback,setFeedback]=useState(true),[device,setDevice]=useState(''),[facing,setFacing]=useState<'user'|'environment'>('user'),[devices,setDevices]=useState<MediaDeviceInfo[]>([]),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[planId,setPlanId]=useState(''),[training,setTraining]=useState<TrainingData|null>(null),[perf,setPerf]=useState<PoseStats|null>(null),[cue,setCue]=useState(false);
  const [draft,setDraft]=useLocalState<CameraDraft|null>('trackcal:camera:draft',null);const overlayRef=useRef(overlay),feedbackRef=useRef(feedback),cueRef=useRef(cue),lastReps=useRef(0),lowNotified=useRef(false);useEffect(()=>{overlayRef.current=overlay;feedbackRef.current=feedback;cueRef.current=cue;},[overlay,feedback,cue]);
+ useEffect(()=>{markWorkoutActive(status==='loading'||status==='tracking'||status==='paused'||status==='review');return()=>markWorkoutActive(false);},[status]);
  /* A turned phone changes the frame shape: keep the count, restart the movement in progress. */
  useEffect(()=>{const turn=()=>{tracker.current.counter.resetMovement();tracker.current.analyzer.reset();};window.addEventListener('orientationchange',turn);screen.orientation?.addEventListener?.('change',turn);return()=>{window.removeEventListener('orientationchange',turn);screen.orientation?.removeEventListener?.('change',turn);};},[]);
  /* Optional cue for each counted rep: a short vibration where supported and a quiet tone. */

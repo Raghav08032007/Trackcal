@@ -1,3 +1,4 @@
+import {markWorkoutActive} from './app-updates';
 import {useState,useEffect,useRef} from 'react';
 import Link from "@/lib/navigation";
 import {useAccount} from './account-session';
@@ -14,6 +15,7 @@ function MemberWorkouts(){
  useEffect(()=>{if(!dirty)return;const leave=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',leave);return()=>window.removeEventListener('beforeunload',leave);},[dirty]);
  useEffect(()=>{if(rest<=0)return;const timer=setInterval(()=>setRest(v=>Math.max(0,v-1)),1000);return()=>clearInterval(timer);},[rest]);
  const session=selected||data?.current||null;const current=draft&&draft.id===session?.id?draft:session?{id:session.id,revision:session.revision,minutes:session.minutes,notes:session.details.notes,exercises:session.details.exercises}:null;
+ useEffect(()=>{markWorkoutActive(!!data?.current&&data.current.status!=='completed');return()=>markWorkoutActive(false);},[data?.current]);
  function pendingChanges(){return dirty||!!current&&!!session&&(current.minutes!==session.minutes||current.notes!==session.details.notes||JSON.stringify(current.exercises)!==JSON.stringify(session.details.exercises));}
  function patch(patch:Partial<Draft>){if(current){setDraft({...current,...patch});setDirty(true);}}
  function open(row:Session){if(pendingChanges()){setError("Save or discard the current local changes before opening another session.");return;}setSelected(row);if(draft?.id!==row.id)setDraft({id:row.id,revision:row.revision,minutes:row.minutes,notes:row.details.notes,exercises:row.details.exercises});setDirty(false);editor.current?.scrollIntoView();}
