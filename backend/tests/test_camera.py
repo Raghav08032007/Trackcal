@@ -71,3 +71,23 @@ def test_camera_exercises_respect_restrictions_and_are_not_automatically_prescri
  assert 'camera_pushup' not in rules.eligible_templates(Preferences(accessibility=['no_floor']),include_camera=True)
  assert 'camera_curl' not in rules.eligible_templates(Preferences(),include_camera=True)
  assert rules.eligible_templates(Preferences(professional_restrictions='Review first'),include_camera=True)==[]
+
+
+def test_counter_v2_keeps_set_durations_and_flags_large_corrections_without_changing_xp():
+ _,h=account();init(h)
+ s=session(h,['camera_squat'],tracking_method='camera')
+ r=update(h,s,tracking=tracking(version=2,sets=[{'estimated_reps':3,'corrected_reps':None,'duration_s':41.5}]),exercises=records(12))
+ assert r.status_code==200,r.text
+ saved=r.json()['session']['details']['tracking']
+ assert saved['version']==2 and saved['sets']==[{'estimated_reps':3,'corrected_reps':12,'duration_s':41.5}] and saved['large_edit'] is True
+ assert r.json()['awarded_xp']==20
+ small=session(h,['camera_squat'],tracking_method='camera')
+ r=update(h,small,tracking=tracking(version=2),exercises=records(4))
+ assert r.json()['session']['details']['tracking']['large_edit'] is False
+
+
+@pytest.mark.parametrize('bad',[{'version':3},{'sets':[{'estimated_reps':3,'corrected_reps':None,'duration_s':-1}]},{'sets':[{'estimated_reps':3,'corrected_reps':None,'frames':[1,2]}]}])
+def test_camera_summary_rejects_unknown_versions_bad_durations_and_extra_data(bad):
+ _,h=account();init(h)
+ s=session(h,['camera_squat'],tracking_method='camera')
+ assert update(h,s,tracking=tracking(**bad),exercises=records()).status_code==422

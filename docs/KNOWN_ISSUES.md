@@ -43,6 +43,15 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-19 | 3 | The portion range is only as good as the model: if a model ignores `quantity_g_low/high`, the range is a band derived from confidence and the UI says so. Not measured against real meals | `services/meal_analysis.py` | Owner: try 20 real photos with the configured free models before beta |
 | KI-20 | 3 | `scripts/setup_phase3_test_db.py` does not create the Phase 3 browser fixture; `scripts/seed_phase3_e2e.py` must be run after it | Phase 3 journey failed until the seed was run | Run both (recorded in `TEST_REPORT_P2.md`) |
 
+## Found during Phase 3 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-21 | 2 | Rep-counting accuracy has not been measured on real people or phones. All three exercises are labelled **Experimental** in the app until the manual device matrix meets the target (90% of sets within ±1 rep) | `TEST_REPORT_P3.md` device matrix is empty | Owner: run the matrix; remove the label per exercise only if it meets the target |
+| KI-22 | 3 | No MoveNet fallback for low-end phones. Slow devices step down 24 → 15 → 10 fps, then stop with a "use manual logging" message. MediaPipe Pose *lite* is already the lightest MediaPipe model | `detection-service.ts` | Add MoveNet (`@tensorflow-models/pose-detection`, Apache-2.0) only if the device matrix shows low-end phones failing; it needs its own threshold calibration |
+| KI-23 | 3 | The fixtures are synthetic skeletons posed from known angle curves, not recordings of people. They prove the counting logic, not real-world accuracy | `tests/fixtures/pose/generate.mjs` | Add recorded landmark sequences (landmarks only, with consent) from the device matrix runs |
+| KI-24 | 3 | `e2e-p3-camera.mjs` passed 17 of 19 runs with Chrome's fake camera; the 2 failures were not reproducible (same family as KI-14) | Phase 3 runs | Watch in CI; re-run on failure before investigating |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |

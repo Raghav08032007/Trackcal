@@ -16,7 +16,7 @@ Tracks stop and video references clear on stop, pause, end/review, hidden tab, p
 | Raw pose landmarks | Transient worker response/current analyzer/UI state only; no disk/backend landmark history |
 | Camera labels/device IDs | Current page memory; not server profile/storage |
 | Unsaved review | Account-scoped localStorage/IndexedDB count/aggregate draft, until save/discard/site-data clearing; excluded from workspace backup export |
-| Confirmed counts, original estimates, corrections, exercise/method/engine version, aggregate confidence/sample totals | Existing owned MySQL workout session JSON, existing export/history; existing account retention policy applies |
+| Confirmed counts, original estimates, corrections, per-set duration, a large-correction flag (analytics only), exercise/method/engine version (v2 from Phase 3), aggregate confidence/sample totals. The server rejects any other field, so frames or landmarks cannot be saved | Existing owned MySQL workout session JSON, existing export/history; existing account retention policy applies |
 | XP/participation achievements | Existing centralized reward/audit ledger; no confidence ranking, appearance/weight/calorie-burn rewards |
 
 Storage is not encrypted by TrackCal on the device; use a trusted device and clear site data to remove local copies. Signing out does not erase local workspace data. Session deletion hides history and preserves participation audit; account closure deactivates access rather than promising immediate erasure. Operator retention/erasure/security obligations remain existing launch gates. No new analytics/vendor video pipeline is added.
