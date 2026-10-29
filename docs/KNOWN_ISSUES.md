@@ -78,6 +78,15 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-34 | 3 | `nltk` 3.10.3 (pulled in only by the optional recipe-ingredient parser) has two advisories: GHSA-j456-xh4h-cpf2 (fixed in 3.10.4, released 21 Oct 2026, under the two-week rule) and GHSA-8mgp-746c-j5xp (no fix yet). TrackCal never passes user input to the affected model-loading or Weka APIs | OSV scan, `TEST_REPORT_P6.md` | Upgrade to 3.10.4 after 4 November 2026; recheck OSV monthly |
 | KI-35 | 3 | The browser journeys now take their URLs from `TRACKCAL_E2E_URL` / `PHASE3_TEST_URL` / `TRACKCAL_API_DIRECT`; defaults still point at 3003/8003, which another local tool was using during Phase 6 | `tests/*.mjs` | Set the variables when running them |
 
+## Found during Phase 7 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-36 | **1 (launch gate)** | Owner decision: no extra rules for under-18s in a public feed. Adults can find, follow and comment on teenagers' public posts. India's DPDP Act 2023 requires verifiable parental consent before processing a child's (under-18) personal data, and app stores expect child-safety measures for social features. Safety tools exist for everyone (private accounts, block, mute, report, auto-hide, moderation) | `TEST_REPORT_P7.md` | Owner, with legal advice, before the feed is enabled for real users: parental consent flow, or an under-18 restriction, or keep the feed adults-only |
+| KI-37 | 2 | Moderation needs people: reports queue up for an admin (`/moderation`), but nobody is assigned and there is no response-time target. No automated text screening (slurs, self-harm phrases) | `routers/social.py` | Name moderators and a 24 h target before enabling; add a keyword pre-screen that routes to review (not auto-delete) |
+| KI-38 | 3 | No notifications for follows, comments or reactions; people find them by opening the feed | — | Add opt-in `social` notification types if the beta asks for them |
+| KI-39 | 3 | Discover is newest-first public posts with no ranking or spam scoring; at scale it will need pagination by recency windows and spam controls beyond rate limits | `feed()` | Revisit after the beta |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |

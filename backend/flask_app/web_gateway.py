@@ -272,6 +272,34 @@ def wellness(path):
         return error('Your saved records are safe. The service is unavailable; keep this draft open and retry.', 503)
 
 
+# ── Social feed (flag social_feed) ────────────────────────────────────────
+
+SOCIAL = [('GET', r'me'), ('PUT', r'me'), ('GET', r'profiles/[a-z0-9_.]{1,30}'), ('GET', r'profiles/[a-z0-9_.]{1,30}/connections'),
+          ('POST', r'follow/[a-z0-9_.]{1,30}'), ('DELETE', r'follow/[a-z0-9_.]{1,30}'), ('GET', r'requests'), ('POST', r'requests/[a-z0-9_.]{1,30}'),
+          ('POST', r'block/[a-z0-9_.]{1,30}'), ('DELETE', r'block/[a-z0-9_.]{1,30}'), ('GET', r'milestones'), ('GET', r'feed'), ('POST', r'posts'),
+          ('DELETE', r'posts/[0-9a-f-]{36}'), ('POST', r'posts/[0-9a-f-]{36}/reactions'), ('DELETE', r'posts/[0-9a-f-]{36}/reactions'),
+          ('GET', r'posts/[0-9a-f-]{36}/comments'), ('POST', r'posts/[0-9a-f-]{36}/comments'), ('DELETE', r'comments/[0-9a-f-]{36}'),
+          ('POST', r'reports'), ('GET', r'moderation'), ('POST', r'moderation')]
+
+
+@bp.route('/social/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def social_routes(path):
+    method = request.method
+    if not any(m == method and re.fullmatch(p, path) for m, p in SOCIAL): return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        body = None
+        if method in ('POST', 'PUT'):
+            if not request.get_data(cache=True): body = {}  # follow, reactions removal etc. carry no body
+            else:
+                body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+                if failed: return failed
+        query = {k: request.args[k] for k in ('tab', 'before', 'kind') if k in request.args}
+        return forward(authenticated(method, '/social/' + path + (f'?{urlencode(query)}' if query else ''), body))
+    except Exception:
+        return error('The feed is unavailable right now. Nothing was changed; retry later.', 503)
+
+
 # ── Beta feedback ─────────────────────────────────────────────────────────
 
 @bp.post('/feedback')

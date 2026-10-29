@@ -202,7 +202,7 @@ def export_data(user: models.User = Depends(get_current_active_user), db: Sessio
             "reviewed_meals": [row(meal) for meal in db.query(models.AdventureMeal).filter_by(user_id=user.id).all()],
             "game_sessions": [{"id":game.id,"expires_at":game.expires_at,"completed":game.completed,"attempts":game.attempts} for game in db.query(models.GameSession).filter_by(user_id=user.id).all()],
         },
-        "account_records": {name: [row(item, omit) for item in db.query(model).filter_by(user_id=user.id).all()] for name, model, omit in ACCOUNT_RECORDS},
+        "account_records": {name: [row(item, omit) for item in db.query(model).filter(getattr(model, column) == user.id).all()] for name, model, omit, column in ((*entry, "user_id")[:4] for entry in ACCOUNT_RECORDS)},
         "note": "Nutrition and optional adventure data export. Uploaded image files are referenced by ID and are not embedded.",
     }
 
@@ -224,13 +224,20 @@ ACCOUNT_RECORDS = [
     ('notification_settings', models.NotificationSettings, ()),
     ('push_subscriptions', models.PushSubscription, ('endpoint', 'endpoint_hash', 'p256dh', 'auth')),  # push credentials
     ('scheduled_notifications', models.ScheduledNotification, ('idempotency_key',)),  # internal job key
+    ('social_profile', models.SocialProfile, ()),
+    ('posts', models.Post, (), 'author_id'),
+    ('comments', models.Comment, (), 'author_id'),
+    ('reactions', models.PostReaction, ()),
+    ('following', models.Follow, (), 'follower_id'),
+    ('blocks_and_mutes', models.SocialBlock, ()),
+    ('reports_you_made', models.ContentReport, (), 'reporter_id'),
 ]
 EXPORTED_TABLES = {
     'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',
     'food_favorites', 'food_search_history', 'workout_blueprints', 'workout_sessions', 'personalization_profiles',
     'wellness_measurements', 'activity_plans', 'recommendation_history', 'reminder_deliveries', 'activity_reward_events',
     'user_achievements', 'character_unlocks', 'character_customizations', 'streak_records', 'adventure_profiles',
-    'reward_events', 'adventure_meals', 'game_sessions', *(model.__tablename__ for _name, model, _omit in ACCOUNT_RECORDS),
+    'reward_events', 'adventure_meals', 'game_sessions', *(entry[1].__tablename__ for entry in ACCOUNT_RECORDS),
 }
 EXPORT_EXCLUDED = {
     'account_action_tokens': 'one-time recovery and verification token digests (secrets, short-lived)',

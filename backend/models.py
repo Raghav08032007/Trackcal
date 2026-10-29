@@ -1020,6 +1020,83 @@ class InviteCode(Base):
     created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
+# ── Social feed (Phase 7, flag social_feed) ─────────────────────────────────
+
+class SocialProfile(Base):
+    """Public face of an account in the feed. Created when someone picks a handle; nothing is public before that."""
+    __tablename__ = 'social_profiles'
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    handle = Column(String(30), nullable=False, unique=True)
+    display_name = Column(String(60), nullable=False)
+    bio = Column(String(160), nullable=False, default='')
+    character_id = Column(String(20), nullable=False, default='pip')
+    private = Column(Boolean, nullable=False, default=False)  # followers must be approved
+    posting_disabled = Column(Boolean, nullable=False, default=False)  # set by a moderator
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class Follow(Base):
+    __tablename__ = 'follows'
+    follower_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    followee_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True)
+    status = Column(String(10), nullable=False, default='active')  # active, pending (private accounts)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class SocialBlock(Base):
+    """kind 'block' hides both people from each other and removes follows; 'mute' only hides from the muter."""
+    __tablename__ = 'social_blocks'
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    target_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True)
+    kind = Column(String(5), nullable=False)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class Post(Base):
+    __tablename__ = 'posts'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    author_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    body = Column(String(500), nullable=False, default='')
+    milestone = Column(JSON, nullable=True)  # server-made snapshot of an achievement, workout or level
+    visibility = Column(String(10), nullable=False, default='public')  # public, followers
+    hidden = Column(Boolean, nullable=False, default=False)  # by reports or a moderator
+    deleted_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utcnow, index=True)
+
+
+class PostReaction(Base):
+    __tablename__ = 'post_reactions'
+    post_id = Column(CHAR(36), ForeignKey('posts.id', ondelete='CASCADE'), primary_key=True)
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True)
+    kind = Column(String(10), nullable=False)  # like, cheer, clap, hug
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class Comment(Base):
+    __tablename__ = 'comments'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    post_id = Column(CHAR(36), ForeignKey('posts.id', ondelete='CASCADE'), nullable=False, index=True)
+    author_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    body = Column(String(300), nullable=False)
+    hidden = Column(Boolean, nullable=False, default=False)
+    deleted_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class ContentReport(Base):
+    __tablename__ = 'content_reports'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    reporter_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    target_type = Column(String(10), nullable=False)  # post, comment, profile
+    target_id = Column(CHAR(36), nullable=False, index=True)
+    reason = Column(String(20), nullable=False)
+    note = Column(String(300), nullable=False, default='')
+    status = Column(String(10), nullable=False, default='open')  # open, actioned, dismissed
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+    __table_args__ = (UniqueConstraint('reporter_id', 'target_type', 'target_id', name='uq_report_once'),)
+
+
 class SearchSynonym(Base):
     """Spelling variants mapped to one search term (idly -> idli, thayir -> curd). Editable data, not code."""
     __tablename__ = "search_synonyms"

@@ -6,7 +6,7 @@ from database import Base
 from routers import users
 from tests.client import client
 
-OWNER_COLUMNS = ('user_id', 'owner_id', 'client_id', 'coach_id')
+OWNER_COLUMNS = ('user_id', 'owner_id', 'client_id', 'coach_id', 'author_id', 'follower_id', 'reporter_id')
 
 
 def test_every_user_owned_table_is_exported_or_excluded_with_a_reason():
@@ -29,7 +29,7 @@ def test_new_sections_contain_own_records_without_credentials():
         db.add(models.SupportTicket(user_id=owner, subject='Help', body='My question', category='general'))
         db.commit()
     records = client.get('/api/v1/users/export', headers=headers).json()['account_records']
-    assert set(records) == {name for name, _model, _omit in users.ACCOUNT_RECORDS}
+    assert set(records) == {entry[0] for entry in users.ACCOUNT_RECORDS}
     assert [m['name'] for m in records['saved_meals']] == ['Usual breakfast']
     assert records['support_tickets'][0]['body'] == 'My question'
     assert records['devices'][0]['device_name'] == 'Laptop' and 'device_token' not in records['devices'][0]
