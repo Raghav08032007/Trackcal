@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-28",
+  "date": "2026-10-29",
   "database": "trackcal_phase3_test",
   "checks": [
     "real signup/login session",
@@ -23,15 +23,15 @@
   "timings": [
     {
       "action": "catalog search + render",
-      "ms": 71
+      "ms": 1038
     },
     {
       "action": "mobile workout heading ready",
-      "ms": 558
+      "ms": 452
     },
     {
       "action": "tablet workout heading ready",
-      "ms": 572
+      "ms": 504
     }
   ],
   "page_errors": [],

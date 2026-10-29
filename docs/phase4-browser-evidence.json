@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-28",
+  "date": "2026-10-29",
   "mode": "Chromium synthetic camera + synthetic landmark worker; real application, API and isolated MySQL",
   "checks": [
     "real sign-in session / initialized shared journey",
