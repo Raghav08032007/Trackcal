@@ -204,7 +204,8 @@ def _check_scan_quota(user: models.User, db: Session) -> None:
     if os.getenv("APP_ENV") == "production":
         if not user.email_verified: raise HTTPException(403, "Verify your email before using AI estimates.")
         from services.abuse_limits import consume
-        consume(db, "web-ai", str(user.id), int(os.getenv("DAILY_AI_LIMIT", "15")), 86400)
+        from services.billing import ai_daily_limit
+        consume(db, "web-ai", str(user.id), ai_daily_limit(db, user), 86400)
         return
     sub = db.query(models.Subscription).filter(models.Subscription.user_id == user.id).first()
     if not sub:

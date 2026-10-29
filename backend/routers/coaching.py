@@ -26,8 +26,17 @@ def name(db, identifier):
     profile = db.query(models.UserProfile).filter_by(user_id=identifier).first()
     return profile.display_name if profile and profile.display_name else "TrackCal member"
 
-def slot_data(slot):
-    return {"id":slot.id,"coach_id":slot.coach_id,"starts_at":slot.starts_at.isoformat()+"Z","ends_at":slot.ends_at.isoformat()+"Z"}
+def priority_until(slot,db):
+    """With billing on, a new slot is bookable by Premium members first, by everyone PRIORITY_HOURS later."""
+    from services.billing import PRIORITY_HOURS
+    from services.feature_flags import is_enabled
+    if not slot.published_at or not is_enabled(db,"billing"): return None
+    until=slot.published_at+timedelta(hours=PRIORITY_HOURS)
+    return until if until>datetime.utcnow() else None
+
+def slot_data(slot,db=None):
+    until=priority_until(slot,db) if db is not None else None
+    return {"id":slot.id,"coach_id":slot.coach_id,"starts_at":slot.starts_at.isoformat()+"Z","ends_at":slot.ends_at.isoformat()+"Z","premium_until":until.isoformat()+"Z" if until else None}
 
 class NewSlot(BaseModel):
     starts_at: datetime
@@ -47,13 +56,13 @@ def publish(data:NewSlot,user=Depends(get_current_active_user),db:Session=Depend
     db.query(models.User).filter_by(id=user.id).with_for_update().first()
     overlap=db.query(models.CoachSlot).filter(models.CoachSlot.coach_id==user.id,models.CoachSlot.active.is_(True),models.CoachSlot.starts_at<end,models.CoachSlot.ends_at>start).with_for_update().first()
     if overlap: raise HTTPException(409,"This availability overlaps an existing slot.")
-    slot=models.CoachSlot(coach_id=user.id,starts_at=start,ends_at=end);db.add(slot);db.commit();db.refresh(slot);return slot_data(slot)
+    slot=models.CoachSlot(coach_id=user.id,starts_at=start,ends_at=end,published_at=datetime.utcnow());db.add(slot);db.commit();db.refresh(slot);return slot_data(slot,db)
 
 def slots(coach_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     coach=db.query(models.User).filter_by(id=coach_id,is_active=True,email_verified=True).first()
     if not coach or coach.deleted_at or coach.role not in (models.UserRole.professional,models.UserRole.admin): raise HTTPException(404,"Coach not found.")
     rows=db.query(models.CoachSlot).filter(models.CoachSlot.coach_id==coach_id,models.CoachSlot.active.is_(True),models.CoachSlot.starts_at>datetime.utcnow(),models.CoachSlot.reserved_booking_id.is_(None)).order_by(models.CoachSlot.starts_at).limit(200).all()
-    return {"slots":[slot_data(row) for row in rows]}
+    return {"slots":[slot_data(row,db) for row in rows]}
 
 def unpublish(slot_id:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     coach_only(user)
@@ -76,6 +85,10 @@ def reserve(data:Reserve,user=Depends(get_current_active_user),db:Session=Depend
     if not user.email_verified: raise HTTPException(403,"Verify your email before booking a coach.")
     db.query(models.User).filter_by(id=user.id).with_for_update().first()
     slot=db.query(models.CoachSlot).filter_by(id=data.slot_id).with_for_update().first();validate_slot(slot,user,db)
+    until=priority_until(slot,db)
+    if until:
+        from services.billing import entitlements
+        if not entitlements(db,user)["priority_booking"]: raise HTTPException(403,f"Premium members can book this new slot first. It opens to everyone at {until.isoformat()}Z.")
     booking=models.CoachBooking(slot_id=slot.id,user_id=user.id);db.add(booking);db.flush();slot.reserved_booking_id=booking.id;db.commit();db.refresh(booking)
     return {**slot_data(slot),"id":booking.id,"status":booking.status,"slot_id":slot.id}
 

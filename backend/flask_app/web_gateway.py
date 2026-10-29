@@ -269,6 +269,26 @@ def wellness(path):
         return error('Your saved records are safe. The service is unavailable; keep this draft open and retry.', 503)
 
 
+# ── Premium (flag billing) ────────────────────────────────────────────────
+
+BILLING = {('GET', 'plans'), ('GET', 'status'), ('GET', 'history'), ('POST', 'checkout'), ('POST', 'verify'), ('POST', 'cancel')}
+
+
+@bp.route('/billing/<action>', methods=['GET', 'POST'])
+def billing_routes(action):
+    if (request.method, action) not in BILLING: return error('Not found', 404)
+    if request.method == 'POST' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        if action == 'plans': return forward(api('GET', '/subscriptions/plans'))
+        body = None
+        if request.method == 'POST':
+            body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+            if failed: return failed
+        return forward(authenticated(request.method, '/subscriptions/' + action, body))
+    except Exception:
+        return error("Premium is unavailable right now. You haven't been charged; please retry later.", 503)
+
+
 # ── Push notifications (flag web_push) ────────────────────────────────────
 
 PUSH = {('GET', 'config'), ('GET', 'settings'), ('PUT', 'settings'), ('POST', 'subscribe'), ('DELETE', 'subscribe')}

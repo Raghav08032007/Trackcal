@@ -62,6 +62,15 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-28 | 3 | `vite-plugin-pwa` was not adopted: the existing hand-written service worker was extended instead (it already never caches private data). Built assets are not precached for offline use; offline still serves the journal page | `public/sw.js` | Revisit if full offline use of the app shell is wanted |
 | KI-29 | 3 | `pywebpush` and `py-vapid` are MPL-2.0 (file-level copyleft). Used unmodified, which is compatible with closed source; any change to their files must be published | `requirements.txt` | Keep unmodified; note in the third-party notices |
 
+## Found during Phase 5 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-30 | 2 | No real Razorpay call has been made: checkout and cancel were tested with a simulated gateway (signatures checked for real). Request shapes follow the SDK and Razorpay's Subscriptions API but haven't met the real service | `TEST_REPORT_P5.md` | Owner: Test Mode keys + plans + webhook, then the manual checklist |
+| KI-31 | 2 | GST, terms of sale and a refund policy are not decided or published; Razorpay Live activation needs them | `BILLING.md` | Owner, before Live keys |
+| KI-32 | 3 | If the browser closes between Razorpay success and our verify call, Premium starts only when the webhook arrives (`subscription.authenticated`/`activated`), usually within seconds | `services/billing.py` | Accepted; the webhook is the source of truth |
+| KI-33 | 3 | The trial-end reminder is in-app (account page) plus Razorpay's own customer emails; no push notification for it yet | `premium-notice.tsx` | Add a `billing` notification type if beta users miss it |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |

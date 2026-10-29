@@ -345,5 +345,6 @@ def consume_ai(user: models.User = Depends(get_current_active_user), db: Session
     if os.getenv("APP_ENV") == "production" and not user.email_verified:
         raise HTTPException(403, "Verify your email before using AI estimates.")
     from services.abuse_limits import consume
-    remaining = consume(db, "web-ai", str(user.id), int(os.getenv("DAILY_AI_LIMIT", "15")), 86400)
+    from services.billing import ai_daily_limit
+    remaining = consume(db, "web-ai", str(user.id), ai_daily_limit(db, user), 86400)  # Premium gets more
     return {"remaining": remaining}

@@ -177,6 +177,7 @@ class CoachSlot(Base):
     ends_at = Column(DateTime, nullable=False)
     active = Column(Boolean, nullable=False, default=True)
     reserved_booking_id = Column(CHAR(36), nullable=True)
+    published_at = Column(DateTime, nullable=True)  # Premium members can book from here; everyone 24 h later (NULL: open to all)
 
 
 class CoachBooking(Base):
@@ -824,7 +825,7 @@ class Payment(Base):
     currency = Column(String(3), default="USD")
     status = Column(String(50))  # succeeded, failed, refunded
     provider = Column(String(50))
-    external_payment_id = Column(String(255), nullable=True)
+    external_payment_id = Column(String(255), nullable=True, unique=True)  # one row per provider payment
     created_at = Column(DateTime, default=_now)
 
     subscription = relationship("Subscription", back_populates="payments")
@@ -994,6 +995,16 @@ class NotificationEvent(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     kind = Column(String(20), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+
+class BillingEvent(Base):
+    """Each verified Razorpay webhook, stored once by its event id so retries and duplicates are ignored.
+    Holds no card or payment details."""
+    __tablename__ = 'billing_events'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    provider_event_id = Column(String(100), nullable=False, unique=True)
+    event = Column(String(60), nullable=False)
+    received_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
 class SearchSynonym(Base):

@@ -139,7 +139,7 @@ def rest_day(data:RestDay,user=Depends(get_current_active_user),db:Session=Depen
 class CompanionSettings(BaseModel):
     model_config=ConfigDict(extra='forbid')
     character_id:Literal['pip','nova','milo','luna','rio','sage']='pip'
-    accessory:Literal['none','flower','crown','sun']='none'
+    accessory:Literal['none','flower','crown','sun','star','heart','sparkle']='none'  # star/heart/sparkle: Premium
     enabled:bool=True
     minimized:bool=True
     muted:bool=False
@@ -151,7 +151,9 @@ def companion_settings(data:CompanionSettings,user=Depends(get_current_active_us
     consume(db,'companion-settings',str(user.id),90,3600)
     require_profile(db,user);snapshot=service.summary(db,user);require_profile(db,user)
     if data.character_id not in snapshot['unlocked_companions']:raise HTTPException(409,'Earn this character before selecting it.')
-    if snapshot['level']<{'none':1,'flower':2,'crown':5,'sun':10}[data.accessory]:raise HTTPException(409,'This accessory is not unlocked yet.')
+    if data.accessory in ('star','heart','sparkle'):
+        if not snapshot.get('premium'):raise HTTPException(402,'This accessory comes with TrackCal Premium.')
+    elif snapshot['level']<{'none':1,'flower':2,'crown':5,'sun':10}[data.accessory]:raise HTTPException(409,'This accessory is not unlocked yet.')
     prefs=customization(db,user)
     for key,value in data.model_dump().items():setattr(prefs,key,value)
     db.commit();return service.summary(db,user)
