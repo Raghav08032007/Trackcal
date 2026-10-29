@@ -23,7 +23,7 @@ class DiaryInput(Strict):
     meal_type:Literal['breakfast','lunch','dinner','snack','drink','other']='other'
     items:list[DiaryItem]=Field(min_length=1,max_length=30)
     notes:str=Field(default='',max_length=1000)
-    method:Literal['manual','photo','saved']='manual'
+    method:Literal['manual','photo','saved','copied']='manual'
 class SaveMealInput(Strict):
     id:UUID
     name:str=Field(min_length=1,max_length=120)

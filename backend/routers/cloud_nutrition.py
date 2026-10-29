@@ -139,6 +139,8 @@ def write_diary(db,user,data,existing=None):
  zone=prefs(db,user).timezone
  stamp=now().replace(tzinfo=None) if data.day==today(db,user) else datetime.combine(data.day,datetime.min.time().replace(hour=12),ZoneInfo(zone)).astimezone(timezone.utc).replace(tzinfo=None)
  log=existing or models.MealLog(id=str(data.id),user_id=user.id)
+ # An edit that keeps the day keeps the original time, so the meal doesn't jump to "now" or to noon.
+ if existing and existing.logged_at.replace(tzinfo=timezone.utc).astimezone(ZoneInfo(zone)).date()==data.day:stamp=existing.logged_at
  log.logged_at=stamp;log.meal_type=models.MealType(data.meal_type);log.log_method=models.LogMethod(data.method);log.notes=data.notes
  items=[resolved(db,i) for i in data.items];db.add(log);db.flush();put_items(db,log,items);db.flush()
  points=award_meal(db,user,log.id) if not existing and data.day==today(db,user) else 0
@@ -152,6 +154,11 @@ def delete_diary(identifier:UUID,user=Depends(get_current_active_user),db:Sessio
  lock(db,user);log=db.query(models.MealLog).filter_by(id=str(identifier),user_id=user.id,is_deleted=False).first()
  if not log:raise HTTPException(404,'Entry not found.')
  log.is_deleted=True;return complete(db,user,status='removed',awarded_xp=0)
+def restore_diary(identifier:UUID,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+ """Undo a delete. Earns nothing: the meal's XP (if any) was never taken away."""
+ lock(db,user);log=db.query(models.MealLog).filter_by(id=str(identifier),user_id=user.id,is_deleted=True).first()
+ if not log:raise HTTPException(404,'Entry not found.')
+ log.is_deleted=False;return complete(db,user,entry=diary_view(log,prefs(db,user).timezone),awarded_xp=0)
 
 def saved_view(row):
  try:items=[DiaryItem.model_validate(i).model_dump(mode='json') for i in row.items_snapshot]

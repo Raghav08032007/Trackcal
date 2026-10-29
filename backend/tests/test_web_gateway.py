@@ -225,6 +225,7 @@ def test_ai_limits_concurrent_scans_and_releases_slots(monkeypatch):
     def slow(method, url, **kwargs):
         entered.release(); release.wait(10); return model_reply(json.dumps({'components': [ITEM]}))
     monkeypatch.setattr(web_gateway, '_external', slow)
+    monkeypatch.setattr(web_gateway, '_ai_allowance', lambda: None)  # threads can't share the test's DB connection; caps are tested separately
     workers = [threading.Thread(target=lambda: results.append(post(browser(), '/api/analyze', {'text': 'Egg'}).status_code)) for _ in range(2)]
     for w in workers: w.start()
     assert entered.acquire(timeout=10) and entered.acquire(timeout=10)

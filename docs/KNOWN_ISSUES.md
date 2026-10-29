@@ -34,6 +34,15 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-15 | 2 | `GET /adventure/summary` locks the user row (`SELECT … FOR UPDATE`) on every read, because it can also persist newly earned achievements. Reads queue behind each other and behind account changes. The client now sends one request per page (fixed), but the server design remains | Staircase timings (0.7 → 1.9 s) for three concurrent reads; 56 s password change under SQL echo | Phase 6: compute the summary without locks and take locks only when an unlock must be written; load-test with realistic history (also covers P1-04) |
 | KI-16 | 3 | `APP_ENV=development` turns on SQL echo for every statement, which slows a busy server dramatically (52,000 log lines in one test session) | Test server log | Make SQL echo opt-in (`SQL_ECHO=true`) rather than tied to development mode |
 
+## Found during Phase 2 (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-17 | 3 | Copying device-journal meals: two meals on the same day with the same time, name and calories count as one meal (the id is derived from that content so a repeated copy never duplicates) | `device-journal-import.tsx`, `tests/diary-tools.test.tsx` | Accepted; the preview lists exactly what will be copied |
+| KI-18 | 3 | The guest AI cap (5 a day) is per client address, so people sharing one address (college Wi-Fi, office NAT) share it. Signed-in people have their own cap | `web_gateway._ai_allowance`, `tests/test_photo_scan.py` | Phase 10 (hardening): decide whether guests get AI at all |
+| KI-19 | 3 | The portion range is only as good as the model: if a model ignores `quantity_g_low/high`, the range is a band derived from confidence and the UI says so. Not measured against real meals | `services/meal_analysis.py` | Owner: try 20 real photos with the configured free models before beta |
+| KI-20 | 3 | `scripts/setup_phase3_test_db.py` does not create the Phase 3 browser fixture; `scripts/seed_phase3_e2e.py` must be run after it | Phase 3 journey failed until the seed was run | Run both (recorded in `TEST_REPORT_P2.md`) |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |
