@@ -9,7 +9,6 @@
   .daily-focus > header > div { flex: 1 1 auto; min-width: 0; }
   .daily-focus > header > button { flex: 0 0 auto; min-height: 44px; padding: 0 12px; font-size: 13px; }
 
-  .play-controls { display: flex; justify-content: flex-end; padding: 0 16px; }
 }
 
 /* Signed-out cards: one clear primary action and one alternative, side by side when they fit. */
@@ -18,3 +17,6 @@
 .gate-primary { background: var(--tab-active, #6a4fd0); color: #fff; }
 .gate-secondary { border: 1px solid var(--tab-line, #e3e1ee); color: var(--tab-ink, #2b2f4a); background: transparent; }
 @media (max-width: 600px) { .gate-actions a { flex: 1 1 100%; } }
+
+/* Play page controls (Calm mode) line up with the page content at every width. */
+.play-controls { display: flex; justify-content: flex-end; width: 100%; max-width: 1240px; margin: 0 auto; padding: 4px 16px 0; }

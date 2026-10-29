@@ -11,13 +11,13 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link({ hre
   const routed = useInRouterContext();
   const external = /^[a-z][a-z0-9+.-]*:/i.test(href) || target === "_blank";
   if (external || !routed) return <a ref={ref} href={href} target={target} {...rest} />;
-  return <RouterLink ref={ref} to={href} target={target} {...rest} />;
+  return <RouterLink ref={ref} to={href} target={target} viewTransition {...rest} />;
 });
 export default Link;
 
 function RoutedRouter() {
   const navigate = useNavigate();
-  return { push: (href: string) => { void navigate(href); }, replace: (href: string) => { void navigate(href, { replace: true }); }, back: () => { void navigate(-1); } };
+  return { push: (href: string) => { void navigate(href, { viewTransition: true }); }, replace: (href: string) => { void navigate(href, { replace: true, viewTransition: true }); }, back: () => { void navigate(-1); } };
 }
 const browserRouter = { push: (href: string) => window.location.assign(href), replace: (href: string) => window.location.replace(href), back: () => window.history.back() };
 

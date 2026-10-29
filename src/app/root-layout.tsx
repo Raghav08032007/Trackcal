@@ -7,10 +7,11 @@ import { AccountSession } from "@/components/account-session";
 import { DevicePersistence } from "@/components/device-persistence";
 import { Link } from "@/lib/navigation";
 import { TouchFeedback } from "@/components/touch-feedback";
+import { LivingCharacters } from "@/components/living-characters";
 import { ThemeControl } from "@/components/theme-control";
 
 export function RootLayout() {
   return (
-    <AccountSession><DevicePersistence /><TouchFeedback /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><Outlet /><footer className="site-links" aria-label="Product links"><ThemeControl /><Link href="/guide">Guided test drive</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></footer></AccountSession>
+    <AccountSession><DevicePersistence /><TouchFeedback /><LivingCharacters /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><Outlet /><footer className="site-links" aria-label="Product links"><ThemeControl /><Link href="/guide">Guided test drive</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></footer></AccountSession>
   );
 }

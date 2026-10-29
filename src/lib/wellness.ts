@@ -1,3 +1,4 @@
+import { announceXp } from "@/lib/celebrate";
 import type {AdventureSummary} from './adventure';
 export type Nutrients={calories:number|null;protein:number|null;carbs:number|null;fat:number|null};
 export type FoodItem={id?:string;name:string;grams:number;nutrients:Nutrients;food_id?:string|null;manual_override?:boolean;estimated:boolean;source:string;category?:string;cuisine?:string};
@@ -13,5 +14,5 @@ export function inputItem(item:FoodItem):FoodItem{return {name:item.name,grams:i
 export function portionTotal(items:FoodItem[],key:keyof Nutrients){return items.every(i=>i.nutrients[key]!==null)?Math.round(items.reduce((s,i)=>s+i.nutrients[key]!*i.grams/100,0)*10)/10:null;}
 export async function wellnessRequest<T>(path:string,body?:unknown,method?:string):Promise<T>{
  const response=await fetch('/api/wellness/'+path,{method:method||(body===undefined?'GET':'POST'),headers:body===undefined?{}:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(20000)});const data=await response.json();if(!response.ok)throw new Error(data.error||'Check the entries and try again.');
- if(body!==undefined||method==='DELETE'){if(data.summary)window.dispatchEvent(new CustomEvent('trackcal-gamification',{detail:data.summary as AdventureSummary}));window.dispatchEvent(new Event('trackcal-wellness'));window.dispatchEvent(new Event('trackcal-personalization'));}return data;
+ if(body!==undefined||method==='DELETE'){if(data.summary)window.dispatchEvent(new CustomEvent('trackcal-gamification',{detail:data.summary as AdventureSummary}));announceXp(data);window.dispatchEvent(new Event('trackcal-wellness'));window.dispatchEvent(new Event('trackcal-personalization'));}return data;
 }

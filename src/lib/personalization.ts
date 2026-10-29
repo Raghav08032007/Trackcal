@@ -1,3 +1,4 @@
+import { announceXp } from "@/lib/celebrate";
 import type {AdventureSummary} from './adventure';
 export type ReminderChoice={enabled:boolean;time:string;days:number[]};
 export type Preferences={display_name:string;age_group:string;language:string;country:string;timezone:string;units:'metric'|'imperial';interests:string[];experience:string;available_days:number[];rest_days:number[];duration:number;workout_time:string;setting:string;equipment:string[];accessibility:string[];professional_restrictions:string;diet:string;allergies:string[];cuisine:string;preparation:string;ingredients:string[];budget:number|null;currency:string;motivation:boolean;reminders:{hydration:ReminderChoice;workout:ReminderChoice;recovery:ReminderChoice;sleep:ReminderChoice;motivation:ReminderChoice;quiet_start:string;quiet_end:string}};
@@ -9,7 +10,7 @@ export type PersonalState={minor_account?:boolean;feedback_history?:{id:string;n
 export async function personalRequest<T>(path:string,body?:unknown,method?:string):Promise<T>{
  const response=await fetch('/api/personalization/'+path,{method:method||(body===undefined?'GET':'POST'),headers:body===undefined?{}:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(20000)});
  const data=await response.json();if(!response.ok)throw new Error(data.error||'Check the values and try again.');
- if(body!==undefined||method==='DELETE'){if(data.summary)window.dispatchEvent(new CustomEvent('trackcal-gamification',{detail:data.summary as AdventureSummary}));window.dispatchEvent(new Event('trackcal-personalization'));}return data;
+ if(body!==undefined||method==='DELETE'){if(data.summary)window.dispatchEvent(new CustomEvent('trackcal-gamification',{detail:data.summary as AdventureSummary}));announceXp(data);window.dispatchEvent(new Event('trackcal-personalization'));}return data;
 }
 
 export function assertAdultCalculatorAllowed(state:Pick<PersonalState,'minor_account'|'preferences'>){

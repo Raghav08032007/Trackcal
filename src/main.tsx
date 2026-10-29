@@ -9,6 +9,7 @@ import "@/app/studio.css";
 import "@/app/focused.css";
 import "@/app/navigation.css";
 import "@/app/layout.css";
+import "@/app/theme.css";
 import { createRouter } from "@/routes";
 
 createRoot(document.getElementById("root")!).render(<StrictMode><RouterProvider router={createRouter()} /></StrictMode>);
