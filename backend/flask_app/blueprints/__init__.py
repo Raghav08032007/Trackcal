@@ -19,3 +19,5 @@ def register(app):
     app.register_blueprint(personalization.bp)
     app.register_blueprint(cloud_nutrition.bp)
     app.register_blueprint(training.bp)
+    from flask_app import web_gateway  # browser routes under /api/* (cookie sessions -> /api/v1)
+    app.register_blueprint(web_gateway.bp)

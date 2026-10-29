@@ -13,7 +13,7 @@ An original, production-grade AI-powered nutrition and food tracking platform in
 - **Meal Journal & Daily Targets**: Multi-meal categorization (Breakfast, Lunch, Dinner, Snack) with circular macro target rings and habit streak counters.
 - **Hydration Tracker**: Instant water intake logger with daily hydration goal monitoring.
 - **Cross-Platform Experience**:
-  - Web client powered by **Next.js 16 (App Router) + React 19 + Tailwind CSS**.
+  - Web client powered by **Vite + React 19 + React Router + Tailwind CSS** (a static app; the Flask API serves its `/api/*` routes).
   - Mobile client powered by **React Native & Expo**.
   - Backend powered by **Flask & MySQL 8.0**, with versioned Alembic migrations.
 
@@ -41,7 +41,7 @@ track-cal/
 │   │   └── support.py       # Ticketing & crowdsourced submissions
 │   └── requirements.txt
 ├── frontend/
-│   ├── web/                 # Next.js 16 Web Dashboard
+│   ├── web/                 # Vite + React web app
 │   └── mobile/              # React Native / Expo Mobile App
 └── docs/
     └── ARCHITECTURE.md      # Full engineering architecture specification
@@ -78,14 +78,16 @@ track-cal/
 
 ---
 
-### 2. Web Dashboard Setup (Next.js)
+### 2. Web App Setup (Vite)
+
+Start the Flask API first (step 1, port 8000), then:
 
 ```bash
 cd frontend/web
 npm install
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) to view the interactive dashboard.
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000). The dev server proxies `/api` to the API on port 8000 (set `TRACKCAL_API_URL` to change it), so sign-in cookies work as in production. `npm run build` writes the static app to `dist/`; `npm run preview` serves that build with the same proxy.
 
 ---
 
@@ -102,10 +104,10 @@ Scan the QR code with the Expo Go app on iOS or Android to test the native mobil
 
 ## Local web mode (2026-10-20)
 
-The web app can run independently of MySQL for AI estimates and browser-local tracking:
+AI estimates and browser-local tracking do not need MySQL, but they do need the Flask API running:
 
-1. In `frontend/web/.env.local`, set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL=openrouter/free`. Never use a `NEXT_PUBLIC_` prefix for the key. This file is ignored by Git.
-2. Run `npm install` and `npm run dev -- --hostname 127.0.0.1` in `frontend/web`.
+1. In `backend/.env`, set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL=openrouter/free`. The key stays on the server; never give it a `VITE_` prefix, which would publish it in the browser bundle. `frontend/web/.env.local` is no longer read and can be deleted.
+2. Start the API, then run `npm install` and `npm run dev` in `frontend/web`.
 3. Upload a meal or nutrition-label photo, describe a meal, scan/type a barcode, or use manual entry in Journal & Coach.
 
 Journals, goals, the recipe draft, water, steps, activity and dated weight values are stored in the current browser. This is not account/cloud synchronization. Export all local data as JSON from the journal before clearing storage. Free AI models have provider availability/rate limits; failures are visible and never converted into fabricated meal results by the new web inference route. Manual tracking remains available without AI. Product nutrition comes from Open Food Facts with editable gram portions.

@@ -123,7 +123,8 @@ def create_app():
     @app.get('/api/health')
     def health():
         ok = database.verify_connection()
-        response = jsonify({'status': 'ok' if ok else 'degraded', 'database': 'connected' if ok else 'unreachable', 'version': '1.0.0', 'environment': os.getenv('APP_ENV', 'production')})
+        # Public (same origin as the web app): status only, no environment or dependency details.
+        response = jsonify({'status': 'ok' if ok else 'degraded'})
         response.status_code = 200 if ok else 503
         return response
 

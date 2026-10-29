@@ -16,9 +16,16 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-07 | 2 | Production AI uses free OpenRouter models, which may log or train on meal photos and descriptions | `OPENROUTER_MODEL=openrouter/free` in README local mode; `app/api/analyze/route.ts` | Owner decision before public launch: a paid no-retention model, or a consent notice that names the provider's terms |
 | KI-08 | 3 | `/api/analyze` is unauthenticated and unlimited outside production, and in production when `ENABLE_LOCAL_AI=true` | `app/api/analyze/route.ts:8` | Move behind the backend's authenticated quota in the Flask port. Never set `ENABLE_LOCAL_AI` on a public host |
 | KI-09 | ~~3~~ **Resolved** | Migration file order: `20261028_gamification_foundation.sql` sorts after the files that depend on it. Harmless today because `bootstrap_schema.py` runs `create_all` first | Dry run | Superseded by Alembic (KI-05) |
-| KI-10 | 3 | 3 accepted lint warnings: `camera-workout.tsx:22` (ref is a request counter, not a DOM node), `journey-companion.tsx:29` (guarded one-shot effect), `nutrition-dashboard.tsx:24` `<img>` (local `blob:` photos) | `npx eslint .` | Re-check after the Vite migration; the `<img>` warning is Next-specific |
+| KI-10 | 3 | Accepted lint warnings (2 since the Vite migration removed the Next `<img>` rule; originally 3): `camera-workout.tsx:22` (ref is a request counter, not a DOM node), `journey-companion.tsx:29` (guarded one-shot effect), `nutrition-dashboard.tsx:24` `<img>` (local `blob:` photos) | `npx eslint .` | Re-check after the Vite migration; the `<img>` warning is Next-specific |
 | KI-11 | 3 | About 1,800 deprecation warnings per backend run, now almost all `datetime.utcnow` (the Starlette TestClient warnings left with FastAPI) | pytest output | Clears with the Flask port; replace `utcnow` with timezone-aware times |
 | KI-12 | 3 | `POST /scan/adjust-cooking-style` is public. It is pure arithmetic with no database or provider call | `routers/ai_scan.py:348` | Acceptable; keep public or add a light rate limit |
+
+## Found during the frontend migration (29 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-13 | 3 | `tests/test_api.py::test_barcode_lookup_endpoint` can reach the live Open Food Facts API ("mock or live"), so it depends on the network | Test docstring; about 1.8 s per run | Stub the provider in Phase 2 (barcode reliability), which rewrites this path |
+| KI-14 | 3 | The browser privacy check is flaky with Chromium's fake camera: 13 of 16 runs passed after each viewport got its own browser. Failures were browser-side (the fake device reporting "Requested device not found", or an early failure that did not reproduce); server logs showed no errors | `docs/phase1-privacy-browser-evidence.json` records retries and the page text on failure | Re-run on a CI browser image; confirm camera lifecycle on real phones (manual test list) |
 
 ## Resolved during the backend migration (28 October 2026)
 

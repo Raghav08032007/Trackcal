@@ -11,8 +11,8 @@ def test_health_endpoint():
     response = client.get("/api/health")
     assert response.status_code == 200
     data = response.json()
-    assert data["version"] == "1.0.0"
-    assert data["status"] in ["ok", "degraded"]
+    # The health check is public now that the web app shares the API's origin: status only.
+    assert data == {"status": "ok"}
 
 
 def test_cooking_style_multipliers():
