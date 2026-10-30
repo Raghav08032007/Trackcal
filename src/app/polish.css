@@ -1,0 +1,76 @@
+/* Visual pass (30 Oct 2026): a smaller, calmer type scale, real photos, cards that lift and tilt, reveal on scroll.
+   Loaded last. Touch targets stay at least 44 px even though text is smaller. */
+
+/* ── Type scale: 16 px base (15 px on phones), compact headings ── */
+html { font-size: 16px; }
+body { line-height: 1.55; }
+body small, body .eyebrow, body .play-fine, body .play-stat-label, body .companion-role, body .companion-note, body .daily-context, body .auth-note { font-size: .78rem !important; }
+body button, body input, body select, body textarea { font-size: .95rem !important; }
+.eyebrow { letter-spacing: .14em; }
+.account-title h1, .studio-tool-title { font-size: clamp(26px, 3.6vw, 38px) !important; letter-spacing: -1px; line-height: 1.12; }
+.account-title p { font-size: .95rem; }
+.wellness-hero h1 { font-size: clamp(28px, 4vw, 46px) !important; }
+.wellness-page h2, .account-card h2, .social-page h2 { font-size: clamp(19px, 2.2vw, 24px) !important; line-height: 1.25; }
+.account-card h1 { font-size: clamp(24px, 3.2vw, 32px); }
+.account-card, .social-post { font-size: .95rem; }
+.wellness-metrics strong { font-size: clamp(20px, 2.4vw, 28px) !important; }
+.premium-plan h2 { font-size: 1.8rem !important; }
+@media (max-width: 550px) { html { font-size: 15px; } .account-card { padding: 18px !important; } }
+
+/* ── Photos ── */
+.photo { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+.hero-photo { position: relative; border-radius: 28px; overflow: hidden; min-height: 220px; box-shadow: 0 18px 40px #10261b33; transform: rotate(2deg); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.hero-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, transparent 55%, #0f241a66); }
+.wellness-hero:hover .hero-photo { transform: rotate(0deg) scale(1.02); }
+.photo-carousel { margin: 28px 0; }
+.photo-carousel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.photo-carousel-head h2 { margin: 0; font-size: clamp(19px, 2.2vw, 24px); }
+.photo-carousel-head button { min-width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid #dcd8ef; background: var(--card, #fff); font-size: 1.3rem; margin-left: 6px; }
+.photo-track { display: grid; grid-auto-flow: column; grid-auto-columns: min(78%, 260px); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px 4px 18px; scrollbar-width: none; cursor: grab; overscroll-behavior-x: contain; }
+.photo-track::-webkit-scrollbar { display: none; }
+.photo-track[data-dragging] { cursor: grabbing; scroll-snap-type: none; }
+.photo-track[data-dragging] .photo-card { pointer-events: none; }
+.photo-card { scroll-snap-align: start; display: grid; grid-template-rows: 170px auto; border-radius: 22px; overflow: hidden; background: var(--card, #fff); border: 1px solid #e3e0f2; color: inherit; text-decoration: none; box-shadow: 0 6px 0 #ebe8f7; transition: transform .25s, box-shadow .25s; }
+.photo-card img { transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.photo-card > span { display: grid; gap: 4px; padding: 12px 14px 16px; }
+.photo-card strong { font-size: .95rem; } .photo-card small { opacity: .8; }
+.photo-credit { font-size: .75rem; opacity: .75; margin: 0; }
+.credit-card { padding: 0 !important; overflow: hidden; }
+.credit-card img { height: 180px; }
+.credit-card figcaption { display: grid; gap: 4px; padding: 14px; font-size: .85rem; }
+@media (hover: hover) and (pointer: fine) {
+  .photo-card:hover { transform: translateY(-6px) rotate(-.6deg); box-shadow: 0 16px 30px #2a1f6a22; }
+  .photo-card:hover img { transform: scale(1.07); }
+}
+
+/* ── Cards lift and tilt with the pointer (TouchFeedback sets the angles) ── */
+.social-post, .community-card, .premium-plan, .destination-card, .photo-card { transform: perspective(1200px) rotateX(var(--surface-rx, 0deg)) rotateY(var(--surface-ry, 0deg)); transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; }
+[data-depth-active] { box-shadow: 0 18px 36px #2a1f6a1f !important; }
+
+/* ── Reveal on scroll (MotionLayer marks only cards that start below the fold) ── */
+[data-reveal="pending"] { opacity: 0; transform: translateY(18px) scale(.985); }
+[data-reveal="in"] { opacity: 1; transition: opacity .5s ease var(--reveal-delay, 0ms), transform .5s cubic-bezier(.2,.8,.2,1) var(--reveal-delay, 0ms); }
+
+/* ── Draggable companion ── */
+.journey-orb { touch-action: none; cursor: grab; }
+.journey-float[data-dragging] { transition: none !important; } .journey-float[data-dragging] .journey-orb { cursor: grabbing; }
+
+/* ── Small delights ── */
+.account-primary, .gate-primary { transition: transform .15s, box-shadow .15s, filter .15s; }
+.account-primary:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+.account-primary:active:not(:disabled) { transform: translateY(1px) scale(.98); }
+.destination-card:hover .destination-icon { transform: rotate(-8deg) scale(1.08); }
+.destination-icon { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo, .photo-card, .photo-card img, .social-post, .community-card, .premium-plan, .destination-card { transition: none !important; transform: none !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+}
+html[data-motion="reduced"] [data-reveal] { opacity: 1 !important; transform: none !important; }
+html[data-theme=dark] .photo-card, html[data-theme=dark] .photo-carousel-head button { background: #1f2a24; border-color: #3c5045; box-shadow: none; }
+@media (max-width: 900px) { .hero-photo { min-height: 180px; transform: none; } }
+.studio-momentum h2 { font-size: clamp(30px, 3.6vw, 52px) !important; letter-spacing: -1.6px !important; }
+@media (max-width: 550px) { .studio-momentum h2 { font-size: 30px !important; } }
+.journey-orb img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
+/* Smaller text needs more contrast headroom: muted grey ≈ 6.4:1 on white (was 5.4:1, which dipped under 4.5:1 mid-transition). */
+html:not([data-theme="dark"]) { --tc-muted: #5a5b70; }

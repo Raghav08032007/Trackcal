@@ -17,7 +17,7 @@ async function scan(page,path,label){
  const response=await page.goto(root+path);await page.locator('main, [role=main]').first().waitFor();await page.waitForTimeout(800);
  const headers=response.headers();
  const csp=await page.evaluate(()=>window.__csp);
- const result=await page.evaluate(async src=>{eval(src);const r=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']},resultTypes:['violations']});
+ await page.evaluate(()=>document.querySelectorAll('[data-reveal]').forEach(e=>{e.dataset.reveal='in';}));await page.waitForFunction(()=>document.getAnimations().every(a=>a.effect?.getTiming().iterations===Infinity||a.playState!=='running'),null,{timeout:5000}).catch(()=>{});const result=await page.evaluate(async src=>{eval(src);const r=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']},resultTypes:['violations']});
   return r.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.length,targets:v.nodes.slice(0,3).map(n=>n.target.join(' ')+' :: '+(n.failureSummary||'').replace(/\s+/g,' ').slice(0,170))}));},axeSource);
  const row={page:`${label} ${path}`,csp_header:!!headers['content-security-policy'],csp_violations:csp,page_errors:errors,axe:result};
  findings.push(row);return row;

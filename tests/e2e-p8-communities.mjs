@@ -20,7 +20,7 @@ async function person(browser,label,viewport){
  await page.goto(root+'/feed');await page.getByLabel('Handle').fill(handle);await page.getByLabel('Display name').fill(handle);await page.getByRole('button',{name:'Create my profile'}).click();await page.getByRole('heading',{name:'Wins worth sharing.'}).waitFor();
  return {context,page,handle};
 }
-async function axe(page,name){const v=await page.evaluate(async src=>{eval(src);const r=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return r.violations.map(x=>`${x.impact}:${x.id}:${x.nodes.map(n=>n.target.join(' ')).slice(0,2).join(',')}`);},axeSource);assert.deepEqual(v,[],`${name} axe`);}
+async function axe(page,name){await page.evaluate(()=>document.querySelectorAll('[data-reveal]').forEach(e=>{e.dataset.reveal='in';}));await page.waitForFunction(()=>document.getAnimations().every(a=>a.effect?.getTiming().iterations===Infinity||a.playState!=='running'),null,{timeout:5000}).catch(()=>{});const v=await page.evaluate(async src=>{eval(src);const r=await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return r.violations.map(x=>`${x.impact}:${x.id}:${x.nodes.map(n=>n.target.join(' ')).slice(0,2).join(',')}`);},axeSource);assert.deepEqual(v,[],`${name} axe`);}
 const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
 let owner,member;
 try{

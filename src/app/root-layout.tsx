@@ -6,6 +6,7 @@ import { JourneyCompanion } from "@/components/journey-companion";
 import { AccountSession } from "@/components/account-session";
 import { DevicePersistence } from "@/components/device-persistence";
 import { UpdatePrompt } from "@/components/app-updates";
+import { MotionLayer } from "@/components/motion-layer";
 import { BetaFeedback } from "@/components/beta-feedback";
 import { Link } from "@/lib/navigation";
 import { TouchFeedback } from "@/components/touch-feedback";
@@ -14,6 +15,6 @@ import { ThemeControl } from "@/components/theme-control";
 
 export function RootLayout() {
   return (
-    <AccountSession><DevicePersistence /><UpdatePrompt /><TouchFeedback /><LivingCharacters /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><Outlet /><footer className="site-links" aria-label="Product links"><ThemeControl /><Link href="/guide">Guided test drive</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><BetaFeedback /></footer></AccountSession>
+    <AccountSession><DevicePersistence /><UpdatePrompt /><MotionLayer /><TouchFeedback /><LivingCharacters /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><Outlet /><footer className="site-links" aria-label="Product links"><ThemeControl /><Link href="/guide">Guided test drive</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/credits">Photo credits</Link><BetaFeedback /></footer></AccountSession>
   );
 }
