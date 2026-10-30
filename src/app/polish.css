@@ -105,3 +105,28 @@ body:has(.journey-float) .site-links { padding-bottom: 120px; }
 .challenge-cover details { width: 100%; text-align: left; } .challenge-cover summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .challenge-ring.is-done { animation: none; } .challenge-bar span { transition: none; } }
 html[data-theme=dark] .challenge-ring > span { background: #1f2a24; color: #e7efe2; } html[data-theme=dark] .challenge-ring b { color: #fff; }
+
+/* ── Version B contrast: WCAG AA text in both themes (the bench's hard gate) ── */
+/* Old light-theme rules set pale tints with !important; dark mode now has its own surfaces and text. */
+html[data-theme="dark"] .trackcal-app :is([class*="bg-emerald-500/"], [class*="bg-sky-500/"], [class*="bg-purple-500/"], [class*="bg-orange-500/"], [class*="bg-amber-500/"], [class*="from-emerald-950"]) { background-color: #262842 !important; }
+html[data-theme="dark"] .trackcal-app :is([class*="text-amber-"], [class*="text-orange-"]) { color: #f0c27a !important; }
+html[data-theme="dark"] .trackcal-app [class*="text-rose-"] { color: #ffa99b !important; }
+html[data-theme="dark"] .trackcal-app :is([class*="text-sky-"], [class*="text-purple-"]) { color: #c3b3ff !important; }
+html[data-theme="dark"] .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #b5e48c !important; }
+html[data-theme="dark"] .feedback-button { background: #262842; color: #f2efff; border-color: #45486b; }
+html[data-theme="dark"] .account-initial { background: #3b3470; color: #f2efff; }
+html[data-theme="dark"] .daily-focus-actions a { background: #262842; color: #c3b3ff; }
+html[data-theme="dark"] summary { color: #d9dcef !important; }
+html[data-theme="dark"] .progress-stats > div { background: #262842; }
+html[data-theme="dark"] .progress-stats strong { color: #f2efff; }
+html[data-theme="dark"] .progress-stats span, html[data-theme="dark"] .report-actions p { color: #c5c7dc; }
+html[data-theme="dark"] .studio-tabs button:not([aria-current="page"]) { color: #d9dcef; }
+html[data-theme="dark"] .play-hub .seed-label { color: #eff2df; }
+html[data-theme="dark"] .play-stat-orange small, html[data-theme="dark"] .play-stat-blue small { color: #fff !important; }
+/* Muted text that was just under 4.5:1 in light theme. */
+html:not([data-theme="dark"]) .trackcal-app [class*="text-rose-"] { color: #a13f33 !important; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="text-sky-"], [class*="text-purple-"]) { color: #40606e !important; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #3f6131 !important; }
+html:not([data-theme="dark"]) .progress-stats span, html:not([data-theme="dark"]) .studio-tabs button:not([aria-current="page"]), html:not([data-theme="dark"]) .barcode-capture > small { color: #4f5d4b; }
+.auth-float small { color: #4a5646; }
+html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #e7e5f5 !important; color: #3d3e55 !important; }
