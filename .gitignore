@@ -48,3 +48,6 @@ Thumbs.db
 /skill-verification.json
 /SKILL-INSTALLATION.md
 /installers/
+
+# coverage data
+.coverage
