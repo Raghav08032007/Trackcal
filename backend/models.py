@@ -1152,6 +1152,34 @@ class EventRegistration(Base):
     created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
+class Challenge(Base):
+    """A time-boxed goal (Phase 10, flag verified_challenges). Progress is computed only from records the server
+    already verifies (services/challenge_progress.py); nobody can type in a number."""
+    __tablename__ = 'challenges'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    creator_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    community_id = Column(CHAR(36), ForeignKey('communities.id', ondelete='CASCADE'), nullable=True, index=True)
+    title = Column(String(120), nullable=False)
+    description = Column(String(1000), nullable=False, default='')
+    metric = Column(String(20), nullable=False)  # active_days, workouts, camera_workouts, meal_days, events
+    target = Column(Integer, nullable=False)
+    starts_on = Column(String(10), nullable=False)  # local dates in `timezone`
+    ends_on = Column(String(10), nullable=False)
+    timezone = Column(String(64), nullable=False, default='UTC')
+    status = Column(String(10), nullable=False, default='active')  # active, cancelled
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class ChallengeParticipant(Base):
+    __tablename__ = 'challenge_participants'
+    challenge_id = Column(CHAR(36), ForeignKey('challenges.id', ondelete='CASCADE'), primary_key=True)
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True)
+    joined_at = Column(DateTime, nullable=False, default=utcnow)
+    left_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    flagged = Column(Boolean, nullable=False, default=False)  # anti-fraud review signal, never shown publicly
+
+
 class SearchSynonym(Base):
     """Spelling variants mapped to one search term (idly -> idli, thayir -> curd). Editable data, not code."""
     __tablename__ = "search_synonyms"

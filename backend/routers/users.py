@@ -235,6 +235,8 @@ ACCOUNT_RECORDS = [
     ('community_memberships', models.CommunityMember, ()),
     ('events_you_organize', models.Event, ('checkin_key',), 'organizer_id'),  # the QR secret is not personal data
     ('event_registrations', models.EventRegistration, ()),
+    ('challenges_you_started', models.Challenge, (), 'creator_id'),
+    ('challenge_participation', models.ChallengeParticipant, ('flagged',)),  # internal review signal
 ]
 EXPORTED_TABLES = {
     'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',

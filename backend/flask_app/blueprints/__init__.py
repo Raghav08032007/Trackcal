@@ -2,7 +2,7 @@
 
 
 def register(app):
-    from flask_app.blueprints import auth, users, foods, meal_logs, ai_scan, recipes, nutrition, subscriptions, support, community, integrations, adventure, coaching, personalization, cloud_nutrition, training, push, internal, billing_webhook, social, communities, events
+    from flask_app.blueprints import auth, users, foods, meal_logs, ai_scan, recipes, nutrition, subscriptions, support, community, integrations, adventure, coaching, personalization, cloud_nutrition, training, push, internal, billing_webhook, social, communities, events, challenges
     app.register_blueprint(auth.bp)
     app.register_blueprint(users.bp)
     app.register_blueprint(foods.bp)
@@ -25,5 +25,6 @@ def register(app):
     app.register_blueprint(social.bp)
     app.register_blueprint(communities.bp)
     app.register_blueprint(events.bp)
+    app.register_blueprint(challenges.bp)
     from flask_app import web_gateway  # browser routes under /api/* (cookie sessions -> /api/v1)
     app.register_blueprint(web_gateway.bp)

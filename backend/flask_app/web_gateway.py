@@ -353,6 +353,30 @@ def event_routes(path):
         return error('Events are unavailable right now. Nothing was changed; retry later.', 503)
 
 
+# ── Challenges (flag verified_challenges) ─────────────────────────────────
+
+CHALLENGE = [('GET', r''), ('POST', r''), ('GET', EID), ('DELETE', EID), ('POST', EID + r'/participation'), ('DELETE', EID + r'/participation')]
+
+
+@bp.route('/challenges', defaults={'path': ''}, methods=['GET', 'POST'])
+@bp.route('/challenges/<path:path>', methods=['GET', 'POST', 'DELETE'])
+def challenge_routes(path):
+    method = request.method
+    if not any(m == method and re.fullmatch(p, path) for m, p in CHALLENGE): return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        body = None
+        if method == 'POST':
+            if not request.get_data(cache=True): body = {}
+            else:
+                body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+                if failed: return failed
+        query = {k: request.args[k] for k in ('scope', 'community') if k in request.args}
+        return forward(authenticated(method, '/challenges' + (f'/{path}' if path else '') + (f'?{urlencode(query)}' if query else ''), body))
+    except Exception:
+        return error('Challenges are unavailable right now. Nothing was changed; retry later.', 503)
+
+
 # ── Beta feedback ─────────────────────────────────────────────────────────
 
 @bp.post('/feedback')

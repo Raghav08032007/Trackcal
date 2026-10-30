@@ -35,8 +35,8 @@ def test_rule_configuration_global_cap_and_disabled_contracts():
   db.get(models.GamificationRule,'policy').daily_cap=12;db.flush()
   assert gamification.award(db,user,'workout',date.fromisoformat(data['today']),xp=9999,source_id='validated-source')==12
   assert gamification.award(db,user,'workout',date.fromisoformat(data['today']),source_id='validated-source')==0
-  db.get(models.GamificationRule,'verified_challenge_completion').enabled=True  # still not operational (Phase 10)
-  with pytest.raises(HTTPException):gamification.award(db,user,'verified_challenge_completion',date.today())
+  db.get(models.GamificationRule,'community_contribution').enabled=True  # enabling a rule without an integration still pays nothing
+  with pytest.raises(HTTPException):gamification.award(db,user,'community_contribution',date.today())
   db.commit()
  assert client.get('/api/v1/adventure/summary',headers=headers).json()['xp']==12
 
@@ -62,8 +62,9 @@ def test_streak_math_and_no_fake_future_rewards():
  assert gamification.flexible_streak([],['2026-10-27'],day)['current']==0
  owner,headers=account();data=init(headers)
  assert all(a['status']=='locked' for a in data['achievements'])
- # Event attendance is operational since Phase 9, but only through a verified check-in (tests/test_events.py), never a client call.
- assert all(not c['operational'] for c in data['integration_contracts'] if c['category'].startswith('verified_') and c['category']!='verified_event_attended')
+ # Event attendance (Phase 9) and challenges (Phase 10) are operational, but only through verified check-ins and
+ # server-computed progress (tests/test_events.py, tests/test_challenges.py), never a client call.
+ assert all(not c['operational'] for c in data['integration_contracts'] if c['category'].startswith('verified_') and c['category'] not in ('verified_event_attended','verified_challenge_completed'))
  assert client.post('/api/v1/adventure/activity',headers=headers,json={'category':'verified_event_attendance','xp':999}).status_code==404
 
 def test_customization_is_owned_persistent_and_unlock_validated():

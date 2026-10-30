@@ -106,6 +106,14 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-46 | 3 | No event reminder notifications yet (the push types don't include events) | `services/notifications.py` | Add an `event` type once events are on |
 | KI-47 | 3 | Another session's files (`Makefile`, `tools/`, `docs/bench/`) are untracked in this repo; one commit included `docs/bench/` by mistake and the next untracked it | `git log` | Owner: decide whether those belong in the repo |
 
+## Found during Phase 10 (30 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-48 | 3 | Progress settles when the person opens the challenge page, so XP for finishing arrives on the next visit, not the moment the last workout is saved | `routers/challenges.py` | Accepted; add a settle call to the diary/workout save paths if people find it confusing |
+| KI-49 | 3 | Flagged participations (large camera corrections) have no moderator screen yet; the flag is in the database only | `challenge_participants.flagged` | Add to `/moderation` before turning challenges on widely |
+| KI-50 | 3 | `e2e-p6-hardening.mjs` passes 6/6 alone but still fails now and then when run straight after the other 12 journeys (KI-43) | Phase 10 runs | Investigate with a captured trace when it next fails |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |
