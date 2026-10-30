@@ -1,0 +1,178 @@
+{
+ "size": {
+  "appFiles": 229,
+  "appLines": 16441,
+  "testFiles": 101,
+  "testLines": 6947,
+  "over400": [
+   "frontend/web/src/components/food-workspace.tsx (1667)",
+   "backend/models.py (1180)",
+   "frontend/mobile/App.tsx (753)",
+   "backend/flask_app/web_gateway.py (559)",
+   "backend/routers/ai_scan.py (535)",
+   "backend/routers/social.py (451)"
+  ]
+ },
+ "duplication": {
+  "percentage": 0.19456767063584715,
+  "clones": 3,
+  "duplicatedLines": 25
+ },
+ "complexity": {
+  "functions": 1770,
+  "over15": 43,
+  "hotspots": [
+   {
+    "ccn": 79,
+    "nloc": 16,
+    "fn": "discardReview",
+    "file": "frontend/web/src/components/camera-workout.tsx"
+   },
+   {
+    "ccn": 64,
+    "nloc": 27,
+    "fn": "validStoredValue",
+    "file": "frontend/web/src/lib/storage-validation.ts"
+   },
+   {
+    "ccn": 63,
+    "nloc": 23,
+    "fn": "reviewMeal",
+    "file": "frontend/web/src/components/adventure-hub.tsx"
+   },
+   {
+    "ccn": 62,
+    "nloc": 43,
+    "fn": "update",
+    "file": "backend/routers/training.py"
+   },
+   {
+    "ccn": 62,
+    "nloc": 8,
+    "fn": "record",
+    "file": "frontend/web/src/components/workout-dashboard.tsx"
+   },
+   {
+    "ccn": 59,
+    "nloc": 10,
+    "fn": "saveEntry",
+    "file": "frontend/web/src/components/nutrition-dashboard.tsx"
+   },
+   {
+    "ccn": 54,
+    "nloc": 48,
+    "fn": "CharacterCompanion",
+    "file": "frontend/web/src/components/character-companion.tsx"
+   },
+   {
+    "ccn": 50,
+    "nloc": 284,
+    "fn": "barcodeValueCell",
+    "file": "frontend/web/src/components/food-workspace.tsx"
+   },
+   {
+    "ccn": 39,
+    "nloc": 48,
+    "fn": "analyze",
+    "file": "backend/flask_app/web_gateway.py"
+   },
+   {
+    "ccn": 37,
+    "nloc": 32,
+    "fn": "state",
+    "file": "backend/services/gamification.py"
+   },
+   {
+    "ccn": 35,
+    "nloc": 40,
+    "fn": "search",
+    "file": "backend/routers/cloud_nutrition.py"
+   },
+   {
+    "ccn": 31,
+    "nloc": 37,
+    "fn": "update_activity",
+    "file": "backend/routers/personalization.py"
+   },
+   {
+    "ccn": 28,
+    "nloc": 31,
+    "fn": "deliver",
+    "file": "backend/services/notifications.py"
+   },
+   {
+    "ccn": 28,
+    "nloc": 41,
+    "fn": "call",
+    "file": "backend/flask_app/binding.py"
+   },
+   {
+    "ccn": 27,
+    "nloc": 18,
+    "fn": "(anonymous)",
+    "file": "frontend/web/src/components/barcode-camera.tsx"
+   }
+  ]
+ },
+ "typeEscapes": {
+  "any": 0,
+  "tsIgnore": 0
+ },
+ "dependencies": {
+  "npmDirect": 13,
+  "npmDev": 20,
+  "npmOutdated": 15,
+  "npmVulnerabilities": {
+   "info": 0,
+   "low": 0,
+   "moderate": 0,
+   "high": 0,
+   "critical": 0,
+   "total": 0
+  },
+  "pythonPinned": 36,
+  "pythonOutdatedInEnv": 26,
+  "osv": "See docs/TEST_REPORT_P6.md for the OSV scan; rerun tools/bench via QUICK to refresh"
+ },
+ "coverage": {
+  "backendLinePct": 88.9,
+  "webLinePct": 80.59,
+  "byModule": {
+   "backend/flask_app": 92,
+   "backend/routers": 90.8,
+   "backend/services": 82.4,
+   "frontend/web/src/main.tsx": 0,
+   "frontend/web/src/routes.tsx": 0,
+   "frontend/web/src/app": 61.3,
+   "frontend/web/src/components": 86.8,
+   "frontend/web/src/lib": 84.8
+  },
+  "backendTests": {
+   "passed": 573,
+   "failed": 0,
+   "exit": 0
+  },
+  "webTests": {
+   "passed": 278,
+   "failed": 0,
+   "exit": 0
+  }
+ },
+ "addField": {
+  "experiment": "Add an optional 'mood' (great / okay / low) to a cloud diary entry: saved by the server, editable, shown in the diary, included in export.",
+  "method": "Traced by reading the code at legacy-baseline (no change made): every file a developer must edit for the field to work end to end, plus the tests that should change.",
+  "appFiles": 6,
+  "testFiles": 2,
+  "files": [
+   "backend/models.py (MealLog column)",
+   "backend/alembic/versions/<new migration>.py (add the column, reversible)",
+   "backend/services/wellness_inputs.py (DiaryInput field and validation)",
+   "backend/routers/cloud_nutrition.py (write_diary stores it, diary_view returns it)",
+   "frontend/web/src/lib/wellness.ts (CloudEntry type)",
+   "frontend/web/src/components/nutrition-dashboard.tsx (input in the composer, value in the entry card, sent on save)",
+   "backend/tests/test_wellness.py",
+   "frontend/web/tests/wellness.test.tsx"
+  ],
+  "notes": "Export needs no change (meal logs are exported whole). The device journal (food workspace) is a separate store and would need its own change if mood should exist there too."
+ }
+}

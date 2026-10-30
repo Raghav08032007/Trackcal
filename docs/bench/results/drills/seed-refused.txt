@@ -1,0 +1,4 @@
+Bench DRILL against http://127.0.0.1:3005 (full: 5 run(s))
+
+BENCH FAILED: seed failed (exit 1): Refusing to seed database "trackcal": use a disposable test or bench database.
+
