@@ -11,7 +11,7 @@
   --foreground: #171717;
   /* Geist is bundled via @fontsource-variable (imported in main.tsx); previously injected by the Next font loader. */
   --font-geist-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-geist-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --font-geist-mono: ui-monospace, monospace;
 }
 
 @theme inline {
