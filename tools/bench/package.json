@@ -1,0 +1,18 @@
+{
+  "name": "trackcal-bench",
+  "private": true,
+  "type": "module",
+  "description": "Version A / B bake-off harness. Dev-only; never shipped. See docs/bench/METHOD.md.",
+  "scripts": {
+    "bench": "node bench.mjs",
+    "compare": "node compare.mjs"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.5",
+    "autocannon": "8.0.0",
+    "axe-core": "4.14.0",
+    "jscpd": "5.4.1",
+    "lighthouse": "13.5.0",
+    "playwright-core": "1.64.1"
+  }
+}

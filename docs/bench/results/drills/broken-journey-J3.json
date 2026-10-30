@@ -1,0 +1,109 @@
+{
+ "rows": [
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "android-360",
+   "run": 1,
+   "success": false,
+   "taps": 0,
+   "keystrokes": 0,
+   "seconds": null,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "",
+   "error": "locator.click: Timeout 5000ms exceeded."
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": false,
+   "taps": 0,
+   "keystrokes": 0,
+   "seconds": null,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "",
+   "error": "locator.click: Timeout 5000ms exceeded."
+  }
+ ],
+ "integrity": [
+  {
+   "device": "android-360",
+   "run": 1,
+   "expected": 106,
+   "found": 106,
+   "intact": true
+  },
+  {
+   "device": "desktop-1280",
+   "run": 1,
+   "expected": 106,
+   "found": 106,
+   "intact": true
+  }
+ ],
+ "summary": [
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "success": false,
+   "successRate": 0,
+   "taps": {
+    "median": null,
+    "min": null,
+    "max": null,
+    "spread": null,
+    "runs": 0,
+    "unreliable": true
+   },
+   "keystrokes": {
+    "median": null,
+    "min": null,
+    "max": null,
+    "spread": null,
+    "runs": 0,
+    "unreliable": true
+   },
+   "seconds": {
+    "median": null,
+    "min": null,
+    "max": null,
+    "spread": null,
+    "runs": 0,
+    "unreliable": false
+   },
+   "secondsByDevice": {},
+   "routeChanges": {
+    "median": null,
+    "min": null,
+    "max": null,
+    "spread": null,
+    "runs": 0,
+    "unreliable": true
+   },
+   "maxInteractionMs": {
+    "median": null,
+    "min": null,
+    "max": null,
+    "spread": null,
+    "runs": 0,
+    "unreliable": true
+   },
+   "consoleErrors": [],
+   "failedRequests": [],
+   "failures": [
+    "locator.click: Timeout 5000ms exceeded."
+   ],
+   "note": ""
+  }
+ ]
+}

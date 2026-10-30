@@ -1,0 +1,17 @@
+{
+  "experiment": "Add an optional 'mood' (great / okay / low) to a cloud diary entry: saved by the server, editable, shown in the diary, included in export.",
+  "method": "Traced by reading the code at legacy-baseline (no change made): every file a developer must edit for the field to work end to end, plus the tests that should change.",
+  "appFiles": 6,
+  "testFiles": 2,
+  "files": [
+    "backend/models.py (MealLog column)",
+    "backend/alembic/versions/<new migration>.py (add the column, reversible)",
+    "backend/services/wellness_inputs.py (DiaryInput field and validation)",
+    "backend/routers/cloud_nutrition.py (write_diary stores it, diary_view returns it)",
+    "frontend/web/src/lib/wellness.ts (CloudEntry type)",
+    "frontend/web/src/components/nutrition-dashboard.tsx (input in the composer, value in the entry card, sent on save)",
+    "backend/tests/test_wellness.py",
+    "frontend/web/tests/wellness.test.tsx"
+  ],
+  "notes": "Export needs no change (meal logs are exported whole). The device journal (food workspace) is a separate store and would need its own change if mood should exist there too."
+}
