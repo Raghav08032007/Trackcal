@@ -156,3 +156,19 @@ html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #e
 .food-camera-consent { display: flex; align-items: center; gap: 10px; min-height: 44px; color: #fff; }
 .food-camera-shutter { width: 76px; height: 76px; display: grid; place-items: center; border: 4px solid #fff; border-radius: 50%; background: var(--tc-violet, #7c5cff); color: #fff; cursor: pointer; }
 .food-camera-shutter:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── Body preview ── */
+.body-goals { display: grid; gap: 10px; margin-bottom: 18px; }
+.body-goals button { display: grid; gap: 2px; min-height: 56px; padding: 10px 14px; text-align: left; border: 2px solid var(--tc-edge-soft, #d9d2f3); border-radius: 14px; background: none; color: inherit; cursor: pointer; }
+.body-goals button.selected { border-color: var(--tc-violet, #7c5cff); }
+.body-preview h2 { margin-top: 18px; }
+.body-preview-thumb { display: block; max-height: 220px; margin: 12px 0; border-radius: 14px; }
+.body-consent { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 6px 0; }
+.body-preview .account-primary { margin-top: 12px; }
+.body-preview button:disabled { opacity: .55; cursor: not-allowed; }
+.body-compare { position: relative; max-width: 420px; margin: 12px auto; overflow: hidden; border-radius: 18px; }
+.body-compare img { display: block; width: 100%; }
+.body-compare-after { position: absolute; inset: 0; }
+.body-compare-after img { height: 100%; object-fit: cover; }
+.body-compare-label { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 10px; background: #0b0c16d9; color: #fff; }
+.body-compare-slider { display: grid; gap: 6px; max-width: 420px; margin: 0 auto 12px; }
