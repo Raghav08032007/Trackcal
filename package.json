@@ -23,6 +23,7 @@
     "ics": "^3.12.1",
     "lucide-react": "^1.59.0",
     "papaparse": "^5.5.3",
+    "qrcode-generator": "2.0.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router": "8.4.0"

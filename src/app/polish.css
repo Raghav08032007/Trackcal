@@ -74,3 +74,21 @@ html[data-theme=dark] .photo-card, html[data-theme=dark] .photo-carousel-head bu
 .journey-orb img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
 /* Smaller text needs more contrast headroom: muted grey ≈ 6.4:1 on white (was 5.4:1, which dipped under 4.5:1 mid-transition). */
 html:not([data-theme="dark"]) { --tc-muted: #5a5b70; }
+
+/* Phase 9: events. */
+.event-card { position: relative; padding-right: 86px !important; }
+.event-date { position: absolute; top: 18px; right: 18px; display: grid; place-items: center; width: 58px; height: 62px; border-radius: 16px; background: #4c3bcf; color: #fff; font-size: .72rem; text-transform: uppercase; font-weight: 800; box-shadow: 0 6px 0 #2f2393; }
+.event-date b { font-size: 1.4rem; line-height: 1; }
+.event-cover h1 { margin: 6px 0 10px; }
+.event-qr { text-align: center; }
+.event-qr-code { width: min(320px, 80vw); margin: 12px auto; background: #fff; border-radius: 18px; padding: 8px; box-shadow: 0 10px 30px #2a1f6a22; }
+.event-qr-code svg { display: block; width: 100%; height: auto; }
+.event-checkin { text-align: center; display: grid; justify-items: center; gap: 8px; }
+.event-checkin-badge { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: #d7ef92; color: #1d3a2a; font-size: 2.6rem; font-weight: 900; }
+.event-checkin.is-ok .event-checkin-badge { animation: checkin-pop .6s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes checkin-pop { from { transform: scale(.2) rotate(-25deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .event-checkin.is-ok .event-checkin-badge { animation: none; } }
+html[data-theme=dark] .event-qr-code { background: #fff; }
+html:not([data-theme="dark"]) .studio-list-row small { color: var(--tc-muted, #5a5b70) !important; font-size: .78rem; }
+/* The floating companion sits bottom-right; leave room so the footer's last row (Send feedback) can scroll clear of it. */
+body:has(.journey-float) .site-links { padding-bottom: 120px; }
