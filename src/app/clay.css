@@ -1,0 +1,85 @@
+/* Bright 3D clay: the top layer of the design. Loaded last. Colour, depth and motion only; layout stays where it is.
+   All 3D is CSS, so it adds no download. Everything animated stops under reduced motion (see the end of this file). */
+
+:root {
+  --clay-violet: #6a45ff; --clay-violet-deep: #4322d1; --clay-coral: #ff6b4a; --clay-sun: #ffc531; --clay-lime: #a6ec3f; --clay-sky: #3fc4ff; --clay-pink: #ff5fa8;
+  --clay-spring: cubic-bezier(.34, 1.56, .64, 1); --clay-glide: cubic-bezier(.2, .8, .2, 1);
+  --clay-card: linear-gradient(160deg, #ffffff 0%, #fbf9ff 55%, #f3efff 100%);
+  --clay-depth: inset 0 2px 0 #ffffff, inset 0 -5px 10px #6a45ff14, 0 10px 0 -4px #dcd3fb, 0 26px 40px -22px #4322d166;
+  --clay-depth-lift: inset 0 2px 0 #ffffff, inset 0 -5px 10px #6a45ff1c, 0 15px 0 -6px #d2c6fb, 0 38px 54px -26px #4322d185;
+  --tc-bg: #f1edff; --tc-mesh-a: #b9a4ff8c; --tc-mesh-b: #c6f26a73; --tc-mesh-c: #ffab8f66;
+  --tc-r-lg: 32px; --tc-r: 24px; --tc-r-sm: 16px;
+  --tc-violet: var(--clay-violet); --tc-violet-deep: var(--clay-violet-deep);
+}
+html[data-theme="dark"] {
+  --clay-card: linear-gradient(160deg, #2a2a47 0%, #24243e 55%, #1f1f36 100%);
+  --clay-depth: inset 0 2px 0 #ffffff1a, inset 0 -5px 10px #0000002e, 0 10px 0 -4px #0d0d1c, 0 26px 40px -20px #000000cc;
+  --clay-depth-lift: inset 0 2px 0 #ffffff26, inset 0 -5px 10px #00000033, 0 15px 0 -6px #0b0b18, 0 38px 54px -24px #000000e6;
+  --tc-bg: #12122a; --tc-mesh-a: #6a45ff4d; --tc-mesh-b: #a6ec3f1f; --tc-mesh-c: #ff6b4a26;
+}
+
+/* Floating 3D shapes behind everything. Painted with gradients, so they cost no images. */
+body.tc-studio::before, body.tc-studio::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; pointer-events: none; }
+body.tc-studio::before { top: 12vh; right: -70px; width: 210px; height: 210px; background: radial-gradient(circle at 32% 28%, #ffffff 0 6%, #ffd9a8 18%, var(--clay-coral) 58%, #d6401f 100%); opacity: .5; box-shadow: 0 34px 50px -24px #d6401f80; }
+body.tc-studio::after { bottom: 8vh; left: -60px; width: 170px; height: 170px; background: radial-gradient(circle at 32% 28%, #ffffff 0 6%, #e6ffb0 20%, var(--clay-lime) 60%, #67b80f 100%); opacity: .5; box-shadow: 0 30px 44px -22px #67b80f80; }
+html[data-theme="dark"] body.tc-studio::before, html[data-theme="dark"] body.tc-studio::after { opacity: .18; }
+
+/* Surfaces: thick, soft and rounded. */
+.tc-studio :is(.account-card, .wellness-card-grid > article, .play-card, .studio-tour-card, .scan-privacy-card, .journey-panel, .destination-card, .social-post, .community-card, .premium-plan) {
+  background: var(--clay-card); border: 0; border-radius: var(--tc-r-lg); box-shadow: var(--clay-depth);
+}
+.tc-studio .account-card { padding: 28px; }
+
+/* Headings: heavy and confident. */
+.tc-studio :is(h1, .account-title h1) { font-weight: 800; letter-spacing: -.035em; }
+.tc-studio h2 { font-weight: 750; letter-spacing: -.02em; }
+.tc-studio :is(.account-title, .food-page-heading, .daily-focus > header) .eyebrow { color: var(--clay-violet-deep); font-weight: 750; }
+html[data-theme="dark"] .tc-studio :is(.account-title, .food-page-heading, .daily-focus > header) .eyebrow { color: #c9bcff; }
+
+/* Buttons: glossy clay that squashes when pressed. */
+.tc-studio :is(.account-primary, .gate-primary, .play-button, .food-camera-open) {
+  border: 0; border-radius: 20px; background: linear-gradient(180deg, #8467ff 0%, var(--clay-violet) 48%, #5533ea 100%); color: #fff;
+  box-shadow: inset 0 2px 0 #ffffff66, inset 0 -3px 6px #2c139a66, 0 7px 0 var(--clay-violet-deep), 0 18px 26px -12px #4322d1b3;
+}
+.tc-studio :is(.account-secondary, .gate-secondary, .destination-button) {
+  border: 0; border-radius: 20px; background: linear-gradient(180deg, #ffffff, #f0ebff); color: var(--clay-violet-deep);
+  box-shadow: inset 0 2px 0 #ffffff, inset 0 -3px 6px #6a45ff1f, 0 6px 0 #d2c6fb, 0 14px 22px -14px #4322d180;
+}
+html[data-theme="dark"] .tc-studio :is(.account-secondary, .gate-secondary, .destination-button) {
+  background: linear-gradient(180deg, #37375c, #2a2a47); color: #e4dcff; box-shadow: inset 0 2px 0 #ffffff1f, inset 0 -3px 6px #00000033, 0 6px 0 #0d0d1c, 0 14px 22px -14px #000000cc;
+}
+
+/* The tab bar: an opaque clay surface, so page text can't show through it. On phones it floats as a pill. */
+.tc-studio .app-tabbar { border: 0; background: #ffffff; box-shadow: inset 0 2px 0 #fff, 0 8px 0 -3px #d2c6fb, 0 22px 34px -14px #4322d180; }
+html[data-theme="dark"] .tc-studio .app-tabbar { background: #23233d; box-shadow: inset 0 2px 0 #ffffff1a, 0 8px 0 -3px #0d0d1c, 0 22px 34px -14px #000000d9; }
+.tc-studio .app-tabbar a[aria-current="page"] { border: 0; background: linear-gradient(180deg, #8467ff, #5533ea); color: #fff; box-shadow: inset 0 2px 0 #ffffff59, 0 4px 0 var(--clay-violet-deep); }
+.tc-studio .app-tabbar a[aria-current="page"] svg { color: #fff; }
+@media (max-width: 859px) { .tc-studio .app-tabbar { left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); border-radius: 26px; padding: 6px; } }
+
+/* The dark hero keeps a dark ledge in dark theme. */
+html[data-theme="dark"] .studio-momentum { box-shadow: var(--clay-depth); }
+
+/* Companion: a shiny clay bubble. */
+.journey-orb { border: 0; background: var(--clay-card); box-shadow: var(--clay-depth); }
+
+/* Motion, for people who haven't asked for less of it. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body.tc-studio::before { animation: clay-float 11s ease-in-out infinite; }
+  html:not([data-motion="reduced"]) body.tc-studio::after { animation: clay-float 14s ease-in-out -4s infinite reverse; }
+  html:not([data-motion="reduced"]) .tc-studio :is(.account-primary, .gate-primary, .play-button, .account-secondary, .gate-secondary, .destination-button, .food-camera-open, .food-camera-shutter, .app-tabbar a) { transition: translate .32s var(--clay-spring), scale .32s var(--clay-spring), box-shadow .2s ease, filter .2s ease; }
+  html:not([data-motion="reduced"]) .tc-studio :is(.account-primary, .gate-primary, .play-button, .account-secondary, .gate-secondary, .destination-button, .food-camera-open):hover:not(:disabled) { translate: 0 -3px; scale: 1.015; filter: brightness(1.06); }
+  html:not([data-motion="reduced"]) .tc-studio :is(.account-primary, .gate-primary, .play-button, .account-secondary, .gate-secondary, .destination-button, .food-camera-open):active:not(:disabled) { translate: 0 5px; scale: .975; transition-duration: .08s; }
+  html:not([data-motion="reduced"]) .app-tabbar a[aria-current="page"] { translate: 0 -3px; }
+  html:not([data-motion="reduced"]) .app-tabbar a:active { scale: .9; }
+  html:not([data-motion="reduced"]) .tc-studio :is(.account-card, .destination-card, .play-card, .social-post, .community-card):hover { box-shadow: var(--clay-depth-lift); }
+  ::view-transition-old(root) { animation: clay-page-out .18s ease-in both; }
+  ::view-transition-new(root) { animation: clay-page-in .42s var(--clay-spring) both; }
+}
+@keyframes clay-float { 0%, 100% { transform: translate3d(0, 0, 0) rotate(0); } 50% { transform: translate3d(-14px, -26px, 0) rotate(14deg); } }
+@keyframes clay-page-out { to { opacity: 0; transform: scale(.975); } }
+@keyframes clay-page-in { from { opacity: 0; transform: translateY(16px) scale(.97); } }
+
+/* Labels on dark hero cards. */
+.tc-studio .wellness-hero .eyebrow { color: #d9d0ff; font-weight: 750; }
+.tc-studio .play-bottom > p { color: #4f5d4b; }
+html[data-theme="dark"] .tc-studio .play-bottom > p { color: #c5c7dc; }
