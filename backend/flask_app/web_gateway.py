@@ -282,6 +282,18 @@ SOCIAL = [('GET', r'me'), ('PUT', r'me'), ('GET', r'profiles/[a-z0-9_.]{1,30}'),
           ('POST', r'reports'), ('GET', r'moderation'), ('POST', r'moderation')]
 
 
+@bp.route('/body-preview', methods=['GET', 'POST'])
+def body_preview():
+    if request.method == 'GET':
+        try: return forward(authenticated('GET', '/body-preview'))
+        except Exception: return error(ACCOUNT_DOWN, 503)
+    if not same_origin(): return error('Origin rejected', 403)
+    body, failed = json_object(15_000_000, ('Photo must be under 10 MB.', 413), 'Invalid JSON')
+    if failed: return failed
+    try: return forward(authenticated('POST', '/body-preview', body))
+    except Exception: return error(ACCOUNT_DOWN, 503)
+
+
 @bp.route('/social/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def social_routes(path):
     method = request.method

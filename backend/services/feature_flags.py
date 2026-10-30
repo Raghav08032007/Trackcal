@@ -17,6 +17,7 @@ REGISTRY = {
     'verified_challenges': 'Verified challenges (Phase 10)',
     'advanced_progression': 'Advanced character progression (Phase 11)',
     'organizer_saas': 'Organizer and trainer workspace (Phase 12)',
+    'body_simulator': 'AI body preview from a photo: adults only, costs money per image',
 }
 DEFAULT = False
 
