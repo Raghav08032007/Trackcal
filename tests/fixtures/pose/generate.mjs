@@ -18,6 +18,8 @@ function skeleton(ex,angle){
  if(ex==='squat'){A={x:.62,y:.86};K={x:.70,y:.66};Hp=add(K,rot(unit(K,A),-angle),.22);S=add(Hp,{x:.04,y:-.26});E=add(S,{x:.07,y:.08});Wr=add(E,{x:.09,y:0});}
  if(ex==='pushup'){Wr={x:.26,y:.84};E={x:.26,y:.69};S=add(E,rot(unit(E,Wr),-angle),.16);Hp=add(S,{x:.34,y:.03});K=add(Hp,{x:.18,y:.02});A=add(K,{x:.18,y:.02});}
  if(ex==='curl'){S={x:.66,y:.30};E={x:.67,y:.50};Wr=add(E,rot(unit(E,S),-angle),.17);Hp={x:.68,y:.62};K={x:.68,y:.78};A={x:.68,y:.93};}
+ if(ex==='press'){S={x:.66,y:.44};Hp={x:.68,y:.66};K={x:.68,y:.8};A={x:.68,y:.93};E=add(S,rot({x:0,y:-1},angle),-.15);Wr=add(E,{x:0,y:-.16});}
+ if(ex==='situp'){Hp={x:.6,y:.82};K={x:.78,y:.66};A={x:.92,y:.84};S=add(Hp,rot(unit(Hp,K),-angle),.32);E=add(S,{x:.05,y:.08});Wr=add(E,{x:.07,y:.02});}
  for(let i=0;i<=10;i++)p[i]={x:S.x+.01*(i%3),y:S.y-.08-.005*i};
  const sides={11:S,13:E,15:Wr,17:Wr,19:Wr,21:Wr,23:Hp,25:K,27:A,29:A,31:A};
  for(const [id,pt] of Object.entries(sides)){p[id]={...pt};p[+id+1]={x:pt.x+.02,y:pt.y};}
@@ -31,8 +33,8 @@ function curve(top,bottom,reps,period,{hold=1000,depths}={}){
  for(let end=t+hold;t<end;t+=DT)points.push([t,top]);
  return points;
 }
-const RANGE={squat:[175,85],pushup:[170,80],curl:[165,40]};
-const REQUIRED={squat:[11,23,25,27],pushup:[11,13,15,23,27],curl:[11,13,15,23]};
+const RANGE={squat:[175,85],pushup:[170,80],curl:[165,40],press:[170,75],situp:[150,55]};
+const REQUIRED={squat:[11,23,25,27],pushup:[11,13,15,23,27],curl:[11,13,15,23],press:[11,13,15,23],situp:[11,23,25]};
 function build(ex,scenario){
  seed=[...ex+scenario].reduce((n,c)=>n*31+c.charCodeAt(0)|0,7);
  const [top,bottom]=RANGE[ex];let pts;
@@ -51,6 +53,6 @@ function build(ex,scenario){
  const frames=raw.map(({t,s})=>({t:+t.toFixed(1),p:Object.fromEntries(s.map((q,i)=>[i,q]).filter(([i,q])=>q.some((v,j)=>v!==base[i][j])))}));
  return {exercise:ex,scenario,synthetic:true,fps:FPS,width:W,height:H,base,frames};
 }
-for(const ex of ['squat','pushup','curl'])for(const sc of ['clean','noisy','half_reps','occlusion','walk_out','very_fast','very_slow'])
+for(const ex of ['squat','pushup','curl','press','situp'])for(const sc of ['clean','noisy','half_reps','occlusion','walk_out','very_fast','very_slow'])
  writeFileSync(new URL(`./${ex}-${sc}.json.gz`,import.meta.url),gzipSync(JSON.stringify(build(ex,sc)),{level:9}));
 console.log('fixtures written');

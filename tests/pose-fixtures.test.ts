@@ -6,7 +6,7 @@ import {SessionTracker} from '@/lib/pose/session-tracker';
 import {RepCounter} from '@/lib/pose/rep-counter';
 import {OneEuroFilter} from '@/lib/pose/one-euro';
 import {angle} from '@/lib/pose/landmarks';
-import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
+import {EXERCISE_CONFIG,EXERCISE_LEVELS,withLevel} from '@/lib/pose/exercise-config';
 import type {ExerciseKind,PoseFrame,TrackingResult} from '@/lib/pose/types';
 type Fixture={fps:number;width:number;height:number;synthetic:boolean;base:number[][];frames:{t:number;p:Record<string,number[]>}[]};
 const load=(ex:string,sc:string):Fixture=>JSON.parse(gunzipSync(readFileSync(`tests/fixtures/pose/${ex}-${sc}.json.gz`)).toString());
@@ -18,9 +18,9 @@ const EXPECTED:Record<string,[number,Partial<typeof none>]>={
  clean:[5,{}],noisy:[5,{}],half_reps:[3,{too_shallow:3}],occlusion:[4,{lost_tracking:1}],walk_out:[3,{}],very_fast:[0,{too_fast:1}],very_slow:[2,{}],
 };
 describe('rep counts on synthetic landmark fixtures',()=>{
- for(const ex of ['squat','pushup','curl'] as ExerciseKind[])for(const [sc,[reps,rejections]] of Object.entries(EXPECTED))
+ for(const ex of ['squat','pushup','curl','press','situp'] as ExerciseKind[])for(const [sc,[reps,rejections]] of Object.entries(EXPECTED))
   it(`${ex} · ${sc}: ${reps} reps`,()=>{const {t}=play(ex,sc);expect(t.counter.reps).toBe(reps);expect(t.counter.rejections).toEqual({...none,...rejections});});
- for(const ex of ['squat','pushup','curl'] as ExerciseKind[]){
+ for(const ex of ['squat','pushup','curl','press','situp'] as ExerciseKind[]){
   it(`${ex}: walking out of frame pauses counting with a clear instruction`,()=>{const {last}=play(ex,'walk_out');expect(last.paused).toBe(true);expect(last.message).toBe('Step back so your whole body is in frame.');});
   it(`${ex}: a half rep tells the person why it was not counted`,()=>{const {results}=play(ex,'half_reps');expect(results.some(r=>r.rejection==='too_shallow'&&r.message.includes('go a little deeper'))).toBe(true);});
   it(`${ex}: occlusion never counts while hidden`,()=>{const {results}=play(ex,'occlusion');const hidden=results.filter(r=>r.paused);expect(hidden.length).toBeGreaterThan(10);expect(new Set(hidden.map(r=>r.reps)).size).toBe(1);});
@@ -44,7 +44,7 @@ describe('properties',()=>{
    const a=angle(pts[0],pts[1],pts[2]),b=angle(scaled[0],scaled[1],scaled[2]);if(Number.isFinite(a))expect(b).toBeCloseTo(a,6);}
  });
  it('the count never goes down, whatever the input',()=>{
-  for(const ex of ['squat','pushup','curl'] as ExerciseKind[]){const k=new RepCounter(EXERCISE_CONFIG[ex]);let prev=0,t=0;
+  for(const ex of ['squat','pushup','curl','press','situp'] as ExerciseKind[]){const k=new RepCounter(EXERCISE_CONFIG[ex]);let prev=0,t=0;
    for(let i=0;i<5000;i++){t+=rand()<.02?900:20+rand()*60;const valid=rand()>.05;k.update({angle:rand()*180,confidence:rand(),valid,reason:''},rand()<.01?t-100:t);expect(k.reps).toBeGreaterThanOrEqual(prev);prev=k.reps;}}
  });
  it('smoothing (applied to landmark coordinates) lowers jitter without losing the movement',()=>{
@@ -62,4 +62,12 @@ describe('properties',()=>{
   t.counter.resetMovement();t.analyzer.reset();const turned=frames(load('squat','clean')).map(f=>({...f,timestamp:f.timestamp+20000,width:480,height:640}));for(const f of turned)t.frame(f);
   expect(t.counter.reps).toBeGreaterThanOrEqual(reps);
  });
+});
+
+describe('difficulty levels',()=>{
+ const reps=(level:keyof typeof EXERCISE_LEVELS,bottom:number)=>{const c=new RepCounter(withLevel(EXERCISE_CONFIG.curl,level));const top=165;let t=0;const see=(a:number)=>{t+=50;c.update({angle:a,confidence:.9,valid:true,reason:''},t);};
+  for(let i=0;i<20;i++)see(top);for(let r=0;r<3;r++){for(let i=0;i<=20;i++)see(top-(top-bottom)*i/20);for(let i=0;i<8;i++)see(bottom);for(let i=20;i>=0;i--)see(top-(top-bottom)*i/20);for(let i=0;i<8;i++)see(top);}return c.reps;};
+ it('beginner counts a rep that advanced asks to go deeper on',()=>{expect(reps('beginner',65)).toBe(3);expect(reps('advanced',65)).toBe(0);expect(reps('advanced',45)).toBe(3);});
+ it('beginner leaves the base thresholds unchanged and levels only get stricter',()=>{const c=EXERCISE_CONFIG.squat;expect(withLevel(c,'beginner').down).toBe(c.down);expect(withLevel(c,'advanced').down).toBeLessThan(withLevel(c,'intermediate').down);expect(withLevel(c,'advanced').up).toBeGreaterThan(c.up);});
+ it('a standing person is not counted as sit-ups',()=>{const f=load('curl','clean');const t=new SessionTracker('situp');let r;for(const fr of frames(f))r=t.frame(fr)??r;expect(t.counter.reps).toBe(0);});
 });
