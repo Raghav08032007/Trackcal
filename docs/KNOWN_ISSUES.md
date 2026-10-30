@@ -95,6 +95,17 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-41 | 3 | Anyone with a feed profile can create a community (5 each); names and descriptions aren't screened beyond reports | — | Add communities to the keyword pre-screen planned in KI-37 |
 | KI-36 | — | The under-18 launch gate (Phase 7) applies to communities too | KI-36 | Decide once for feed and communities |
 
+## Found during the visual pass and Phase 9 (30 October 2026)
+
+| ID | Sev | Issue | Evidence | Plan |
+|---|---|---|---|---|
+| KI-42 | 3 | Photos are CC BY / CC BY-SA from Wikimedia Commons: the credits page must stay reachable (footer link) and the photos must not be used in ads or app-store screenshots without checking each licence | `public/photos/credits.json`, `/credits` | Keep the link; owner to review before marketing use |
+| KI-43 | 3 | `e2e-p6-hardening.mjs` still fails about 1 run in 9 (after fixing the companion-over-footer overlap that caused most failures) | Phase 9 runs | Same family as KI-14/KI-24; rerun before investigating |
+| KI-44 | 2 | Events have no report button yet, and event locations are free text: an organizer could list a private address. The form warns against it | `routers/events.py` | Add event reports to the moderation queue before turning events on |
+| KI-45 | 3 | A QR code photographed and sent to someone outside works for up to about 60 seconds (current + previous 30 s window). Remote check-in remains possible within that minute | `routers/events.py` | Accepted for beta; tighten to the current window or add location only if abuse shows up |
+| KI-46 | 3 | No event reminder notifications yet (the push types don't include events) | `services/notifications.py` | Add an `event` type once events are on |
+| KI-47 | 3 | Another session's files (`Makefile`, `tools/`, `docs/bench/`) are untracked in this repo; one commit included `docs/bench/` by mistake and the next untracked it | `git log` | Owner: decide whether those belong in the repo |
+
 ## Resolved during the backend migration (28 October 2026)
 
 | ID | Resolution | Evidence |

@@ -6,7 +6,7 @@ from database import Base
 from routers import users
 from tests.client import client
 
-OWNER_COLUMNS = ('user_id', 'owner_id', 'client_id', 'coach_id', 'author_id', 'follower_id', 'reporter_id')
+OWNER_COLUMNS = ('user_id', 'owner_id', 'client_id', 'coach_id', 'author_id', 'follower_id', 'reporter_id', 'organizer_id')
 
 
 def test_every_user_owned_table_is_exported_or_excluded_with_a_reason():

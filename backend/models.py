@@ -1122,6 +1122,36 @@ class CommunityMember(Base):
     joined_at = Column(DateTime, nullable=False, default=utcnow)
 
 
+class Event(Base):
+    """An in-person event (Phase 9, flag verified_events). Attendance is verified by a rotating QR code shown by the
+    organizer, or by the organizer checking someone in. checkin_key never leaves the server."""
+    __tablename__ = 'events'
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    organizer_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    community_id = Column(CHAR(36), ForeignKey('communities.id', ondelete='CASCADE'), nullable=True, index=True)
+    title = Column(String(120), nullable=False)
+    description = Column(String(1000), nullable=False, default='')
+    category = Column(String(20), nullable=False, default='other')
+    location = Column(String(200), nullable=False)
+    starts_at = Column(DateTime, nullable=False, index=True)  # UTC
+    ends_at = Column(DateTime, nullable=False)
+    timezone = Column(String(64), nullable=False, default='UTC')
+    capacity = Column(Integer, nullable=True)  # None: no limit
+    status = Column(String(10), nullable=False, default='scheduled')  # scheduled, cancelled
+    checkin_key = Column(CHAR(64), nullable=False)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
+class EventRegistration(Base):
+    __tablename__ = 'event_registrations'
+    event_id = Column(CHAR(36), ForeignKey('events.id', ondelete='CASCADE'), primary_key=True)
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True, index=True)
+    status = Column(String(10), nullable=False, default='going')  # going, waitlist, cancelled
+    checked_in_at = Column(DateTime, nullable=True)
+    check_in_method = Column(String(10), nullable=True)  # qr, organizer
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+
+
 class SearchSynonym(Base):
     """Spelling variants mapped to one search term (idly -> idli, thayir -> curd). Editable data, not code."""
     __tablename__ = "search_synonyms"

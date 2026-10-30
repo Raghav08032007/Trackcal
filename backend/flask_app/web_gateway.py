@@ -327,6 +327,32 @@ def community_routes(path):
         return error('Communities are unavailable right now. Nothing was changed; retry later.', 503)
 
 
+# ── Events (flag verified_events) ─────────────────────────────────────────
+
+EID = r'[0-9a-f-]{36}'
+EVENT = [('GET', r''), ('POST', r''), ('GET', EID), ('DELETE', EID), ('POST', EID + r'/registration'), ('DELETE', EID + r'/registration'),
+         ('GET', EID + r'/attendees'), ('GET', EID + r'/check-in-code'), ('POST', EID + r'/check-in')]
+
+
+@bp.route('/events', defaults={'path': ''}, methods=['GET', 'POST'])
+@bp.route('/events/<path:path>', methods=['GET', 'POST', 'DELETE'])
+def event_routes(path):
+    method = request.method
+    if not any(m == method and re.fullmatch(p, path) for m, p in EVENT): return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        body = None
+        if method == 'POST':
+            if not request.get_data(cache=True): body = {}
+            else:
+                body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+                if failed: return failed
+        query = {k: request.args[k] for k in ('scope', 'community') if k in request.args}
+        return forward(authenticated(method, '/events' + (f'/{path}' if path else '') + (f'?{urlencode(query)}' if query else ''), body))
+    except Exception:
+        return error('Events are unavailable right now. Nothing was changed; retry later.', 503)
+
+
 # ── Beta feedback ─────────────────────────────────────────────────────────
 
 @bp.post('/feedback')
