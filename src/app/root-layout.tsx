@@ -3,7 +3,7 @@ import { Outlet } from "react-router";
 import { AppNavigation } from "@/components/app-navigation";
 import { PersonalReminderInbox } from "@/components/personal-reminder-inbox";
 import { JourneyCompanion } from "@/components/journey-companion";
-import { AccountSession } from "@/components/account-session";
+import { AccountSession, AccountUnavailable } from "@/components/account-session";
 import { DevicePersistence } from "@/components/device-persistence";
 import { UpdatePrompt } from "@/components/app-updates";
 import { MotionLayer } from "@/components/motion-layer";
@@ -15,6 +15,6 @@ import { ThemeControl } from "@/components/theme-control";
 
 export function RootLayout() {
   return (
-    <AccountSession><DevicePersistence /><UpdatePrompt /><MotionLayer /><TouchFeedback /><LivingCharacters /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><Outlet /><footer className="site-links" aria-label="Product links"><ThemeControl /><Link href="/guide">Guided test drive</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/credits">Photo credits</Link><BetaFeedback /></footer></AccountSession>
+    <AccountSession><DevicePersistence /><UpdatePrompt /><MotionLayer /><TouchFeedback /><LivingCharacters /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><AccountUnavailable><Outlet /></AccountUnavailable><footer className="site-links" aria-label="Product links"><ThemeControl /><Link href="/guide">Guided test drive</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/credits">Photo credits</Link><BetaFeedback /></footer></AccountSession>
   );
 }
