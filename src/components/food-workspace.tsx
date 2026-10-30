@@ -1,4 +1,5 @@
 
+import { FoodCamera } from "@/components/food-camera";
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { consistencyWarning, FIELDS as NUTRIENT_FIELDS, rounded, scale, type Nutrients } from "@/lib/nutrition-math";
 import { useAccount } from "@/components/account-session";
@@ -310,8 +311,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [photoConsent,setPhotoConsent]=useState(false);
   const [photoRange,setPhotoRange]=useState<PhotoRange|null>(null);
   const [pendingPhoto,setPendingPhoto]=useState<File|null>(null);
-  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const [cameraOpen,setCameraOpen]=useState(false);
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; await processPhoto(file); e.target.value = ""; };
+  const processPhoto = async (file?: File) => {
     if (file) {
       if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>10*1024*1024){setScanError('Use a nonempty JPEG, PNG or WebP under 10 MB.');setScanReady(false);return;}
       setPendingPhoto(file); setPhotoRange(null);
@@ -344,9 +346,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         const mean = result.components.reduce((sum, item) => sum + item.confidence, 0) / result.components.length;
         if (result.calorie_range && result.components.every(item => item.portion_range_g)) setPhotoRange({ grams: [0, 1].map(i => Math.round(result.components.reduce((sum, item) => sum + item.portion_range_g[i], 0))) as [number, number],
           calories: [Math.round(result.calorie_range[0]), Math.round(result.calorie_range[1])], confidence: confidenceLabel(mean), fromModel: result.components.every(item => item.range_basis === "model") });
-        setPortionGrams(grams); setCookingStyle("standard"); setScanReady(true);
+        setPortionGrams(grams); setCookingStyle("standard"); setScanReady(true); requestAnimationFrame(() => document.getElementById("scan-result-title")?.scrollIntoView({ block: "center" }));
       } catch (error) { if (requestId === photoRequest.current) setScanError(error instanceof Error ? error.message : "Photo analysis failed."); }
-      finally { if (requestId === photoRequest.current) setIsScanning(false); e.target.value = ""; }
+      finally { if (requestId === photoRequest.current) setIsScanning(false); }
     }
   };
 
@@ -618,6 +620,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   </button>
                 </div>
 
+                <button className="food-camera-open" onClick={() => setCameraOpen(true)}><Camera size={20} /> Scan food with camera</button>
+                {cameraOpen && <FoodCamera consent={photoConsent} onConsent={setPhotoConsent} onClose={() => setCameraOpen(false)} onCapture={file => { setCameraOpen(false); void processPhoto(file); }} />}
                 <div className="scan-privacy-card"><label className="scanner-consent"><input type="checkbox" aria-label="Allow this photo to be sent to the configured AI provider" checked={photoConsent} onChange={e=>setPhotoConsent(e.target.checked)}/> Send this photo for AI analysis</label><p className="scanner-privacy-note">Optional transfer to the configured AI provider. Without consent, your preview stays local. Review estimates; allergens are not assessed.</p><div className="account-actions"><a className="destination-button" href="/nutrition#photo-review">Private photo & manual food selection ↗</a>{pendingPhoto&&photoConsent&&<button type="button" disabled={isScanning} onClick={()=>void handleImageFileChange({target:{files:[pendingPhoto],value:''}} as unknown as React.ChangeEvent<HTMLInputElement>)}>Analyze selected photo</button>}{uploadedImageUrl&&<button type="button" onClick={()=>{photoRequest.current++;setUploadedImageUrl(null);setPendingPhoto(null);if(fileInputRef.current)fileInputRef.current.value='';setScanReady(false);setScanError('Local photo removed.');}}>Delete selected photo</button>}</div></div>
                 <div className="aspect-[4/3] rounded-xl bg-slate-950 border border-slate-800 relative flex flex-col items-center justify-center p-6 text-center overflow-hidden group">
                   {uploadedImageUrl ? (
@@ -715,7 +719,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">
                       Detected Classification
                     </span>
-                    <h2 className="text-2xl font-bold text-white mt-1">{scanResult.foodName}</h2>
+                    <h2 id="scan-result-title" className="text-2xl font-bold text-white mt-1">{scanResult.foodName}</h2>
                     <p className="text-xs text-slate-400 mt-1">
                       Estimated portions — review and correct in your journal
                     </p>
