@@ -1,19 +1,19 @@
 /* Phone alignment fixes (step 4): keep headers to one row and controls at 44px touch size. */
 @media (max-width: 600px) {
   .home-page-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: nowrap; }
-  .home-page-header .brand { font-size: 20px; flex: 0 1 auto; min-width: 0; }
+  .home-page-header .brand { font-size:1.25rem; flex: 0 1 auto; min-width: 0; }
   .home-header-actions { display: flex; gap: 6px; flex-wrap: nowrap; flex: 0 0 auto; }
-  .home-header-actions > * { min-height: 44px; padding: 0 12px; font-size: 13px; white-space: nowrap; display: inline-flex; align-items: center; }
+  .home-header-actions > * { min-height: 44px; padding: 0 12px; font-size:.8125rem; white-space: nowrap; display: inline-flex; align-items: center; }
 
   .daily-focus > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: nowrap; }
   .daily-focus > header > div { flex: 1 1 auto; min-width: 0; }
-  .daily-focus > header > button { flex: 0 0 auto; min-height: 44px; padding: 0 12px; font-size: 13px; }
+  .daily-focus > header > button { flex: 0 0 auto; min-height: 44px; padding: 0 12px; font-size:.8125rem; }
 
 }
 
 /* Signed-out cards: one clear primary action and one alternative, side by side when they fit. */
 .gate-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-.gate-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border-radius: 14px; font-size: 15px; font-weight: 700; text-decoration: none; }
+.gate-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border-radius: 14px; font-size:.9375rem; font-weight: 700; text-decoration: none; }
 .gate-primary { background: var(--tab-active, #6a4fd0); color: #fff; }
 .gate-secondary { border: 1px solid var(--tab-line, #e3e1ee); color: var(--tab-ink, #2b2f4a); background: transparent; }
 @media (max-width: 600px) { .gate-actions a { flex: 1 1 100%; } }

@@ -31,7 +31,7 @@ body.tc-studio {
 /* Type: heavy, tight display headings. */
 .tc-studio main :is(h1) { font-family: var(--tc-display); font-weight: 850; letter-spacing: -0.045em; line-height: 1.02; }
 .tc-studio main :is(h2) { font-family: var(--tc-display); font-weight: 750; letter-spacing: -0.025em; }
-.tc-studio .account-card h1 { font-size: clamp(28px, 6.4vw, 40px); }
+.tc-studio .account-card h1 { font-size:var(--t-h2); }
 
 /* Clay surfaces: rounded, layered depth, lifting slightly on hover. */
 .tc-studio :is(.account-card, .wellness-card-grid > article, .play-card, .studio-tour-card, .scan-privacy-card, .journey-panel) {
@@ -108,12 +108,12 @@ body.tc-studio {
 
 /* Camera workouts (Phase 3): correction buttons, honest labels and tracking state. */
 .camera-adjust { display: inline-flex; gap: 8px; }
-.camera-adjust button { min-width: 48px; min-height: 48px; font-size: 1.4rem; font-weight: 800; border-radius: 14px; }
+.camera-adjust button { min-width: 48px; min-height: 48px; font-size:1.5rem; font-weight: 800; border-radius: 14px; }
 .camera-rep .camera-adjust { justify-content: center; margin: 8px 0; }
 .camera-experimental { padding: 12px 14px; border-radius: 14px; background: #fff4d6; border: 1px solid #e3c36c; color: #5a4310; }
 .camera-tips { margin: 0; padding-left: 20px; line-height: 1.6; }
 .camera-paused { margin: 0; padding: 12px 18px; background: #fff4d6; color: #5a4310; font-weight: 700; }
-.camera-perf { margin: 0; padding: 6px 18px; font-size: .85rem; color: #d7ec97; }
+.camera-perf { margin: 0; padding: 6px 18px; font-size:.875rem; color: #d7ec97; }
 html[data-theme=dark] .camera-experimental, html[data-theme=dark] .camera-paused { background: #4a3a17; color: #fff1cc; border-color: #8a6d2a; }
 
 /* Phase 4: update prompt, notifications, install and the daily motivation line. */
@@ -121,7 +121,7 @@ html[data-theme=dark] .camera-experimental, html[data-theme=dark] .camera-paused
 .update-prompt span { flex: 1 1 200px; }
 .update-prompt button { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 0; background: #d7ef92; color: #1d3a2a; font-weight: 700; }
 .update-prompt button + button { background: transparent; color: #f4f9e8; border: 1px solid #a7c48a; }
-.push-card .push-note { font-size: .9rem; padding: 10px 14px; border-radius: 12px; background: #eef4e2; }
+.push-card .push-note { font-size:.875rem; padding: 10px 14px; border-radius: 12px; background: #eef4e2; }
 .push-switch { display: flex !important; align-items: center; gap: 12px; font-weight: 700; min-height: 44px; }
 .push-switch input { width: 22px; height: 22px; }
 .push-types { border: 1px solid #cddbbd; border-radius: 16px; padding: 12px 16px; margin: 16px 0; }
@@ -130,7 +130,7 @@ html[data-theme=dark] .camera-experimental, html[data-theme=dark] .camera-paused
 .push-type label { display: flex; align-items: center; gap: 10px; min-height: 44px; }
 .push-time input { width: auto; min-height: 40px; }
 .motivation-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 20px; background: linear-gradient(135deg, #f3f8e6, #e7f0d6); border: 1px solid #cbdcb2; }
-.motivation-card span { font-size: 1.6rem; color: #6a8f3f; }
+.motivation-card span { font-size:1.5rem; color: #6a8f3f; }
 .motivation-card p { margin: 0; font-weight: 600; }
 .install-note { padding: 12px 16px; border-radius: 14px; background: #eef4e2; }
 html[data-theme=dark] .push-card .push-note, html[data-theme=dark] .motivation-card, html[data-theme=dark] .install-note { background: #203b2c; color: #eef5e4; border-color: #557044; }
@@ -140,8 +140,8 @@ html[data-theme=dark] .push-card .push-note, html[data-theme=dark] .motivation-c
 /* Phase 5: Premium. */
 .premium-plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 20px; }
 .premium-plan { position: relative; }
-.premium-plan h2 { font-size: 2.2rem; } .premium-plan h2 small { font-size: 1rem; font-weight: 600; opacity: .75; }
-.premium-badge { position: absolute; top: 16px; right: 16px; padding: 4px 12px; border-radius: 999px; background: #d7ef92; color: #1d3a2a; font-weight: 800; font-size: .85rem; }
+.premium-plan h2 { font-size:2rem; } .premium-plan h2 small { font-size:1rem; font-weight: 600; opacity: .75; }
+.premium-badge { position: absolute; top: 16px; right: 16px; padding: 4px 12px; border-radius: 999px; background: #d7ef92; color: #1d3a2a; font-weight: 800; font-size:.875rem; }
 .premium-trial { background: #fff4d6; border: 1px solid #e3c36c; color: #5a4310; }
 .premium-confirm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 14px; border-radius: 14px; background: #f6efe2; }
 .premium-confirm p { flex: 1 1 100%; margin: 0; }
@@ -171,13 +171,13 @@ a[href="/forgot-password"] { display: inline-flex; align-items: center; min-heig
 .social-author { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; min-height: 44px; }
 .social-author img, .social-profile > img { border-radius: 50%; background: #efedf9; object-fit: cover; }
 .social-author span { display: grid; } .social-author small { opacity: .75; }
-.social-menu-button { min-width: 44px; min-height: 44px; border-radius: 12px; border: 1px solid #dcd8ef; background: transparent; font-size: 1.2rem; }
+.social-menu-button { min-width: 44px; min-height: 44px; border-radius: 12px; border: 1px solid #dcd8ef; background: transparent; font-size:1.25rem; }
 .social-menu, .social-reactions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; align-items: center; }
 .social-menu button, .social-reactions button, .social-comments button, .social-report button, .social-tabs button { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid #dcd8ef; background: var(--card, #fafcf5); color: inherit; font-weight: 600; }
 .social-reactions button[aria-pressed="true"] { background: #e7e1ff; border-color: #8b78e6; }
-.social-total { margin-left: auto; font-size: .85rem; opacity: .75; }
+.social-total { margin-left: auto; font-size:.875rem; opacity: .75; }
 .social-milestone { display: inline-flex; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #e9f5cb; color: #2d4a1f; font-weight: 700; }
-.social-body { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1.05rem; }
+.social-body { white-space: pre-wrap; overflow-wrap: anywhere; font-size:1rem; }
 .social-comments { border-top: 1px solid #ebe8f7; padding-top: 10px; display: grid; gap: 8px; }
 .social-comment { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; overflow-wrap: anywhere; }
 .social-comments form { display: flex; gap: 8px; } .social-comments input { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid #cfc9ea; padding: 0 12px; }
@@ -190,7 +190,7 @@ a[href="/forgot-password"] { display: inline-flex; align-items: center; min-heig
 .social-characters { display: flex; flex-wrap: wrap; gap: 8px; border: 0; padding: 0; }
 .social-characters label { display: flex; align-items: center; gap: 4px; min-height: 44px; }
 .social-characters img { border-radius: 50%; }
-.social-note { font-size: .9rem; }
+.social-note { font-size:.875rem; }
 .social-more { width: 100%; }
 @media (max-width: 550px) { .social-profile { grid-template-columns: 1fr; text-align: center; justify-items: center; } }
 html[data-theme=dark] .social-post { background: #1f2a24; border-color: #3c5045; box-shadow: none; }
@@ -201,7 +201,7 @@ html[data-theme=dark] .social-milestone { background: #315238; color: #eff8dd; }
 .community-search input, .community-search select { width: 100%; min-height: 44px; border-radius: 12px; border: 1px solid #cfc9ea; padding: 0 12px; }
 .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; margin: 16px 0; }
 .community-card { display: grid; gap: 6px; text-decoration: none; color: inherit; transition: transform .15s; }
-.community-card h2 { margin: 0; font-size: 1.25rem; }
+.community-card h2 { margin: 0; font-size:1.25rem; }
 .community-cover h1 { margin: 6px 0; }
 .community-rules { white-space: pre-wrap; }
 .community-report { border-top: 1px solid #ebe8f7; padding: 12px 0; }

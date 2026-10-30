@@ -676,7 +676,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                         }`}
                       >
                         <p className="font-semibold">{preset.label}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{preset.calories} kcal</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{preset.calories} kcal</p>
                       </button>
                     ))}
                   </div>
@@ -693,15 +693,15 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 </p>
                 <div className="grid grid-cols-3 gap-2 mt-4 text-center">
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                    <p className="text-[10px] text-slate-400">NOVA Score</p>
+                    <p className="text-[11px] text-slate-400">NOVA Score</p>
                     <p className={`text-xs font-bold ${scanResult.nova.color} mt-0.5`}>{scanResult.nova.group ? `Group ${scanResult.nova.group}` : "Not assessed"}</p>
                   </div>
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                    <p className="text-[10px] text-slate-400">Plate Area</p>
+                    <p className="text-[11px] text-slate-400">Plate Area</p>
                     <p className="text-xs font-bold text-slate-200 mt-0.5">Not measured</p>
                   </div>
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                    <p className="text-[10px] text-slate-400">Density Model</p>
+                    <p className="text-[11px] text-slate-400">Density Model</p>
                     <p className="text-xs font-bold text-slate-200 mt-0.5">Not measured</p>
                   </div>
                 </div>
@@ -737,7 +737,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     </div>
                     <p className="text-xs text-slate-400">Calories</p>
                     <p className="text-xl font-bold text-white mt-0.5">{scaledCalories}</p>
-                    <span className="text-[10px] text-slate-400">kcal</span>
+                    <span className="text-[11px] text-slate-400">kcal</span>
                   </div>
 
                   <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl text-center">
@@ -746,7 +746,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     </div>
                     <p className="text-xs text-slate-400">Protein</p>
                     <p className="text-xl font-bold text-sky-400 mt-0.5">{scaledProtein}g</p>
-                    <span className="text-[10px] text-slate-400">Macro: {Math.round(scaledProtein * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
+                    <span className="text-[11px] text-slate-400">Macro: {Math.round(scaledProtein * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
                   </div>
 
                   <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl text-center">
@@ -755,7 +755,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     </div>
                     <p className="text-xs text-slate-400">Carbs</p>
                     <p className="text-xl font-bold text-amber-400 mt-0.5">{scaledCarbs}g</p>
-                    <span className="text-[10px] text-slate-400">Macro: {Math.round(scaledCarbs * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
+                    <span className="text-[11px] text-slate-400">Macro: {Math.round(scaledCarbs * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
                   </div>
 
                   <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl text-center">
@@ -764,7 +764,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     </div>
                     <p className="text-xs text-slate-400">Fat</p>
                     <p className="text-xl font-bold text-rose-400 mt-0.5">{scaledFat}g</p>
-                    <span className="text-[10px] text-slate-400">Macro: {Math.round(scaledFat * 9 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
+                    <span className="text-[11px] text-slate-400">Macro: {Math.round(scaledFat * 9 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
                   </div>
                 </div>
 
@@ -792,7 +792,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       {photoRange.fromModel ? "A photo can't weigh food; " : "The range is wider when the AI is less sure; "}set the grams you actually ate.
                     </p>
                   )}
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                  <div className="flex justify-between text-[11px] text-slate-400 mt-1">
                     <span>100g (Light snack)</span>
                     <span>350g (Standard)</span>
                     <span>800g (Large Feast)</span>
@@ -804,9 +804,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <span className="text-xs font-semibold text-slate-300">Cooking Style & Hidden Oil</span>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Calibrates absorbed ghee, oils, and sauces</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Calibrates absorbed ghee, oils, and sauces</p>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                    <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                       {COOKING_STYLES[cookingStyle].desc}
                     </span>
                   </div>
@@ -815,7 +815,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       <button
                         key={key}
                         onClick={() => setCookingStyle(key)}
-                        className={`text-center py-2 px-1.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer ${
+                        className={`text-center py-2 px-1.5 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
                           cookingStyle === key
                             ? "bg-emerald-500/20 border-emerald-500/60 text-emerald-300"
                             : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
@@ -847,7 +847,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                         </div>
                         <div className="text-right">
                           <span className="text-xs font-bold text-white">{Math.round(item.cal * scaleFactor * styleMult.calMult)} kcal</span>
-                          <p className="text-[10px] text-slate-400">
+                          <p className="text-[11px] text-slate-400">
                             P: {Math.round(item.p * scaleFactor * 10) / 10}g • C: {Math.round(item.c * scaleFactor * 10) / 10}g • F: {Math.round(item.f * scaleFactor * styleMult.fatMult * 10) / 10}g
                           </p>
                         </div>
@@ -945,7 +945,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   }`}
                 >
                   <p className="text-xs font-bold">{prod.name}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{prod.brand} • {prod.code}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">{prod.brand} • {prod.code}</p>
                 </button>
               ))}
             </div>
@@ -957,10 +957,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
                       UPC: {selectedBarcodeProduct.code}
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
                       {selectedBarcodeProduct.novaLabel}
                     </span>
                   </div>
@@ -1016,20 +1016,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               {/* Per 100g Nutrients Grid */}
               <div className="grid grid-cols-4 gap-3 mt-6">
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
-                  <p className="text-[10px] text-slate-400">Calories (100g)</p>
+                  <p className="text-[11px] text-slate-400">Calories (100g)</p>
                   {barcodeValueCell("caloriesPer100g", "Calories", "", "text-white")}
-                  <span className="text-[10px] text-slate-400">kcal</span>
+                  <span className="text-[11px] text-slate-400">kcal</span>
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
-                  <p className="text-[10px] text-slate-400">Protein (100g)</p>
+                  <p className="text-[11px] text-slate-400">Protein (100g)</p>
                   {barcodeValueCell("proteinPer100g", "Protein", "g", "text-sky-400")}
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
-                  <p className="text-[10px] text-slate-400">Carbs (100g)</p>
+                  <p className="text-[11px] text-slate-400">Carbs (100g)</p>
                   {barcodeValueCell("carbsPer100g", "Carbs", "g", "text-amber-400")}
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 text-center">
-                  <p className="text-[10px] text-slate-400">Fat (100g)</p>
+                  <p className="text-[11px] text-slate-400">Fat (100g)</p>
                   {barcodeValueCell("fatPer100g", "Fat", "g", "text-rose-400")}
                 </div>
               </div>
@@ -1094,7 +1094,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="bg-slate-950 border border-slate-800 rounded-xl p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">AI NLP Breakdown</span>
+                    <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">AI NLP Breakdown</span>
                     <h3 className="text-lg font-bold text-white mt-0.5">{parsedVoiceResult.title}</h3>
                   </div>
                   <button
@@ -1124,11 +1124,11 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <div key={it.name} className="flex justify-between items-center p-3 rounded-lg bg-slate-900 border border-slate-800">
                       <div>
                         <p className="text-xs font-semibold text-white">{it.name}</p>
-                        <p className="text-[10px] text-slate-400">Weight: {it.grams}</p>
+                        <p className="text-[11px] text-slate-400">Weight: {it.grams}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-bold text-white">{it.cal} kcal</p>
-                        <p className="text-[10px] text-slate-400">P:{it.p}g • C:{it.c}g • F:{it.f}g</p>
+                        <p className="text-[11px] text-slate-400">P:{it.p}g • C:{it.c}g • F:{it.f}g</p>
                       </div>
                     </div>
                   ))}
@@ -1196,7 +1196,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       </td>
                       <td className="py-3.5 px-4 text-slate-400">{f.fiber}g</td>
                       <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-300 border border-slate-700">
+                        <span className="px-2 py-0.5 rounded-full bg-slate-800 text-[11px] text-slate-300 border border-slate-700">
                           {f.source}
                         </span>
                       </td>
@@ -1260,7 +1260,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     </div>
                     <div className="text-right">
                       <p className="text-base font-bold text-white">{item.calories} kcal</p>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-[11px] text-slate-400">
                         {item.protein}g P • {item.carbs}g C • {item.fat}g F
                       </p>
                     </div>
@@ -1275,7 +1275,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <Sparkles className="w-4 h-4 text-emerald-400" />
                     <h3 className="text-sm font-bold text-white">Meal ideas (sample suggestions)</h3>
                   </div>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     {Math.max(0, dailyTarget - totalCaloriesLogged)} kcal gap
                   </span>
                 </div>
@@ -1286,7 +1286,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                     <div>
                       <p className="text-xs font-semibold text-white">Grilled Salmon Poké (Half Bowl)</p>
-                      <p className="text-[10px] text-slate-400">230 kcal • 24g Protein • Low Carb</p>
+                      <p className="text-[11px] text-slate-400">230 kcal • 24g Protein • Low Carb</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1303,7 +1303,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                           }
                         ]);
                       }}
-                      className="text-[10px] px-2.5 py-1.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold cursor-pointer"
+                      className="text-[11px] px-2.5 py-1.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold cursor-pointer"
                     >
                       + Log
                     </button>
@@ -1311,7 +1311,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                     <div>
                       <p className="text-xs font-semibold text-white">Paneer Tikka with Green Mint Chutney</p>
-                      <p className="text-[10px] text-slate-400">260 kcal • 18g Protein • 5g Carbs</p>
+                      <p className="text-[11px] text-slate-400">260 kcal • 18g Protein • 5g Carbs</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1328,7 +1328,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                           }
                         ]);
                       }}
-                      className="text-[10px] px-2.5 py-1.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold cursor-pointer"
+                      className="text-[11px] px-2.5 py-1.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold cursor-pointer"
                     >
                       + Log
                     </button>
@@ -1423,7 +1423,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             <div className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
               <div>
                 <span className="text-xs font-semibold text-white">Recipe Servings / Batch Portions</span>
-                <p className="text-[10px] text-slate-400">Divides total recipe nutrition into single portions</p>
+                <p className="text-[11px] text-slate-400">Divides total recipe nutrition into single portions</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -1449,20 +1449,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             {/* Per-Serving Macro Summary Cards */}
             <div className="grid grid-cols-4 gap-3 mb-6">
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[10px] text-slate-400">Per Serving</p>
+                <p className="text-[11px] text-slate-400">Per Serving</p>
                 <p className="text-lg font-bold text-white mt-0.5">{perServingCals}</p>
-                <span className="text-[10px] text-slate-400">kcal</span>
+                <span className="text-[11px] text-slate-400">kcal</span>
               </div>
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[10px] text-slate-400">Protein</p>
+                <p className="text-[11px] text-slate-400">Protein</p>
                 <p className="text-lg font-bold text-sky-400 mt-0.5">{perServingPro}g</p>
               </div>
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[10px] text-slate-400">Carbs</p>
+                <p className="text-[11px] text-slate-400">Carbs</p>
                 <p className="text-lg font-bold text-amber-400 mt-0.5">{perServingCarb}g</p>
               </div>
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[10px] text-slate-400">Fat</p>
+                <p className="text-[11px] text-slate-400">Fat</p>
                 <p className="text-lg font-bold text-rose-400 mt-0.5">{perServingFat}g</p>
               </div>
             </div>
@@ -1473,7 +1473,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-slate-950 border border-slate-800">
                   <div>
                     <p className="text-xs font-semibold text-white">{ing.name}</p>
-                    <p className="text-[10px] text-slate-400">{ing.grams}g</p>
+                    <p className="text-[11px] text-slate-400">{ing.grams}g</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-xs font-bold text-white">{ing.cal} kcal</span>
