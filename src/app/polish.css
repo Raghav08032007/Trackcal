@@ -130,3 +130,6 @@ html:not([data-theme="dark"]) .trackcal-app :is([class*="text-emerald-"], [class
 html:not([data-theme="dark"]) .progress-stats span, html:not([data-theme="dark"]) .studio-tabs button:not([aria-current="page"]), html:not([data-theme="dark"]) .barcode-capture > small { color: #4f5d4b; }
 .auth-float small { color: #4a5646; }
 html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #e7e5f5 !important; color: #3d3e55 !important; }
+
+/* ── Version B stability: every page is at least a screen tall, so the footer can't flash mid-screen and jump while it loads. ── */
+#root > main { min-height: 100vh; min-height: 100svh; }
