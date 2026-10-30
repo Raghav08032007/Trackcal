@@ -10,12 +10,13 @@ export const metadata = { title: "TrackCal — Events" };
 
 export default function Page() {
   const { ready, user } = useAccount(); const router = useRouter();
-  const [rows, setRows] = useState<EventView[] | null>(null), [scope, setScope] = useState<"upcoming" | "mine">("upcoming"), [state, setState] = useState<"loading" | "off" | "no-profile" | "ready">("loading"), [error, setError] = useState(""), [creating, setCreating] = useState(false);
+  const [rows, setRows] = useState<EventView[] | null>(null), [scope, setScope] = useState<"upcoming" | "mine">("upcoming"), [state, setState] = useState<"loading" | "off" | "failed" | "no-profile" | "ready">("loading"), [attempt, setAttempt] = useState(0), [error, setError] = useState(""), [creating, setCreating] = useState(false);
   const load = useCallback(() => events<{ events: EventView[] }>(`?scope=${scope}`).then(v => { setRows(v.events); setError(""); }, e => { if (e instanceof EventError && e.status === 404) setState("off"); else setError(e instanceof Error ? e.message : "Unavailable."); }), [scope]);
-  useEffect(() => { if (user) social<{ profile: unknown }>("me").then(v => setState(v.profile ? "ready" : "no-profile"), () => setState("off")); }, [user]);
+  useEffect(() => { if (user) social<{ profile: unknown }>("me").then(v => setState(v.profile ? "ready" : "no-profile"), (e: { status?: number }) => setState(e?.status === 404 ? "off" : "failed")); }, [user, attempt]);
   useEffect(() => { if (state === "ready") void load(); }, [state, load]);
   if (!ready || state === "loading") return <main className="account-loading">Opening events…</main>;
   if (!user) return <main className="account-page"><section className="account-card"><h1>Events</h1><p>Sign in to find runs, walks and classes near you.</p><Link className="account-primary" href="/login">Sign in</Link></section></main>;
+  if (state === "failed") return <main className="account-page"><section className="account-card" role="alert"><h1>We couldn&apos;t load events</h1><p>This is usually temporary. Nothing was changed.</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>Try again</button></section></main>;
   if (state === "off") return <main className="account-page"><section className="account-card"><h1>Events aren&apos;t available yet</h1><p>They&apos;re coming soon.</p></section></main>;
   if (state === "no-profile") return <main className="account-page"><section className="account-card"><h1>Pick a handle first</h1><p>Events use your feed profile so organizers know who&apos;s coming.</p><Link className="account-primary" href="/feed">Set up my profile</Link></section></main>;
   return <main className="account-page social-page">

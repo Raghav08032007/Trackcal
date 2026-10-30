@@ -10,7 +10,7 @@ export const metadata = { title: "TrackCal — Communities" };
 export default function Page() {
   const { ready, user } = useAccount(); const router = useRouter();
   const [rows, setRows] = useState<Community[] | null>(null), [tab, setTab] = useState<"discover" | "mine">("discover"), [q, setQ] = useState(""), [category, setCategory] = useState("");
-  const [state, setState] = useState<"loading" | "off" | "no-profile" | "ready">("loading"), [error, setError] = useState(""), [creating, setCreating] = useState(false);
+  const [state, setState] = useState<"loading" | "off" | "failed" | "no-profile" | "ready">("loading"), [attempt, setAttempt] = useState(0), [error, setError] = useState(""), [creating, setCreating] = useState(false);
   const load = useCallback(async () => {
     try {
       const params = new URLSearchParams({ ...(q.trim() ? { q: q.trim() } : {}), ...(category ? { category } : {}), ...(tab === "mine" ? { mine: "true" } : {}) });
@@ -20,11 +20,12 @@ export default function Page() {
   }, [q, category, tab]);
   useEffect(() => {
     if (!user) return;
-    social<{ profile: unknown }>("me").then(v => setState(v.profile ? "ready" : "no-profile"), () => setState("off"));
-  }, [user]);
+    social<{ profile: unknown }>("me").then(v => setState(v.profile ? "ready" : "no-profile"), (e: { status?: number }) => setState(e?.status === 404 ? "off" : "failed"));
+  }, [user, attempt]);
   useEffect(() => { if (state === "ready") void load(); }, [state, load]);
   if (!ready || state === "loading") return <main className="account-loading">Opening communities…</main>;
   if (!user) return <main className="account-page"><section className="account-card"><h1>Communities</h1><p>Sign in to find your people.</p><Link className="account-primary" href="/login">Sign in</Link></section></main>;
+  if (state === "failed") return <main className="account-page"><section className="account-card" role="alert"><h1>We couldn&apos;t load communities</h1><p>This is usually temporary. Nothing was changed.</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>Try again</button></section></main>;
   if (state === "off") return <main className="account-page"><section className="account-card"><h1>Communities aren&apos;t available yet</h1><p>They&apos;re coming soon.</p></section></main>;
   if (state === "no-profile") return <main className="account-page"><section className="account-card"><h1>Pick a handle first</h1><p>Communities use your feed profile, so people know who&apos;s posting.</p><Link className="account-primary" href="/feed">Set up my profile</Link></section></main>;
   return <main className="account-page social-page">
