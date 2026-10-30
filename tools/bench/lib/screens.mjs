@@ -20,7 +20,9 @@ async function ready(page) {
 /** Computed-style census of the visible page: tokens, contrast, tap targets, tabular figures. */
 const census = () => {
   const visible = el => { const r = el.getBoundingClientRect(), s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' && Number(s.opacity) > 0.05; };
-  const parse = c => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null; const [r, g, b, a = 1] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return {r, g, b, a}; };
+  // Computed colours can be oklch()/lab() (Tailwind 4), so anything that isn't rgb() is painted to a canvas and read back.
+  const pen = document.createElement('canvas').getContext('2d', {willReadFrequently: true});
+  const parse = c => { const m = c.match(/^rgba?\(([^)]+)\)/); if (m) { const [r, g, b, a = 1] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return {r, g, b, a}; } pen.clearRect(0, 0, 1, 1); pen.fillStyle = '#000'; pen.fillStyle = c; pen.fillRect(0, 0, 1, 1); const [r, g, b, a] = pen.getImageData(0, 0, 1, 1).data; return {r, g, b, a: a / 255}; };
   const lum = ({r, g, b}) => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
   const blend = (top, bottom) => ({r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1});
   const background = el => { const layers = []; for (let n = el; n; n = n.parentElement) { const s = getComputedStyle(n); if (s.backgroundImage !== 'none' && !/^none$/.test(s.backgroundImage)) return null; const c = parse(s.backgroundColor); if (c && c.a > 0) { layers.push(c); if (c.a >= 1) break; } } let out = {r: 255, g: 255, b: 255, a: 1}; for (const c of layers.reverse()) out = blend(c, out); return out; };
@@ -165,3 +167,4 @@ export async function runScreens(browser, {label = config.label} = {}) {
   }
   return {manifest: [...manifest, ...states], unreachable, audits, bundles, axe, keyboard, zoom, motion, fonts};
 }
+export {census};
