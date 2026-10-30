@@ -11,7 +11,7 @@ export const companions = [
   {unlock:1250,id:"sage",name:"Sage",species:"The steady turtle",trait:"Patience & consistency",color:"#86d5b3",mark:"❋",hello:"Your pace is a good pace. We can begin again today.",cheer:"Steady progress. There's no need to rush the next step."},
 ] as const;
 
-function companionImage(id:string){return `/characters/${id}-${id==="milo"?"v3":"v2"}.png`;}
+function companionImage(id:string){return `/characters/${id}-${id==="milo"?"v3":"v2"}.webp`;}
 
 export function CharacterCompanion({summary,signedIn,celebration=""}:{summary:AdventureSummary|null;signedIn:boolean;celebration?:string}) {
   const [selectionError,setSelectionError]=useState("");

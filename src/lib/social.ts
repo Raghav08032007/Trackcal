@@ -15,7 +15,7 @@ export const REACTIONS: { kind: Reaction; label: string; icon: string }[] = [
 ];
 export const REPORT_REASONS = [["harassment", "Harassment or bullying"], ["hate", "Hate speech"], ["self_harm", "Self-harm or eating-disorder content"], ["sexual", "Sexual content"], ["spam", "Spam"], ["misinformation", "Harmful health misinformation"], ["other", "Something else"]] as const;
 export const CHARACTERS = ["pip", "nova", "milo", "luna", "rio", "sage"] as const;
-export const avatar = (id: string) => `/characters/${id}-${id === "milo" ? "v3" : "v2"}.png`;
+export const avatar = (id: string) => `/characters/${id}-${id === "milo" ? "v3" : "v2"}.webp`;
 
 export class SocialError extends Error { constructor(message: string, readonly status: number) { super(message); } }
 export async function social<T>(path: string, method = "GET", body?: unknown): Promise<T> {

@@ -1,4 +1,4 @@
-// Brings every character image (/characters/*.png) to life, on any page:
+// Brings every character image (/characters/*.webp) to life, on any page:
 // idle breathing (staggered), tilting toward the mouse pointer, a hop with sparkles and a short cheer when tapped,
 // and a confetti celebration on every visible character when the server awards XP.
 // Uses the individual translate/scale/rotate CSS properties so it composes with existing transform animations.

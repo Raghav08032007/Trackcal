@@ -4,7 +4,7 @@ import { LivingCharacters } from "@/components/living-characters";
 import { announceXp, XP_AWARDED_EVENT } from "@/lib/celebrate";
 
 const motion = (reduced: boolean) => vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: reduced, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
-const character = (src = "/characters/pip-v2.png") => {
+const character = (src = "/characters/pip-v2.webp") => {
   const img = document.createElement("img"); img.src = src; img.alt = "";
   img.getBoundingClientRect = () => ({ left: 10, top: 10, width: 100, height: 100, right: 110, bottom: 110, x: 10, y: 10, toJSON: () => ({}) }) as DOMRect;
   document.body.appendChild(img); return img;
@@ -16,7 +16,7 @@ beforeEach(() => { document.body.innerHTML = ""; delete document.documentElement
 it("brings existing and newly added character images to life", async () => {
   const first = character(); render(<LivingCharacters />);
   expect(first.classList.contains("living-character")).toBe(true);
-  const later = character("/characters/nova-v2.png");
+  const later = character("/characters/nova-v2.webp");
   await act(async () => { await Promise.resolve(); });
   expect(later.classList.contains("living-character")).toBe(true);
   expect(character("/icon-192.png").classList.contains("living-character")).toBe(false);
@@ -33,7 +33,7 @@ it("hops, sparkles and cheers when a character is tapped, and ignores other taps
 });
 
 it("celebrates on every visible character only when XP is actually awarded", () => {
-  const a = character(), b = character("/characters/milo-v3.png"); render(<LivingCharacters />);
+  const a = character(), b = character("/characters/milo-v3.webp"); render(<LivingCharacters />);
   act(() => { announceXp({ awarded_xp: 0 }); announceXp({}); });
   expect(a.dataset.lcReact).toBeUndefined();
   act(() => { announceXp({ awarded_xp: 10 }); });
