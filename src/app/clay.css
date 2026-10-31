@@ -173,3 +173,7 @@ html[data-theme="dark"] .challenge-bar { background: #3a3a5c; }
 html[data-theme="dark"] .challenge-ring:not(.is-done) { background: conic-gradient(#8b78e6 var(--pct), #3a3a5c 0); }
 html[data-theme="dark"] .challenge-ring > span { color: #e6e3f5; }
 html[data-theme="dark"] .challenge-ring b { color: #fff; }
+
+/* Plain action buttons inside cards should look like buttons. */
+.tc-studio .account-card :is(.account-actions, .challenge-cover, .event-cover) button:not([class]), .tc-studio .account-actions > button:not([class]) { padding: 0 18px; border: 0; border-radius: 16px; background: linear-gradient(180deg, #ffffff, #f0ebff); color: var(--clay-violet-deep); font-weight: 700; box-shadow: inset 0 2px 0 #ffffff, inset 0 -3px 6px #6a45ff1f, 0 5px 0 #d2c6fb; cursor: pointer; }
+html[data-theme="dark"] .tc-studio .account-card :is(.account-actions, .challenge-cover, .event-cover) button:not([class]), html[data-theme="dark"] .tc-studio .account-actions > button:not([class]) { background: linear-gradient(180deg, #37375c, #2a2a47); color: #e4dcff; box-shadow: inset 0 2px 0 #ffffff1f, 0 5px 0 #0d0d1c; }
