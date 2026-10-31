@@ -5,6 +5,7 @@ import { useAccount } from "./account-session";
 import { useLocalState } from "@/lib/use-local-state";
 import { adventureRequest,type AdventureSummary,type LabelRound } from "@/lib/adventure";
 import { CharacterCompanion } from "./character-companion";
+import { BondCard } from "./bond-card";
 import type { MealLog } from "./journal-tools";
 
 export function SeedMascot({level=1}:{level?:number}){return <div className="seed-world" role="img" aria-label="Pip, a cheerful seed growing a little garden"><span className="seed-orbit"/><span className="seed-spark seed-spark-a">✦</span><span className="seed-spark seed-spark-b">✧</span><div className="seed-ground"/><img className="seed-realistic" src="/characters/pip-v2.webp" alt="" width={350} height={350} fetchPriority="high"/>{level>=2&&<span className="garden-flower" aria-label="Level 2 wildflower unlocked">✿</span>}{level>=5&&<span className="garden-crown" aria-label="Level 5 golden canopy unlocked">♛</span>}{level>=10&&<span className="garden-sun" aria-label="Level 10 sunshine unlocked">☀</span>}<span className="seed-label">{level>1?`PIP’S GARDEN · LEVEL ${level}`:"MEET PIP. YOUR GROWING BUDDY."}</span></div>;}
@@ -37,6 +38,7 @@ function Journey({userId}:{userId?:string}){
   return <main className={`play-hub${calm?' play-calm':''}`}><div className="play-controls"><button className="play-small" aria-pressed={calm} onClick={()=>setCalm(value=>!value)}>{calm?'Calm mode on':'Calm mode'}</button></div>
     <section className="play-hero"><div><span className="play-sticker"><Sparkles size={14}/> SMALL HABITS. BIG POSSIBILITIES.</span><h1>Good habits.<br/><em>Great adventures.</em></h1><p>Grow a little every day. Log a meal, solve a mystery, and make room for progress at your own pace.</p><div className="play-hero-actions"><a className="play-button" href="#daily-quests">Pick your quest <ChevronRight size={18}/></a><a className="play-button play-button-white" href="#label-detective">Let’s play <Star size={17}/></a></div><span className="play-fine"><ShieldCheck size={14}/> No calorie competitions. No perfect days required.</span></div><SeedMascot level={summary?.level||1}/></section>
     <CharacterCompanion summary={summary} signedIn={!!userId} celebration={notice}/>
+    {summary?.customization?.aura!==undefined&&<BondCard/>}
     <div className="play-ticker" aria-hidden="true">LOG A LITTLE ✦ LEARN A LITTLE ✦ GROW AT YOUR PACE ✦ LOG A LITTLE ✦ LEARN A LITTLE</div>
     {error&&<div className="play-alert" role="alert">{error} {userId&&<button disabled={busy} onClick={()=>void run(async()=>setSummary(await adventureRequest<AdventureSummary>('summary')))}>Refresh progress</button>}</div>}
     {notice&&<div className="play-celebration" role="status"><Star size={20}/>{notice}</div>}

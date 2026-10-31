@@ -130,3 +130,13 @@ html[data-theme="dark"] .tc-studio .play-hero :is(p, .play-fine) { color: #e6e3f
 
 /* Report links stay quiet until they are needed. */
 .report-item-open { min-height: 44px; padding: 0 4px; border: 0; background: none; color: inherit; font-size: .8125rem; text-decoration: underline; cursor: pointer; }
+
+/* ── Companion bond ── */
+.bond-card { padding: 24px; border-radius: var(--tc-r-lg); background: var(--clay-card); box-shadow: var(--clay-depth); }
+.bond-card progress { width: 100%; height: 12px; accent-color: var(--clay-violet); }
+.bond-choices { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; }
+.bond-choices label { display: grid; gap: 4px; }
+.bond-choices select { min-height: 44px; }
+.tc-studio .journey-orb[data-aura="glow"] { box-shadow: 0 0 0 3px #c9bcff, 0 0 22px 6px #8467ff66, var(--clay-depth); }
+.tc-studio .journey-orb[data-aura="sparkle"] { box-shadow: 0 0 0 3px var(--clay-sun), 0 0 24px 8px #ffc53166, var(--clay-depth); }
+.tc-studio .journey-orb[data-aura="halo"] { box-shadow: 0 0 0 3px var(--clay-lime), 0 0 0 7px #8467ff, 0 0 30px 10px #a6ec3f66, var(--clay-depth); }
