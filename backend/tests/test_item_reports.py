@@ -153,3 +153,9 @@ def test_no_alert_while_push_is_off():
     client.post(f"{path('event', row)}/registration", headers=guest)
     client.request('DELETE', path('event', row), headers=owner)
     assert pushes(uid) == []
+
+
+def test_older_saved_settings_still_list_every_type(monkeypatch):
+    uid, h = subscriber(monkeypatch, {'milestone': {'enabled': True, 'time': None}})
+    types = client.get('/api/v1/push/settings', headers=h).json()['types']
+    assert types['event_update']['enabled'] is True and types['milestone']['enabled'] is True

@@ -69,7 +69,7 @@ def view(db, user):
     settings = push.settings_for(db, user.id)
     zone, quiet_start, quiet_end = push.preferences(db, user.id)
     devices = db.query(models.PushSubscription).filter_by(user_id=user.id).order_by(models.PushSubscription.created_at).all()
-    types = settings.types if settings else push.DEFAULT_TYPES
+    types = {**push.DEFAULT_TYPES, **((settings.types or {}) if settings else {})}  # saved settings can predate a type
     return {'enabled': bool(settings and settings.enabled), 'types': types, 'max_per_day': settings.max_per_day if settings else 2,
             'snooze_until': settings.snooze_until.isoformat() + 'Z' if settings and settings.snooze_until else None,
             'timezone': zone.key, 'quiet_start': quiet_start, 'quiet_end': quiet_end,
