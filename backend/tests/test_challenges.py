@@ -149,3 +149,24 @@ def test_browser_routes():
     assert person.get(f'/api/challenges/{cid}').status_code == 200
     assert person.get('/api/challenges?scope=mine').get_json()['challenges'][0]['id'] == cid
     assert person.get('/api/challenges/nope').status_code == 404
+
+
+def test_activity_before_joining_does_not_count():
+    _, owner, _ = member(); late_id, late, _ = member()
+    c = challenge(owner, metric='workouts', target=1)
+    workout(late)  # done before joining; stored times have one-second resolution, so move it clearly earlier
+    with database.SessionLocal() as db:
+        row = db.query(models.WorkoutSession).filter_by(user_id=late_id).first()
+        row.completed_at -= timedelta(seconds=3); db.commit()
+    assert client.post(f"{C}/{c['id']}/participation", headers=late).status_code == 200
+    seen = detail(late, c['id'])
+    assert seen['challenge']['mine']['progress'] == 0 and seen['awarded_xp'] == 0
+    workout(late)
+    assert detail(late, c['id'])['challenge']['mine']['progress'] == 1
+
+
+def test_joining_twice_is_harmless():
+    _, owner, _ = member(); _, h, _ = member()
+    c = challenge(owner)
+    assert [client.post(f"{C}/{c['id']}/participation", headers=h).status_code for _ in range(2)] == [200, 200]
+    assert detail(owner, c['id'])['challenge']['participants'] == 2

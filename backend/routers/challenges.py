@@ -154,6 +154,7 @@ def detail(challenge_id: str, user=Depends(get_current_active_user), db: Session
 def join(challenge_id: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     require_flags(db); social.my_profile(db, user); consume(db, 'challenge-join', str(user.id), 60, 3600)
     c = get_challenge(db, challenge_id, user.id)
+    db.query(models.User).filter_by(id=user.id).with_for_update().one()  # a double tap must not insert two rows
     if c.status != 'active' or phase(c) == 'ended': raise HTTPException(409, 'This challenge has finished.')
     row = db.get(models.ChallengeParticipant, (c.id, user.id))
     if row and row.left_at: raise HTTPException(409, "You left this challenge, so you can't rejoin it.")

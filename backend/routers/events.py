@@ -234,7 +234,7 @@ def check_in(event_id: str, data: CheckIn, user=Depends(get_current_active_user)
     else:
         if event.organizer_id == user.id: raise HTTPException(409, "Organizers can't check themselves in.")
         window = current_window(now)
-        if not data.token or not any(hmac.compare_digest(data.token, token_for(event, w)) for w in (window, window - 1)):
+        if not data.token or not any(hmac.compare_digest(data.token.encode(), token_for(event, w).encode()) for w in (window, window - 1)):
             raise HTTPException(403, 'This code has expired. Scan the code on the organizer\'s screen again.')
         row, points = _verify(db, event, user.id, 'qr', now)
     db.commit()

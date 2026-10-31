@@ -143,3 +143,10 @@ def test_browser_routes():
     assert person.get('/api/events?scope=mine').get_json()['events'][0]['id'] == eid
     assert person.get(f'/api/events/{eid}/check-in-code').status_code == 200
     assert person.get('/api/events/not-an-id').status_code == 404
+
+
+def test_a_check_in_code_with_unusual_characters_is_refused_cleanly():
+    _, org, _ = member(); _, guest, _ = member()
+    e = event(org); client.post(f'{E}/{e["id"]}/registration', headers=guest)
+    r = client.post(f'{E}/{e["id"]}/check-in', headers=guest, json={'token': 'कोड-कोड-कोड-कोड'})
+    assert r.status_code == 403 and 'expired' in r.text

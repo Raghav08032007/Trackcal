@@ -5,7 +5,7 @@ Anti-fraud rules:
   `created_at` (so backdating a meal into the window doesn't help) and their `logged_at`, events by `checked_in_at`.
 - Workouts must be completed sessions of at least 10 recorded minutes; at most 2 count per local day.
 - Day-based metrics count distinct local days in the challenge's time zone.
-- Nothing after the person left the challenge counts.
+- Nothing before the person joined, or after they left, counts.
 - Camera sessions whose count was corrected by a large margin still count (people fix real mistakes), but mark the
   participation `flagged` for a moderator to look at. Flags never block XP or show publicly.
 """
@@ -39,6 +39,7 @@ def _day(stamp, zone):
 def progress(db, challenge, participant):
     """Returns (count, flagged)."""
     zone = ZoneInfo(challenge.timezone); start, end = window(challenge)
+    start = max(start, participant.joined_at)
     if participant.left_at: end = min(end, participant.left_at)
     uid = participant.user_id
 
