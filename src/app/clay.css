@@ -177,3 +177,86 @@ html[data-theme="dark"] .challenge-ring b { color: #fff; }
 /* Plain action buttons inside cards should look like buttons. */
 .tc-studio .account-card :is(.account-actions, .challenge-cover, .event-cover) button:not([class]), .tc-studio .account-actions > button:not([class]) { padding: 0 18px; border: 0; border-radius: 16px; background: linear-gradient(180deg, #ffffff, #f0ebff); color: var(--clay-violet-deep); font-weight: 700; box-shadow: inset 0 2px 0 #ffffff, inset 0 -3px 6px #6a45ff1f, 0 5px 0 #d2c6fb; cursor: pointer; }
 html[data-theme="dark"] .tc-studio .account-card :is(.account-actions, .challenge-cover, .event-cover) button:not([class]), html[data-theme="dark"] .tc-studio .account-actions > button:not([class]) { background: linear-gradient(180deg, #37375c, #2a2a47); color: #e4dcff; box-shadow: inset 0 2px 0 #ffffff1f, 0 5px 0 #0d0d1c; }
+
+/* ── Design pass 3: one layout, one palette, more life, on laptop and phone ── */
+
+/* A richer background than flat lavender. */
+:root { --tc-bg: #efe9ff; --tc-mesh-a: #a98dff99; --tc-mesh-b: #c6f26a80; --tc-mesh-c: #ff9d7a70; --hero: linear-gradient(125deg, #2a1a7a 0%, #4a2bd6 52%, #6d2fd6 100%); }
+html[data-theme="dark"] { --hero: linear-gradient(125deg, #231768 0%, #3a22a8 55%, #5a27b0 100%); }
+
+/* One page width, so the logo, the tabs and the content share the same edges. */
+@media (min-width: 860px) {
+  .tc-studio .app-topbar { max-width: 1200px; padding-inline: 24px; }
+  .tc-studio :is(.account-page, .wellness-page, .smart-page, .home-page, .app-main, .camera-page) { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
+  .tc-studio .home-page { padding-top: 16px; }
+
+  /* The laptop navigation floats as a clay pill instead of a full-width strip. */
+  .tc-studio .app-tabbar { top: 12px; align-self: center; width: fit-content; margin: 12px auto 0; padding: 6px; border-radius: 24px; }
+
+  /* The companion waits quietly in the corner and stays clear of content. */
+  .tc-studio .journey-float { bottom: 20px; }
+  .journey-orb { padding: 4px 6px; border-radius: 18px; }
+  .journey-orb img { width: 56px; height: 56px; }
+  .journey-orb > strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+/* Heroes: a vivid gradient that drifts slowly. */
+.tc-studio :is(.wellness-hero, .studio-momentum) { background: var(--hero); background-size: 180% 180%; }
+html[data-theme="dark"] .tc-studio :is(.wellness-hero, .studio-momentum) { box-shadow: var(--clay-depth); }
+.tc-studio .studio-momentum { box-shadow: 0 10px 0 -3px #cdbff5, 0 26px 42px -22px #4322d180; }
+.tc-studio .wellness-hero p { color: #ece7ff; }
+
+/* Play joins the same design: no black outlines, soft clay instead. */
+.tc-studio .play-hub { --edge: 0 solid transparent; background: transparent; }
+.tc-studio :is(.play-hero, .play-start, .play-card, .play-round, .play-game-main, .companion-stage, .companion-plan, .companion-pace, .companion-dialog) { box-shadow: var(--clay-depth); border-radius: var(--tc-r-lg); }
+.tc-studio .play-hero { background: linear-gradient(130deg, #efe6ff 0%, #dccdff 55%, #d9f5a8 100%); }
+html[data-theme="dark"] .tc-studio .play-hero { background: var(--hero); }
+.tc-studio :is(.play-start, .companion-stage, .companion-pace, .play-card) { background: var(--clay-card); }
+.tc-studio .companion-choice { border: 0; border-radius: 22px; background: var(--clay-card); box-shadow: var(--clay-depth); }
+
+/* One palette: the leftover greens become violet tints. */
+.tc-studio .studio-tabs { padding: 6px; border-radius: 20px; background: #e6dfff; }
+.tc-studio .studio-tabs button { border-radius: 15px; }
+.tc-studio .studio-tabs button:not([aria-current="page"]) { color: #3f3a63; }
+.tc-studio .studio-tabs button[aria-current="page"] { background: #fff; color: var(--clay-violet-deep); box-shadow: 0 4px 0 #d2c6fb; }
+html[data-theme="dark"] .tc-studio .studio-tabs { background: #262842; }
+html[data-theme="dark"] .tc-studio .studio-tabs button[aria-current="page"] { background: #3a3a5c; color: #e4dcff; box-shadow: 0 4px 0 #0d0d1c; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="bg-emerald-500/"], [class*="from-emerald-950"]) { background-color: #efeaff !important; }
+html:not([data-theme="dark"]) .trackcal-app [class*="border-emerald-"] { border-color: #d2c6fb !important; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: var(--clay-violet-deep) !important; }
+.tc-studio .barcode-photo-action { border: 0; border-radius: 16px; background: #efeaff; color: var(--clay-violet-deep); }
+html[data-theme="dark"] .tc-studio .barcode-photo-action { background: #262842; color: #e4dcff; }
+
+/* Diary: nutrients as coloured tiles, meals as soft rows, so an empty day still looks designed. */
+.tc-studio .wellness-metrics > * { border: 0; border-radius: 22px; box-shadow: inset 0 2px 0 #ffffffb3, 0 6px 0 -2px #4322d126; }
+.tc-studio .wellness-metrics > *:nth-child(4n + 1) { background: linear-gradient(170deg, #efe9ff, #dfd5ff); }
+.tc-studio .wellness-metrics > *:nth-child(4n + 2) { background: linear-gradient(170deg, #ecfbcf, #d7f4a6); }
+.tc-studio .wellness-metrics > *:nth-child(4n + 3) { background: linear-gradient(170deg, #fff4cf, #ffe6a3); }
+.tc-studio .wellness-metrics > *:nth-child(4n) { background: linear-gradient(170deg, #ffe6dc, #ffd0bd); }
+html[data-theme="dark"] .tc-studio .wellness-metrics > * { background: linear-gradient(170deg, #34305e, #2a2750); box-shadow: inset 0 2px 0 #ffffff1f, 0 6px 0 -2px #0b0b18; }
+.tc-studio .wellness-meal-sections > * { margin-bottom: 10px; padding: 14px 18px; border: 0; border-radius: 20px; background: #f6f2ff; }
+html[data-theme="dark"] .tc-studio .wellness-meal-sections > * { background: #2a2a47; }
+
+/* The footer sits on the page instead of a white band. */
+.tc-studio .site-links { background: transparent !important; border-top: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) .tc-studio :is(.wellness-hero, .studio-momentum) { animation: clay-drift 16s ease-in-out infinite alternate; }
+  html:not([data-motion="reduced"]) .tc-studio :is(.progress-stats > div, .wellness-metrics > *, .quick-log-button, .companion-choice) { transition: translate .32s var(--clay-spring), scale .32s var(--clay-spring), box-shadow .2s ease; }
+  html:not([data-motion="reduced"]) .tc-studio :is(.progress-stats > div, .wellness-metrics > *, .companion-choice):hover { translate: 0 -4px; scale: 1.02; }
+  html:not([data-motion="reduced"]) .tc-studio .quick-log-button:hover { translate: 0 -3px; }
+  html:not([data-motion="reduced"]) .tc-studio .quick-log-button:active { translate: 0 3px; scale: .97; }
+}
+@keyframes clay-drift { from { background-position: 0% 40%; } to { background-position: 100% 60%; } }
+
+/* Play: the last hard outlines and flat blocks. */
+.tc-studio :is(.companion-stage, .companion-checkin) { border: 0 !important; border-radius: var(--tc-r-lg); background: var(--clay-card); box-shadow: var(--clay-depth); }
+.tc-studio .companion-checkin button { border: 0; border-radius: 16px; background: linear-gradient(180deg, #ffffff, #f0ebff); color: var(--clay-violet-deep); box-shadow: inset 0 2px 0 #ffffff, 0 4px 0 #d2c6fb; }
+html[data-theme="dark"] .tc-studio .companion-checkin button { background: linear-gradient(180deg, #37375c, #2a2a47); color: #e4dcff; box-shadow: inset 0 2px 0 #ffffff1f, 0 4px 0 #0d0d1c; }
+.tc-studio .play-ticker { background: var(--hero); }
+.tc-studio :is(.play-stat-orange, .play-stat-blue, .play-game-main) { border-radius: var(--tc-r-lg); box-shadow: var(--clay-depth); }
+html:not([data-theme="dark"]) .tc-studio .play-stat-orange { background: linear-gradient(160deg, #ffe0b8, #ffc08f) !important; }
+html:not([data-theme="dark"]) .tc-studio .play-stat-blue { background: linear-gradient(160deg, #d8f1ff, #b4e3ff) !important; }
+html:not([data-theme="dark"]) .tc-studio .play-game-main { background: linear-gradient(160deg, #e5f6ff, #cdeeff) !important; }
+.tc-studio .play-footnote { color: #4f5d4b; }
+html[data-theme="dark"] .tc-studio .play-footnote { color: #c5c7dc; }

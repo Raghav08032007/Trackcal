@@ -129,7 +129,7 @@ html[data-theme="dark"] .play-stat-orange small, html[data-theme="dark"] .play-s
 /* Muted text that was just under 4.5:1 in light theme. */
 html:not([data-theme="dark"]) .trackcal-app [class*="text-rose-"] { color: #a13f33 !important; }
 html:not([data-theme="dark"]) .trackcal-app :is([class*="text-sky-"], [class*="text-purple-"]) { color: #40606e !important; }
-html:not([data-theme="dark"]) .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #3f6131 !important; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #4322d1 !important; }
 html:not([data-theme="dark"]) .progress-stats span, html:not([data-theme="dark"]) .studio-tabs button:not([aria-current="page"]), html:not([data-theme="dark"]) .barcode-capture > small { color: #4f5d4b; }
 .auth-float small { color: #4a5646; }
 html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #e7e5f5 !important; color: #3d3e55 !important; }
