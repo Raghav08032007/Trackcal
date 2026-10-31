@@ -164,3 +164,12 @@ html[data-theme="dark"] .tc-studio .quick-log-button { background: linear-gradie
 .quick-log-notice { display: flex; align-items: center; gap: 12px; margin: 0; font-weight: 600; }
 .quick-log-notice button { min-height: 44px; padding: 0 8px; border: 0; background: none; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
 .tc-studio .quick-log-button { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Older rules fall back to a pale colour through --card, so dark theme defines it once for all of them. */
+html[data-theme="dark"] { --card: #262842; }
+
+/* Challenge progress: in dark theme the unfilled track stays dark, so zero never looks complete. */
+html[data-theme="dark"] .challenge-bar { background: #3a3a5c; }
+html[data-theme="dark"] .challenge-ring:not(.is-done) { background: conic-gradient(#8b78e6 var(--pct), #3a3a5c 0); }
+html[data-theme="dark"] .challenge-ring > span { color: #e6e3f5; }
+html[data-theme="dark"] .challenge-ring b { color: #fff; }
