@@ -49,7 +49,7 @@ function Card({ publicKey }: { publicKey: string }) {
       <button className="account-primary" disabled={busy} onClick={() => void turnOn()}>{busy ? "Turning on…" : "Turn on notifications"}</button>)
       : <>
         <label className="push-switch"><input type="checkbox" role="switch" checked={settings.enabled} disabled={busy} onChange={e => void save({ enabled: e.target.checked }, e.target.checked ? "Notifications are on." : "All notifications are off.")} /> All notifications</label>
-        <fieldset className="push-types"><legend>What you get</legend>{(Object.keys(TYPE_LABELS) as PushType[]).map(type => { const choice = settings.types[type]; return <div className="push-type" key={type}>
+        <fieldset className="push-types"><legend>What you get</legend>{(Object.keys(TYPE_LABELS) as PushType[]).map(type => { const choice = settings.types[type] ?? { enabled: false, time: null }; return <div className="push-type" key={type}>
           <label><input type="checkbox" checked={choice.enabled} disabled={busy} onChange={e => void save({ types: { [type]: { enabled: e.target.checked, time: choice.time } } }, "Saved.")} /> {TYPE_LABELS[type]}</label>
           {choice.time !== null && <label className="push-time">Time<input type="time" value={choice.time} disabled={busy || !choice.enabled} onChange={e => e.target.value && void save({ types: { [type]: { enabled: true, time: e.target.value } } }, "Time saved.")} /></label>}
         </div>; })}</fieldset>
