@@ -76,7 +76,8 @@ Every journey starts signed in as the demo account at its start URL, except J1, 
 - **States** (member screens, 360 px, light):
   - empty: a brand-new account
   - loading: slow4g, captured 700 ms after navigation
-  - error: every `/api/**` call returns 503
+  - error: every `/api/**` call returns 503 except the session check
+  - outage: every `/api/**` call returns 503, including the session check
   - offline: service worker allowed, then reloaded offline
 - **Unreachable**: screens that fail to load are listed under `unreachable`, with the reason.
 - **Audits** (360 and 1280):

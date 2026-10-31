@@ -96,7 +96,7 @@ async function fontProbe(page) {
 
 export async function runScreens(browser, {label = config.label} = {}) {
   const out = path.join(resultsDir(label), 'screens'); await fs.mkdir(out, {recursive: true});
-  const account = seed(); const state = await loginState(browser, account, path.join(ROOT, `tools/bench/.state-${label}.json`));
+  const account = seed(); let state = await loginState(browser, account, path.join(ROOT, `tools/bench/.state-${label}.json`));
   const manifest = [], unreachable = [], audits = {}, bundles = {}, axe = {}, keyboard = {}, zoom = {}, motion = {};
   let fonts = null;
   const visit = async (page, route) => { const r = await page.goto(config.base + route); await ready(page); return r; };
@@ -141,14 +141,16 @@ export async function runScreens(browser, {label = config.label} = {}) {
       } catch (e) { unreachable.push({screen: key, check: 'keyboard/zoom/motion', reason: String(e.message || e).split('\n')[0].slice(0, 200)}); }
     }
   }
-  // States at 360 px, light: empty (a brand-new account), loading (slow 4G), error (API fails), offline.
+  // States at 360 px, light: empty (a brand-new account), loading (slow 4G), error (data requests fail), outage (every
+  // request fails, including the session check), offline. Log in again first: sessions last 60 minutes and this pass runs last.
+  state = await loginState(browser, account, path.join(ROOT, `tools/bench/.state-${label}.json`));
   const states = [];
   const fresh = await browser.newContext({baseURL: config.base}); const fp = await fresh.newPage();
   const email = `be${Date.now().toString(36).slice(-7)}@tests.example.com`;
   const signup = await fp.request.post('/api/account/signup', {data: {email, password: 'Bench-empty-state-2026!', display_name: 'Empty'}, headers: {Origin: config.base}});
   const emptyState = signup.ok() ? path.join(ROOT, `tools/bench/.state-${label}-empty.json`) : null; if (emptyState) await fresh.storageState({path: emptyState}); await fresh.close();
   for (const route of MEMBER_SCREENS) {
-    for (const kind of ['empty', 'loading', 'error', 'offline']) {
+    for (const kind of ['empty', 'loading', 'error', 'outage', 'offline']) {
       const file = `member-${slug(route)}-android-360-light-${kind}.png`;
       let ctx;
       try {
@@ -157,6 +159,7 @@ export async function runScreens(browser, {label = config.label} = {}) {
         const page = await ctx.newPage(); page.setDefaultTimeout(20000);
         if (kind === 'loading') { await throttle(page, 'slow4g'); page.goto(config.base + route).catch(() => {}); await page.waitForTimeout(700); }
         else if (kind === 'error') { await page.route('**/api/**', r => r.request().url().includes('/api/account/session') ? r.continue() : r.fulfill({status: 503, contentType: 'application/json', body: '{"error":"Service unavailable (bench simulated)"}'})); await visit(page, route); }
+        else if (kind === 'outage') { await page.route('**/api/**', r => r.fulfill({status: 503, contentType: 'application/json', body: '{"error":"Service unavailable (bench simulated)"}'})); await visit(page, route); }
         else if (kind === 'offline') { await visit(page, route); await page.waitForTimeout(1500); await ctx.setOffline(true); await page.reload().catch(() => {}); await page.waitForTimeout(1500); }
         else await visit(page, route);
         await page.screenshot({path: path.join(out, file), fullPage: kind !== 'loading'});

@@ -19,7 +19,7 @@ Date: 2026-10-30. Branch: `bakeoff/measure`. Version A commits: root `25f99f3c`,
 | Hard gate | Result |
 |---|---|
 | noDataLoss | PASS (10 of 10 checks: all 106 seeded meals present) |
-| wcagTextContrast | **FAIL** (20 colour pairs, 190 elements) |
+| wcagTextContrast | **FAIL** (20 colour pairs, 190 elements; a later fix found the check skipped `oklch` colours, so this was an undercount until re-measured) |
 | zeroRegressions | PASS (573 backend, 278 web) |
 | allJourneysSucceed | PASS (80 of 80 runs) |
 
@@ -89,7 +89,7 @@ These are recorded only: app code is frozen.
 2. **Speed on slow 4G.** LCP is about 10.8 s on 6 main screens and 33 s on `/play`, well over the 2.5 s target.
 3. **API under load.** At 50 connections, p95 is 1.7–3.0 s on 4 of 5 endpoints.
 4. **Food search race.** An `IntegrityError` caused occasional 500s under concurrent load, seen in quick runs but not in the 5 full runs.
-5. **Outage looks like sign-out.** When the API returns 503, `/nutrition` asks a signed-in person to sign in.
+5. **Outage looks like sign-out.** When the session check itself fails, `/nutrition` asks a signed-in person to sign in. Correction: the `error` screenshot was not evidence of this. That capture lets the session check through, and its 60-minute session had most likely expired by then. The bug was confirmed separately by reading the code and testing a full outage. The bench now logs in again before this pass and has a separate `outage` state.
 6. **Visual sprawl.** 89 font sizes, 93 text colours and 89 spacing values, so the tokens criterion scores 0.
 7. **Tamil and Hindi.** These use the system font, not the brand font.
 8. **Language.** Version A has no translated interface, so J8 measures theme only.
