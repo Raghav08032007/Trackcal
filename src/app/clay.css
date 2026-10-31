@@ -140,3 +140,17 @@ html[data-theme="dark"] .tc-studio .play-hero :is(p, .play-fine) { color: #e6e3f
 .tc-studio .journey-orb[data-aura="glow"] { box-shadow: 0 0 0 3px #c9bcff, 0 0 22px 6px #8467ff66, var(--clay-depth); }
 .tc-studio .journey-orb[data-aura="sparkle"] { box-shadow: 0 0 0 3px var(--clay-sun), 0 0 24px 8px #ffc53166, var(--clay-depth); }
 .tc-studio .journey-orb[data-aura="halo"] { box-shadow: 0 0 0 3px var(--clay-lime), 0 0 0 7px #8467ff, 0 0 30px 10px #a6ec3f66, var(--clay-depth); }
+
+/* ── Comfortable tap targets: at least 44 px, shared across every screen ── */
+.site-links > a, .tc-studio :is(.app-brand, .brand, .studio-sub-action, .daily-play-link, .auth-back, .auth-help) { display: inline-flex; align-items: center; min-height: 44px; }
+.tc-studio summary { display: list-item; min-height: 44px; padding-block: 11px; }  /* list-item keeps the disclosure arrow */
+.tc-studio select, .tc-studio textarea, .tc-studio input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]) { min-height: 44px; }
+.tc-studio button { min-height: 44px; }
+.tc-studio .trackcal-app button.w-8 { width: 44px; min-width: 44px; }
+.tc-studio button:has(> svg:only-child) { min-width: 44px; }
+.tc-studio input[type="range"] { height: 44px; background: transparent; }
+/* A checkbox stays a normal size; its whole 44 px row is the tap target. */
+.tc-studio input[type="checkbox"] { width: 24px; height: 24px; flex: none; }
+.tc-studio label:has(> input[type="checkbox"]) { min-height: 44px; display: flex; align-items: center; gap: 10px; }
+.tc-studio input[type="radio"] { width: 24px; height: 24px; flex: none; }
+.tc-studio label:has(> input[type="radio"]) { min-height: 44px; display: flex; align-items: center; gap: 10px; }
