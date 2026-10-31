@@ -1,4 +1,5 @@
 """Companion bond behind `advanced_progression`: earned only from real XP, never decays, nothing is bought."""
+import uuid
 from datetime import date
 
 import pytest
@@ -87,3 +88,17 @@ def test_summary_stays_as_it_was_while_the_feature_is_off(monkeypatch):
 
 def test_browser_route():
     assert client.get('/api/adventure/bond').status_code in (401, 404)
+
+
+def test_logging_and_undoing_repeatedly_cannot_farm_xp():
+    uid, h = member()
+    item = {'name': 'Tea', 'grams': 100, 'nutrients': {'calories': 40, 'protein': 1, 'carbs': 5, 'fat': 1}, 'manual_override': True, 'source': 'User reviewed input'}
+    def xp(): return client.get('/api/v1/adventure/summary', headers=h).json()['xp']
+    earned = []
+    for _ in range(4):
+        identifier = str(uuid.uuid4())
+        r = client.post('/api/v1/wellness/diary', headers=h, json={'id': identifier, 'day': client.get('/api/v1/wellness/diary', headers=h).json()['today'], 'meal_type': 'snack', 'items': [item], 'method': 'saved'})
+        assert r.status_code in (200, 201), r.text
+        assert client.delete(f'/api/v1/wellness/diary/{identifier}', headers=h).status_code == 200
+        earned.append(xp())
+    assert earned[0] > 0 and len(set(earned)) == 1  # the first log earned; three more log-and-undo cycles earned nothing
