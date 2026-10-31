@@ -42,6 +42,10 @@ def my_profile(db, user):
     return row
 
 
+def require_can_publish(db, user):
+    if my_profile(db, user).posting_disabled: raise HTTPException(403, 'Posting is paused on this account after a moderation review.')
+
+
 def by_handle(db, handle):
     row = db.query(models.SocialProfile).filter_by(handle=(handle or '').lower()).first()
     if not row: raise HTTPException(404, 'Profile not found.')
@@ -383,16 +387,40 @@ def delete_comment(comment_id: str, user=Depends(get_current_active_user), db: S
 # ── Reports and moderation ──────────────────────────────────────────────────
 
 class ReportInput(BaseModel):
-    target_type: Literal['post', 'comment', 'profile']
-    target_id: str = Field(min_length=3, max_length=36)  # post/comment id, or a profile handle
+    target_type: Literal['post', 'comment', 'profile', 'event', 'challenge']
+    target_id: str = Field(min_length=3, max_length=36)  # post/comment/event/challenge id, or a profile handle
     reason: Literal['harassment', 'hate', 'self_harm', 'sexual', 'spam', 'misinformation', 'other']
     note: str = Field(default='', max_length=300)
 
 
+ITEMS = {'post': models.Post, 'comment': models.Comment, 'event': models.Event, 'challenge': models.Challenge}
+LIVE_STATUS = {'event': 'scheduled', 'challenge': 'active'}  # events and challenges hide through their status
+
+
 def target_of(db, kind, ident):
-    if kind == 'post': return db.get(models.Post, ident)
-    if kind == 'comment': return db.get(models.Comment, ident)
+    if kind in ITEMS: return db.get(ITEMS[kind], ident)
     return db.query(models.SocialProfile).filter_by(handle=ident.lower()).first()
+
+
+def owner_id(kind, target):
+    return getattr(target, {'profile': 'user_id', 'event': 'organizer_id', 'challenge': 'creator_id'}.get(kind, 'author_id'))
+
+
+def is_hidden(kind, target):
+    return target.status == 'hidden' if kind in LIVE_STATUS else getattr(target, 'hidden', None)
+
+
+def set_hidden(kind, target, hidden):
+    if kind not in LIVE_STATUS: target.hidden = hidden
+    elif hidden and target.status == LIVE_STATUS[kind]: target.status = 'hidden'  # a cancelled item stays cancelled
+    elif not hidden and target.status == 'hidden': target.status = LIVE_STATUS[kind]
+
+
+def describe(kind, target):
+    if kind == 'profile': return f'{target.display_name} (@{target.handle}): {target.bio}'
+    if kind == 'event': return f'{target.title} · {target.location} · {target.description}'
+    if kind == 'challenge': return f'{target.title} · {target.description}'
+    return target.body
 
 
 def report(data: ReportInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
@@ -404,7 +432,7 @@ def report(data: ReportInput, user=Depends(get_current_active_user), db: Session
         db.add(models.ContentReport(reporter_id=user.id, target_type=data.target_type, target_id=key, reason=data.reason, note=data.note.strip()))
         db.flush()
         reporters = db.query(func.count(func.distinct(models.ContentReport.reporter_id))).filter_by(target_type=data.target_type, target_id=key, status='open').scalar()
-        if data.target_type != 'profile' and reporters >= AUTO_HIDE_REPORTS: target.hidden = True  # until a moderator decides
+        if data.target_type != 'profile' and reporters >= AUTO_HIDE_REPORTS: set_hidden(data.target_type, target, True)  # until a moderator decides
     db.commit()
     return {'status': 'Thanks. Our team will review this.'}
 
@@ -422,27 +450,27 @@ def moderation_queue(user=Depends(get_current_active_user), db: Session = Depend
         item['reasons'].append(r.reason); item['report_ids'].append(r.id)
     out = []
     for (kind, ident), item in grouped.items():
-        target = db.get({'post': models.Post, 'comment': models.Comment}[kind], ident) if kind != 'profile' else profile_of(db, ident)
-        item['content'] = (target.body if kind != 'profile' else f'{target.display_name} (@{target.handle}): {target.bio}') if target else '(deleted)'
-        item['hidden'] = getattr(target, 'hidden', None)
+        target = db.get(ITEMS[kind], ident) if kind != 'profile' else profile_of(db, ident)
+        item['content'] = describe(kind, target) if target else '(deleted)'
+        item['hidden'] = is_hidden(kind, target) if target else None
         out.append(item)
     return {'queue': out}
 
 
 class ModerationInput(BaseModel):
-    target_type: Literal['post', 'comment', 'profile']
+    target_type: Literal['post', 'comment', 'profile', 'event', 'challenge']
     target_id: str = Field(min_length=3, max_length=36)
     action: Literal['hide', 'restore', 'dismiss', 'pause_posting']
 
 
 def moderate(data: ModerationInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     require_flag(db); require_moderator(user)
-    target = db.get({'post': models.Post, 'comment': models.Comment}[data.target_type], data.target_id) if data.target_type != 'profile' else profile_of(db, data.target_id)
+    target = db.get(ITEMS[data.target_type], data.target_id) if data.target_type != 'profile' else profile_of(db, data.target_id)
     if not target: raise HTTPException(404, 'Not found.')
-    if data.action == 'hide' and data.target_type != 'profile': target.hidden = True
-    if data.action == 'restore' and data.target_type != 'profile': target.hidden = False
+    if data.action == 'hide' and data.target_type != 'profile': set_hidden(data.target_type, target, True)
+    if data.action == 'restore' and data.target_type != 'profile': set_hidden(data.target_type, target, False)
     if data.action == 'pause_posting':
-        owner = profile_of(db, target.user_id if data.target_type == 'profile' else target.author_id)
+        owner = profile_of(db, owner_id(data.target_type, target))
         if owner: owner.posting_disabled = True
     status = 'dismissed' if data.action in ('dismiss', 'restore') else 'actioned'
     db.query(models.ContentReport).filter_by(target_type=data.target_type, target_id=data.target_id, status='open').update({'status': status, 'resolved_at': utcnow()})

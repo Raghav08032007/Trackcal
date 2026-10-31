@@ -61,7 +61,7 @@ def get_event(db, event_id, viewer_id, lock=False):
 
 def can_view(db, viewer_id, event):
     if event.organizer_id == str(viewer_id): return True
-    if social.blocks_between(db, str(viewer_id), event.organizer_id): return False
+    if event.status == 'hidden' or social.blocks_between(db, str(viewer_id), event.organizer_id): return False
     return not event.community_id or social.community_access(db, viewer_id, event.community_id)
 
 
@@ -76,7 +76,7 @@ def view(db, event, viewer_id):
     community = db.get(models.Community, event.community_id) if event.community_id else None
     return {'id': event.id, 'title': event.title, 'description': event.description, 'category': event.category, 'location': event.location,
             'starts_at': utc_text(event.starts_at), 'ends_at': utc_text(event.ends_at), 'timezone': event.timezone, 'capacity': event.capacity,
-            'status': event.status, 'going': counts.get('going', 0), 'waitlist': counts.get('waitlist', 0),
+            'status': event.status, 'hidden': event.status == 'hidden', 'going': counts.get('going', 0), 'waitlist': counts.get('waitlist', 0),
             'organizer': {'handle': organizer.handle, 'display_name': organizer.display_name, 'character_id': organizer.character_id} if organizer else None,
             'community': {'slug': community.slug, 'name': community.name} if community else None,
             'mine': {'status': mine.status, 'checked_in': bool(mine.checked_in_at)} if mine else None,
@@ -122,7 +122,7 @@ def listing(scope: str = Query('upcoming', pattern=r'^(upcoming|mine)$'), commun
 
 
 def create(data: EventInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
-    require_flags(db); social.my_profile(db, user)
+    require_flags(db); social.require_can_publish(db, user)
     starts = (data.starts_at.astimezone(timezone.utc) if data.starts_at.tzinfo else data.starts_at.replace(tzinfo=ZoneInfo(data.timezone)).astimezone(timezone.utc)).replace(tzinfo=None)
     now = utcnow()
     if not now + timedelta(minutes=10) <= starts <= now + timedelta(days=180): raise HTTPException(422, 'Events start between 10 minutes and 180 days from now.')

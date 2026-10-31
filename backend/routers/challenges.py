@@ -33,7 +33,7 @@ def require_flags(db):
 
 def can_view(db, viewer_id, c):
     if c.creator_id == str(viewer_id): return True
-    if social.blocks_between(db, str(viewer_id), c.creator_id): return False
+    if c.status == 'hidden' or social.blocks_between(db, str(viewer_id), c.creator_id): return False
     return not c.community_id or social.community_access(db, viewer_id, c.community_id)
 
 
@@ -74,7 +74,7 @@ def view(db, c, viewer_id, mine_progress=None):
     if row and not row.left_at:
         mine = {'progress': min(mine_progress if mine_progress is not None else progress(db, c, row)[0], c.target), 'completed': bool(row.completed_at)}
     return {'id': c.id, 'title': c.title, 'description': c.description, 'metric': c.metric, 'metric_label': METRICS[c.metric], 'target': c.target,
-            'starts_on': c.starts_on, 'ends_on': c.ends_on, 'timezone': c.timezone, 'phase': phase(c),
+            'starts_on': c.starts_on, 'ends_on': c.ends_on, 'timezone': c.timezone, 'phase': phase(c), 'hidden': c.status == 'hidden',
             'participants': active.count(), 'finished': active.filter(models.ChallengeParticipant.completed_at.isnot(None)).count(),
             'creator': {'handle': creator.handle, 'display_name': creator.display_name} if creator else None,
             'community': {'slug': community.slug, 'name': community.name} if community else None, 'mine': mine, 'created_by_me': c.creator_id == str(viewer_id)}
@@ -123,7 +123,7 @@ def listing(scope: str = Query('open', pattern=r'^(open|mine)$'), community: str
 
 
 def create(data: ChallengeInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
-    require_flags(db); social.my_profile(db, user)
+    require_flags(db); social.require_can_publish(db, user)
     t = today_in(data.timezone)
     if not t <= data.starts_on <= t + timedelta(days=90): raise HTTPException(422, 'Challenges start today or within the next 90 days.')
     community_id = None
