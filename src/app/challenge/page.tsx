@@ -1,6 +1,7 @@
 // One challenge: your progress ring (computed on the server from what you logged), join/leave, how it counts.
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { ReportItem } from "@/components/report-item";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { announceXp } from "@/lib/celebrate";
@@ -35,6 +36,8 @@ export default function Page() {
     <div className="account-actions">
       {open && !c.mine && <button className="account-primary" disabled={busy} onClick={() => void act("/participation", "POST", "You're in! Log as usual and your progress fills in.")}>Join challenge</button>}
       {c.mine && !c.mine.completed && !c.created_by_me && <button disabled={busy} onClick={() => { if (confirm("Leave this challenge? You can't rejoin it.")) void act("/participation", "DELETE", "You left the challenge."); }}>Leave</button>}
+      {c.hidden && <p role="status" className="camera-paused">This challenge is hidden from others while we review a report.</p>}
+      {!c.created_by_me && <ReportItem type="challenge" id={c.id} label="challenge" />}
       {c.created_by_me && c.phase !== "cancelled" && <button disabled={busy} onClick={() => { if (confirm("Cancel this challenge for everyone?")) void act("", "DELETE", "Challenge cancelled."); }}>Cancel challenge</button>}
       <Link href="/challenges">All challenges</Link>
     </div>

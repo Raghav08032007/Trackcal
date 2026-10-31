@@ -127,3 +127,6 @@ html[data-theme="dark"] .tc-studio .play-hero :is(p, .play-fine) { color: #e6e3f
 
 /* Disabled buttons on the camera card read as disabled in both themes. */
 .camera-page button:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Report links stay quiet until they are needed. */
+.report-item-open { min-height: 44px; padding: 0 4px; border: 0; background: none; color: inherit; font-size: .8125rem; text-decoration: underline; cursor: pointer; }

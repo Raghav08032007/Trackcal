@@ -3,7 +3,7 @@ export type ChallengeView = {
   id: string; title: string; description: string; metric: string; metric_label: string; target: number; starts_on: string; ends_on: string; timezone: string;
   phase: "upcoming" | "running" | "ended" | "cancelled"; participants: number; finished: number;
   creator: { handle: string; display_name: string } | null; community: { slug: string; name: string } | null;
-  mine: { progress: number; completed: boolean } | null; created_by_me: boolean;
+  mine: { progress: number; completed: boolean } | null; created_by_me: boolean; hidden: boolean;
 };
 export const METRIC_OPTIONS: [string, string, string][] = [
   ["active_days", "Active days", "a workout, a logged meal or an event"],

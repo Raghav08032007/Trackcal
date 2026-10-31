@@ -7,7 +7,7 @@ import Challenges from "../src/app/challenges/page";
 import ChallengePage from "../src/app/challenge/page";
 import type { ChallengeView } from "../src/lib/challenges";
 
-const base: ChallengeView = { id: "22222222-2222-2222-2222-222222222222", title: "Five active days", description: "", metric: "active_days", metric_label: "Active days (a workout, a logged meal or an event)", target: 5, starts_on: "2026-10-30", ends_on: "2026-11-05", timezone: "Asia/Kolkata", phase: "running", participants: 4, finished: 1, creator: { handle: "ravi", display_name: "Ravi" }, community: null, mine: null, created_by_me: false };
+const base: ChallengeView = { hidden: false, id: "22222222-2222-2222-2222-222222222222", title: "Five active days", description: "", metric: "active_days", metric_label: "Active days (a workout, a logged meal or an event)", target: 5, starts_on: "2026-10-30", ends_on: "2026-11-05", timezone: "Asia/Kolkata", phase: "running", participants: 4, finished: 1, creator: { handle: "ravi", display_name: "Ravi" }, community: null, mine: null, created_by_me: false };
 let calls: { url: string; method: string; body: unknown }[] = [];
 function api(routes: (url: string, method: string) => unknown) {
   calls = [];

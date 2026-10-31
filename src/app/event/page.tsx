@@ -1,6 +1,7 @@
 // One event: details and sign-up for everyone; for the organizer, the live check-in QR code and the attendee list.
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { ReportItem } from "@/components/report-item";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { CATEGORY_LABELS } from "@/lib/communities";
@@ -32,6 +33,8 @@ export default function Page() {
       {event.description && <p className="community-rules">{event.description}</p>}
       <p>{event.going} going{event.capacity ? ` of ${event.capacity}` : ""}{event.waitlist ? ` · ${event.waitlist} on the waitlist` : ""}</p>
       {cancelled && <p role="status" className="camera-paused">This event was cancelled.</p>}
+      {event.hidden && <p role="status" className="camera-paused">This event is hidden from others while we review a report.</p>}
+      {!event.organizing && <ReportItem type="event" id={event.id} label="event" />}
       <div className="account-actions">
         {!event.organizing && !cancelled && (!event.mine || event.mine.status === "cancelled"
           ? <button className="account-primary" disabled={busy} onClick={() => void act("/registration", "POST", full ? "You're on the waitlist. We'll move you up if a place opens." : "You're going!")}>{full ? "Join the waitlist" : "I'm going"}</button>

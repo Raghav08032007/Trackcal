@@ -3,7 +3,7 @@ import qrcode from "qrcode-generator";
 
 export type EventView = {
   id: string; title: string; description: string; category: string; location: string; starts_at: string; ends_at: string; timezone: string;
-  capacity: number | null; status: "scheduled" | "cancelled"; going: number; waitlist: number;
+  capacity: number | null; status: "scheduled" | "cancelled" | "hidden"; hidden: boolean; going: number; waitlist: number;
   organizer: { handle: string; display_name: string; character_id: string } | null; community: { slug: string; name: string } | null;
   mine: { status: "going" | "waitlist" | "cancelled"; checked_in: boolean } | null; organizing: boolean; check_in_open: boolean;
 };

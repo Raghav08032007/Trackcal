@@ -8,7 +8,7 @@ import EventPage from "../src/app/event/page";
 import CheckIn from "../src/app/event-check-in/page";
 import { qrSvg, type EventView } from "../src/lib/events";
 
-const base: EventView = { id: "11111111-1111-1111-1111-111111111111", title: "Sunrise run", description: "", category: "running", location: "Cubbon Park gate", starts_at: "2026-11-02T01:30:00Z", ends_at: "2026-11-02T02:30:00Z", timezone: "Asia/Kolkata", capacity: 10, status: "scheduled", going: 3, waitlist: 0, organizer: { handle: "ravi", display_name: "Ravi", character_id: "pip" }, community: null, mine: null, organizing: false, check_in_open: false };
+const base: EventView = { hidden: false, id: "11111111-1111-1111-1111-111111111111", title: "Sunrise run", description: "", category: "running", location: "Cubbon Park gate", starts_at: "2026-11-02T01:30:00Z", ends_at: "2026-11-02T02:30:00Z", timezone: "Asia/Kolkata", capacity: 10, status: "scheduled", going: 3, waitlist: 0, organizer: { handle: "ravi", display_name: "Ravi", character_id: "pip" }, community: null, mine: null, organizing: false, check_in_open: false };
 let calls: { url: string; method: string; body: unknown }[] = [];
 function api(routes: (url: string, method: string) => unknown) {
   calls = [];

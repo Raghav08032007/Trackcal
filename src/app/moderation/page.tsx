@@ -1,9 +1,9 @@
-// Moderators (admin role): reported posts, comments and profiles, grouped, with hide / restore / dismiss / pause.
+// Moderators (admin role): reported posts, comments, profiles, events and challenges, grouped, with hide / restore / dismiss / pause.
 import { useEffect, useState } from "react";
 import { social } from "@/lib/social";
 
 export const metadata = { title: "TrackCal — Moderation" };
-type Item = { target_type: "post" | "comment" | "profile"; target_id: string; reasons: string[]; content: string; hidden: boolean | null };
+type Item = { target_type: "post" | "comment" | "profile" | "event" | "challenge"; target_id: string; reasons: string[]; content: string; hidden: boolean | null };
 
 export default function Page() {
   const [queue, setQueue] = useState<Item[] | null>(null), [error, setError] = useState(""), [busy, setBusy] = useState(false);
