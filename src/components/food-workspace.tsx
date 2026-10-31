@@ -138,6 +138,7 @@ const SAMPLE_DATABASE: FoodItem[] = [
 
 type PhotoRange = { grams: [number, number]; calories: [number, number]; confidence: "High" | "Medium" | "Low"; fromModel: boolean };
 type ScanView = (typeof SCAN_PRESETS)[number];
+type ScanSource = "none" | "sample" | "photo";
 const confidenceLabel = (value: number): PhotoRange["confidence"] => value >= 0.75 ? "High" : value >= 0.45 ? "Medium" : "Low";
 const SCAN_PRESETS = [
   {
@@ -260,10 +261,11 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     router.push(foodRoutes[tab]);
   }
   const [activeTab, setActiveTab] = useState<AppTab>(initialTab);
-  const [selectedPreset, setSelectedPreset] = useState(0);
+  const [selectedPreset, setSelectedPreset] = useState(-1);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<ScanView>(SCAN_PRESETS[0]);
-  const [portionGrams, setPortionGrams] = useState(360);
+  const [scanResult, setScanResult] = useState<ScanView>(() => ({ ...SCAN_PRESETS[0], label: "", foodName: "Nothing scanned yet", weight: "0g", confidence: 0, calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, items: [], allergens: [], method: "Snap or upload a meal to see its estimate." } as ScanView));
+  const [scanSource, setScanSource] = useState<ScanSource>("none");
+  const [portionGrams, setPortionGrams] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [remoteFoods, setRemoteFoods] = useState<FoodItem[]>([]);
   const [foodSearchLoading, setFoodSearchLoading] = useState(false);
@@ -307,7 +309,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   useEffect(() => () => { if (uploadedImageUrl) URL.revokeObjectURL(uploadedImageUrl); }, [uploadedImageUrl]);
 
   const [scanError, setScanError] = useState("");
-  const [scanReady, setScanReady] = useState(true);
+  const [scanReady, setScanReady] = useState(false);
   const [photoConsent,setPhotoConsent]=useState(false);
   const [photoRange,setPhotoRange]=useState<PhotoRange|null>(null);
   const [pendingPhoto,setPendingPhoto]=useState<File|null>(null);
@@ -346,7 +348,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         const mean = result.components.reduce((sum, item) => sum + item.confidence, 0) / result.components.length;
         if (result.calorie_range && result.components.every(item => item.portion_range_g)) setPhotoRange({ grams: [0, 1].map(i => Math.round(result.components.reduce((sum, item) => sum + item.portion_range_g[i], 0))) as [number, number],
           calories: [Math.round(result.calorie_range[0]), Math.round(result.calorie_range[1])], confidence: confidenceLabel(mean), fromModel: result.components.every(item => item.range_basis === "model") });
-        setPortionGrams(grams); setCookingStyle("standard"); setScanReady(true); requestAnimationFrame(() => document.getElementById("scan-result-title")?.scrollIntoView({ block: "center" }));
+        setScanSource("photo"); setPortionGrams(grams); setCookingStyle("standard"); setScanReady(true); requestAnimationFrame(() => document.getElementById("scan-result-title")?.scrollIntoView({ block: "center" }));
       } catch (error) { if (requestId === photoRequest.current) setScanError(error instanceof Error ? error.message : "Photo analysis failed."); }
       finally { if (requestId === photoRequest.current) setIsScanning(false); }
     }
@@ -390,7 +392,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
   const handleSimulateScan = (presetIndex: number) => {
     photoRequest.current++;
-    setScanError(""); setScanReady(true);
+    setScanError(""); setScanReady(true); setScanSource("sample");
     setIsScanning(false);
     setSelectedPreset(presetIndex);
     setUploadedImageUrl(null);
@@ -653,9 +655,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       </div>
                       <h4 className="font-semibold text-white text-base">{scanResult.foodName}</h4>
                       <p className="text-xs text-slate-400 max-w-xs">{scanResult.method}</p>
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
+                      {scanSource !== "none" && <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Estimate — review portions and ingredients
-                      </div>
+                      </div>}
                     </div>
                   )}
 
@@ -717,12 +719,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div className="flex items-start justify-between">
                   <div>
                     <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">
-                      Detected Classification
+                      {scanSource === "photo" ? "Detected classification" : scanSource === "sample" ? "Sample result, not your meal" : "Waiting for a scan"}
                     </span>
                     <h2 id="scan-result-title" className="text-2xl font-bold text-white mt-1">{scanResult.foodName}</h2>
-                    <p className="text-xs text-slate-400 mt-1">
+                    {scanSource !== "none" && <p className="text-xs text-slate-400 mt-1">
                       Estimated portions — review and correct in your journal
-                    </p>
+                    </p>}
                   </div>
                   <button
                     onClick={addCurrentScanToLog}

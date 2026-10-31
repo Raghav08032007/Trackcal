@@ -8,6 +8,16 @@ function navigate(name: string) { const picker=screen.getByText("Choose another 
 function value(label: string, text: string) { fireEvent.change(screen.getByLabelText(label, { exact: true }), { target: { value: text } }); }
 const inference = { dish_name: "Egg and toast", model: "test/free", components: [{ name: "Egg", quantity_g: 50, calories: 78, protein_g: 6, carbs_g: 1, fat_g: 5, confidence: .8, portion_range_g: [40, 65], range_basis: "model", calorie_range: [62.4, 101.4] }], total_nutrition: { calories: 78, protein_g: 6, carbs_g: 1, fat_g: 5 }, calorie_range: [62.4, 101.4], is_mock: false };
 describe("complete feature flows", () => {
+  it("shows no made-up meal and can't log anything before a scan", () => {
+    render(<Home />);
+    expect(screen.getByText("Waiting for a scan")).toBeTruthy();
+    expect(screen.queryByText("Hyderabadi Chicken Biryani")).toBeNull();
+    expect(screen.getByRole("button", { name: "Log This Meal" }).hasAttribute("disabled")).toBe(true);
+  });
+  it("labels a chosen demo meal as a sample", () => {
+    render(<Home />); fireEvent.click(screen.getByRole("button", { name: /Avocado Egg Toast/ }));
+    expect(screen.getByText("Sample result, not your meal")).toBeTruthy();
+  });
   it("opens all six tools", () => { render(<Home />); for (const name of ["Barcode scan", "Describe a meal", "Food library", "My journal", "Recipe studio", "Food scanner"]) { navigate(name); expect(screen.getByRole("heading", { level: 1 })).toBeTruthy(); } });
   it("adds, edits, repeats, deletes and retains a manual meal across reloads", () => {
     render(<Home />); navigate("My journal"); value("Food name", "Regression meal"); value("calories", "123"); value("protein", "12.3"); fireEvent.click(screen.getByRole("button", { name: "Add meal" })); expect(journal()[0].calories).toBe(123);
@@ -29,7 +39,7 @@ describe("complete feature flows", () => {
   it.each([
     ["Steamed / Boiled", 449, 10], ["Home-Cooked Light", 479, 13], ["Standard Recipe", 510, 15], ["Restaurant (Ghee/Butter Heavy)", 638, 22], ["Deep Fried", 755, 28],
   ])("logs the %s cooking estimate", (name, calories, fat) => {
-    render(<Home />); fireEvent.click(screen.getByRole("button", { name: String(name) })); fireEvent.click(screen.getByRole("button", { name: "Log This Meal" })); expect(journal()[0]).toMatchObject({ calories, fat });
+    render(<Home />); fireEvent.click(screen.getByRole("button", { name: /Chicken Biryani Plate/ })); fireEvent.click(screen.getByRole("button", { name: String(name) })); fireEvent.click(screen.getByRole("button", { name: "Log This Meal" })); expect(journal()[0]).toMatchObject({ calories, fat });
   });
   it("keeps a new photo local until explicit provider consent", async () => {
     const fetcher=vi.fn();vi.stubGlobal("fetch",fetcher);render(<Home/>);
