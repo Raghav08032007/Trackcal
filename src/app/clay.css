@@ -154,3 +154,13 @@ html[data-theme="dark"] .tc-studio .play-hero :is(p, .play-fine) { color: #e6e3f
 .tc-studio label:has(> input[type="checkbox"]) { min-height: 44px; display: flex; align-items: center; gap: 10px; }
 .tc-studio input[type="radio"] { width: 24px; height: 24px; flex: none; }
 .tc-studio label:has(> input[type="radio"]) { min-height: 44px; display: flex; align-items: center; gap: 10px; }
+
+/* ── Quick log on Home ── */
+.quick-log { margin: 0 0 20px; }
+.quick-log-row { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 12px; scrollbar-width: none; }
+.quick-log-row::-webkit-scrollbar { display: none; }
+.tc-studio .quick-log-button { flex: 0 0 auto; min-height: 48px; padding: 0 16px; border: 0; border-radius: 18px; background: linear-gradient(180deg, #ffffff, #f0ebff); color: var(--clay-violet-deep); font-weight: 700; box-shadow: inset 0 2px 0 #ffffff, inset 0 -3px 6px #6a45ff1f, 0 5px 0 #d2c6fb; cursor: pointer; }
+html[data-theme="dark"] .tc-studio .quick-log-button { background: linear-gradient(180deg, #37375c, #2a2a47); color: #e4dcff; box-shadow: inset 0 2px 0 #ffffff1f, 0 5px 0 #0d0d1c; }
+.quick-log-notice { display: flex; align-items: center; gap: 12px; margin: 0; font-weight: 600; }
+.quick-log-notice button { min-height: 44px; padding: 0 8px; border: 0; background: none; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.tc-studio .quick-log-button { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
