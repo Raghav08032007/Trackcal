@@ -2,8 +2,10 @@
 
 A person's own photo is sent to an external image model and comes back as an illustration of one fixed, moderate goal.
 Adults only, from the account's age data; `unspecified` is refused. Consent is checked on every request. Goals are a
-fixed list and never free text, so nobody can ask for an extreme body. Photos and results are never stored or logged:
+fixed list and never free text, so nobody can ask for an extreme body. A separate safety check looks at the photo and at
+the result, and fails closed: if it errors or is unsure, nothing is shown. Photos and results are never stored or logged:
 the only record is a rate-limit counter, and the caller keeps the image in the browser."""
+import json
 import os
 import re
 from typing import Literal
@@ -23,6 +25,11 @@ from services.feature_flags import is_enabled
 ADULT_GROUPS = ('18_19', '20_64', '65plus')
 DAILY_PER_PERSON, DAILY_TOTAL = 3, 100
 DEFAULT_MODEL = 'google/gemini-2.5-flash-image'
+SAFETY_MODELS = ['google/gemini-2.5-flash-lite', 'google/gemini-2.5-flash']
+SAFETY_PROMPT = ('Check this image for a safety filter. Reply with JSON only: {"people": <number of people>, "clearly_adult": <true only if '
+                 'every person is clearly 18 or older>, "clothed": <true if every person wears normal clothes or sportswear such as a t-shirt, leggings, shorts or a sports top; swimwear, underwear or bare chests are false>, '
+                 '"sexual": <true if the image is sexual or suggestive>}. If you are unsure about any answer, answer the safe way.')
+UNSAFE = 'This photo couldn’t be used. Try a clear, clothed photo of one adult.'
 _RESULT = re.compile(r'^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$')
 GOALS = {
     'leaner': 'slightly leaner, as after a few months of regular activity and balanced eating, staying a healthy weight',
@@ -52,6 +59,20 @@ def require_adult(db, user):
         raise HTTPException(403, 'Body preview is only for adults. Add your age group in your profile to continue.')
 
 
+def passes_safety_check(image, key):
+    """True only for a clear yes: one clothed, clearly adult person and nothing sexual. Any error or doubt is a no."""
+    body = {'models': SAFETY_MODELS, 'response_format': {'type': 'json_object'}, 'temperature': 0, 'max_tokens': 120,
+            'messages': [{'role': 'user', 'content': [{'type': 'text', 'text': SAFETY_PROMPT}, {'type': 'image_url', 'image_url': {'url': image}}]}]}
+    try:
+        response = httpx.post('https://openrouter.ai/api/v1/chat/completions', json=body, timeout=30,
+                              headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json', 'X-Title': 'TrackCal'})
+        if response.status_code >= 400: return False
+        verdict = json.loads(re.sub(r'^```(?:json)?|```$', '', response.json()['choices'][0]['message']['content'].strip()).strip())
+    except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError, AttributeError):
+        return False
+    return verdict.get('people') == 1 and verdict.get('clearly_adult') is True and verdict.get('clothed') is True and verdict.get('sexual') is False
+
+
 def status(user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     if not is_enabled(db, 'body_simulator'): raise HTTPException(404, 'Body preview is not available yet.')
     require_adult(db, user)
@@ -69,6 +90,7 @@ def create(data: PreviewInput, user=Depends(get_current_active_user), db: Sessio
     except photo_prep.PhotoError as failure: raise HTTPException(400, str(failure))
     consume(db, 'body-preview', str(user.id), DAILY_PER_PERSON, 86400)
     consume(db, 'body-preview-total', 'all', DAILY_TOTAL, 86400)
+    if not passes_safety_check(image, key): raise HTTPException(422, UNSAFE)
     payload = {'model': os.getenv('BODY_PREVIEW_MODEL') or DEFAULT_MODEL, 'modalities': ['image', 'text'],
                'messages': [{'role': 'user', 'content': [{'type': 'text', 'text': PROMPT.format(goal=GOALS[data.goal])}, {'type': 'image_url', 'image_url': {'url': image}}]}]}
     try:
@@ -80,7 +102,8 @@ def create(data: PreviewInput, user=Depends(get_current_active_user), db: Sessio
         raise HTTPException(429 if response.status_code == 429 else 502, 'The preview service is busy. Nothing was saved. Please try again later.')
     try: url = response.json()['choices'][0]['message']['images'][0]['image_url']['url']
     except (ValueError, KeyError, IndexError, TypeError):
-        raise HTTPException(422, 'This photo couldn’t be used. Try a clear, clothed photo of one adult.')
+        raise HTTPException(422, UNSAFE)
     if not isinstance(url, str) or not _RESULT.match(url):
-        raise HTTPException(422, 'This photo couldn’t be used. Try a clear, clothed photo of one adult.')
+        raise HTTPException(422, UNSAFE)
+    if not passes_safety_check(url, key): raise HTTPException(422, UNSAFE)
     return {'image': url, 'goal': data.goal, 'notice': 'AI illustration, not a prediction of your body.'}

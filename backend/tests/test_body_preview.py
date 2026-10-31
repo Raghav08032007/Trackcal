@@ -41,7 +41,15 @@ class Reply:
     def json(self): return self.data
 
 
+SAFE = '{"people": 1, "clearly_adult": true, "clothed": true, "sexual": false}'
+
+
+def verdict(text=SAFE, status=200):
+    return Reply(status, {'choices': [{'message': {'content': text}}]})
+
+
 def ok(*_, **kwargs):
+    if 'models' in kwargs['json']: return verdict()  # the safety check
     ok.sent = kwargs['json']
     return Reply(data={'choices': [{'message': {'images': [{'image_url': {'url': RESULT}}]}}]})
 
@@ -98,18 +106,60 @@ def test_three_a_day(monkeypatch):
 
 
 def test_a_model_refusal_is_explained(monkeypatch):
-    monkeypatch.setattr(body_preview.httpx, 'post', lambda *a, **k: Reply(data={'choices': [{'message': {'content': 'I cannot do that'}}]}))
+    monkeypatch.setattr(body_preview.httpx, 'post', lambda *a, **k: verdict() if 'models' in k['json'] else Reply(data={'choices': [{'message': {'content': 'I cannot do that'}}]}))
     r = client.post(U, headers=aged(member()), json=body())
     assert r.status_code == 422 and 'clothed photo of one adult' in r.text
 
 
 def test_provider_details_never_reach_the_person(monkeypatch):
-    monkeypatch.setattr(body_preview.httpx, 'post', lambda *a, **k: Reply(500, {'error': 'secret detail'}))
+    monkeypatch.setattr(body_preview.httpx, 'post', lambda *a, **k: verdict() if 'models' in k['json'] else Reply(500, {'error': 'secret detail'}))
     r = client.post(U, headers=aged(member()), json=body())
     assert r.status_code == 502 and 'secret' not in r.text
 
 
 def test_a_network_failure_is_handled(monkeypatch):
-    def down(*a, **k): raise httpx.ConnectError('down')
+    def down(*a, **k):
+        if 'models' in k['json']: return verdict()
+        raise httpx.ConnectError('down')
     monkeypatch.setattr(body_preview.httpx, 'post', down)
     assert client.post(U, headers=aged(member()), json=body()).status_code == 502
+
+
+@pytest.mark.parametrize('answer', [
+    '{"people": 2, "clearly_adult": true, "clothed": true, "sexual": false}',
+    '{"people": 1, "clearly_adult": false, "clothed": true, "sexual": false}',
+    '{"people": 1, "clearly_adult": true, "clothed": false, "sexual": false}',
+    '{"people": 1, "clearly_adult": true, "clothed": true, "sexual": true}',
+    '{"people": 0, "clearly_adult": true, "clothed": true, "sexual": false}',
+    '{"people": 1, "clearly_adult": "yes", "clothed": true, "sexual": false}',
+    '{"people": 1}',
+    'I am not sure',
+])
+def test_the_safety_check_refuses_anything_but_a_clear_yes_before_generating(monkeypatch, answer):
+    calls = []
+    def post(*a, **k):
+        calls.append(k['json']); return verdict(answer) if 'models' in k['json'] else ok(*a, **k)
+    monkeypatch.setattr(body_preview.httpx, 'post', post)
+    r = client.post(U, headers=aged(member()), json=body())
+    assert r.status_code == 422 and 'clothed photo of one adult' in r.text
+    assert not any('modalities' in c for c in calls)  # no paid image is made
+
+
+@pytest.mark.parametrize('failure', ['down', 'server', 'empty'])
+def test_the_safety_check_fails_closed(monkeypatch, failure):
+    def post(*a, **k):
+        if failure == 'down': raise httpx.ConnectError('down')
+        return Reply(500, {}) if failure == 'server' else Reply(data={'choices': []})
+    monkeypatch.setattr(body_preview.httpx, 'post', post)
+    assert client.post(U, headers=aged(member()), json=body()).status_code == 422
+
+
+def test_an_unsafe_result_is_never_returned(monkeypatch):
+    seen = []
+    def post(*a, **k):
+        if 'models' not in k['json']: return ok(*a, **k)
+        seen.append(1)
+        return verdict() if len(seen) == 1 else verdict('{"people": 1, "clearly_adult": true, "clothed": false, "sexual": false}')
+    monkeypatch.setattr(body_preview.httpx, 'post', post)
+    r = client.post(U, headers=aged(member()), json=body())
+    assert r.status_code == 422 and RESULT not in r.text
