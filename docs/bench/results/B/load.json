@@ -1,28 +1,28 @@
 {
  "/api/v1/auth/me": {
   "p50Ms": {
-   "median": 244,
-   "min": 236,
-   "max": 275,
-   "spread": 0.16,
+   "median": 153,
+   "min": 135,
+   "max": 245,
+   "spread": 0.719,
    "runs": 5,
    "unreliable": true
   },
   "p95Ms": {
-   "median": 418,
-   "min": 407,
-   "max": 480,
-   "spread": 0.175,
+   "median": 185,
+   "min": 181,
+   "max": 352,
+   "spread": 0.924,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 191.13,
-   "min": 171.42,
-   "max": 195.34,
-   "spread": 0.125,
+   "median": 341.88,
+   "min": 213.5,
+   "max": 370.96,
+   "spread": 0.461,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "errorRate": {
    "median": 0,
@@ -42,19 +42,19 @@
   },
   "codes": [
    {
-    "200": 4688
+    "200": 8743
    },
    {
-    "200": 4587
+    "200": 8205
    },
    {
-    "200": 4114
+    "200": 8903
    },
    {
-    "200": 4688
+    "200": 5715
    },
    {
-    "200": 4462
+    "200": 5124
    }
   ],
   "timeouts": [
@@ -75,28 +75,28 @@
  },
  "/api/v1/wellness/diary": {
   "p50Ms": {
-   "median": 1680,
-   "min": 1615,
-   "max": 1777,
-   "spread": 0.096,
+   "median": 1357,
+   "min": 792,
+   "max": 1664,
+   "spread": 0.643,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "p95Ms": {
-   "median": 2723,
-   "min": 2098,
-   "max": 3208,
-   "spread": 0.408,
+   "median": 1894,
+   "min": 1573,
+   "max": 2690,
+   "spread": 0.59,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 28,
-   "min": 26.42,
-   "max": 30,
-   "spread": 0.128,
+   "median": 37,
+   "min": 29.67,
+   "max": 54.63,
+   "spread": 0.675,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "errorRate": {
    "median": 0,
@@ -116,19 +116,19 @@
   },
   "codes": [
    {
-    "200": 685
+    "200": 1311
    },
    {
-    "200": 634
+    "200": 888
    },
    {
-    "200": 668
+    "200": 817
    },
    {
-    "200": 672
+    "200": 712
    },
    {
-    "200": 720
+    "200": 936
    }
   ],
   "timeouts": [
@@ -149,28 +149,28 @@
  },
  "/api/v1/adventure/summary": {
   "p50Ms": {
-   "median": 2221,
-   "min": 2130,
-   "max": 2322,
-   "spread": 0.086,
+   "median": 1977,
+   "min": 1300,
+   "max": 2271,
+   "spread": 0.491,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "p95Ms": {
-   "median": 3893,
-   "min": 3530,
-   "max": 4271,
-   "spread": 0.19,
+   "median": 2896,
+   "min": 2680,
+   "max": 3674,
+   "spread": 0.343,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 20.88,
-   "min": 19.67,
-   "max": 21.34,
-   "spread": 0.08,
+   "median": 24.25,
+   "min": 20.88,
+   "max": 31.92,
+   "spread": 0.455,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "errorRate": {
    "median": 0,
@@ -190,19 +190,19 @@
   },
   "codes": [
    {
+    "200": 716
+   },
+   {
     "200": 501
    },
    {
-    "200": 512
+    "200": 566
    },
    {
-    "200": 511
+    "200": 766
    },
    {
-    "200": 472
-   },
-   {
-    "200": 473
+    "200": 582
    }
   ],
   "timeouts": [
@@ -223,28 +223,28 @@
  },
  "/api/v1/wellness/foods?q=rice": {
   "p50Ms": {
-   "median": 1356,
-   "min": 1248,
-   "max": 1499,
-   "spread": 0.185,
+   "median": 828,
+   "min": 789,
+   "max": 1162,
+   "spread": 0.45,
    "runs": 5,
    "unreliable": true
   },
   "p95Ms": {
-   "median": 1686,
-   "min": 1550,
-   "max": 1934,
-   "spread": 0.228,
+   "median": 895,
+   "min": 872,
+   "max": 1867,
+   "spread": 1.112,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 33.34,
-   "min": 28.58,
-   "max": 33.34,
-   "spread": 0.143,
+   "median": 50,
+   "min": 33.34,
+   "max": 50,
+   "spread": 0.333,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "errorRate": {
    "median": 0,
@@ -297,26 +297,26 @@
  },
  "/api/v1/wellness/training": {
   "p50Ms": {
-   "median": 4096,
-   "min": 3446,
-   "max": 4288,
-   "spread": 0.206,
+   "median": 2710,
+   "min": 1399,
+   "max": 3159,
+   "spread": 0.649,
    "runs": 5,
    "unreliable": true
   },
   "p95Ms": {
-   "median": 6376,
-   "min": 4843,
-   "max": 8075,
-   "spread": 0.507,
+   "median": 4263,
+   "min": 1771,
+   "max": 7253,
+   "spread": 1.286,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 10.59,
-   "min": 9.92,
-   "max": 12.67,
-   "spread": 0.26,
+   "median": 15.05,
+   "min": 12.63,
+   "max": 34.46,
+   "spread": 1.45,
    "runs": 5,
    "unreliable": true
   },
@@ -338,19 +338,19 @@
   },
   "codes": [
    {
-    "200": 282
+    "200": 827
    },
    {
-    "200": 251
+    "200": 776
    },
    {
-    "200": 254
+    "200": 361
    },
    {
-    "200": 238
+    "200": 303
    },
    {
-    "200": 304
+    "200": 322
    }
   ],
   "timeouts": [

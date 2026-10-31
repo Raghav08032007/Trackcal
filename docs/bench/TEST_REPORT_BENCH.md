@@ -120,3 +120,29 @@ Measured commits: A `25f99f3c` / `9eefb07`, B `884490bd` / `0183d97`, both from 
 **Where B is worse:** more undersized controls, 7 more text colours, 3 more complex functions. Maintainability fell by 1 point.
 
 **Limits.** Taps did not change, so the speed score did not either. Seconds are lab speed with high spread. Contrast skips text on gradients. No real people have used B, so the usability kit is still needed.
+
+## Latest Version B result (31 October 2026, evening)
+
+**B 88, A 71.** This replaces the 86 above. B commits `23d6fbd0` / `5b4f96b`, which include the one-tap log, tap targets, event and challenge fixes, reporting, alerts and the companion bond. Both versions passed code health with no failures (573 + 278 on A, 663 + 341 on B). The body preview safety filter came after this run.
+
+| Category | Weight | A | B |
+|---|---|---|---|
+| Task speed and taps | 30 | 94 | 98 |
+| Visual quality and accessibility | 20 | 19 | 86 |
+| Performance | 15 | 49 | 69 |
+| Maintainability | 15 | 75 | 73 |
+| Regression safety | 10 | 100 | 100 |
+| Habit-loop features | 10 | 100 | 100 |
+| **Total** | 100 | **71** | **88** |
+
+| Measure | A | B |
+|---|---|---|
+| Taps: log water / re-log a favourite | 3 / 3 | 1 / 1 |
+| Controls under 44 px, per page | 9.2 | 5.9 |
+| Largest contentful paint on slow 4G | 10.7–33.4 s | 2.9–4.1 s |
+| Lighthouse | 64–72 | 83–91 |
+| Functions over complexity 15 | 43 | 48 |
+
+**How it was run.** A session restart stopped the first attempt during Lighthouse. B's journeys and screens from that attempt were complete and kept. Lighthouse, load and code health were re-run, then A's Lighthouse and load straight after. The low Home score seen in the stopped attempt did not repeat (83).
+
+**API under load.** The p95 figures moved a lot again: `/wellness/training` was 4.3 s on B and 9.6 s on A here, against 6.4 s on both earlier. A also reported errors in this run. Treat API differences between versions as noise on this Windows setup. Measure on real hosting.

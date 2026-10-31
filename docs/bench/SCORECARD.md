@@ -99,12 +99,12 @@ A version that fails any gate can't win, whatever its score.
 
 | Category | Weight | A | B |
 |---|---|---|---|
-| Task speed and taps | 30 | 94 | 94 |
-| Visual quality and accessibility | 20 | 19 | 83 |
-| Performance | 15 | 52 | 68 |
-| Maintainability | 15 | 75 | 74 |
+| Task speed and taps | 30 | 94 | 98 |
+| Visual quality and accessibility | 20 | 19 | 86 |
+| Performance | 15 | 49 | 69 |
+| Maintainability | 15 | 75 | 73 |
 | Regression safety | 10 | 100 | 100 |
 | Habit-loop features | 10 | 100 | 100 |
-| **Total** | 100 | **71** | **86** |
+| **Total** | 100 | **71** | **88** |
 
 A fails the `wcagTextContrast` gate. B passes every gate. `TEST_REPORT_BENCH.md` records how the numbers were produced.

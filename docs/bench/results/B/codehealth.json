@@ -1,26 +1,26 @@
 {
  "size": {
-  "appFiles": 250,
-  "appLines": 18131,
-  "testFiles": 112,
-  "testLines": 7757,
+  "appFiles": 254,
+  "appLines": 18415,
+  "testFiles": 117,
+  "testLines": 8153,
   "over400": [
    "frontend/web/src/components/food-workspace.tsx (1673)",
-   "backend/models.py (1238)",
+   "backend/models.py (1241)",
    "frontend/mobile/App.tsx (753)",
    "backend/flask_app/web_gateway.py (621)",
    "backend/routers/ai_scan.py (535)",
-   "backend/routers/social.py (451)"
+   "backend/routers/social.py (482)"
   ]
  },
  "duplication": {
-  "percentage": 0.24911770811708533,
+  "percentage": 0.24443237370994023,
   "clones": 4,
   "duplicatedLines": 36
  },
  "complexity": {
-  "functions": 1983,
-  "over15": 46,
+  "functions": 2012,
+  "over15": 48,
   "hotspots": [
    {
     "ccn": 81,
@@ -29,16 +29,16 @@
     "file": "frontend/web/src/components/camera-workout.tsx"
    },
    {
+    "ccn": 66,
+    "nloc": 24,
+    "fn": "reviewMeal",
+    "file": "frontend/web/src/components/adventure-hub.tsx"
+   },
+   {
     "ccn": 64,
     "nloc": 27,
     "fn": "validStoredValue",
     "file": "frontend/web/src/lib/storage-validation.ts"
-   },
-   {
-    "ccn": 63,
-    "nloc": 23,
-    "fn": "reviewMeal",
-    "file": "frontend/web/src/components/adventure-hub.tsx"
    },
    {
     "ccn": 62,
@@ -71,14 +71,14 @@
     "file": "frontend/web/src/components/food-workspace.tsx"
    },
    {
-    "ccn": 45,
-    "nloc": 56,
+    "ccn": 47,
+    "nloc": 58,
     "fn": "act",
     "file": "frontend/web/src/app/event/page.tsx"
    },
    {
-    "ccn": 41,
-    "nloc": 34,
+    "ccn": 42,
+    "nloc": 35,
     "fn": "state",
     "file": "backend/services/gamification.py"
    },
@@ -101,8 +101,8 @@
     "file": "backend/routers/personalization.py"
    },
    {
-    "ccn": 29,
-    "nloc": 26,
+    "ccn": 31,
+    "nloc": 28,
     "fn": "act",
     "file": "frontend/web/src/app/challenge/page.tsx"
    },
@@ -135,25 +135,25 @@
   "osv": "See docs/TEST_REPORT_P6.md for the OSV scan; rerun tools/bench via QUICK to refresh"
  },
  "coverage": {
-  "backendLinePct": 89.5,
-  "webLinePct": 80.21,
+  "backendLinePct": 89.7,
+  "webLinePct": 80.67,
   "byModule": {
-   "backend/flask_app": 91.5,
-   "backend/routers": 91.7,
-   "backend/services": 82.9,
+   "backend/flask_app": 91.7,
+   "backend/routers": 91.8,
+   "backend/services": 83.3,
    "frontend/web/src/main.tsx": 0,
    "frontend/web/src/routes.tsx": 0,
    "frontend/web/src/app": 71.2,
-   "frontend/web/src/components": 84.4,
+   "frontend/web/src/components": 85.1,
    "frontend/web/src/lib": 85.9
   },
   "backendTests": {
-   "passed": 632,
+   "passed": 663,
    "failed": 0,
    "exit": 0
   },
   "webTests": {
-   "passed": 331,
+   "passed": 341,
    "failed": 0,
    "exit": 0
   }

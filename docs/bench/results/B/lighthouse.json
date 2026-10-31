@@ -1,18 +1,18 @@
 {
  "/": {
   "score": {
-   "median": 82,
-   "min": 82,
-   "max": 85,
-   "spread": 0.037,
+   "median": 83,
+   "min": 83,
+   "max": 84,
+   "spread": 0.012,
    "runs": 5,
    "unreliable": false
   },
   "lcpMs": {
-   "median": 4152.79,
-   "min": 3961.92,
-   "max": 4229.16,
-   "spread": 0.064,
+   "median": 4140.36,
+   "min": 4069.28,
+   "max": 4147.97,
+   "spread": 0.019,
    "runs": 5,
    "unreliable": false
   },
@@ -25,25 +25,25 @@
    "unreliable": false
   },
   "tbtMs": {
-   "median": 38.5,
-   "min": 32.5,
-   "max": 104.5,
-   "spread": 1.87,
+   "median": 34,
+   "min": 26.5,
+   "max": 50,
+   "spread": 0.691,
    "runs": 5,
    "unreliable": true
   },
   "fcpMs": {
-   "median": 2604.66,
-   "min": 2369.87,
-   "max": 2609.26,
-   "spread": 0.092,
+   "median": 2601.05,
+   "min": 2330.49,
+   "max": 2621.64,
+   "spread": 0.112,
    "runs": 5,
    "unreliable": false
   },
   "transferKb": {
-   "median": 569.83,
-   "min": 569.83,
-   "max": 569.85,
+   "median": 580.42,
+   "min": 580.42,
+   "max": 580.44,
    "spread": 0,
    "runs": 5,
    "unreliable": false
@@ -55,7 +55,7 @@
  },
  "/nutrition": {
   "score": {
-   "median": 87,
+   "median": 86,
    "min": 86,
    "max": 88,
    "spread": 0.023,
@@ -63,10 +63,10 @@
    "unreliable": false
   },
   "lcpMs": {
-   "median": 3626.41,
-   "min": 3592.38,
-   "max": 3701.11,
-   "spread": 0.03,
+   "median": 3626.16,
+   "min": 3580.94,
+   "max": 3692.49,
+   "spread": 0.031,
    "runs": 5,
    "unreliable": false
   },
@@ -79,25 +79,25 @@
    "unreliable": false
   },
   "tbtMs": {
-   "median": 55,
-   "min": 43,
-   "max": 107,
-   "spread": 1.164,
+   "median": 25,
+   "min": 1,
+   "max": 40,
+   "spread": 1.56,
    "runs": 5,
    "unreliable": true
   },
   "fcpMs": {
-   "median": 2314.01,
-   "min": 2278.98,
-   "max": 2542.26,
-   "spread": 0.114,
+   "median": 2509.92,
+   "min": 2256.95,
+   "max": 2534.57,
+   "spread": 0.111,
    "runs": 5,
    "unreliable": false
   },
   "transferKb": {
-   "median": 375.07,
-   "min": 375.07,
-   "max": 375.07,
+   "median": 375.77,
+   "min": 375.77,
+   "max": 375.77,
    "spread": 0,
    "runs": 5,
    "unreliable": false
@@ -110,16 +110,70 @@
  "/workouts": {
   "score": {
    "median": 86,
-   "min": 85,
-   "max": 88,
-   "spread": 0.035,
+   "min": 84,
+   "max": 86,
+   "spread": 0.023,
    "runs": 5,
    "unreliable": false
   },
   "lcpMs": {
-   "median": 3701.86,
-   "min": 3521.87,
-   "max": 3703.95,
+   "median": 3691.78,
+   "min": 3685.95,
+   "max": 3769.4,
+   "spread": 0.023,
+   "runs": 5,
+   "unreliable": false
+  },
+  "cls": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "tbtMs": {
+   "median": 67,
+   "min": 55,
+   "max": 139,
+   "spread": 1.254,
+   "runs": 5,
+   "unreliable": true
+  },
+  "fcpMs": {
+   "median": 2523.92,
+   "min": 2517.12,
+   "max": 2551.17,
+   "spread": 0.013,
+   "runs": 5,
+   "unreliable": false
+  },
+  "transferKb": {
+   "median": 372.89,
+   "min": 372.89,
+   "max": 372.89,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "finalUrl": "http://127.0.0.1:3008/workouts",
+  "validRuns": 5,
+  "lighthouseErrors": [],
+  "inp": "Not measured by Lighthouse navigation runs; see journeys maxInteractionMs (Event Timing) instead."
+ },
+ "/play": {
+  "score": {
+   "median": 85,
+   "min": 82,
+   "max": 86,
+   "spread": 0.047,
+   "runs": 5,
+   "unreliable": false
+  },
+  "lcpMs": {
+   "median": 3815.81,
+   "min": 3803.95,
+   "max": 3990.57,
    "spread": 0.049,
    "runs": 5,
    "unreliable": false
@@ -133,79 +187,25 @@
    "unreliable": false
   },
   "tbtMs": {
-   "median": 86,
-   "min": 52,
-   "max": 97,
-   "spread": 0.523,
+   "median": 87.67,
+   "min": 81.15,
+   "max": 153.5,
+   "spread": 0.825,
    "runs": 5,
    "unreliable": true
   },
   "fcpMs": {
-   "median": 2533.6,
-   "min": 2275.89,
-   "max": 2553.62,
-   "spread": 0.11,
+   "median": 2345.77,
+   "min": 2340.63,
+   "max": 2595.24,
+   "spread": 0.109,
    "runs": 5,
    "unreliable": false
   },
   "transferKb": {
-   "median": 372.19,
-   "min": 372.19,
-   "max": 372.19,
-   "spread": 0,
-   "runs": 5,
-   "unreliable": false
-  },
-  "finalUrl": "http://127.0.0.1:3008/workouts",
-  "validRuns": 5,
-  "lighthouseErrors": [],
-  "inp": "Not measured by Lighthouse navigation runs; see journeys maxInteractionMs (Event Timing) instead."
- },
- "/play": {
-  "score": {
-   "median": 83,
-   "min": 81,
-   "max": 85,
-   "spread": 0.048,
-   "runs": 5,
-   "unreliable": false
-  },
-  "lcpMs": {
-   "median": 3932.01,
-   "min": 3835.23,
-   "max": 4006.65,
-   "spread": 0.044,
-   "runs": 5,
-   "unreliable": false
-  },
-  "cls": {
-   "median": 0,
-   "min": 0,
-   "max": 0,
-   "spread": 0,
-   "runs": 5,
-   "unreliable": false
-  },
-  "tbtMs": {
-   "median": 103.96,
-   "min": 75,
-   "max": 173,
-   "spread": 0.943,
-   "runs": 5,
-   "unreliable": true
-  },
-  "fcpMs": {
-   "median": 2609.38,
-   "min": 2373.19,
-   "max": 2624.68,
-   "spread": 0.096,
-   "runs": 5,
-   "unreliable": false
-  },
-  "transferKb": {
-   "median": 587.79,
-   "min": 587.79,
-   "max": 587.79,
+   "median": 589.19,
+   "min": 589.19,
+   "max": 589.19,
    "spread": 0,
    "runs": 5,
    "unreliable": false
@@ -219,16 +219,16 @@
   "score": {
    "median": 91,
    "min": 91,
-   "max": 93,
-   "spread": 0.022,
+   "max": 94,
+   "spread": 0.033,
    "runs": 5,
    "unreliable": false
   },
   "lcpMs": {
-   "median": 2927.89,
-   "min": 2820.79,
-   "max": 2983.46,
-   "spread": 0.056,
+   "median": 2929.82,
+   "min": 2774.2,
+   "max": 2972.72,
+   "spread": 0.068,
    "runs": 5,
    "unreliable": false
   },
@@ -241,25 +241,25 @@
    "unreliable": false
   },
   "tbtMs": {
-   "median": 27.5,
-   "min": 9,
-   "max": 44.04,
-   "spread": 1.274,
+   "median": 16.5,
+   "min": 7,
+   "max": 49.15,
+   "spread": 2.555,
    "runs": 5,
    "unreliable": true
   },
   "fcpMs": {
-   "median": 2529.32,
-   "min": 2302.33,
-   "max": 2542.22,
-   "spread": 0.095,
+   "median": 2523.6,
+   "min": 2261.09,
+   "max": 2538.25,
+   "spread": 0.11,
    "runs": 5,
    "unreliable": false
   },
   "transferKb": {
-   "median": 275.64,
-   "min": 275.64,
-   "max": 275.64,
+   "median": 276.34,
+   "min": 276.34,
+   "max": 276.34,
    "spread": 0,
    "runs": 5,
    "unreliable": false
@@ -272,17 +272,17 @@
  "/scanner": {
   "score": {
    "median": 88,
-   "min": 87,
+   "min": 88,
    "max": 90,
-   "spread": 0.034,
+   "spread": 0.023,
    "runs": 5,
    "unreliable": false
   },
   "lcpMs": {
-   "median": 3322.27,
-   "min": 3154.46,
-   "max": 3359.59,
-   "spread": 0.062,
+   "median": 3307.57,
+   "min": 3139.89,
+   "max": 3328.34,
+   "spread": 0.057,
    "runs": 5,
    "unreliable": false
   },
@@ -295,25 +295,25 @@
    "unreliable": false
   },
   "tbtMs": {
-   "median": 20,
-   "min": 15,
-   "max": 49,
-   "spread": 1.7,
+   "median": 21.5,
+   "min": 2,
+   "max": 39,
+   "spread": 1.721,
    "runs": 5,
    "unreliable": true
   },
   "fcpMs": {
-   "median": 2756.06,
-   "min": 2507.05,
-   "max": 2778.15,
-   "spread": 0.098,
+   "median": 2745.81,
+   "min": 2510.41,
+   "max": 2757.45,
+   "spread": 0.09,
    "runs": 5,
    "unreliable": false
   },
   "transferKb": {
-   "median": 304.81,
-   "min": 304.81,
-   "max": 304.81,
+   "median": 305.5,
+   "min": 305.5,
+   "max": 305.5,
    "spread": 0,
    "runs": 5,
    "unreliable": false
@@ -325,18 +325,18 @@
  },
  "/account": {
   "score": {
-   "median": 89,
+   "median": 90,
    "min": 89,
-   "max": 89,
-   "spread": 0,
+   "max": 91,
+   "spread": 0.022,
    "runs": 5,
    "unreliable": false
   },
   "lcpMs": {
-   "median": 3211.69,
-   "min": 3098.64,
-   "max": 3248.7,
-   "spread": 0.047,
+   "median": 3193.94,
+   "min": 3097,
+   "max": 3226.87,
+   "spread": 0.041,
    "runs": 5,
    "unreliable": false
   },
@@ -349,25 +349,25 @@
    "unreliable": false
   },
   "tbtMs": {
-   "median": 69,
-   "min": 54,
-   "max": 155,
-   "spread": 1.464,
+   "median": 57,
+   "min": 34,
+   "max": 99,
+   "spread": 1.14,
    "runs": 5,
    "unreliable": true
   },
   "fcpMs": {
-   "median": 2538.44,
-   "min": 2322.9,
-   "max": 2555.69,
-   "spread": 0.092,
+   "median": 2525.09,
+   "min": 2334.63,
+   "max": 2539.35,
+   "spread": 0.081,
    "runs": 5,
    "unreliable": false
   },
   "transferKb": {
-   "median": 285.16,
-   "min": 285.16,
-   "max": 285.16,
+   "median": 285.89,
+   "min": 285.89,
+   "max": 285.89,
    "spread": 0,
    "runs": 5,
    "unreliable": false

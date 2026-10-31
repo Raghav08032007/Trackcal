@@ -1,28 +1,28 @@
 {
  "/api/v1/auth/me": {
   "p50Ms": {
-   "median": 169,
-   "min": 161,
-   "max": 172,
-   "spread": 0.065,
-   "runs": 5,
-   "unreliable": false
-  },
-  "p95Ms": {
-   "median": 313,
-   "min": 216,
-   "max": 327,
-   "spread": 0.355,
+   "median": 289,
+   "min": 157,
+   "max": 307,
+   "spread": 0.519,
    "runs": 5,
    "unreliable": true
   },
-  "rps": {
-   "median": 275.63,
-   "min": 271.5,
-   "max": 306,
-   "spread": 0.125,
+  "p95Ms": {
+   "median": 353,
+   "min": 342,
+   "max": 375,
+   "spread": 0.093,
    "runs": 5,
    "unreliable": false
+  },
+  "rps": {
+   "median": 187.71,
+   "min": 163.17,
+   "max": 306,
+   "spread": 0.761,
+   "runs": 5,
+   "unreliable": true
   },
   "errorRate": {
    "median": 0,
@@ -45,16 +45,16 @@
     "200": 7344
    },
    {
-    "200": 6573
+    "200": 6567
    },
    {
-    "200": 6615
+    "200": 4505
    },
    {
-    "200": 7156
+    "200": 3916
    },
    {
-    "200": 6516
+    "200": 4287
    }
   ],
   "timeouts": [
@@ -75,26 +75,26 @@
  },
  "/api/v1/wellness/diary": {
   "p50Ms": {
-   "median": 1028,
-   "min": 1000,
-   "max": 1045,
-   "spread": 0.044,
+   "median": 1859,
+   "min": 1711,
+   "max": 2003,
+   "spread": 0.157,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "p95Ms": {
-   "median": 1681,
-   "min": 1482,
-   "max": 1738,
-   "spread": 0.152,
+   "median": 3032,
+   "min": 2117,
+   "max": 3681,
+   "spread": 0.516,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 46.3,
-   "min": 42.92,
-   "max": 47.96,
-   "spread": 0.109,
+   "median": 25.71,
+   "min": 23.75,
+   "max": 27.21,
+   "spread": 0.135,
    "runs": 5,
    "unreliable": false
   },
@@ -116,19 +116,19 @@
   },
   "codes": [
    {
-    "200": 1053
+    "200": 625
    },
    {
-    "200": 1111
+    "200": 617
    },
    {
-    "200": 1151
+    "200": 653
    },
    {
-    "200": 1030
+    "200": 614
    },
    {
-    "200": 1114
+    "200": 570
    }
   ],
   "timeouts": [
@@ -149,26 +149,26 @@
  },
  "/api/v1/adventure/summary": {
   "p50Ms": {
-   "median": 1249,
-   "min": 1201,
-   "max": 1675,
-   "spread": 0.38,
+   "median": 2648,
+   "min": 1931,
+   "max": 2756,
+   "spread": 0.312,
    "runs": 5,
    "unreliable": true
   },
   "p95Ms": {
-   "median": 2301,
-   "min": 1906,
-   "max": 2972,
-   "spread": 0.463,
+   "median": 4422,
+   "min": 2994,
+   "max": 5072,
+   "spread": 0.47,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 36.96,
-   "min": 27.3,
-   "max": 39.63,
-   "spread": 0.334,
+   "median": 17.75,
+   "min": 16.25,
+   "max": 25.09,
+   "spread": 0.498,
    "runs": 5,
    "unreliable": true
   },
@@ -190,19 +190,19 @@
   },
   "codes": [
    {
-    "200": 887
+    "200": 426
    },
    {
-    "200": 951
+    "200": 404
    },
    {
-    "200": 950
+    "200": 390
    },
    {
-    "200": 724
+    "200": 602
    },
    {
-    "200": 655
+    "200": 475
    }
   ],
   "timeouts": [
@@ -223,28 +223,28 @@
  },
  "/api/v1/wellness/foods?q=rice": {
   "p50Ms": {
-   "median": 1256,
-   "min": 1119,
-   "max": 1652,
-   "spread": 0.424,
+   "median": 1570,
+   "min": 1503,
+   "max": 1789,
+   "spread": 0.182,
    "runs": 5,
    "unreliable": true
   },
   "p95Ms": {
-   "median": 1847,
-   "min": 1378,
-   "max": 2433,
-   "spread": 0.571,
+   "median": 1910,
+   "min": 1810,
+   "max": 2233,
+   "spread": 0.221,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 33.34,
+   "median": 28.58,
    "min": 25,
-   "max": 40,
-   "spread": 0.45,
+   "max": 28.58,
+   "spread": 0.125,
    "runs": 5,
-   "unreliable": true
+   "unreliable": false
   },
   "errorRate": {
    "median": 0,
@@ -264,8 +264,8 @@
   },
   "codes": [
    {
-    "200": 199,
-    "500": 1
+    "200": 198,
+    "500": 2
    },
    {
     "200": 200
@@ -298,36 +298,36 @@
  },
  "/api/v1/wellness/training": {
   "p50Ms": {
-   "median": 4367,
-   "min": 4048,
-   "max": 4409,
-   "spread": 0.083,
+   "median": 5967,
+   "min": 5620,
+   "max": 6369,
+   "spread": 0.126,
    "runs": 5,
    "unreliable": false
   },
   "p95Ms": {
-   "median": 6444,
-   "min": 4967,
-   "max": 8248,
-   "spread": 0.509,
+   "median": 9604,
+   "min": 6026,
+   "max": 9680,
+   "spread": 0.38,
    "runs": 5,
    "unreliable": true
   },
   "rps": {
-   "median": 10.8,
-   "min": 9.75,
-   "max": 11.71,
-   "spread": 0.181,
+   "median": 6.09,
+   "min": 5.5,
+   "max": 8.75,
+   "spread": 0.534,
    "runs": 5,
    "unreliable": true
   },
   "errorRate": {
-   "median": 0,
+   "median": 0.1,
    "min": 0,
-   "max": 0,
-   "spread": 0,
+   "max": 0.12,
+   "spread": 1.215,
    "runs": 5,
-   "unreliable": false
+   "unreliable": true
   },
   "rateLimitedShare": {
    "median": 0,
@@ -339,27 +339,27 @@
   },
   "codes": [
    {
-    "200": 281
+    "200": 210
    },
    {
-    "200": 234
+    "200": 132
    },
    {
-    "200": 266
+    "200": 156
    },
    {
-    "200": 241
+    "200": 134
    },
    {
-    "200": 259
+    "200": 146
    }
   ],
   "timeouts": [
    0,
-   0,
-   0,
-   0,
-   0
+   18,
+   8,
+   18,
+   16
   ],
   "connectionErrors": [
    0,

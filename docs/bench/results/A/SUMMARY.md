@@ -1,6 +1,6 @@
 # Bench results: Version A
 
-http://127.0.0.1:3007 · 5 runs · 2026-10-31T06:04Z
+http://127.0.0.1:3007 · 5 runs · 2026-10-31T14:05Z
 
 ## Score: 71 / 100
 
@@ -8,7 +8,7 @@ http://127.0.0.1:3007 · 5 runs · 2026-10-31T06:04Z
 |---|---|---|
 | speed | 30 | 94 |
 | visual | 20 | 19 |
-| performance | 15 | 52 |
+| performance | 15 | 49 |
 | maintainability | 15 | 75 |
 | regression | 10 | 100 |
 | habit | 10 | 100 |
@@ -37,23 +37,23 @@ http://127.0.0.1:3007 · 5 runs · 2026-10-31T06:04Z
 
 | Screen | Score | LCP ms | CLS | TBT ms |
 |---|---|---|---|---|
-| / | 64 | 10821 | 0.17 | 13 |
-| /nutrition | 72 | 10824 | 0.02 | 18 |
-| /workouts | 72 | 10910 | 0.06 | 19 |
-| /play | 67 | 33296 | 0.14 | 65 |
-| /progress | 72 | 10673 | 0.04 | 17 |
-| /scanner | 67 | 10973 | 0.13 | 16 |
-| /account | 67 | 10825 | 0.14 | 15 |
+| / | 64 | 10788 | 0.17 | 2 |
+| /nutrition | 68 | 10813 | 0.13 | 27 |
+| /workouts | 72 | 10888 | 0.06 | 17 |
+| /play | 66 | 33387 | 0.14 | 17 |
+| /progress | 72 | 10672 | 0.04 | 9 |
+| /scanner | 67 | 10972 | 0.13 | 13 |
+| /account | 67 | 10814 | 0.14 | 10 |
 
 ## API load (50 connections)
 
 | Endpoint | p50 ms | p95 ms (≤) | Errors | 429 |
 |---|---|---|---|---|
-| /api/v1/auth/me | 169 | 313 | 0% | 0% |
-| /api/v1/wellness/diary | 1028 | 1681 | 0% | 0% |
-| /api/v1/adventure/summary | 1249 | 2301 | 0% | 0% |
-| /api/v1/wellness/foods?q=rice | 1256 | 1847 | 0% | 0% |
-| /api/v1/wellness/training | 4367 | 6444 | 0% | 0% |
+| /api/v1/auth/me | 289 | 353 | 0% | 0% |
+| /api/v1/wellness/diary | 1859 | 3032 | 0% | 0% |
+| /api/v1/adventure/summary | 2648 | 4422 | 0% | 0% |
+| /api/v1/wellness/foods?q=rice | 1570 | 1910 | 0% | 0% |
+| /api/v1/wellness/training | 5967 | 9604 | 10% | 0% |
 
 ## Screens, accessibility and tokens
 

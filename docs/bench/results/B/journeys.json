@@ -8,7 +8,7 @@
    "success": true,
    "taps": 4,
    "keystrokes": 73,
-   "seconds": 4.351,
+   "seconds": 4.509,
    "routeChanges": 3,
    "routes": [
     "/onboarding",
@@ -17,7 +17,7 @@
    ],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 168,
+   "maxInteractionMs": 160,
    "note": "",
    "error": null
   },
@@ -29,506 +29,7 @@
    "success": true,
    "taps": 4,
    "keystrokes": 4,
-   "seconds": 3.916,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 56,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "android-360",
-   "run": 1,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 3.461,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 56,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J4",
-   "title": "Barcode flow with manual fallback",
-   "device": "android-360",
-   "run": 1,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 31,
-   "seconds": 2.925,
-   "routeChanges": 3,
-   "routes": [
-    "/nutrition",
-    "/barcode",
-    "/journal"
-   ],
-   "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
-   ],
-   "failedRequests": [
-    "GET /api/barcode?code=8909999000010 404"
-   ],
-   "maxInteractionMs": 80,
-   "note": "A logs barcode/manual meals to the device journal",
-   "error": null
-  },
-  {
-   "journey": "J5",
-   "title": "Log a glass of water",
-   "device": "android-360",
-   "run": 1,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.249,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "A keeps water in device storage",
-   "error": null
-  },
-  {
-   "journey": "J6",
-   "title": "Start a workout and log one set",
-   "device": "android-360",
-   "run": 1,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 3,
-   "seconds": 2.909,
-   "routeChanges": 1,
-   "routes": [
-    "/workouts"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J7",
-   "title": "Find today's progress summary",
-   "device": "android-360",
-   "run": 1,
-   "success": true,
-   "taps": 2,
-   "keystrokes": 0,
-   "seconds": 0.826,
-   "routeChanges": 2,
-   "routes": [
-    "/play",
-    "/progress"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 32,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J8",
-   "title": "Change language or theme",
-   "device": "android-360",
-   "run": 1,
-   "success": true,
-   "taps": 1,
-   "keystrokes": 0,
-   "seconds": 0.07,
-   "routeChanges": 0,
-   "routes": [],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": null,
-   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
-   "error": null
-  },
-  {
-   "journey": "J1",
-   "title": "First run: sign up to first successful food log",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 73,
-   "seconds": 5.447,
-   "routeChanges": 3,
-   "routes": [
-    "/onboarding",
-    "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 56,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J2",
-   "title": "Log a meal by search from the home screen",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 4,
-   "seconds": 3.866,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 3.629,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J4",
-   "title": "Barcode flow with manual fallback",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 31,
-   "seconds": 2.06,
-   "routeChanges": 3,
-   "routes": [
-    "/nutrition",
-    "/barcode",
-    "/journal"
-   ],
-   "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
-   ],
-   "failedRequests": [
-    "GET /api/barcode?code=8909999000010 404"
-   ],
-   "maxInteractionMs": 48,
-   "note": "A logs barcode/manual meals to the device journal",
-   "error": null
-  },
-  {
-   "journey": "J5",
-   "title": "Log a glass of water",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.375,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "A keeps water in device storage",
-   "error": null
-  },
-  {
-   "journey": "J6",
-   "title": "Start a workout and log one set",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 3,
-   "seconds": 2.653,
-   "routeChanges": 1,
-   "routes": [
-    "/workouts"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 80,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J7",
-   "title": "Find today's progress summary",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 2,
-   "keystrokes": 0,
-   "seconds": 1.337,
-   "routeChanges": 2,
-   "routes": [
-    "/play",
-    "/progress"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J8",
-   "title": "Change language or theme",
-   "device": "android-360",
-   "run": 2,
-   "success": true,
-   "taps": 1,
-   "keystrokes": 0,
-   "seconds": 0.059,
-   "routeChanges": 0,
-   "routes": [],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": null,
-   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
-   "error": null
-  },
-  {
-   "journey": "J1",
-   "title": "First run: sign up to first successful food log",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 73,
-   "seconds": 5.279,
-   "routeChanges": 3,
-   "routes": [
-    "/onboarding",
-    "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J2",
-   "title": "Log a meal by search from the home screen",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 4,
-   "seconds": 3.86,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 56,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 3.556,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J4",
-   "title": "Barcode flow with manual fallback",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 31,
-   "seconds": 2.134,
-   "routeChanges": 3,
-   "routes": [
-    "/nutrition",
-    "/barcode",
-    "/journal"
-   ],
-   "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
-   ],
-   "failedRequests": [
-    "GET /api/barcode?code=8909999000010 404"
-   ],
-   "maxInteractionMs": 56,
-   "note": "A logs barcode/manual meals to the device journal",
-   "error": null
-  },
-  {
-   "journey": "J5",
-   "title": "Log a glass of water",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.212,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "A keeps water in device storage",
-   "error": null
-  },
-  {
-   "journey": "J6",
-   "title": "Start a workout and log one set",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 3,
-   "seconds": 3.881,
-   "routeChanges": 1,
-   "routes": [
-    "/workouts"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J7",
-   "title": "Find today's progress summary",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 2,
-   "keystrokes": 0,
-   "seconds": 0.801,
-   "routeChanges": 2,
-   "routes": [
-    "/play",
-    "/progress"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J8",
-   "title": "Change language or theme",
-   "device": "android-360",
-   "run": 3,
-   "success": true,
-   "taps": 1,
-   "keystrokes": 0,
-   "seconds": 0.057,
-   "routeChanges": 0,
-   "routes": [],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": null,
-   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
-   "error": null
-  },
-  {
-   "journey": "J1",
-   "title": "First run: sign up to first successful food log",
-   "device": "android-360",
-   "run": 4,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 73,
-   "seconds": 5.107,
-   "routeChanges": 3,
-   "routes": [
-    "/onboarding",
-    "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 32,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J2",
-   "title": "Log a meal by search from the home screen",
-   "device": "android-360",
-   "run": 4,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 4,
-   "seconds": 3.685,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "android-360",
-   "run": 4,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.384,
+   "seconds": 3.863,
    "routeChanges": 1,
    "routes": [
     "/nutrition"
@@ -540,6 +41,488 @@
    "error": null
   },
   {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "android-360",
+   "run": 1,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.339,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 48,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J4",
+   "title": "Barcode flow with manual fallback",
+   "device": "android-360",
+   "run": 1,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 31,
+   "seconds": 2.031,
+   "routeChanges": 3,
+   "routes": [
+    "/nutrition",
+    "/barcode",
+    "/journal"
+   ],
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+   ],
+   "failedRequests": [
+    "GET /api/barcode?code=8909999000010 404"
+   ],
+   "maxInteractionMs": 64,
+   "note": "A logs barcode/manual meals to the device journal",
+   "error": null
+  },
+  {
+   "journey": "J5",
+   "title": "Log a glass of water",
+   "device": "android-360",
+   "run": 1,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.144,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 56,
+   "note": "A keeps water in device storage",
+   "error": null
+  },
+  {
+   "journey": "J6",
+   "title": "Start a workout and log one set",
+   "device": "android-360",
+   "run": 1,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 3,
+   "seconds": 2.876,
+   "routeChanges": 1,
+   "routes": [
+    "/workouts"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 72,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J7",
+   "title": "Find today's progress summary",
+   "device": "android-360",
+   "run": 1,
+   "success": true,
+   "taps": 2,
+   "keystrokes": 0,
+   "seconds": 0.827,
+   "routeChanges": 2,
+   "routes": [
+    "/play",
+    "/progress"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J8",
+   "title": "Change language or theme",
+   "device": "android-360",
+   "run": 1,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.078,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
+   "error": null
+  },
+  {
+   "journey": "J1",
+   "title": "First run: sign up to first successful food log",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 73,
+   "seconds": 5.761,
+   "routeChanges": 3,
+   "routes": [
+    "/onboarding",
+    "/",
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J2",
+   "title": "Log a meal by search from the home screen",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 4,
+   "seconds": 3.907,
+   "routeChanges": 1,
+   "routes": [
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.346,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 32,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J4",
+   "title": "Barcode flow with manual fallback",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 31,
+   "seconds": 2.017,
+   "routeChanges": 3,
+   "routes": [
+    "/nutrition",
+    "/barcode",
+    "/journal"
+   ],
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+   ],
+   "failedRequests": [
+    "GET /api/barcode?code=8909999000010 404"
+   ],
+   "maxInteractionMs": 64,
+   "note": "A logs barcode/manual meals to the device journal",
+   "error": null
+  },
+  {
+   "journey": "J5",
+   "title": "Log a glass of water",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.156,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 48,
+   "note": "A keeps water in device storage",
+   "error": null
+  },
+  {
+   "journey": "J6",
+   "title": "Start a workout and log one set",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 3,
+   "seconds": 2.825,
+   "routeChanges": 1,
+   "routes": [
+    "/workouts"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 72,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J7",
+   "title": "Find today's progress summary",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 2,
+   "keystrokes": 0,
+   "seconds": 1.292,
+   "routeChanges": 2,
+   "routes": [
+    "/play",
+    "/progress"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J8",
+   "title": "Change language or theme",
+   "device": "android-360",
+   "run": 2,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.074,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
+   "error": null
+  },
+  {
+   "journey": "J1",
+   "title": "First run: sign up to first successful food log",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 73,
+   "seconds": 4.295,
+   "routeChanges": 3,
+   "routes": [
+    "/onboarding",
+    "/",
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 80,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J2",
+   "title": "Log a meal by search from the home screen",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 4,
+   "seconds": 3.929,
+   "routeChanges": 1,
+   "routes": [
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.356,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 32,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J4",
+   "title": "Barcode flow with manual fallback",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 31,
+   "seconds": 2.898,
+   "routeChanges": 3,
+   "routes": [
+    "/nutrition",
+    "/barcode",
+    "/journal"
+   ],
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+   ],
+   "failedRequests": [
+    "GET /api/barcode?code=8909999000010 404"
+   ],
+   "maxInteractionMs": 64,
+   "note": "A logs barcode/manual meals to the device journal",
+   "error": null
+  },
+  {
+   "journey": "J5",
+   "title": "Log a glass of water",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.141,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "A keeps water in device storage",
+   "error": null
+  },
+  {
+   "journey": "J6",
+   "title": "Start a workout and log one set",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 3,
+   "seconds": 2.823,
+   "routeChanges": 1,
+   "routes": [
+    "/workouts"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J7",
+   "title": "Find today's progress summary",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 2,
+   "keystrokes": 0,
+   "seconds": 1.313,
+   "routeChanges": 2,
+   "routes": [
+    "/play",
+    "/progress"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 32,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J8",
+   "title": "Change language or theme",
+   "device": "android-360",
+   "run": 3,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.046,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
+   "error": null
+  },
+  {
+   "journey": "J1",
+   "title": "First run: sign up to first successful food log",
+   "device": "android-360",
+   "run": 4,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 73,
+   "seconds": 5.345,
+   "routeChanges": 3,
+   "routes": [
+    "/onboarding",
+    "/",
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J2",
+   "title": "Log a meal by search from the home screen",
+   "device": "android-360",
+   "run": 4,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 4,
+   "seconds": 3.847,
+   "routeChanges": 1,
+   "routes": [
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 72,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "android-360",
+   "run": 4,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.314,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 32,
+   "note": "",
+   "error": null
+  },
+  {
    "journey": "J4",
    "title": "Barcode flow with manual fallback",
    "device": "android-360",
@@ -547,7 +530,7 @@
    "success": true,
    "taps": 5,
    "keystrokes": 31,
-   "seconds": 1.977,
+   "seconds": 1.906,
    "routeChanges": 3,
    "routes": [
     "/nutrition",
@@ -570,17 +553,14 @@
    "device": "android-360",
    "run": 4,
    "success": true,
-   "taps": 3,
+   "taps": 1,
    "keystrokes": 0,
-   "seconds": 2.191,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
+   "seconds": 0.135,
+   "routeChanges": 0,
+   "routes": [],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 48,
+   "maxInteractionMs": 56,
    "note": "A keeps water in device storage",
    "error": null
   },
@@ -592,7 +572,7 @@
    "success": true,
    "taps": 5,
    "keystrokes": 3,
-   "seconds": 3.976,
+   "seconds": 4.131,
    "routeChanges": 1,
    "routes": [
     "/workouts"
@@ -611,7 +591,7 @@
    "success": true,
    "taps": 2,
    "keystrokes": 0,
-   "seconds": 1.327,
+   "seconds": 1.364,
    "routeChanges": 2,
    "routes": [
     "/play",
@@ -631,7 +611,7 @@
    "success": true,
    "taps": 1,
    "keystrokes": 0,
-   "seconds": 0.068,
+   "seconds": 0.071,
    "routeChanges": 0,
    "routes": [],
    "consoleErrors": [],
@@ -648,7 +628,317 @@
    "success": true,
    "taps": 4,
    "keystrokes": 73,
-   "seconds": 4.248,
+   "seconds": 5.367,
+   "routeChanges": 3,
+   "routes": [
+    "/onboarding",
+    "/",
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 72,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J2",
+   "title": "Log a meal by search from the home screen",
+   "device": "android-360",
+   "run": 5,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 4,
+   "seconds": 3.851,
+   "routeChanges": 1,
+   "routes": [
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "android-360",
+   "run": 5,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.356,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 32,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J4",
+   "title": "Barcode flow with manual fallback",
+   "device": "android-360",
+   "run": 5,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 31,
+   "seconds": 1.848,
+   "routeChanges": 3,
+   "routes": [
+    "/nutrition",
+    "/barcode",
+    "/journal"
+   ],
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+   ],
+   "failedRequests": [
+    "GET /api/barcode?code=8909999000010 404"
+   ],
+   "maxInteractionMs": 48,
+   "note": "A logs barcode/manual meals to the device journal",
+   "error": null
+  },
+  {
+   "journey": "J5",
+   "title": "Log a glass of water",
+   "device": "android-360",
+   "run": 5,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.162,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "A keeps water in device storage",
+   "error": null
+  },
+  {
+   "journey": "J6",
+   "title": "Start a workout and log one set",
+   "device": "android-360",
+   "run": 5,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 3,
+   "seconds": 3.932,
+   "routeChanges": 1,
+   "routes": [
+    "/workouts"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 80,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J7",
+   "title": "Find today's progress summary",
+   "device": "android-360",
+   "run": 5,
+   "success": true,
+   "taps": 2,
+   "keystrokes": 0,
+   "seconds": 1.384,
+   "routeChanges": 2,
+   "routes": [
+    "/play",
+    "/progress"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 48,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J8",
+   "title": "Change language or theme",
+   "device": "android-360",
+   "run": 5,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.065,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
+   "error": null
+  },
+  {
+   "journey": "J1",
+   "title": "First run: sign up to first successful food log",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 73,
+   "seconds": 4.135,
+   "routeChanges": 3,
+   "routes": [
+    "/onboarding",
+    "/",
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 56,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J2",
+   "title": "Log a meal by search from the home screen",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 4,
+   "seconds": 3.684,
+   "routeChanges": 1,
+   "routes": [
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.338,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 32,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J4",
+   "title": "Barcode flow with manual fallback",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 31,
+   "seconds": 2.495,
+   "routeChanges": 3,
+   "routes": [
+    "/nutrition",
+    "/barcode",
+    "/journal"
+   ],
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+   ],
+   "failedRequests": [
+    "GET /api/barcode?code=8909999000010 404"
+   ],
+   "maxInteractionMs": 40,
+   "note": "A logs barcode/manual meals to the device journal",
+   "error": null
+  },
+  {
+   "journey": "J5",
+   "title": "Log a glass of water",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.153,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "A keeps water in device storage",
+   "error": null
+  },
+  {
+   "journey": "J6",
+   "title": "Start a workout and log one set",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 3,
+   "seconds": 2.92,
+   "routeChanges": 1,
+   "routes": [
+    "/workouts"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 80,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J7",
+   "title": "Find today's progress summary",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 2,
+   "keystrokes": 0,
+   "seconds": 1.242,
+   "routeChanges": 2,
+   "routes": [
+    "/play",
+    "/progress"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J8",
+   "title": "Change language or theme",
+   "device": "desktop-1280",
+   "run": 1,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.03,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
+   "error": null
+  },
+  {
+   "journey": "J1",
+   "title": "First run: sign up to first successful food log",
+   "device": "desktop-1280",
+   "run": 2,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 73,
+   "seconds": 4.432,
    "routeChanges": 3,
    "routes": [
     "/onboarding",
@@ -664,50 +954,48 @@
   {
    "journey": "J2",
    "title": "Log a meal by search from the home screen",
-   "device": "android-360",
-   "run": 5,
+   "device": "desktop-1280",
+   "run": 2,
    "success": true,
    "taps": 4,
    "keystrokes": 4,
-   "seconds": 3.86,
+   "seconds": 4.013,
    "routeChanges": 1,
    "routes": [
     "/nutrition"
    ],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 56,
+   "maxInteractionMs": 72,
    "note": "",
    "error": null
   },
   {
    "journey": "J3",
    "title": "Log a meal from favourites or recents",
-   "device": "android-360",
-   "run": 5,
+   "device": "desktop-1280",
+   "run": 2,
    "success": true,
-   "taps": 3,
+   "taps": 1,
    "keystrokes": 0,
-   "seconds": 3.58,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
+   "seconds": 0.342,
+   "routeChanges": 0,
+   "routes": [],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 64,
+   "maxInteractionMs": 32,
    "note": "",
    "error": null
   },
   {
    "journey": "J4",
    "title": "Barcode flow with manual fallback",
-   "device": "android-360",
-   "run": 5,
+   "device": "desktop-1280",
+   "run": 2,
    "success": true,
    "taps": 5,
    "keystrokes": 31,
-   "seconds": 4.137,
+   "seconds": 3.371,
    "routeChanges": 3,
    "routes": [
     "/nutrition",
@@ -727,32 +1015,184 @@
   {
    "journey": "J5",
    "title": "Log a glass of water",
-   "device": "android-360",
-   "run": 5,
+   "device": "desktop-1280",
+   "run": 2,
    "success": true,
-   "taps": 3,
+   "taps": 1,
    "keystrokes": 0,
-   "seconds": 2.112,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
+   "seconds": 0.083,
+   "routeChanges": 0,
+   "routes": [],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 32,
+   "maxInteractionMs": null,
    "note": "A keeps water in device storage",
    "error": null
   },
   {
    "journey": "J6",
    "title": "Start a workout and log one set",
-   "device": "android-360",
-   "run": 5,
+   "device": "desktop-1280",
+   "run": 2,
    "success": true,
    "taps": 5,
    "keystrokes": 3,
-   "seconds": 2.82,
+   "seconds": 2.819,
+   "routeChanges": 1,
+   "routes": [
+    "/workouts"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J7",
+   "title": "Find today's progress summary",
+   "device": "desktop-1280",
+   "run": 2,
+   "success": true,
+   "taps": 2,
+   "keystrokes": 0,
+   "seconds": 1.267,
+   "routeChanges": 2,
+   "routes": [
+    "/play",
+    "/progress"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J8",
+   "title": "Change language or theme",
+   "device": "desktop-1280",
+   "run": 2,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.063,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
+   "error": null
+  },
+  {
+   "journey": "J1",
+   "title": "First run: sign up to first successful food log",
+   "device": "desktop-1280",
+   "run": 3,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 73,
+   "seconds": 4.571,
+   "routeChanges": 3,
+   "routes": [
+    "/onboarding",
+    "/",
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 64,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J2",
+   "title": "Log a meal by search from the home screen",
+   "device": "desktop-1280",
+   "run": 3,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 4,
+   "seconds": 3.753,
+   "routeChanges": 1,
+   "routes": [
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 56,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "desktop-1280",
+   "run": 3,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.321,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 32,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J4",
+   "title": "Barcode flow with manual fallback",
+   "device": "desktop-1280",
+   "run": 3,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 31,
+   "seconds": 2.587,
+   "routeChanges": 3,
+   "routes": [
+    "/nutrition",
+    "/barcode",
+    "/journal"
+   ],
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+   ],
+   "failedRequests": [
+    "GET /api/barcode?code=8909999000010 404"
+   ],
+   "maxInteractionMs": 40,
+   "note": "A logs barcode/manual meals to the device journal",
+   "error": null
+  },
+  {
+   "journey": "J5",
+   "title": "Log a glass of water",
+   "device": "desktop-1280",
+   "run": 3,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.172,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "A keeps water in device storage",
+   "error": null
+  },
+  {
+   "journey": "J6",
+   "title": "Start a workout and log one set",
+   "device": "desktop-1280",
+   "run": 3,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 3,
+   "seconds": 3.008,
    "routeChanges": 1,
    "routes": [
     "/workouts"
@@ -766,12 +1206,12 @@
   {
    "journey": "J7",
    "title": "Find today's progress summary",
-   "device": "android-360",
-   "run": 5,
+   "device": "desktop-1280",
+   "run": 3,
    "success": true,
    "taps": 2,
    "keystrokes": 0,
-   "seconds": 0.802,
+   "seconds": 1.338,
    "routeChanges": 2,
    "routes": [
     "/play",
@@ -786,8 +1226,163 @@
   {
    "journey": "J8",
    "title": "Change language or theme",
-   "device": "android-360",
-   "run": 5,
+   "device": "desktop-1280",
+   "run": 3,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.035,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
+   "error": null
+  },
+  {
+   "journey": "J1",
+   "title": "First run: sign up to first successful food log",
+   "device": "desktop-1280",
+   "run": 4,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 73,
+   "seconds": 4.316,
+   "routeChanges": 3,
+   "routes": [
+    "/onboarding",
+    "/",
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J2",
+   "title": "Log a meal by search from the home screen",
+   "device": "desktop-1280",
+   "run": 4,
+   "success": true,
+   "taps": 4,
+   "keystrokes": 4,
+   "seconds": 3.893,
+   "routeChanges": 1,
+   "routes": [
+    "/nutrition"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 56,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J3",
+   "title": "Log a meal from favourites or recents",
+   "device": "desktop-1280",
+   "run": 4,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.381,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 40,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J4",
+   "title": "Barcode flow with manual fallback",
+   "device": "desktop-1280",
+   "run": 4,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 31,
+   "seconds": 3.151,
+   "routeChanges": 3,
+   "routes": [
+    "/nutrition",
+    "/barcode",
+    "/journal"
+   ],
+   "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
+   ],
+   "failedRequests": [
+    "GET /api/barcode?code=8909999000010 404"
+   ],
+   "maxInteractionMs": 40,
+   "note": "A logs barcode/manual meals to the device journal",
+   "error": null
+  },
+  {
+   "journey": "J5",
+   "title": "Log a glass of water",
+   "device": "desktop-1280",
+   "run": 4,
+   "success": true,
+   "taps": 1,
+   "keystrokes": 0,
+   "seconds": 0.154,
+   "routeChanges": 0,
+   "routes": [],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": null,
+   "note": "A keeps water in device storage",
+   "error": null
+  },
+  {
+   "journey": "J6",
+   "title": "Start a workout and log one set",
+   "device": "desktop-1280",
+   "run": 4,
+   "success": true,
+   "taps": 5,
+   "keystrokes": 3,
+   "seconds": 2.966,
+   "routeChanges": 1,
+   "routes": [
+    "/workouts"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 72,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J7",
+   "title": "Find today's progress summary",
+   "device": "desktop-1280",
+   "run": 4,
+   "success": true,
+   "taps": 2,
+   "keystrokes": 0,
+   "seconds": 1.39,
+   "routeChanges": 2,
+   "routes": [
+    "/play",
+    "/progress"
+   ],
+   "consoleErrors": [],
+   "failedRequests": [],
+   "maxInteractionMs": 48,
+   "note": "",
+   "error": null
+  },
+  {
+   "journey": "J8",
+   "title": "Change language or theme",
+   "device": "desktop-1280",
+   "run": 4,
    "success": true,
    "taps": 1,
    "keystrokes": 0,
@@ -804,53 +1399,15 @@
    "journey": "J1",
    "title": "First run: sign up to first successful food log",
    "device": "desktop-1280",
-   "run": 1,
+   "run": 5,
    "success": true,
    "taps": 4,
    "keystrokes": 73,
-   "seconds": 4.515,
+   "seconds": 4.569,
    "routeChanges": 3,
    "routes": [
     "/onboarding",
     "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J2",
-   "title": "Log a meal by search from the home screen",
-   "device": "desktop-1280",
-   "run": 1,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 4,
-   "seconds": 3.866,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 56,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "desktop-1280",
-   "run": 1,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.343,
-   "routeChanges": 1,
-   "routes": [
     "/nutrition"
    ],
    "consoleErrors": [],
@@ -860,608 +1417,6 @@
    "error": null
   },
   {
-   "journey": "J4",
-   "title": "Barcode flow with manual fallback",
-   "device": "desktop-1280",
-   "run": 1,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 31,
-   "seconds": 2.283,
-   "routeChanges": 3,
-   "routes": [
-    "/nutrition",
-    "/barcode",
-    "/journal"
-   ],
-   "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
-   ],
-   "failedRequests": [
-    "GET /api/barcode?code=8909999000010 404"
-   ],
-   "maxInteractionMs": 40,
-   "note": "A logs barcode/manual meals to the device journal",
-   "error": null
-  },
-  {
-   "journey": "J5",
-   "title": "Log a glass of water",
-   "device": "desktop-1280",
-   "run": 1,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.054,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 32,
-   "note": "A keeps water in device storage",
-   "error": null
-  },
-  {
-   "journey": "J6",
-   "title": "Start a workout and log one set",
-   "device": "desktop-1280",
-   "run": 1,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 3,
-   "seconds": 1.982,
-   "routeChanges": 1,
-   "routes": [
-    "/workouts"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J7",
-   "title": "Find today's progress summary",
-   "device": "desktop-1280",
-   "run": 1,
-   "success": true,
-   "taps": 2,
-   "keystrokes": 0,
-   "seconds": 1.125,
-   "routeChanges": 2,
-   "routes": [
-    "/play",
-    "/progress"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 32,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J8",
-   "title": "Change language or theme",
-   "device": "desktop-1280",
-   "run": 1,
-   "success": true,
-   "taps": 1,
-   "keystrokes": 0,
-   "seconds": 0.021,
-   "routeChanges": 0,
-   "routes": [],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": null,
-   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
-   "error": null
-  },
-  {
-   "journey": "J1",
-   "title": "First run: sign up to first successful food log",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 73,
-   "seconds": 4.442,
-   "routeChanges": 3,
-   "routes": [
-    "/onboarding",
-    "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 56,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J2",
-   "title": "Log a meal by search from the home screen",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 4,
-   "seconds": 3.746,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.484,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J4",
-   "title": "Barcode flow with manual fallback",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 31,
-   "seconds": 2.581,
-   "routeChanges": 3,
-   "routes": [
-    "/nutrition",
-    "/barcode",
-    "/journal"
-   ],
-   "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
-   ],
-   "failedRequests": [
-    "GET /api/barcode?code=8909999000010 404"
-   ],
-   "maxInteractionMs": 56,
-   "note": "A logs barcode/manual meals to the device journal",
-   "error": null
-  },
-  {
-   "journey": "J5",
-   "title": "Log a glass of water",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.334,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "A keeps water in device storage",
-   "error": null
-  },
-  {
-   "journey": "J6",
-   "title": "Start a workout and log one set",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 3,
-   "seconds": 2.705,
-   "routeChanges": 1,
-   "routes": [
-    "/workouts"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J7",
-   "title": "Find today's progress summary",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 2,
-   "keystrokes": 0,
-   "seconds": 1.346,
-   "routeChanges": 2,
-   "routes": [
-    "/play",
-    "/progress"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J8",
-   "title": "Change language or theme",
-   "device": "desktop-1280",
-   "run": 2,
-   "success": true,
-   "taps": 1,
-   "keystrokes": 0,
-   "seconds": 0.045,
-   "routeChanges": 0,
-   "routes": [],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": null,
-   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
-   "error": null
-  },
-  {
-   "journey": "J1",
-   "title": "First run: sign up to first successful food log",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 73,
-   "seconds": 4.152,
-   "routeChanges": 3,
-   "routes": [
-    "/onboarding",
-    "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J2",
-   "title": "Log a meal by search from the home screen",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 4,
-   "seconds": 3.612,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.431,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J4",
-   "title": "Barcode flow with manual fallback",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 31,
-   "seconds": 2.595,
-   "routeChanges": 3,
-   "routes": [
-    "/nutrition",
-    "/barcode",
-    "/journal"
-   ],
-   "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
-   ],
-   "failedRequests": [
-    "GET /api/barcode?code=8909999000010 404"
-   ],
-   "maxInteractionMs": 40,
-   "note": "A logs barcode/manual meals to the device journal",
-   "error": null
-  },
-  {
-   "journey": "J5",
-   "title": "Log a glass of water",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.223,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "A keeps water in device storage",
-   "error": null
-  },
-  {
-   "journey": "J6",
-   "title": "Start a workout and log one set",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 3,
-   "seconds": 2.834,
-   "routeChanges": 1,
-   "routes": [
-    "/workouts"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 56,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J7",
-   "title": "Find today's progress summary",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 2,
-   "keystrokes": 0,
-   "seconds": 1.282,
-   "routeChanges": 2,
-   "routes": [
-    "/play",
-    "/progress"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J8",
-   "title": "Change language or theme",
-   "device": "desktop-1280",
-   "run": 3,
-   "success": true,
-   "taps": 1,
-   "keystrokes": 0,
-   "seconds": 0.039,
-   "routeChanges": 0,
-   "routes": [],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": null,
-   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
-   "error": null
-  },
-  {
-   "journey": "J1",
-   "title": "First run: sign up to first successful food log",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 73,
-   "seconds": 4.347,
-   "routeChanges": 3,
-   "routes": [
-    "/onboarding",
-    "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J2",
-   "title": "Log a meal by search from the home screen",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 4,
-   "seconds": 3.785,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J3",
-   "title": "Log a meal from favourites or recents",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.504,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J4",
-   "title": "Barcode flow with manual fallback",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 31,
-   "seconds": 2.617,
-   "routeChanges": 3,
-   "routes": [
-    "/nutrition",
-    "/barcode",
-    "/journal"
-   ],
-   "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 (NOT FOUND)"
-   ],
-   "failedRequests": [
-    "GET /api/barcode?code=8909999000010 404"
-   ],
-   "maxInteractionMs": 40,
-   "note": "A logs barcode/manual meals to the device journal",
-   "error": null
-  },
-  {
-   "journey": "J5",
-   "title": "Log a glass of water",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 3,
-   "keystrokes": 0,
-   "seconds": 2.334,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 40,
-   "note": "A keeps water in device storage",
-   "error": null
-  },
-  {
-   "journey": "J6",
-   "title": "Start a workout and log one set",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 5,
-   "keystrokes": 3,
-   "seconds": 3.166,
-   "routeChanges": 1,
-   "routes": [
-    "/workouts"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J7",
-   "title": "Find today's progress summary",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 2,
-   "keystrokes": 0,
-   "seconds": 1.319,
-   "routeChanges": 2,
-   "routes": [
-    "/play",
-    "/progress"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 48,
-   "note": "",
-   "error": null
-  },
-  {
-   "journey": "J8",
-   "title": "Change language or theme",
-   "device": "desktop-1280",
-   "run": 4,
-   "success": true,
-   "taps": 1,
-   "keystrokes": 0,
-   "seconds": 0.069,
-   "routeChanges": 0,
-   "routes": [],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": null,
-   "note": "Theme: yes (footer Appearance). Language: A has a language preference in the plan but no translated interface, so changing language has no visible effect.",
-   "error": null
-  },
-  {
-   "journey": "J1",
-   "title": "First run: sign up to first successful food log",
-   "device": "desktop-1280",
-   "run": 5,
-   "success": true,
-   "taps": 4,
-   "keystrokes": 73,
-   "seconds": 4.362,
-   "routeChanges": 3,
-   "routes": [
-    "/onboarding",
-    "/",
-    "/nutrition"
-   ],
-   "consoleErrors": [],
-   "failedRequests": [],
-   "maxInteractionMs": 64,
-   "note": "",
-   "error": null
-  },
-  {
    "journey": "J2",
    "title": "Log a meal by search from the home screen",
    "device": "desktop-1280",
@@ -1469,7 +1424,7 @@
    "success": true,
    "taps": 4,
    "keystrokes": 4,
-   "seconds": 3.666,
+   "seconds": 3.803,
    "routeChanges": 1,
    "routes": [
     "/nutrition"
@@ -1486,16 +1441,14 @@
    "device": "desktop-1280",
    "run": 5,
    "success": true,
-   "taps": 3,
+   "taps": 1,
    "keystrokes": 0,
-   "seconds": 1.897,
-   "routeChanges": 1,
-   "routes": [
-    "/nutrition"
-   ],
+   "seconds": 0.428,
+   "routeChanges": 0,
+   "routes": [],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 48,
+   "maxInteractionMs": 24,
    "note": "",
    "error": null
   },
@@ -1507,7 +1460,7 @@
    "success": true,
    "taps": 5,
    "keystrokes": 31,
-   "seconds": 2.361,
+   "seconds": 3.215,
    "routeChanges": 3,
    "routes": [
     "/nutrition",
@@ -1520,7 +1473,7 @@
    "failedRequests": [
     "GET /api/barcode?code=8909999000010 404"
    ],
-   "maxInteractionMs": 40,
+   "maxInteractionMs": 48,
    "note": "A logs barcode/manual meals to the device journal",
    "error": null
   },
@@ -1530,17 +1483,14 @@
    "device": "desktop-1280",
    "run": 5,
    "success": true,
-   "taps": 3,
+   "taps": 1,
    "keystrokes": 0,
-   "seconds": 2.291,
-   "routeChanges": 2,
-   "routes": [
-    "/nutrition",
-    "/journal"
-   ],
+   "seconds": 0.159,
+   "routeChanges": 0,
+   "routes": [],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 32,
+   "maxInteractionMs": 56,
    "note": "A keeps water in device storage",
    "error": null
   },
@@ -1552,14 +1502,14 @@
    "success": true,
    "taps": 5,
    "keystrokes": 3,
-   "seconds": 3.12,
+   "seconds": 3.147,
    "routeChanges": 1,
    "routes": [
     "/workouts"
    ],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 56,
+   "maxInteractionMs": 80,
    "note": "",
    "error": null
   },
@@ -1571,7 +1521,7 @@
    "success": true,
    "taps": 2,
    "keystrokes": 0,
-   "seconds": 1.3,
+   "seconds": 1.233,
    "routeChanges": 2,
    "routes": [
     "/play",
@@ -1579,7 +1529,7 @@
    ],
    "consoleErrors": [],
    "failedRequests": [],
-   "maxInteractionMs": 40,
+   "maxInteractionMs": 48,
    "note": "",
    "error": null
   },
@@ -1591,7 +1541,7 @@
    "success": true,
    "taps": 1,
    "keystrokes": 0,
-   "seconds": 0.064,
+   "seconds": 0.047,
    "routeChanges": 0,
    "routes": [],
    "consoleErrors": [],
@@ -1696,27 +1646,27 @@
     "unreliable": false
    },
    "seconds": {
-    "median": 4.4,
-    "min": 4.15,
-    "max": 5.45,
-    "spread": 0.235,
+    "median": 4.54,
+    "min": 4.14,
+    "max": 5.76,
+    "spread": 0.274,
     "runs": 10,
     "unreliable": true
    },
    "secondsByDevice": {
     "android-360": {
-     "median": 5.11,
-     "min": 4.25,
-     "max": 5.45,
-     "spread": 0.235,
+     "median": 5.35,
+     "min": 4.3,
+     "max": 5.76,
+     "spread": 0.274,
      "runs": 5,
      "unreliable": true
     },
     "desktop-1280": {
-     "median": 4.36,
-     "min": 4.15,
-     "max": 4.51,
-     "spread": 0.083,
+     "median": 4.43,
+     "min": 4.14,
+     "max": 4.57,
+     "spread": 0.098,
      "runs": 5,
      "unreliable": false
     }
@@ -1730,10 +1680,10 @@
     "unreliable": false
    },
    "maxInteractionMs": {
-    "median": 56,
-    "min": 32,
-    "max": 168,
-    "spread": 2.429,
+    "median": 64,
+    "min": 40,
+    "max": 160,
+    "spread": 1.875,
     "runs": 10,
     "unreliable": true
    },
@@ -1764,27 +1714,27 @@
     "unreliable": false
    },
    "seconds": {
-    "median": 3.82,
-    "min": 3.61,
-    "max": 3.92,
-    "spread": 0.068,
+    "median": 3.86,
+    "min": 3.68,
+    "max": 4.01,
+    "spread": 0.087,
     "runs": 10,
     "unreliable": false
    },
    "secondsByDevice": {
     "android-360": {
      "median": 3.86,
-     "min": 3.69,
-     "max": 3.92,
-     "spread": 0.06,
+     "min": 3.85,
+     "max": 3.93,
+     "spread": 0.021,
      "runs": 5,
      "unreliable": false
     },
     "desktop-1280": {
-     "median": 3.75,
-     "min": 3.61,
-     "max": 3.87,
-     "spread": 0.068,
+     "median": 3.8,
+     "min": 3.68,
+     "max": 4.01,
+     "spread": 0.087,
      "runs": 5,
      "unreliable": false
     }
@@ -1798,10 +1748,10 @@
     "unreliable": false
    },
    "maxInteractionMs": {
-    "median": 56,
-    "min": 40,
-    "max": 64,
-    "spread": 0.429,
+    "median": 64,
+    "min": 56,
+    "max": 72,
+    "spread": 0.25,
     "runs": 10,
     "unreliable": true
    },
@@ -1816,9 +1766,9 @@
    "success": true,
    "successRate": 1,
    "taps": {
-    "median": 3,
-    "min": 3,
-    "max": 3,
+    "median": 1,
+    "min": 1,
+    "max": 1,
     "spread": 0,
     "runs": 10,
     "unreliable": false
@@ -1832,44 +1782,44 @@
     "unreliable": false
    },
    "seconds": {
-    "median": 2.49,
-    "min": 1.9,
-    "max": 3.63,
-    "spread": 0.35,
+    "median": 0.34,
+    "min": 0.31,
+    "max": 0.43,
+    "spread": 0.313,
     "runs": 10,
     "unreliable": true
    },
    "secondsByDevice": {
     "android-360": {
-     "median": 3.56,
-     "min": 2.38,
-     "max": 3.63,
-     "spread": 0.35,
+     "median": 0.35,
+     "min": 0.31,
+     "max": 0.36,
+     "spread": 0.121,
      "runs": 5,
-     "unreliable": true
+     "unreliable": false
     },
     "desktop-1280": {
-     "median": 2.43,
-     "min": 1.9,
-     "max": 2.5,
-     "spread": 0.25,
+     "median": 0.34,
+     "min": 0.32,
+     "max": 0.43,
+     "spread": 0.313,
      "runs": 5,
      "unreliable": true
     }
    },
    "routeChanges": {
-    "median": 1,
-    "min": 1,
-    "max": 1,
+    "median": 0,
+    "min": 0,
+    "max": 0,
     "spread": 0,
     "runs": 10,
     "unreliable": false
    },
    "maxInteractionMs": {
-    "median": 64,
-    "min": 48,
-    "max": 72,
-    "spread": 0.375,
+    "median": 32,
+    "min": 24,
+    "max": 48,
+    "spread": 0.75,
     "runs": 10,
     "unreliable": true
    },
@@ -1900,29 +1850,29 @@
     "unreliable": false
    },
    "seconds": {
-    "median": 2.47,
-    "min": 1.98,
-    "max": 4.14,
-    "spread": 1.012,
+    "median": 2.54,
+    "min": 1.85,
+    "max": 3.37,
+    "spread": 0.521,
     "runs": 10,
     "unreliable": true
    },
    "secondsByDevice": {
     "android-360": {
-     "median": 2.13,
-     "min": 1.98,
-     "max": 4.14,
-     "spread": 1.012,
+     "median": 2.02,
+     "min": 1.85,
+     "max": 2.9,
+     "spread": 0.521,
      "runs": 5,
      "unreliable": true
     },
     "desktop-1280": {
-     "median": 2.58,
-     "min": 2.28,
-     "max": 2.62,
-     "spread": 0.129,
+     "median": 3.15,
+     "min": 2.5,
+     "max": 3.37,
+     "spread": 0.278,
      "runs": 5,
-     "unreliable": false
+     "unreliable": true
     }
    },
    "routeChanges": {
@@ -1934,10 +1884,10 @@
     "unreliable": false
    },
    "maxInteractionMs": {
-    "median": 52,
+    "median": 56,
     "min": 40,
-    "max": 80,
-    "spread": 0.769,
+    "max": 64,
+    "spread": 0.429,
     "runs": 10,
     "unreliable": true
    },
@@ -1956,9 +1906,9 @@
    "success": true,
    "successRate": 1,
    "taps": {
-    "median": 3,
-    "min": 3,
-    "max": 3,
+    "median": 1,
+    "min": 1,
+    "max": 1,
     "spread": 0,
     "runs": 10,
     "unreliable": false
@@ -1972,45 +1922,45 @@
     "unreliable": false
    },
    "seconds": {
-    "median": 2.24,
-    "min": 2.05,
-    "max": 2.38,
-    "spread": 0.122,
+    "median": 0.15,
+    "min": 0.08,
+    "max": 0.17,
+    "spread": 0.578,
     "runs": 10,
-    "unreliable": false
+    "unreliable": true
    },
    "secondsByDevice": {
     "android-360": {
-     "median": 2.21,
-     "min": 2.11,
-     "max": 2.38,
-     "spread": 0.119,
+     "median": 0.14,
+     "min": 0.14,
+     "max": 0.16,
+     "spread": 0.188,
      "runs": 5,
-     "unreliable": false
+     "unreliable": true
     },
     "desktop-1280": {
-     "median": 2.29,
-     "min": 2.05,
-     "max": 2.33,
-     "spread": 0.122,
+     "median": 0.15,
+     "min": 0.08,
+     "max": 0.17,
+     "spread": 0.578,
      "runs": 5,
-     "unreliable": false
+     "unreliable": true
     }
    },
    "routeChanges": {
-    "median": 2,
-    "min": 2,
-    "max": 2,
+    "median": 0,
+    "min": 0,
+    "max": 0,
     "spread": 0,
     "runs": 10,
     "unreliable": false
    },
    "maxInteractionMs": {
-    "median": 40,
-    "min": 32,
-    "max": 48,
-    "spread": 0.4,
-    "runs": 10,
+    "median": 48,
+    "min": 40,
+    "max": 56,
+    "spread": 0.333,
+    "runs": 7,
     "unreliable": true
    },
    "consoleErrors": [],
@@ -2040,29 +1990,29 @@
     "unreliable": false
    },
    "seconds": {
-    "median": 2.87,
-    "min": 1.98,
-    "max": 3.98,
+    "median": 2.94,
+    "min": 2.82,
+    "max": 4.13,
     "spread": 0.455,
     "runs": 10,
     "unreliable": true
    },
    "secondsByDevice": {
     "android-360": {
-     "median": 2.91,
-     "min": 2.65,
-     "max": 3.98,
+     "median": 2.88,
+     "min": 2.82,
+     "max": 4.13,
      "spread": 0.455,
      "runs": 5,
      "unreliable": true
     },
     "desktop-1280": {
-     "median": 2.83,
-     "min": 1.98,
-     "max": 3.17,
-     "spread": 0.418,
+     "median": 2.97,
+     "min": 2.82,
+     "max": 3.15,
+     "spread": 0.111,
      "runs": 5,
-     "unreliable": true
+     "unreliable": false
     }
    },
    "routeChanges": {
@@ -2074,10 +2024,10 @@
     "unreliable": false
    },
    "maxInteractionMs": {
-    "median": 64,
-    "min": 40,
+    "median": 72,
+    "min": 64,
     "max": 88,
-    "spread": 0.75,
+    "spread": 0.333,
     "runs": 10,
     "unreliable": true
    },
@@ -2108,29 +2058,29 @@
     "unreliable": false
    },
    "seconds": {
-    "median": 1.29,
-    "min": 0.8,
-    "max": 1.35,
-    "spread": 0.649,
+    "median": 1.3,
+    "min": 0.83,
+    "max": 1.39,
+    "spread": 0.424,
     "runs": 10,
     "unreliable": true
    },
    "secondsByDevice": {
     "android-360": {
-     "median": 0.83,
-     "min": 0.8,
-     "max": 1.34,
-     "spread": 0.649,
+     "median": 1.31,
+     "min": 0.83,
+     "max": 1.38,
+     "spread": 0.424,
      "runs": 5,
      "unreliable": true
     },
     "desktop-1280": {
-     "median": 1.3,
-     "min": 1.13,
-     "max": 1.35,
-     "spread": 0.17,
+     "median": 1.27,
+     "min": 1.23,
+     "max": 1.39,
+     "spread": 0.124,
      "runs": 5,
-     "unreliable": true
+     "unreliable": false
     }
    },
    "routeChanges": {
@@ -2142,10 +2092,10 @@
     "unreliable": false
    },
    "maxInteractionMs": {
-    "median": 48,
+    "median": 40,
     "min": 32,
     "max": 48,
-    "spread": 0.333,
+    "spread": 0.4,
     "runs": 10,
     "unreliable": true
    },
@@ -2177,26 +2127,26 @@
    },
    "seconds": {
     "median": 0.06,
-    "min": 0.02,
-    "max": 0.07,
-    "spread": 1.067,
+    "min": 0.03,
+    "max": 0.08,
+    "spread": 0.809,
     "runs": 10,
     "unreliable": true
    },
    "secondsByDevice": {
     "android-360": {
      "median": 0.07,
-     "min": 0.06,
-     "max": 0.07,
-     "spread": 0.191,
+     "min": 0.05,
+     "max": 0.08,
+     "spread": 0.451,
      "runs": 5,
      "unreliable": true
     },
     "desktop-1280": {
      "median": 0.05,
-     "min": 0.02,
+     "min": 0.03,
      "max": 0.07,
-     "spread": 1.067,
+     "spread": 0.809,
      "runs": 5,
      "unreliable": true
     }

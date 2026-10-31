@@ -31360,10 +31360,10 @@
      "unreliable": false
     },
     "lcpMs": {
-     "median": 10821.11,
-     "min": 10743.12,
-     "max": 10825.44,
-     "spread": 0.008,
+     "median": 10788.28,
+     "min": 10731.05,
+     "max": 10825.91,
+     "spread": 0.009,
      "runs": 5,
      "unreliable": false
     },
@@ -31376,74 +31376,72 @@
      "unreliable": false
     },
     "tbtMs": {
-     "median": 12.5,
-     "min": 1.5,
-     "max": 54.5,
-     "spread": 4.24,
+     "median": 1.5,
+     "min": 0,
+     "max": 37.68,
+     "spread": 25.121,
      "runs": 5,
      "unreliable": true
     },
     "fcpMs": {
-     "median": 2369.29,
-     "min": 2293.27,
-     "max": 2389.2,
-     "spread": 0.04,
+     "median": 2372.59,
+     "min": 2275.55,
+     "max": 2400.73,
+     "spread": 0.053,
      "runs": 5,
      "unreliable": false
     },
     "transferKb": {
      "median": 1814.95,
      "min": 1814.95,
-     "max": 1814.95,
+     "max": 1814.96,
      "spread": 0,
      "runs": 5,
      "unreliable": false
     },
     "finalUrl": "http://127.0.0.1:3007/",
     "validRuns": 5,
-    "lighthouseErrors": [
-     "NO_NAVSTART: Something went wrong with recording the trace over your page load. Please run Lighthouse again. (NO_NAVSTART)"
-    ],
+    "lighthouseErrors": [],
     "inp": "Not measured by Lighthouse navigation runs; see journeys maxInteractionMs (Event Timing) instead."
    },
    "/nutrition": {
     "score": {
-     "median": 72,
-     "min": 67,
+     "median": 68,
+     "min": 68,
      "max": 72,
-     "spread": 0.069,
+     "spread": 0.059,
      "runs": 5,
      "unreliable": false
     },
     "lcpMs": {
-     "median": 10824.32,
-     "min": 10819.22,
-     "max": 10828.73,
-     "spread": 0.001,
+     "median": 10812.86,
+     "min": 10786.23,
+     "max": 10832.55,
+     "spread": 0.004,
      "runs": 5,
      "unreliable": false
     },
     "cls": {
-     "median": 0.02,
-     "min": 0.02,
+     "median": 0.13,
+     "min": 0,
      "max": 0.13,
-     "spread": 4.514,
+     "spread": 1,
      "runs": 5,
      "unreliable": true
     },
     "tbtMs": {
-     "median": 18,
-     "min": 0.5,
-     "max": 86,
-     "spread": 4.75,
+     "median": 27,
+     "min": 0,
+     "max": 74,
+     "spread": 2.741,
      "runs": 5,
      "unreliable": true
     },
     "fcpMs": {
-     "median": 2380.44,
-     "min": 2315.35,
-     "max": 2394.59,
-     "spread": 0.033,
+     "median": 2323.29,
+     "min": 2270.53,
+     "max": 2375.21,
+     "spread": 0.045,
      "runs": 5,
      "unreliable": false
     },
@@ -31463,41 +31461,41 @@
    "/workouts": {
     "score": {
      "median": 72,
-     "min": 71,
+     "min": 68,
      "max": 72,
-     "spread": 0.014,
+     "spread": 0.056,
      "runs": 5,
      "unreliable": false
     },
     "lcpMs": {
-     "median": 10909.92,
-     "min": 10857.34,
-     "max": 10981.23,
-     "spread": 0.011,
+     "median": 10888.48,
+     "min": 10790.81,
+     "max": 10894.82,
+     "spread": 0.01,
      "runs": 5,
      "unreliable": false
     },
     "cls": {
      "median": 0.06,
      "min": 0.06,
-     "max": 0.06,
-     "spread": 0.013,
+     "max": 0.12,
+     "spread": 1.124,
      "runs": 5,
-     "unreliable": false
+     "unreliable": true
     },
     "tbtMs": {
-     "median": 19,
-     "min": 5.5,
-     "max": 65.5,
-     "spread": 3.158,
+     "median": 16.87,
+     "min": 11,
+     "max": 24,
+     "spread": 0.771,
      "runs": 5,
      "unreliable": true
     },
     "fcpMs": {
-     "median": 2332.12,
-     "min": 2285.01,
-     "max": 2387.1,
-     "spread": 0.044,
+     "median": 2370.73,
+     "min": 2273.68,
+     "max": 2375.66,
+     "spread": 0.043,
      "runs": 5,
      "unreliable": false
     },
@@ -31516,42 +31514,42 @@
    },
    "/play": {
     "score": {
-     "median": 67,
+     "median": 66,
      "min": 66,
-     "max": 70,
-     "spread": 0.06,
+     "max": 67,
+     "spread": 0.015,
      "runs": 5,
      "unreliable": false
     },
     "lcpMs": {
-     "median": 33296.37,
-     "min": 33286.36,
-     "max": 33398.29,
+     "median": 33386.97,
+     "min": 33285.55,
+     "max": 33393.38,
      "spread": 0.003,
      "runs": 5,
      "unreliable": false
     },
     "cls": {
      "median": 0.14,
-     "min": 0.09,
+     "min": 0.14,
      "max": 0.14,
-     "spread": 0.331,
+     "spread": 0,
      "runs": 5,
-     "unreliable": true
+     "unreliable": false
     },
     "tbtMs": {
-     "median": 65.12,
+     "median": 17,
      "min": 12.5,
-     "max": 156.62,
-     "spread": 2.213,
+     "max": 62.74,
+     "spread": 2.955,
      "runs": 5,
      "unreliable": true
     },
     "fcpMs": {
-     "median": 2353.81,
-     "min": 2338.46,
-     "max": 2456.91,
-     "spread": 0.05,
+     "median": 2447.48,
+     "min": 2341.29,
+     "max": 2455.32,
+     "spread": 0.047,
      "runs": 5,
      "unreliable": false
     },
@@ -31578,34 +31576,34 @@
      "unreliable": false
     },
     "lcpMs": {
-     "median": 10673.01,
-     "min": 10613.96,
-     "max": 10674.05,
-     "spread": 0.006,
+     "median": 10672.42,
+     "min": 10581.35,
+     "max": 10678.3,
+     "spread": 0.009,
      "runs": 5,
      "unreliable": false
     },
     "cls": {
      "median": 0.04,
-     "min": 0.03,
+     "min": 0.04,
      "max": 0.04,
-     "spread": 0.32,
+     "spread": 0,
      "runs": 5,
-     "unreliable": true
+     "unreliable": false
     },
     "tbtMs": {
-     "median": 16.99,
-     "min": 11.5,
-     "max": 33.66,
-     "spread": 1.304,
+     "median": 9,
+     "min": 4.5,
+     "max": 46.94,
+     "spread": 4.716,
      "runs": 5,
      "unreliable": true
     },
     "fcpMs": {
-     "median": 2378.04,
-     "min": 2319.97,
-     "max": 2388.75,
-     "spread": 0.029,
+     "median": 2376.19,
+     "min": 2297.2,
+     "max": 2378.84,
+     "spread": 0.034,
      "runs": 5,
      "unreliable": false
     },
@@ -31626,40 +31624,40 @@
     "score": {
      "median": 67,
      "min": 67,
-     "max": 69,
-     "spread": 0.03,
+     "max": 67,
+     "spread": 0,
      "runs": 5,
      "unreliable": false
     },
     "lcpMs": {
-     "median": 10972.64,
-     "min": 10866.54,
-     "max": 10977.6,
+     "median": 10971.87,
+     "min": 10869.27,
+     "max": 10975.62,
      "spread": 0.01,
      "runs": 5,
      "unreliable": false
     },
     "cls": {
      "median": 0.13,
-     "min": 0.09,
+     "min": 0.13,
      "max": 0.13,
-     "spread": 0.279,
+     "spread": 0,
      "runs": 5,
-     "unreliable": true
+     "unreliable": false
     },
     "tbtMs": {
-     "median": 16,
-     "min": 10.5,
-     "max": 35,
-     "spread": 1.531,
+     "median": 12.5,
+     "min": 8,
+     "max": 41.5,
+     "spread": 2.68,
      "runs": 5,
      "unreliable": true
     },
     "fcpMs": {
-     "median": 2598.36,
-     "min": 2496.29,
-     "max": 2613.54,
-     "spread": 0.045,
+     "median": 2603.57,
+     "min": 2497.73,
+     "max": 2612.23,
+     "spread": 0.044,
      "runs": 5,
      "unreliable": false
     },
@@ -31686,10 +31684,10 @@
      "unreliable": false
     },
     "lcpMs": {
-     "median": 10824.96,
-     "min": 10822.42,
-     "max": 10826.53,
-     "spread": 0,
+     "median": 10814.19,
+     "min": 10705.41,
+     "max": 10818.57,
+     "spread": 0.01,
      "runs": 5,
      "unreliable": false
     },
@@ -31702,18 +31700,18 @@
      "unreliable": false
     },
     "tbtMs": {
-     "median": 15,
-     "min": 8,
-     "max": 58,
-     "spread": 3.333,
+     "median": 9.5,
+     "min": 6,
+     "max": 11,
+     "spread": 0.526,
      "runs": 5,
      "unreliable": true
     },
     "fcpMs": {
-     "median": 2380.93,
-     "min": 2375.8,
-     "max": 2390.11,
-     "spread": 0.006,
+     "median": 2370.32,
+     "min": 2262.01,
+     "max": 2372.47,
+     "spread": 0.047,
      "runs": 5,
      "unreliable": false
     },
@@ -31734,28 +31732,28 @@
   "load": {
    "/api/v1/auth/me": {
     "p50Ms": {
-     "median": 169,
-     "min": 161,
-     "max": 172,
-     "spread": 0.065,
-     "runs": 5,
-     "unreliable": false
-    },
-    "p95Ms": {
-     "median": 313,
-     "min": 216,
-     "max": 327,
-     "spread": 0.355,
+     "median": 289,
+     "min": 157,
+     "max": 307,
+     "spread": 0.519,
      "runs": 5,
      "unreliable": true
     },
-    "rps": {
-     "median": 275.63,
-     "min": 271.5,
-     "max": 306,
-     "spread": 0.125,
+    "p95Ms": {
+     "median": 353,
+     "min": 342,
+     "max": 375,
+     "spread": 0.093,
      "runs": 5,
      "unreliable": false
+    },
+    "rps": {
+     "median": 187.71,
+     "min": 163.17,
+     "max": 306,
+     "spread": 0.761,
+     "runs": 5,
+     "unreliable": true
     },
     "errorRate": {
      "median": 0,
@@ -31778,16 +31776,16 @@
       "200": 7344
      },
      {
-      "200": 6573
+      "200": 6567
      },
      {
-      "200": 6615
+      "200": 4505
      },
      {
-      "200": 7156
+      "200": 3916
      },
      {
-      "200": 6516
+      "200": 4287
      }
     ],
     "timeouts": [
@@ -31808,26 +31806,26 @@
    },
    "/api/v1/wellness/diary": {
     "p50Ms": {
-     "median": 1028,
-     "min": 1000,
-     "max": 1045,
-     "spread": 0.044,
+     "median": 1859,
+     "min": 1711,
+     "max": 2003,
+     "spread": 0.157,
      "runs": 5,
-     "unreliable": false
+     "unreliable": true
     },
     "p95Ms": {
-     "median": 1681,
-     "min": 1482,
-     "max": 1738,
-     "spread": 0.152,
+     "median": 3032,
+     "min": 2117,
+     "max": 3681,
+     "spread": 0.516,
      "runs": 5,
      "unreliable": true
     },
     "rps": {
-     "median": 46.3,
-     "min": 42.92,
-     "max": 47.96,
-     "spread": 0.109,
+     "median": 25.71,
+     "min": 23.75,
+     "max": 27.21,
+     "spread": 0.135,
      "runs": 5,
      "unreliable": false
     },
@@ -31849,19 +31847,19 @@
     },
     "codes": [
      {
-      "200": 1053
+      "200": 625
      },
      {
-      "200": 1111
+      "200": 617
      },
      {
-      "200": 1151
+      "200": 653
      },
      {
-      "200": 1030
+      "200": 614
      },
      {
-      "200": 1114
+      "200": 570
      }
     ],
     "timeouts": [
@@ -31882,26 +31880,26 @@
    },
    "/api/v1/adventure/summary": {
     "p50Ms": {
-     "median": 1249,
-     "min": 1201,
-     "max": 1675,
-     "spread": 0.38,
+     "median": 2648,
+     "min": 1931,
+     "max": 2756,
+     "spread": 0.312,
      "runs": 5,
      "unreliable": true
     },
     "p95Ms": {
-     "median": 2301,
-     "min": 1906,
-     "max": 2972,
-     "spread": 0.463,
+     "median": 4422,
+     "min": 2994,
+     "max": 5072,
+     "spread": 0.47,
      "runs": 5,
      "unreliable": true
     },
     "rps": {
-     "median": 36.96,
-     "min": 27.3,
-     "max": 39.63,
-     "spread": 0.334,
+     "median": 17.75,
+     "min": 16.25,
+     "max": 25.09,
+     "spread": 0.498,
      "runs": 5,
      "unreliable": true
     },
@@ -31923,19 +31921,19 @@
     },
     "codes": [
      {
-      "200": 887
+      "200": 426
      },
      {
-      "200": 951
+      "200": 404
      },
      {
-      "200": 950
+      "200": 390
      },
      {
-      "200": 724
+      "200": 602
      },
      {
-      "200": 655
+      "200": 475
      }
     ],
     "timeouts": [
@@ -31956,28 +31954,28 @@
    },
    "/api/v1/wellness/foods?q=rice": {
     "p50Ms": {
-     "median": 1256,
-     "min": 1119,
-     "max": 1652,
-     "spread": 0.424,
+     "median": 1570,
+     "min": 1503,
+     "max": 1789,
+     "spread": 0.182,
      "runs": 5,
      "unreliable": true
     },
     "p95Ms": {
-     "median": 1847,
-     "min": 1378,
-     "max": 2433,
-     "spread": 0.571,
+     "median": 1910,
+     "min": 1810,
+     "max": 2233,
+     "spread": 0.221,
      "runs": 5,
      "unreliable": true
     },
     "rps": {
-     "median": 33.34,
+     "median": 28.58,
      "min": 25,
-     "max": 40,
-     "spread": 0.45,
+     "max": 28.58,
+     "spread": 0.125,
      "runs": 5,
-     "unreliable": true
+     "unreliable": false
     },
     "errorRate": {
      "median": 0,
@@ -31997,8 +31995,8 @@
     },
     "codes": [
      {
-      "200": 199,
-      "500": 1
+      "200": 198,
+      "500": 2
      },
      {
       "200": 200
@@ -32031,36 +32029,36 @@
    },
    "/api/v1/wellness/training": {
     "p50Ms": {
-     "median": 4367,
-     "min": 4048,
-     "max": 4409,
-     "spread": 0.083,
+     "median": 5967,
+     "min": 5620,
+     "max": 6369,
+     "spread": 0.126,
      "runs": 5,
      "unreliable": false
     },
     "p95Ms": {
-     "median": 6444,
-     "min": 4967,
-     "max": 8248,
-     "spread": 0.509,
+     "median": 9604,
+     "min": 6026,
+     "max": 9680,
+     "spread": 0.38,
      "runs": 5,
      "unreliable": true
     },
     "rps": {
-     "median": 10.8,
-     "min": 9.75,
-     "max": 11.71,
-     "spread": 0.181,
+     "median": 6.09,
+     "min": 5.5,
+     "max": 8.75,
+     "spread": 0.534,
      "runs": 5,
      "unreliable": true
     },
     "errorRate": {
-     "median": 0,
+     "median": 0.1,
      "min": 0,
-     "max": 0,
-     "spread": 0,
+     "max": 0.12,
+     "spread": 1.215,
      "runs": 5,
-     "unreliable": false
+     "unreliable": true
     },
     "rateLimitedShare": {
      "median": 0,
@@ -32072,27 +32070,27 @@
     },
     "codes": [
      {
-      "200": 281
+      "200": 210
      },
      {
-      "200": 234
+      "200": 132
      },
      {
-      "200": 266
+      "200": 156
      },
      {
-      "200": 241
+      "200": 134
      },
      {
-      "200": 259
+      "200": 146
      }
     ],
     "timeouts": [
      0,
-     0,
-     0,
-     0,
-     0
+     18,
+     8,
+     18,
+     16
     ],
     "connectionErrors": [
      0,
@@ -32325,7 +32323,7 @@
   "categories": {
    "speed": 94,
    "visual": 19,
-   "performance": 52,
+   "performance": 49,
    "maintainability": 75,
    "regression": 100,
    "habit": 100
@@ -32349,11 +32347,11 @@
     "keyboard": 96
    },
    "perf": {
-    "lighthouse": 69,
+    "lighthouse": 68,
     "lcp": 0,
-    "cls": 83,
-    "apiP95": 20,
-    "apiErrors": 100
+    "cls": 80,
+    "apiP95": 18,
+    "apiErrors": 80
    },
    "maint": {
     "duplication": 100,
@@ -32386,13 +32384,13 @@
    "commit": "25f99f3c5e4fd4075c5ae9b264134318d626cea0",
    "webCommit": "9eefb070b10c163b0736359f20f3bbc3a32a34b6",
    "dirty": [],
-   "builtAt": "2026-10-31T03:55:30.170Z"
+   "builtAt": "2026-10-31T09:46:08.076Z"
   },
   "label": "A",
   "base": "http://127.0.0.1:3007",
   "quick": false,
   "runs": 5,
-  "started": "2026-10-31T05:50:12.669Z",
-  "finished": "2026-10-31T06:04:56.969Z"
+  "started": "2026-10-31T13:51:45.747Z",
+  "finished": "2026-10-31T14:05:41.209Z"
  }
 }
