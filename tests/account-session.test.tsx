@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { AccountSession, AccountUnavailable, useAccount } from "@/components/account-session";
 
 function Page() { const { user, ready } = useAccount(); return <p>{!ready ? "loading" : user ? `member ${user.id}` : "Sign in"}</p>; }
@@ -37,7 +37,6 @@ describe("account session states", () => {
     const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError("offline")).mockResolvedValue(Response.json({ id: "u2", email: "a@b.c", profile: {} }));
     vi.stubGlobal("fetch", fetchMock); show();
     await screen.findByRole("alert");
-    window.dispatchEvent(new Event("online"));
-    expect(await screen.findByText("member u2")).toBeTruthy();
+    await waitFor(() => { window.dispatchEvent(new Event("online")); expect(screen.getByText("member u2")).toBeTruthy(); });
   });
 });

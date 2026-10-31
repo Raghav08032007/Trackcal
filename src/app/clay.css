@@ -83,3 +83,47 @@ html[data-theme="dark"] .studio-momentum { box-shadow: var(--clay-depth); }
 .tc-studio .wellness-hero .eyebrow { color: #d9d0ff; font-weight: 750; }
 .tc-studio .play-bottom > p { color: #4f5d4b; }
 html[data-theme="dark"] .tc-studio .play-bottom > p { color: #c5c7dc; }
+
+/* ── Stage 2: every screen ── */
+
+/* Spheres stay out of the way of text on phones: smaller, lower and mostly off-screen. */
+@media (max-width: 859px) {
+  body.tc-studio::before { top: auto; bottom: 34vh; right: -84px; width: 130px; height: 130px; opacity: .3; }
+  body.tc-studio::after { bottom: 12vh; left: -74px; width: 110px; height: 110px; opacity: .3; }
+}
+
+/* Food tools: the same clay as every other card. */
+.tc-studio .trackcal-app [class*="bg-slate-900"].rounded-2xl { background: var(--clay-card) !important; border: 0 !important; border-radius: var(--tc-r-lg); box-shadow: var(--clay-depth) !important; }
+
+/* Every older primary button becomes the violet clay button, in place of the leftover green. */
+.tc-studio .trackcal-app :is(.bg-emerald-500, .bg-sky-500, .bg-purple-600, .bg-sky-700), .tc-studio :is(.barcode-capture-actions > button:first-child, .barcode-photo-action.primary) {
+  border: 0; border-radius: 18px; background: linear-gradient(180deg, #8467ff 0%, var(--clay-violet) 48%, #5533ea 100%) !important; color: #fff !important;
+  box-shadow: inset 0 2px 0 #ffffff66, inset 0 -3px 6px #2c139a66, 0 5px 0 var(--clay-violet-deep);
+}
+.tc-studio .trackcal-app button:disabled:is(.bg-emerald-500, .bg-sky-500, .bg-purple-600, .bg-sky-700) { opacity: .55; }
+
+/* Stat tiles: coloured clay so numbers feel like rewards. */
+.tc-studio .progress-stats > div { border: 0; border-radius: 22px; box-shadow: inset 0 2px 0 #ffffffb3, inset 0 -4px 8px #4322d114, 0 6px 0 -2px #4322d126; }
+.tc-studio .progress-stats > div:nth-child(3n + 1) { background: linear-gradient(170deg, #efe9ff, #dfd5ff); }
+.tc-studio .progress-stats > div:nth-child(3n + 2) { background: linear-gradient(170deg, #fff4cf, #ffe6a3); }
+.tc-studio .progress-stats > div:nth-child(3n) { background: linear-gradient(170deg, #ecfbcf, #d7f4a6); }
+.tc-studio .progress-stats strong { color: #1f1d3a; }
+.tc-studio .progress-stats span { color: #3d3e55; }
+html[data-theme="dark"] .tc-studio .progress-stats > div { box-shadow: inset 0 2px 0 #ffffff1f, 0 6px 0 -2px #0b0b18; }
+html[data-theme="dark"] .tc-studio .progress-stats > div:nth-child(3n + 1) { background: linear-gradient(170deg, #3a2f72, #2d2559); }
+html[data-theme="dark"] .tc-studio .progress-stats > div:nth-child(3n + 2) { background: linear-gradient(170deg, #55431a, #433412); }
+html[data-theme="dark"] .tc-studio .progress-stats > div:nth-child(3n) { background: linear-gradient(170deg, #34501f, #293f18); }
+html[data-theme="dark"] .tc-studio .progress-stats strong { color: #fff; }
+html[data-theme="dark"] .tc-studio .progress-stats span { color: #e6e3f5; }
+
+/* Dark theme: no bright ledges, and the Play hero goes dark with everything else. */
+.tc-studio .wellness-hero { box-shadow: 0 10px 0 -3px #cdbff5, 0 26px 42px -22px #4322d180; }
+html[data-theme="dark"] .tc-studio .wellness-hero { box-shadow: var(--clay-depth); }
+.tc-studio .journey-orb { border: 0; background: var(--clay-card); box-shadow: var(--clay-depth); }
+html[data-theme="dark"] .tc-studio .play-hero { background: linear-gradient(135deg, #2c2556, #3f3278); color: #f2efff; border-color: #4a3f85; }
+html[data-theme="dark"] .tc-studio .play-hero h1 { color: #fff; }
+html[data-theme="dark"] .tc-studio .play-hero h1 em { color: #c9bcff; }
+html[data-theme="dark"] .tc-studio .play-hero :is(p, .play-fine) { color: #e6e3f5; }
+
+/* Disabled buttons on the camera card read as disabled in both themes. */
+.camera-page button:disabled { opacity: .6; cursor: not-allowed; }
