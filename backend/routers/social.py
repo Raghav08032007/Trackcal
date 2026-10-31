@@ -17,6 +17,7 @@ import models
 from database import get_db
 from flask_app.params import Depends, HTTPException, Query
 from routers.auth import get_current_active_user
+from services import notifications
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
@@ -410,9 +411,11 @@ def is_hidden(kind, target):
     return target.status == 'hidden' if kind in LIVE_STATUS else getattr(target, 'hidden', None)
 
 
-def set_hidden(kind, target, hidden):
+def set_hidden(db, kind, target, hidden):
     if kind not in LIVE_STATUS: target.hidden = hidden
-    elif hidden and target.status == LIVE_STATUS[kind]: target.status = 'hidden'  # a cancelled item stays cancelled
+    elif hidden and target.status == LIVE_STATUS[kind]:  # a cancelled item stays cancelled
+        target.status = 'hidden'
+        if kind == 'event': notifications.notify_event_change(db, target.id, 'hidden')
     elif not hidden and target.status == 'hidden': target.status = LIVE_STATUS[kind]
 
 
@@ -432,7 +435,7 @@ def report(data: ReportInput, user=Depends(get_current_active_user), db: Session
         db.add(models.ContentReport(reporter_id=user.id, target_type=data.target_type, target_id=key, reason=data.reason, note=data.note.strip()))
         db.flush()
         reporters = db.query(func.count(func.distinct(models.ContentReport.reporter_id))).filter_by(target_type=data.target_type, target_id=key, status='open').scalar()
-        if data.target_type != 'profile' and reporters >= AUTO_HIDE_REPORTS: set_hidden(data.target_type, target, True)  # until a moderator decides
+        if data.target_type != 'profile' and reporters >= AUTO_HIDE_REPORTS: set_hidden(db, data.target_type, target, True)  # until a moderator decides
     db.commit()
     return {'status': 'Thanks. Our team will review this.'}
 
@@ -467,8 +470,8 @@ def moderate(data: ModerationInput, user=Depends(get_current_active_user), db: S
     require_flag(db); require_moderator(user)
     target = db.get(ITEMS[data.target_type], data.target_id) if data.target_type != 'profile' else profile_of(db, data.target_id)
     if not target: raise HTTPException(404, 'Not found.')
-    if data.action == 'hide' and data.target_type != 'profile': set_hidden(data.target_type, target, True)
-    if data.action == 'restore' and data.target_type != 'profile': set_hidden(data.target_type, target, False)
+    if data.action == 'hide' and data.target_type != 'profile': set_hidden(db, data.target_type, target, True)
+    if data.action == 'restore' and data.target_type != 'profile': set_hidden(db, data.target_type, target, False)
     if data.action == 'pause_posting':
         owner = profile_of(db, owner_id(data.target_type, target))
         if owner: owner.posting_disabled = True

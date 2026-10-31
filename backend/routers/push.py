@@ -19,7 +19,7 @@ from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from services.personalization_inputs import Strict
 
-TypeName = Literal['daily_plan', 'workout', 'meal_log', 'rest_day', 'motivation', 'milestone']
+TypeName = Literal['daily_plan', 'workout', 'meal_log', 'rest_day', 'motivation', 'milestone', 'event_update']
 
 
 class Keys(Strict):

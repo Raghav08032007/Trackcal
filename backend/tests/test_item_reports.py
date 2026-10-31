@@ -8,6 +8,7 @@ from tests.test_adventure import client
 from tests.test_challenges import challenge
 from tests.test_events import event
 from tests.test_social import member
+from services import notifications as push
 
 R, M, E, C = '/api/v1/social/reports', '/api/v1/social/moderation', '/api/v1/events', '/api/v1/challenges'
 
@@ -102,3 +103,53 @@ def test_a_paused_account_cannot_create_events_or_challenges():
 def test_only_known_targets_can_be_reported():
     assert report(member()[1], 'event', '00000000-0000-0000-0000-000000000000').status_code == 404
     assert report(member()[1], 'nonsense', 'x' * 36).status_code == 422
+
+
+def pushes(user_id):
+    with database.SessionLocal() as db:
+        return [(n.type, n.status) for n in db.query(models.ScheduledNotification).filter_by(user_id=user_id, type='event_update').all()]
+
+
+def subscriber(monkeypatch, types=None):
+    monkeypatch.setenv('FEATURE_WEB_PUSH', 'true')
+    uid, h, _ = member()
+    with database.SessionLocal() as db:
+        db.add(models.NotificationSettings(user_id=uid, enabled=True, types=types if types is not None else dict(push.DEFAULT_TYPES), max_per_day=3)); db.commit()
+    return uid, h
+
+
+def test_cancelling_alerts_people_signed_up_once_with_no_details(monkeypatch):
+    owner, row = item('event'); uid, guest = subscriber(monkeypatch)
+    client.post(f"{path('event', row)}/registration", headers=guest)
+    client.request('DELETE', path('event', row), headers=owner); client.request('DELETE', path('event', row), headers=owner)
+    assert pushes(uid) == [('event_update', 'pending')]
+    message = push.TYPES['event_update']
+    assert row['title'] not in message['title'] + message['body'] and row['location'] not in message['body']
+
+
+def test_settings_saved_before_this_type_existed_still_get_the_alert(monkeypatch):
+    owner, row = item('event'); uid, guest = subscriber(monkeypatch, {'milestone': {'enabled': True, 'time': None}})
+    client.post(f"{path('event', row)}/registration", headers=guest)
+    client.request('DELETE', path('event', row), headers=owner)
+    assert len(pushes(uid)) == 1
+
+
+def test_turning_the_alert_off_is_respected(monkeypatch):
+    owner, row = item('event'); uid, guest = subscriber(monkeypatch, {**push.DEFAULT_TYPES, 'event_update': {'enabled': False, 'time': None}})
+    client.post(f"{path('event', row)}/registration", headers=guest)
+    client.request('DELETE', path('event', row), headers=owner)
+    assert pushes(uid) == []
+
+
+def test_hiding_an_event_alerts_people_signed_up(monkeypatch):
+    _, row = item('event'); uid, guest = subscriber(monkeypatch); mod = moderator()
+    client.post(f"{path('event', row)}/registration", headers=guest); report(member()[1], 'event', row['id'])
+    client.post(M, headers=mod, json={'target_type': 'event', 'target_id': row['id'], 'action': 'hide'})
+    assert len(pushes(uid)) == 1
+
+
+def test_no_alert_while_push_is_off():
+    owner, row = item('event'); uid, guest = member()[0:2]
+    client.post(f"{path('event', row)}/registration", headers=guest)
+    client.request('DELETE', path('event', row), headers=owner)
+    assert pushes(uid) == []

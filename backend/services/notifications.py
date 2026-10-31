@@ -35,9 +35,10 @@ TYPES = {
     'rest_day': {'time': '20:00', 'title': 'Rest counts too', 'body': 'Recovery is part of every plan.', 'url': '/plan'},
     'motivation': {'time': '09:00', 'title': 'A thought for today', 'body': None, 'url': '/'},
     'milestone': {'time': None, 'title': 'Something to celebrate', 'body': "You've unlocked something new in TrackCal.", 'url': '/play'},
+    'event_update': {'time': None, 'title': 'An event you joined has changed', 'body': 'It may be cancelled or changed. Check your events.', 'url': '/events'},
 }
 SCHEDULED = [t for t, v in TYPES.items() if v['time']]
-DEFAULT_TYPES = {t: {'enabled': t in ('daily_plan', 'milestone'), 'time': v['time']} for t, v in TYPES.items()}
+DEFAULT_TYPES = {t: {'enabled': t in ('daily_plan', 'milestone', 'event_update'), 'time': v['time']} for t, v in TYPES.items()}
 
 
 def utcnow():
@@ -53,6 +54,11 @@ def settings_for(db, user_id, lock=False):
     row = (query.with_for_update() if lock else query).first()
     if row: row.types = {**DEFAULT_TYPES, **(row.types or {})}
     return row
+
+
+def type_settings(settings, kind):
+    """Saved settings can predate a type, so a missing one falls back to its default."""
+    return (settings.types or {}).get(kind) or DEFAULT_TYPES[kind]
 
 
 def preferences(db, user_id):
@@ -110,9 +116,19 @@ def plan(db, now=None):
 
 def enqueue_milestone(db, user_id, code, now=None):
     """Called when an achievement unlocks. Sent at the next tick, or after quiet hours end."""
+    _enqueue_now(db, user_id, 'milestone', code, now)
+
+
+def notify_event_change(db, event_id, reason, now=None):
+    """An event was cancelled or hidden: tell everyone still signed up. Nothing about the event is in the message."""
+    rows = db.query(models.EventRegistration.user_id).filter(models.EventRegistration.event_id == event_id, models.EventRegistration.status.in_(['going', 'waitlist'])).all()
+    for (user_id,) in rows: _enqueue_now(db, user_id, 'event_update', f'{event_id}:{reason}', now)
+
+
+def _enqueue_now(db, user_id, kind, code, now=None):
     if not is_enabled(db, 'web_push'): return
     settings = settings_for(db, user_id)
-    if not settings or not settings.enabled or not settings.types['milestone'].get('enabled'): return
+    if not settings or not settings.enabled or not type_settings(settings, kind).get('enabled'): return
     now = now or utcnow(); zone, quiet_start, quiet_end = preferences(db, user_id)
     local = now.replace(tzinfo=timezone.utc).astimezone(zone)
     when = now
@@ -120,8 +136,8 @@ def enqueue_milestone(db, user_id, code, now=None):
         end = local_slot_utc(local.date(), quiet_end, zone)
         when = end if end > now else local_slot_utc(local.date() + timedelta(days=1), quiet_end, zone)
     db.execute(insert(models.ScheduledNotification).prefix_with('IGNORE').values(
-        id=_uuid(), user_id=str(user_id), type='milestone', local_day=str(local.date()), scheduled_for_utc=when,
-        idempotency_key=f'{user_id}:milestone:{code}'[:120], status='pending', attempts=0, created_at=now))
+        id=_uuid(), user_id=str(user_id), type=kind, local_day=str(local.date()), scheduled_for_utc=when,
+        idempotency_key=f'{user_id}:{kind}:{code}'[:120], status='pending', attempts=0, created_at=now))
 
 
 def claim(db, now=None, limit=50):
@@ -153,7 +169,7 @@ def deliver(db, notification_id, send, now=None):
     zone, quiet_start, quiet_end = preferences(db, row.user_id)
     local = now.replace(tzinfo=timezone.utc).astimezone(zone)
     sent_today = db.query(func.count(models.ScheduledNotification.id)).filter_by(user_id=row.user_id, local_day=row.local_day, status='sent').scalar()
-    reason = ('feature off' if not is_enabled(db, 'web_push') else 'turned off' if not settings or not settings.enabled or not settings.types.get(row.type, {}).get('enabled')
+    reason = ('feature off' if not is_enabled(db, 'web_push') else 'turned off' if not settings or not settings.enabled or not type_settings(settings, row.type).get('enabled')
               else 'snoozed' if settings.snooze_until and settings.snooze_until > now
               else 'quiet hours' if quiet(local.strftime('%H:%M'), quiet_start, quiet_end)
               else 'daily cap' if sent_today >= settings.max_per_day

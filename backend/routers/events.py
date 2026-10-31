@@ -25,7 +25,7 @@ from database import get_db
 from flask_app.params import Depends, HTTPException, Query
 from routers import communities, social
 from routers.auth import get_current_active_user
-from services import gamification
+from services import gamification, notifications
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
@@ -150,6 +150,7 @@ def detail(event_id: str, user=Depends(get_current_active_user), db: Session = D
 def cancel_event(event_id: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     require_flags(db); event = get_event(db, event_id, user.id, lock=True)
     if event.organizer_id != user.id: raise HTTPException(403, 'Only the organizer can cancel this event.')
+    if event.status != 'cancelled': notifications.notify_event_change(db, event.id, 'cancelled')
     event.status = 'cancelled'; db.commit()
     return {'event': view(db, event, user.id)}
 
