@@ -1,11 +1,11 @@
 // Web push in the browser: support checks, the explicit (tap-only) permission flow and the settings API.
-export type PushType = "daily_plan" | "workout" | "meal_log" | "rest_day" | "motivation" | "milestone";
+export type PushType = "daily_plan" | "workout" | "meal_log" | "rest_day" | "motivation" | "milestone" | "event_update";
 export type PushSettings = {
   enabled: boolean; types: Record<PushType, { enabled: boolean; time: string | null }>; max_per_day: number; snooze_until: string | null;
   timezone: string; quiet_start: string; quiet_end: string; devices: { id: string; user_agent: string; created_at: string }[];
 };
 export const TYPE_LABELS: Record<PushType, string> = {
-  daily_plan: "Today's plan", workout: "Activity reminder", meal_log: "Meal check-in", rest_day: "Rest-day note", motivation: "A thought for today", milestone: "Milestones",
+  daily_plan: "Today's plan", workout: "Activity reminder", meal_log: "Meal check-in", rest_day: "Rest-day note", motivation: "A thought for today", milestone: "Milestones", event_update: "Changes to events you joined",
 };
 
 /** What this browser can do. iOS/iPadOS deliver web push only to a site added to the Home Screen (iOS 16.4 or later). */
