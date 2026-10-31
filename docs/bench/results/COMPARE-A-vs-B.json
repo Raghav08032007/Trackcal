@@ -1,0 +1,123 @@
+{
+ "verdict": "A fails a hard gate; B passes them all and wins.",
+ "a": {
+  "total": 71,
+  "categories": {
+   "speed": 94,
+   "visual": 19,
+   "performance": 52,
+   "maintainability": 75,
+   "regression": 100,
+   "habit": 100
+  },
+  "details": {
+   "perJourney": {
+    "J1": 100,
+    "J2": 100,
+    "J3": 91,
+    "J4": 100,
+    "J5": 82,
+    "J6": 91,
+    "J7": 91,
+    "J8": 100
+   },
+   "visual": {
+    "axe": 0,
+    "contrast": 0,
+    "tapTargets": 63,
+    "tokens": 0,
+    "keyboard": 96
+   },
+   "perf": {
+    "lighthouse": 69,
+    "lcp": 0,
+    "cls": 83,
+    "apiP95": 20,
+    "apiErrors": 100
+   },
+   "maint": {
+    "duplication": 100,
+    "bigFiles": 82,
+    "complexity": 14,
+    "typeEscapes": 100,
+    "addField": 80
+   },
+   "axeIssues": 10,
+   "contrastPairs": 21
+  },
+  "gates": {
+   "noDataLoss": true,
+   "wcagTextContrast": false,
+   "zeroRegressions": true,
+   "allJourneysSucceed": true
+  },
+  "weights": {
+   "speed": 30,
+   "visual": 20,
+   "performance": 15,
+   "maintainability": 15,
+   "regression": 10,
+   "habit": 10
+  }
+ },
+ "b": {
+  "total": 86,
+  "categories": {
+   "speed": 94,
+   "visual": 83,
+   "performance": 68,
+   "maintainability": 74,
+   "regression": 100,
+   "habit": 100
+  },
+  "details": {
+   "perJourney": {
+    "J1": 100,
+    "J2": 100,
+    "J3": 91,
+    "J4": 100,
+    "J5": 82,
+    "J6": 91,
+    "J7": 91,
+    "J8": 100
+   },
+   "visual": {
+    "axe": 100,
+    "contrast": 100,
+    "tapTargets": 54,
+    "tokens": 0,
+    "keyboard": 96
+   },
+   "perf": {
+    "lighthouse": 87,
+    "lcp": 31,
+    "cls": 100,
+    "apiP95": 17,
+    "apiErrors": 100
+   },
+   "maint": {
+    "duplication": 100,
+    "bigFiles": 82,
+    "complexity": 8,
+    "typeEscapes": 100,
+    "addField": 80
+   },
+   "axeIssues": 0,
+   "contrastPairs": 0
+  },
+  "gates": {
+   "noDataLoss": true,
+   "wcagTextContrast": true,
+   "zeroRegressions": true,
+   "allJourneysSucceed": true
+  },
+  "weights": {
+   "speed": 30,
+   "visual": 20,
+   "performance": 15,
+   "maintainability": 15,
+   "regression": 10,
+   "habit": 10
+  }
+ }
+}

@@ -1,0 +1,37 @@
+[
+ {
+  "feature": "Quick re-log from favourites or recents",
+  "present": true,
+  "evidence": "J3 succeeded"
+ },
+ {
+  "feature": "Today's summary within 2 taps",
+  "present": true,
+  "evidence": "J7 taps median 2"
+ },
+ {
+  "feature": "Repeat yesterday",
+  "present": true,
+  "evidence": "\"Copy yesterday's meals\" on the diary"
+ },
+ {
+  "feature": "Streaks / XP feedback",
+  "present": true,
+  "evidence": "/play mentions XP or streaks"
+ },
+ {
+  "feature": "Companion encouragement",
+  "present": true,
+  "evidence": "Home shows the companion"
+ },
+ {
+  "feature": "Reminders",
+  "present": true,
+  "evidence": "/routine has reminders (push itself is behind a flag)"
+ },
+ {
+  "feature": "Works offline for logging",
+  "present": true,
+  "evidence": "Water and the journal are stored on the device (J5)"
+ }
+]

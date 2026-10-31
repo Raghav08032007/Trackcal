@@ -1,6 +1,6 @@
 # Bench results: Version A
 
-http://127.0.0.1:3007 · 5 runs · 2026-10-30T10:15Z
+http://127.0.0.1:3007 · 5 runs · 2026-10-31T06:04Z
 
 ## Score: 71 / 100
 
@@ -37,29 +37,29 @@ http://127.0.0.1:3007 · 5 runs · 2026-10-30T10:15Z
 
 | Screen | Score | LCP ms | CLS | TBT ms |
 |---|---|---|---|---|
-| / | 64 | 10821 | 0.17 | 34 |
-| /nutrition | 72 | 10823 | 0.02 | 54 |
-| /workouts | 71 | 10896 | 0.06 | 23 |
-| /play | 67 | 33322 | 0.14 | 37 |
-| /progress | 72 | 10601 | 0.04 | 28 |
-| /scanner | 67 | 10973 | 0.13 | 38 |
-| /account | 67 | 10818 | 0.14 | 15 |
+| / | 64 | 10821 | 0.17 | 13 |
+| /nutrition | 72 | 10824 | 0.02 | 18 |
+| /workouts | 72 | 10910 | 0.06 | 19 |
+| /play | 67 | 33296 | 0.14 | 65 |
+| /progress | 72 | 10673 | 0.04 | 17 |
+| /scanner | 67 | 10973 | 0.13 | 16 |
+| /account | 67 | 10825 | 0.14 | 15 |
 
 ## API load (50 connections)
 
 | Endpoint | p50 ms | p95 ms (≤) | Errors | 429 |
 |---|---|---|---|---|
-| /api/v1/auth/me | 197 | 285 | 0% | 0% |
-| /api/v1/wellness/diary | 1282 | 2007 | 0% | 0% |
-| /api/v1/adventure/summary | 1581 | 2634 | 0% | 0% |
-| /api/v1/wellness/foods?q=rice | 1279 | 1695 | 0% | 0% |
-| /api/v1/wellness/training | 1759 | 3024 | 0% | 0% |
+| /api/v1/auth/me | 169 | 313 | 0% | 0% |
+| /api/v1/wellness/diary | 1028 | 1681 | 0% | 0% |
+| /api/v1/adventure/summary | 1249 | 2301 | 0% | 0% |
+| /api/v1/wellness/foods?q=rice | 1256 | 1847 | 0% | 0% |
+| /api/v1/wellness/training | 4367 | 6444 | 0% | 0% |
 
 ## Screens, accessibility and tokens
 
-- Screenshots: 316; unreachable: 0 (see screens.json)
+- Screenshots: 337; unreachable: 0 (see screens.json)
 - axe violations: 10 (10 serious/critical)
-- Text contrast failures: 190 elements, 20 distinct colour pairs
+- Text contrast failures: 200 elements, 21 distinct colour pairs
 - Distinct values: fontFamily 3, fontSize 89, fontWeight 11, lineHeight 139, color 93, backgroundColor 59, spacing 89, borderRadius 30, boxShadow 65, zIndex 8
 - Keyboard traps: 0; 200% zoom horizontal scroll on 0 screens
 - Animations still running with reduced motion: 0

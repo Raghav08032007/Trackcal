@@ -94,3 +94,29 @@ These are recorded only: app code is frozen.
 7. **Tamil and Hindi.** These use the system font, not the brand font.
 8. **Language.** Version A has no translated interface, so J8 measures theme only.
 9. **Complexity.** 43 functions are over complexity 15, and `food-workspace.tsx` has 1,667 lines.
+
+## Version B comparison (31 October 2026)
+
+**Result: B 86, A 71. B wins and is the only version that passes every hard gate.** Full table: `results/COMPARE-A-vs-B.md`.
+
+Measured commits: A `25f99f3c` / `9eefb07`, B `884490bd` / `0183d97`, both from pinned checkouts. Later commits (challenge and event fixes, reporting, event alerts, companion bond) are not in this measurement.
+
+| Measure | A | B |
+|---|---|---|
+| Failing contrast pairs | 21 | 0 |
+| axe serious violations | 10 | 0 |
+| Largest contentful paint on slow 4G | 10.7–33.3 s | 2.9–4.2 s |
+| Lighthouse | 64–72 | 82–91 |
+| Font sizes | 89 | 15 |
+| Text colours | 93 | 100 |
+| Controls under 44 px, per page | 9.2 | 11.5 |
+| Functions over complexity 15 | 43 | 46 |
+| Journey taps | same | same |
+
+**How it was run.** A's screens were re-measured with the fixed colour parser, and both versions' Lighthouse and load tests were re-run back to back on an otherwise idle machine. The first B load test was discarded from the comparison because a short test run overlapped it.
+
+**API under load.** `/wellness/training` p95 was the same on both (6.4 s), so it is not a B regression, though it is slow. It was 3.0 s in A's earlier run, so this endpoint varies a lot between runs. B was slower on `/wellness/diary` (2.7 s vs 1.7 s), `/adventure/summary` (3.9 s vs 2.3 s) and `/auth/me` (0.42 s vs 0.31 s). Spreads were 18–41% on B and 15–46% on A, so these differences are not proven. Neither endpoint met the 300 ms target.
+
+**Where B is worse:** more undersized controls, 7 more text colours, 3 more complex functions. Maintainability fell by 1 point.
+
+**Limits.** Taps did not change, so the speed score did not either. Seconds are lab speed with high spread. Contrast skips text on gradients. No real people have used B, so the usability kit is still needed.

@@ -95,16 +95,16 @@ A version that fails any gate can't win, whatever its score.
 
 **Ties.** A total difference under 2 points is "no clear difference". A QUICK run is never a valid comparison.
 
-## Version A
+## Results
 
-| Category | Weight | A |
-|---|---|---|
-| Task speed and taps | 30 | 94 |
-| Visual quality and accessibility | 20 | 19 |
-| Performance | 15 | 52 |
-| Maintainability | 15 | 75 |
-| Regression safety | 10 | 100 |
-| Habit-loop features | 10 | 100 |
-| **Total** | 100 | **71** |
+| Category | Weight | A | B |
+|---|---|---|---|
+| Task speed and taps | 30 | 94 | 94 |
+| Visual quality and accessibility | 20 | 19 | 83 |
+| Performance | 15 | 52 | 68 |
+| Maintainability | 15 | 75 | 74 |
+| Regression safety | 10 | 100 | 100 |
+| Habit-loop features | 10 | 100 | 100 |
+| **Total** | 100 | **71** | **86** |
 
-A fails the `wcagTextContrast` gate. Details are in `results/A/SUMMARY.md`, and `TEST_REPORT_BENCH.md` records how the numbers were produced.
+A fails the `wcagTextContrast` gate. B passes every gate. `TEST_REPORT_BENCH.md` records how the numbers were produced.

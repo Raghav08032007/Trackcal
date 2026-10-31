@@ -1876,6 +1876,12 @@
   },
   {
    "screen": "member/",
+   "state": "outage",
+   "file": "member-home-android-360-light-outage.png",
+   "finalPath": "/"
+  },
+  {
+   "screen": "member/",
    "state": "offline",
    "file": "member-home-android-360-light-offline.png",
    "finalPath": "/"
@@ -1896,6 +1902,12 @@
    "screen": "member/nutrition",
    "state": "error",
    "file": "member-nutrition-android-360-light-error.png",
+   "finalPath": "/nutrition"
+  },
+  {
+   "screen": "member/nutrition",
+   "state": "outage",
+   "file": "member-nutrition-android-360-light-outage.png",
    "finalPath": "/nutrition"
   },
   {
@@ -1924,6 +1936,12 @@
   },
   {
    "screen": "member/scanner",
+   "state": "outage",
+   "file": "member-scanner-android-360-light-outage.png",
+   "finalPath": "/scanner"
+  },
+  {
+   "screen": "member/scanner",
    "state": "offline",
    "file": "member-scanner-android-360-light-offline.png",
    "finalPath": "/scanner"
@@ -1944,6 +1962,12 @@
    "screen": "member/barcode",
    "state": "error",
    "file": "member-barcode-android-360-light-error.png",
+   "finalPath": "/barcode"
+  },
+  {
+   "screen": "member/barcode",
+   "state": "outage",
+   "file": "member-barcode-android-360-light-outage.png",
    "finalPath": "/barcode"
   },
   {
@@ -1972,6 +1996,12 @@
   },
   {
    "screen": "member/describe",
+   "state": "outage",
+   "file": "member-describe-android-360-light-outage.png",
+   "finalPath": "/describe"
+  },
+  {
+   "screen": "member/describe",
    "state": "offline",
    "file": "member-describe-android-360-light-offline.png",
    "finalPath": "/describe"
@@ -1992,6 +2022,12 @@
    "screen": "member/food-library",
    "state": "error",
    "file": "member-food-library-android-360-light-error.png",
+   "finalPath": "/food-library"
+  },
+  {
+   "screen": "member/food-library",
+   "state": "outage",
+   "file": "member-food-library-android-360-light-outage.png",
    "finalPath": "/food-library"
   },
   {
@@ -2020,6 +2056,12 @@
   },
   {
    "screen": "member/journal",
+   "state": "outage",
+   "file": "member-journal-android-360-light-outage.png",
+   "finalPath": "/journal"
+  },
+  {
+   "screen": "member/journal",
    "state": "offline",
    "file": "member-journal-android-360-light-offline.png",
    "finalPath": "/journal"
@@ -2040,6 +2082,12 @@
    "screen": "member/recipes",
    "state": "error",
    "file": "member-recipes-android-360-light-error.png",
+   "finalPath": "/recipes"
+  },
+  {
+   "screen": "member/recipes",
+   "state": "outage",
+   "file": "member-recipes-android-360-light-outage.png",
    "finalPath": "/recipes"
   },
   {
@@ -2068,6 +2116,12 @@
   },
   {
    "screen": "member/workouts",
+   "state": "outage",
+   "file": "member-workouts-android-360-light-outage.png",
+   "finalPath": "/workouts"
+  },
+  {
+   "screen": "member/workouts",
    "state": "offline",
    "file": "member-workouts-android-360-light-offline.png",
    "finalPath": "/workouts"
@@ -2088,6 +2142,12 @@
    "screen": "member/workouts/camera",
    "state": "error",
    "file": "member-workouts-camera-android-360-light-error.png",
+   "finalPath": "/workouts/camera"
+  },
+  {
+   "screen": "member/workouts/camera",
+   "state": "outage",
+   "file": "member-workouts-camera-android-360-light-outage.png",
    "finalPath": "/workouts/camera"
   },
   {
@@ -2116,6 +2176,12 @@
   },
   {
    "screen": "member/plan",
+   "state": "outage",
+   "file": "member-plan-android-360-light-outage.png",
+   "finalPath": "/plan"
+  },
+  {
+   "screen": "member/plan",
    "state": "offline",
    "file": "member-plan-android-360-light-offline.png",
    "finalPath": "/plan"
@@ -2136,6 +2202,12 @@
    "screen": "member/play",
    "state": "error",
    "file": "member-play-android-360-light-error.png",
+   "finalPath": "/play"
+  },
+  {
+   "screen": "member/play",
+   "state": "outage",
+   "file": "member-play-android-360-light-outage.png",
    "finalPath": "/play"
   },
   {
@@ -2164,6 +2236,12 @@
   },
   {
    "screen": "member/progress",
+   "state": "outage",
+   "file": "member-progress-android-360-light-outage.png",
+   "finalPath": "/progress"
+  },
+  {
+   "screen": "member/progress",
    "state": "offline",
    "file": "member-progress-android-360-light-offline.png",
    "finalPath": "/progress"
@@ -2184,6 +2262,12 @@
    "screen": "member/routine",
    "state": "error",
    "file": "member-routine-android-360-light-error.png",
+   "finalPath": "/routine"
+  },
+  {
+   "screen": "member/routine",
+   "state": "outage",
+   "file": "member-routine-android-360-light-outage.png",
    "finalPath": "/routine"
   },
   {
@@ -2212,6 +2296,12 @@
   },
   {
    "screen": "member/account",
+   "state": "outage",
+   "file": "member-account-android-360-light-outage.png",
+   "finalPath": "/account"
+  },
+  {
+   "screen": "member/account",
    "state": "offline",
    "file": "member-account-android-360-light-offline.png",
    "finalPath": "/account"
@@ -2232,6 +2322,12 @@
    "screen": "member/tools",
    "state": "error",
    "file": "member-tools-android-360-light-error.png",
+   "finalPath": "/tools"
+  },
+  {
+   "screen": "member/tools",
+   "state": "outage",
+   "file": "member-tools-android-360-light-outage.png",
    "finalPath": "/tools"
   },
   {
@@ -2260,6 +2356,12 @@
   },
   {
    "screen": "member/guide",
+   "state": "outage",
+   "file": "member-guide-android-360-light-outage.png",
+   "finalPath": "/guide"
+  },
+  {
+   "screen": "member/guide",
    "state": "offline",
    "file": "member-guide-android-360-light-offline.png",
    "finalPath": "/guide"
@@ -2280,6 +2382,12 @@
    "screen": "member/onboarding",
    "state": "error",
    "file": "member-onboarding-android-360-light-error.png",
+   "finalPath": "/onboarding"
+  },
+  {
+   "screen": "member/onboarding",
+   "state": "outage",
+   "file": "member-onboarding-android-360-light-outage.png",
    "finalPath": "/onboarding"
   },
   {
@@ -2308,6 +2416,12 @@
   },
   {
    "screen": "member/premium",
+   "state": "outage",
+   "file": "member-premium-android-360-light-outage.png",
+   "finalPath": "/premium"
+  },
+  {
+   "screen": "member/premium",
    "state": "offline",
    "file": "member-premium-android-360-light-offline.png",
    "finalPath": "/premium"
@@ -2332,6 +2446,12 @@
   },
   {
    "screen": "member/feed",
+   "state": "outage",
+   "file": "member-feed-android-360-light-outage.png",
+   "finalPath": "/feed"
+  },
+  {
+   "screen": "member/feed",
    "state": "offline",
    "file": "member-feed-android-360-light-offline.png",
    "finalPath": "/feed"
@@ -2352,6 +2472,12 @@
    "screen": "member/communities",
    "state": "error",
    "file": "member-communities-android-360-light-error.png",
+   "finalPath": "/communities"
+  },
+  {
+   "screen": "member/communities",
+   "state": "outage",
+   "file": "member-communities-android-360-light-outage.png",
    "finalPath": "/communities"
   },
   {
@@ -3296,11 +3422,11 @@
    "tokens": {
     "fontFamily": {
      "\"Geist Variable\", ui-sans-serif, system-ui, sans-serif, sans-serif": 56,
-     "\"Geist Variable\", ui-sans-serif, system-ui, sans-serif": 33
+     "\"Geist Variable\", ui-sans-serif, system-ui, sans-serif": 34
     },
     "fontSize": {
      "17px": 32,
-     "13.94px": 4,
+     "13.94px": 5,
      "22px": 2,
      "13.26px": 1,
      "22.1px": 1,
@@ -3314,7 +3440,7 @@
      "12px": 1
     },
     "fontWeight": {
-     "400": 41,
+     "400": 42,
      "600": 8,
      "650": 3,
      "700": 33,
@@ -3335,7 +3461,7 @@
      "21.76px": 2,
      "20.4px": 12,
      "29.75px": 1,
-     "18.5867px": 3,
+     "18.5867px": 4,
      "24.2857px": 2,
      "22.6667px": 1,
      "19.2px": 1
@@ -3346,7 +3472,7 @@
      "rgb(106, 79, 208)": 6,
      "rgb(99, 80, 197)": 3,
      "rgb(255, 255, 255)": 2,
-     "rgb(104, 105, 126)": 13,
+     "rgb(104, 105, 126)": 14,
      "rgb(107, 132, 144)": 4
     },
     "backgroundColor": {
@@ -3356,6 +3482,7 @@
      "rgb(244, 243, 250)": 1,
      "rgb(239, 237, 249)": 3,
      "rgb(237, 242, 227)": 1,
+     "oklch(0.765 0.177 163.223)": 1,
      "rgb(105, 84, 204)": 1,
      "rgb(250, 252, 245)": 1
     },
@@ -3390,6 +3517,7 @@
      "17px": 1,
      "12.75px": 3,
      "8.5px": 1,
+     "3.35544e+07px": 1,
      "10px": 5,
      "12px": 1
     },
@@ -3575,7 +3703,48 @@
      "60": 1
     }
    },
-   "contrast": [],
+   "contrast": [
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "Global Food AI Curated",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "Open Food Facts",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "USDA FoodData Central",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "USDA FoodData Central",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "Global Food AI Curated",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    }
+   ],
    "smallTargets": [
     {
      "selector": "a.app-brand",
@@ -13301,7 +13470,48 @@
      "60": 1
     }
    },
-   "contrast": [],
+   "contrast": [
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "Global Food AI Curated",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "Open Food Facts",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "USDA FoodData Central",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "USDA FoodData Central",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    },
+    {
+     "selector": "span.px-2.py-0.5",
+     "text": "Global Food AI Curated",
+     "ratio": 2.72,
+     "needed": 4.5,
+     "color": "rgb(104, 105, 126)",
+     "background": "rgb(29, 41, 61)"
+    }
+   ],
    "smallTargets": [
     {
      "selector": "a.app-brand",
@@ -27203,7 +27413,7 @@
    "css": 0
   },
   "member/guide": {
-   "js": 486694,
+   "js": 5262,
    "css": 0
   },
   "member/onboarding": {
@@ -27211,7 +27421,7 @@
    "css": 0
   },
   "member/premium": {
-   "js": 7287,
+   "js": 5975,
    "css": 0
   },
   "member/feed": {
@@ -27219,7 +27429,7 @@
    "css": 0
   },
   "member/communities": {
-   "js": 7068,
+   "js": 489654,
    "css": 0
   },
   "guest/": {
@@ -27231,7 +27441,7 @@
    "css": 0
   },
   "guest/signup": {
-   "js": 160,
+   "js": 490700,
    "css": 0
   },
   "guest/forgot-password": {

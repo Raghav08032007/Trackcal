@@ -1,0 +1,372 @@
+{
+ "/api/v1/auth/me": {
+  "p50Ms": {
+   "median": 244,
+   "min": 236,
+   "max": 275,
+   "spread": 0.16,
+   "runs": 5,
+   "unreliable": true
+  },
+  "p95Ms": {
+   "median": 418,
+   "min": 407,
+   "max": 480,
+   "spread": 0.175,
+   "runs": 5,
+   "unreliable": true
+  },
+  "rps": {
+   "median": 191.13,
+   "min": 171.42,
+   "max": 195.34,
+   "spread": 0.125,
+   "runs": 5,
+   "unreliable": false
+  },
+  "errorRate": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "rateLimitedShare": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "codes": [
+   {
+    "200": 4688
+   },
+   {
+    "200": 4587
+   },
+   {
+    "200": 4114
+   },
+   {
+    "200": 4688
+   },
+   {
+    "200": 4462
+   }
+  ],
+  "timeouts": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "connectionErrors": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "note": "autocannon reports p97.5, used as the p95 upper bound. 429s are the app's own rate limits, reported separately from errors."
+ },
+ "/api/v1/wellness/diary": {
+  "p50Ms": {
+   "median": 1680,
+   "min": 1615,
+   "max": 1777,
+   "spread": 0.096,
+   "runs": 5,
+   "unreliable": false
+  },
+  "p95Ms": {
+   "median": 2723,
+   "min": 2098,
+   "max": 3208,
+   "spread": 0.408,
+   "runs": 5,
+   "unreliable": true
+  },
+  "rps": {
+   "median": 28,
+   "min": 26.42,
+   "max": 30,
+   "spread": 0.128,
+   "runs": 5,
+   "unreliable": false
+  },
+  "errorRate": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "rateLimitedShare": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "codes": [
+   {
+    "200": 685
+   },
+   {
+    "200": 634
+   },
+   {
+    "200": 668
+   },
+   {
+    "200": 672
+   },
+   {
+    "200": 720
+   }
+  ],
+  "timeouts": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "connectionErrors": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "note": "autocannon reports p97.5, used as the p95 upper bound. 429s are the app's own rate limits, reported separately from errors."
+ },
+ "/api/v1/adventure/summary": {
+  "p50Ms": {
+   "median": 2221,
+   "min": 2130,
+   "max": 2322,
+   "spread": 0.086,
+   "runs": 5,
+   "unreliable": false
+  },
+  "p95Ms": {
+   "median": 3893,
+   "min": 3530,
+   "max": 4271,
+   "spread": 0.19,
+   "runs": 5,
+   "unreliable": true
+  },
+  "rps": {
+   "median": 20.88,
+   "min": 19.67,
+   "max": 21.34,
+   "spread": 0.08,
+   "runs": 5,
+   "unreliable": false
+  },
+  "errorRate": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "rateLimitedShare": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "codes": [
+   {
+    "200": 501
+   },
+   {
+    "200": 512
+   },
+   {
+    "200": 511
+   },
+   {
+    "200": 472
+   },
+   {
+    "200": 473
+   }
+  ],
+  "timeouts": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "connectionErrors": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "note": "autocannon reports p97.5, used as the p95 upper bound. 429s are the app's own rate limits, reported separately from errors."
+ },
+ "/api/v1/wellness/foods?q=rice": {
+  "p50Ms": {
+   "median": 1356,
+   "min": 1248,
+   "max": 1499,
+   "spread": 0.185,
+   "runs": 5,
+   "unreliable": true
+  },
+  "p95Ms": {
+   "median": 1686,
+   "min": 1550,
+   "max": 1934,
+   "spread": 0.228,
+   "runs": 5,
+   "unreliable": true
+  },
+  "rps": {
+   "median": 33.34,
+   "min": 28.58,
+   "max": 33.34,
+   "spread": 0.143,
+   "runs": 5,
+   "unreliable": false
+  },
+  "errorRate": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "rateLimitedShare": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "codes": [
+   {
+    "200": 200
+   },
+   {
+    "200": 200
+   },
+   {
+    "200": 200
+   },
+   {
+    "200": 200
+   },
+   {
+    "200": 200
+   }
+  ],
+  "timeouts": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "connectionErrors": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "note": "autocannon reports p97.5, used as the p95 upper bound. 429s are the app's own rate limits, reported separately from errors."
+ },
+ "/api/v1/wellness/training": {
+  "p50Ms": {
+   "median": 4096,
+   "min": 3446,
+   "max": 4288,
+   "spread": 0.206,
+   "runs": 5,
+   "unreliable": true
+  },
+  "p95Ms": {
+   "median": 6376,
+   "min": 4843,
+   "max": 8075,
+   "spread": 0.507,
+   "runs": 5,
+   "unreliable": true
+  },
+  "rps": {
+   "median": 10.59,
+   "min": 9.92,
+   "max": 12.67,
+   "spread": 0.26,
+   "runs": 5,
+   "unreliable": true
+  },
+  "errorRate": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "rateLimitedShare": {
+   "median": 0,
+   "min": 0,
+   "max": 0,
+   "spread": 0,
+   "runs": 5,
+   "unreliable": false
+  },
+  "codes": [
+   {
+    "200": 282
+   },
+   {
+    "200": 251
+   },
+   {
+    "200": 254
+   },
+   {
+    "200": 238
+   },
+   {
+    "200": 304
+   }
+  ],
+  "timeouts": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "connectionErrors": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "note": "autocannon reports p97.5, used as the p95 upper bound. 429s are the app's own rate limits, reported separately from errors."
+ }
+}
