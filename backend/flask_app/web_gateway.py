@@ -172,13 +172,13 @@ def account_write(action):
 
 # ── Adventure ───────────────────────────────────────────────────────────────
 
-ADVENTURE_WRITES = {'workout': 'review-workout', 'rest': 'rest-day', 'settings': 'companion-settings', 'initialize': 'initialize', 'review': 'review-meal', 'start': 'game/start', 'submit': 'game/submit'}
+ADVENTURE_WRITES = {'bond': 'bond', 'workout': 'review-workout', 'rest': 'rest-day', 'settings': 'companion-settings', 'initialize': 'initialize', 'review': 'review-meal', 'start': 'game/start', 'submit': 'game/submit'}
 
 
 @bp.get('/adventure/<action>')
 def adventure_read(action):
-    if action != 'summary': return error('Not found', 404)
-    try: return forward(authenticated('GET', '/adventure/summary'))
+    if action not in ('summary', 'bond'): return error('Not found', 404)
+    try: return forward(authenticated('GET', f'/adventure/{action}'))
     except Exception: return error('Your adventure service is unavailable. Saved meals are safe.', 503)
 
 

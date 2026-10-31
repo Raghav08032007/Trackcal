@@ -9,7 +9,7 @@ from typing import Literal
 from sqlalchemy.orm import Session
 from database import get_db
 from routers.auth import get_current_active_user
-from services import adventure as service
+from services import adventure as service, bond
 from services.abuse_limits import consume
 import models
 
@@ -142,6 +142,23 @@ def rest_day(data:RestDay,user=Depends(get_current_active_user),db:Session=Depen
         if sum(str(monday)<=row.local_day<=str(day) for row in rows)>=policy(db)['rest_days_per_week']:raise HTTPException(409,'This week’s planned rest allowance is used. Earned XP and badges remain safe during breaks.')
         db.add(models.StreakRecord(user_id=user.id,local_day=str(day),kind='rest'))
     db.commit();return {'awarded_xp':0,'summary':service.summary(db,user)}
+
+class BondChoice(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    aura:Literal[bond.AURAS]
+    title:Literal[bond.TITLES]
+
+def bond_view(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    if not bond.enabled(db):raise HTTPException(404,'Companion bonds are not available yet.')
+    require_profile(db,user);return bond.view(db,user)
+
+def bond_choose(data:BondChoice,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    from services.gamification import customization
+    if not bond.enabled(db):raise HTTPException(404,'Companion bonds are not available yet.')
+    consume(db,'bond-choice',str(user.id),90,3600);require_profile(db,user);current=bond.view(db,user)
+    if data.aura not in current['auras'] or (data.title and data.title not in current['titles']):raise HTTPException(409,'Earn this through your bond first.')
+    prefs=customization(db,user);prefs.aura,prefs.title=data.aura,data.title
+    db.commit();return bond.view(db,user)
 
 class CompanionSettings(BaseModel):
     model_config=ConfigDict(extra='forbid')

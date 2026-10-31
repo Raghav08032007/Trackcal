@@ -44,6 +44,7 @@ class RewardEvent(Base):
     kind = Column(String(30), nullable=False)
     local_day = Column(String(10), nullable=False)
     xp = Column(Integer, nullable=False)
+    companion_id = Column(String(20), nullable=True)  # active companion when earned (bond, Phase 11); NULL before Phase 11
     created_at = Column(DateTime, nullable=False, default=utcnow)
     __table_args__ = (UniqueConstraint("user_id", "reward_key", name="uq_reward_user_key"),)
 
@@ -136,6 +137,8 @@ class CharacterCustomization(Base):
     muted = Column(Boolean, nullable=False, default=False)
     position = Column(String(10), nullable=False, default="right")
     protection_enabled = Column(Boolean, nullable=False, default=True)
+    aura = Column(String(20), nullable=False, default='none')  # earned through bond stages (Phase 11)
+    title = Column(String(40), nullable=False, default='')
 
 
 class CharacterUnlock(Base):

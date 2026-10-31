@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import date,timedelta
 from flask_app.params import HTTPException
 import models
+from services import bond
 from services.read_only import locked, writing
 
 KINDS={'verified_challenge_completion':'verified_challenge_completed','verified_event_attendance':'verified_event_attended','saved_meal':'saved_meal_created','onboarding':'onboarding_completed','activity_plan':'activity_plan_created','planner_learning':'planner_education_completed','fitness_learning':'exercise_skill_learned','nutrition_learning':'personal_nutrition_education_completed','recovery':'recovery_activity_completed','meal':'nutrition_log_completed','quiz':'nutrition_education_completed','plan':'personal_plan_activity_completed','workout':'workout_completed','weekly':'weekly_consistency'}
@@ -46,7 +47,9 @@ def award(db,user,kind,day,xp=None,key=None,source_id=None,payload=None):
     used=sum(max(0,e.xp) for e in ledger if e.local_day==str(day));kind_used=sum(max(0,e.xp) for e in ledger if e.local_day==str(day) and e.kind==kind)
     points=0 if any(e.reward_key==reward_key for e in ledger) else max(0,min(rule.xp,rule.daily_cap-kind_used,policy(db)['daily_cap']-used))
     db.add(models.ActivityRewardEvent(user_id=user.id,category=category,source_id=source,local_day=str(day),rule_version=rule.version,awarded_xp=points,payload=payload or {}))
-    if points:db.add(models.RewardEvent(user_id=user.id,reward_key=reward_key,kind=kind,local_day=str(day),xp=points))
+    if points:
+        prefs=db.get(models.CharacterCustomization,user.id) if bond.enabled(db) else None  # which companion shares this XP
+        db.add(models.RewardEvent(user_id=user.id,reward_key=reward_key,kind=kind,local_day=str(day),xp=points,companion_id=prefs.character_id if prefs else None))
     db.flush();return points
 
 def flexible_streak(engaged,rests,today,protection=True,allowance=1):
@@ -97,5 +100,6 @@ def state(db,user,day,xp,events):
     result={'level':1+xp//config['level_step'],'level_xp':xp%config['level_step'],'level_step':config['level_step'],'unlocked_companions':[c for c in CHARACTERS if c in unlocks],'companion_unlocks':milestones,'achievements':achievements,'engagement_streak':streak,'rest_days_remaining':max(0,config['rest_days_per_week']-rest_used),'rest_today':str(day) in rests,'customization':{key:getattr(prefs,key) for key in ('character_id','accessory','enabled','minimized','muted','position','protection_enabled')},'daily_xp_cap':config['daily_cap'],'integration_contracts':[{'category':KINDS.get(k,k),'operational':bool(k in KINDS and db.get(models.GamificationRule,k) and db.get(models.GamificationRule,k).enabled)} for k,_xp,_cap,enabled in RULES if k!='weekly']}
     from services import billing
     perks=billing.entitlements(db,user);result['premium']=perks['premium'];result['premium_accessories']=list(billing.PREMIUM_ACCESSORIES)
+    if bond.enabled(db):result['customization']['aura']=prefs.aura
     if result['customization']['accessory'] in billing.PREMIUM_ACCESSORIES and not perks['premium']:result['customization']['accessory']='none'  # lapsed Premium: hidden, choice kept
     return result
