@@ -47,7 +47,7 @@ class CameraSet(Strict):
     corrected_reps:int|None=Field(default=None,ge=0,le=100)
     duration_s:float|None=Field(default=None,ge=0,le=3600,allow_inf_nan=False)
 class CameraTracking(Strict):
-    exercise_type:Literal['squat','pushup','curl','press','situp','wallpush','lunge','jack','raise','knee','sumo','bridge','calf','sideleg','donkey','incline','kneepush','row','superman','kickback','overhead','hammer','front','uprow','crunch','legraise','sidebend','highknee','burpee','climber']
+    exercise_type:Literal['squat','pushup','curl','press','situp','wallpush','lunge','jack','raise','knee','sumo','bridge','calf','sideleg','donkey','incline','kneepush','row','superman','kickback','overhead','hammer','front','uprow','crunch','legraise','sidebend','highknee','burpee','climber','wsquat','ohsquat','wlunge','sidelunge','squatjump','buttkick','deadlift','rdl','goodmorning','wcalf','hipthrust','bench','skull','revfly','seatrow','conccurl','thruster','pikepush','dip','pullup','birddog','flutter','bicycle','revcrunch','vup','punch']
     engine:Literal['mediapipe-pose-lite']='mediapipe-pose-lite'
     version:Literal[1,2]=1  # 2: config-driven counter with hysteresis, smoothing and rejection reasons (Phase 3)
     confidence_mean:float=Field(ge=0,le=1,allow_inf_nan=False)
