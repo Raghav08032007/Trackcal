@@ -5,7 +5,7 @@ import {REJECTION_TIPS,type ExerciseConfig,type RejectionReason} from './exercis
  *  sane duration and the body visible throughout. Thresholds use hysteresis and must hold for minDwellMs, so jitter
  *  around a threshold never flips the phase. The count only ever goes up (or back to 0 on reset()). */
 export type Phase='SETUP'|'UP'|'GOING_DOWN'|'DOWN'|'GOING_UP';
-const GAP_MS=750,TIP_MS=2500,MAX_REPS=100;
+const GAP_MS=750,TIP_MS=2500,MAX_REPS=100,CROSSING_MARGIN=6;
 export class RepCounter{
  reps=0;phase:Phase='SETUP';rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0};
  private last=-Infinity;private held:{key:string;since:number;frames:number}|null=null;
@@ -23,13 +23,13 @@ export class RepCounter{
  }
  update(o:Observation,t:number):TrackingResult{
   const c=this.config,inCycle=()=>this.phase==='GOING_DOWN'||this.phase==='DOWN'||this.phase==='GOING_UP';
-  const out=(accepted:boolean,message:string,paused=false):TrackingResult=>({reps:this.reps,phase:this.phase,confidence:o.confidence,message,accepted,paused,rejection:this.rejected&&t-this.rejected.at<TIP_MS?this.rejected.reason:null});
+  const out=(accepted:boolean,message:string,paused=false):TrackingResult=>({reps:this.reps,phase:this.phase,confidence:o.confidence,message,accepted,paused,rejection:this.rejected&&t-this.rejected.at<TIP_MS?this.rejected.reason:null,progress:o.valid?Math.min(1,Math.max(0,(c.up-o.angle)/(c.up-c.down))):0});
   if(!Number.isFinite(t)||t<=this.last)return out(false,'Duplicate or stale frame ignored.');
   if(t-this.last>GAP_MS&&this.phase!=='SETUP'){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();}
   this.last=t;
   if(!o.valid){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();return out(false,o.reason||'Tracking paused.',true);}
   const a=o.angle;
-  if(this.cycle){this.cycle.bottom=Math.min(this.cycle.bottom,a);const below=a<(c.up+c.down)/2;if(below!==this.cycle.below){this.cycle.below=below;this.cycle.crossings++;}}
+  if(this.cycle){this.cycle.bottom=Math.min(this.cycle.bottom,a);const mid=(c.up+c.down)/2,below=a<mid-CROSSING_MARGIN?true:a>mid+CROSSING_MARGIN?false:this.cycle.below;if(below!==this.cycle.below){this.cycle.below=below;this.cycle.crossings++;}}
   if(this.cycle&&t-this.cycle.start>c.maxRepMs){this.reject('too_slow',t);this.phase='SETUP';}
   switch(this.phase){
    case 'SETUP':if(this.hold('up',a>=c.up,t)){this.phase='UP';this.top=a;}break;

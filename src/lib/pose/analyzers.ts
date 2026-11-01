@@ -6,10 +6,10 @@ export interface ExerciseAnalyzer{observe(frame:PoseFrame):Observation;reset():v
 /** Measures one joint angle per frame from the config's triplet on the more visible body side. Landmarks are
  *  aspect-corrected before the angle is taken (normalize), and the three joint points are smoothed. */
 export class JointAnalyzer implements ExerciseAnalyzer{
- side:0|1|null=null;private center:{x:number;y:number}|null=null;private filters:OneEuroFilter[]=[];
+ side:0|1|null=null;private center:{x:number;y:number}|null=null;private filters:OneEuroFilter[]=[];private reach=0;private span:number|null=null;
  constructor(readonly config:ExerciseConfig){this.resetFilters();}
  private resetFilters(){const {minCutoff,beta}=this.config.smoothing;this.filters=Array.from({length:6},()=>new OneEuroFilter(minCutoff,beta));}
- reset(){this.side=null;this.center=null;this.resetFilters();}
+ reset(){this.side=null;this.center=null;this.reach=0;this.span=null;this.resetFilters();}
  observe(frame:PoseFrame):Observation{
   const c=this.config,p=normalize(frame),bad=(reason:string,quality=0)=>{this.resetFilters();return {angle:0,confidence:quality,valid:false,reason};};
   if(!p)return bad(frame.landmarks.length>1?'Only one person should be in view.':'Step back so your whole body is in frame.');
@@ -27,7 +27,16 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   if(moved)return bad('The view moved. Hold the camera steady and return to your starting position.',quality);
   if(c.suitable&&!c.suitable(p,side))return bad('The movement is not clear from this angle. Adjust the camera.',quality);
   const joint=c.joints[side].map((id,i):Landmark=>({x:this.filters[i*2].filter(p[id].x,frame.timestamp),y:this.filters[i*2+1].filter(p[id].y,frame.timestamp)}));
-  const degrees=angle(joint[0],joint[1],joint[2]);
+  const degrees=Math.min(angle(joint[0],joint[1],joint[2]),this.spanAngle(p,side));
   return Number.isFinite(degrees)?{angle:degrees,confidence:quality,valid:true,reason:''}:bad('The movement was not detected clearly.',quality);
+ }
+ /** A bent joint seen head-on still looks straight, but its limb ends get closer. Two equal segments span 2·L·sin(θ/2),
+  *  and L comes from the longest span seen recently, so this reads like the joint angle from any view. */
+ private spanAngle(p:Landmark[],side:0|1){
+  const ends=this.config.span?.[side];if(!ends)return Infinity;
+  const raw=Math.hypot(p[ends[0]].x-p[ends[1]].x,p[ends[0]].y-p[ends[1]].y);
+  this.span=this.span===null?raw:this.span*.4+raw*.6;this.reach=Math.max(this.span,this.reach*.999);
+  // Near full reach asin is so steep that tracking noise reads as a bend, so the top 4% counts as straight.
+  return this.reach>0?2*Math.asin(Math.min(1,this.span/(this.reach*.96)))*180/Math.PI:Infinity;
  }
 }
