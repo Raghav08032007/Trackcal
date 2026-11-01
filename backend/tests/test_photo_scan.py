@@ -86,3 +86,32 @@ def test_portion_range_widens_as_confidence_falls_when_the_model_gives_none_or_n
     unsure = normalize_meal({'components': [{**ITEM, 'confidence': 0, 'quantity_g_low': 90, 'quantity_g_high': 20}]}, 'm')['components'][0]
     assert sure['portion_range_g'] == [42.5, 57.5] and sure['range_basis'] == 'confidence'
     assert unsure['portion_range_g'] == [25, 75] and unsure['range_basis'] == 'confidence'
+
+
+def test_grams_come_from_the_count_and_calories_from_the_part_eaten():
+    meal = normalize_meal({'components': [{'name': 'Red banana', 'count': 3, 'grams_each': 107, 'quantity_g': 100, 'quantity_g_low': 80, 'quantity_g_high': 120, 'edible_pct': 65,
+                                           'per_100g': {'calories': 89, 'protein_g': 1.1, 'carbs_g': 22.8, 'fat_g': 0.3}, 'calories': 5, 'protein_g': 0, 'carbs_g': 0, 'fat_g': 0, 'confidence': .8,
+                                           'ingredients': [{'name': 'Red banana', 'grams': 321}]}]}, 'm')
+    item = meal['components'][0]
+    assert item['quantity_g'] == 321 and item['count'] == 3 and item['grams_each'] == 107 and item['edible_g'] == 208.7
+    assert item['calories'] == 185.7 and item['portion_range_g'] == [256.8, 385.2]
+    assert item['ingredients'] == [{'name': 'Red banana', 'grams': 321}]
+
+
+def test_an_older_reply_without_counts_still_works():
+    item = normalize_meal({'components': [ITEM]}, 'm')['components'][0]
+    assert item['quantity_g'] == ITEM['quantity_g'] and item['calories'] == ITEM['calories'] and item['count'] is None and item['ingredients'] == []
+
+
+def test_impossible_per_100g_figures_are_not_used():
+    bad = {**ITEM, 'per_100g': {'calories': 5000, 'protein_g': 1, 'carbs_g': 1, 'fat_g': 1}, 'edible_pct': 100}
+    assert normalize_meal({'components': [bad]}, 'm')['components'][0]['calories'] == ITEM['calories']
+    for value in (0, -3, 500, True):
+        odd = {**ITEM, 'count': value, 'grams_each': 50}
+        assert normalize_meal({'components': [odd]}, 'm')['components'][0]['quantity_g'] == ITEM['quantity_g']
+
+
+def test_a_note_reaches_the_model_with_the_photo(internet):
+    calls, replies = internet; replies.append(model_reply(json.dumps({'components': [ITEM]})))
+    assert post(browser(), '/api/analyze', {'image': phone_photo(), 'text': '3 red bananas, apple 170 g'}).status_code == 200
+    assert '3 red bananas, apple 170 g' in calls[0]['json']['messages'][1]['content'][0]['text']

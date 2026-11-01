@@ -4,6 +4,8 @@ Rejects empty, incomplete, negative, non-finite or implausible values instead of
 Rounding follows JavaScript's Math.round (halves round up), not Python's banker's rounding.
 A photo can't measure weight, so every component carries a portion range: the model's own low/high when it gives a
 valid one ('model'), otherwise a band that widens as confidence falls ('confidence'). The meal carries the calorie range.
+When the model gives count and grams_each, and per_100g with edible_pct, weight and nutrition are worked out here, so the
+calories always follow from the grams. Older replies with only portion totals still work.
 """
 import math
 
@@ -28,6 +30,31 @@ def _portion_range(item, quantity, confidence):
     return [_round1(quantity * (1 - width)), _round1(quantity * (1 + width))], 'confidence'
 
 
+def _weighed(item):
+    """Count times weight, then nutrition from the part that is eaten. Anything missing or implausible keeps the model's totals."""
+    worked, count, each = dict(item), item.get('count'), item.get('grams_each')
+    if _is_number(count) and _is_number(each) and 1 <= count <= 200 and each > 0 and count * each <= 10000:
+        worked['count'], worked['grams_each'] = int(count) if float(count).is_integer() else count, _round1(each)
+        old, worked['quantity_g'] = item.get('quantity_g'), count * each
+        if _is_number(old) and old > 0:  # the range moves with the corrected weight
+            for key in ('quantity_g_low', 'quantity_g_high'):
+                if _is_number(item.get(key)): worked[key] = item[key] * worked['quantity_g'] / old
+    per = item.get('per_100g') if isinstance(item.get('per_100g'), dict) else {}
+    limits = {'calories': 900, 'protein_g': 100, 'carbs_g': 100, 'fat_g': 100}
+    edible = item.get('edible_pct', 100)
+    quantity = worked.get('quantity_g')
+    if all(_is_number(per.get(key)) and 0 <= per[key] <= limit for key, limit in limits.items()) and _is_number(edible) and 5 <= edible <= 100 and _is_number(quantity):
+        worked['edible_g'] = _round1(quantity * edible / 100)
+        for key in limits: worked[key] = per[key] * worked['edible_g'] / 100
+    return worked
+
+
+def _ingredients(item):
+    rows = item.get('ingredients') if isinstance(item.get('ingredients'), list) else []
+    return [{'name': row['name'].strip()[:80], 'grams': _round1(row['grams'])} for row in rows[:20]
+            if isinstance(row, dict) and isinstance(row.get('name'), str) and row['name'].strip() and _is_number(row.get('grams')) and 0 <= row['grams'] <= 10000]
+
+
 def normalize_meal(raw, model):
     root = raw if isinstance(raw, dict) else {}
     items = raw if isinstance(raw, list) else root.get('components') if root.get('components') is not None else root.get('items')
@@ -37,6 +64,7 @@ def normalize_meal(raw, model):
     for item in items:
         if not isinstance(item, dict) or not isinstance(item.get('name'), str) or not item['name'].strip():
             raise MealAnalysisError('Invalid food response.')
+        item = _weighed(item)
 
         def number(key, maximum):
             value = item.get(key)
@@ -52,6 +80,8 @@ def normalize_meal(raw, model):
         components.append({'name': item['name'].strip()[:160], 'quantity_g': quantity, 'calories': calories,
                            'protein_g': number('protein_g', 2000), 'carbs_g': number('carbs_g', 2000), 'fat_g': number('fat_g', 2000),
                            'confidence': confidence, 'portion_range_g': portion_range, 'range_basis': basis,
+                           'count': item.get('count') if 'grams_each' in item and _is_number(item.get('grams_each')) else None, 'grams_each': item.get('grams_each') if _is_number(item.get('grams_each')) else None,
+                           'edible_g': item.get('edible_g'), 'ingredients': _ingredients(item),
                            'calorie_range': [_round1(calories * portion_range[0] / quantity), _round1(calories * portion_range[1] / quantity)]})
     total = {key: _round1(sum(c[key] for c in components)) for key in ('calories', 'protein_g', 'carbs_g', 'fat_g')}
     dish = root.get('dish_name')
