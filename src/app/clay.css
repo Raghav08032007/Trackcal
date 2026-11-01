@@ -438,3 +438,48 @@ html[data-theme="dark"] .food-row-main svg { color: #c5c7dc; }
 /* The field is the composer or search bar around it, so the control inside has no box of its own. */
 .tc-studio :is(.meal-composer textarea, .library-search input) { border: 0 !important; background: transparent !important; box-shadow: none !important; }
 html[data-theme="dark"] .food-row-ingredients { color: #c5c7dc; }
+
+/* Pip's guide: one path through the app. */
+.guide-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 12px; padding: 4px; border-radius: 14px; background: #efeaff; }
+.guide-tabs button { min-height: 44px; border: 0; border-radius: 11px; background: transparent; color: #3f3a63; font-weight: 700; }
+.guide-tabs button[aria-pressed="true"] { background: #fff; color: var(--clay-violet-deep); box-shadow: 0 1px 3px #2a1a7a26; }
+.app-tour { display: grid; gap: 8px; }
+.app-tour-count { margin: 0; font-size: .8rem; font-weight: 700; color: #4a4668; }
+.app-tour progress { width: 100%; height: 8px; border: 0; border-radius: 5px; overflow: hidden; background: #e6dfff; appearance: none; }
+.app-tour progress::-webkit-progress-bar { background: #e6dfff; }
+.app-tour progress::-webkit-progress-value { background: #5530e8; }
+.app-tour progress::-moz-progress-bar { background: #5530e8; }
+.app-tour ol { display: grid; gap: 2px; margin: 6px 0 0; padding: 0; list-style: none; }
+.app-tour-step { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 4px; border: 0; background: transparent; color: var(--tc-ink); font-size: .92rem; font-weight: 650; text-align: left; }
+.app-tour-step span { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #efeaff; color: var(--clay-violet-deep); font-size: .8rem; font-weight: 750; }
+.app-tour li[data-done] .app-tour-step span { background: #d7f4a6; color: #2c4a12; }
+.app-tour-body { padding: 0 4px 10px 42px; font-size: .85rem; color: #4a4668; }
+.app-tour-body p { margin: 0 0 8px; }
+.app-tour-body div { display: flex; flex-wrap: wrap; gap: 8px; }
+.tc-studio .app-tour-go, .app-tour-body button { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 0; border-radius: 12px; font-weight: 700; }
+.tc-studio .app-tour-go { background: #2a1a7a; color: #fff; }
+.app-tour-body button { background: #efeaff; color: var(--clay-violet-deep); }
+.app-tour-unlock { display: grid; gap: 8px; margin-top: 8px; padding: 12px; border-radius: 14px; background: #f6f2ff; font-size: .82rem; color: #2b2750; }
+.app-tour-unlock label { display: grid; gap: 4px; }
+html[data-theme="dark"] .guide-tabs { background: #262842; }
+html[data-theme="dark"] .guide-tabs button { color: #e6e4f5; }
+html[data-theme="dark"] .guide-tabs button[aria-pressed="true"] { background: #3a3a5c; color: #e4dcff; }
+html[data-theme="dark"] :is(.app-tour-count, .app-tour-body) { color: #c5c7dc; }
+html[data-theme="dark"] .app-tour-step { color: #f0eefb; }
+html[data-theme="dark"] .app-tour-step span, html[data-theme="dark"] .app-tour-body button { background: #2f2f4f; color: #e4dcff; }
+html[data-theme="dark"] .app-tour-unlock { background: #2a2a47; color: #e6e4f5; }
+html[data-theme="dark"] .tc-studio .app-tour-go { background: #5530e8; }
+
+/* The panel's older sheet lays out lists and buttons as tiles; the guide is a plain vertical path. */
+.tc-studio .journey-panel { width: min(400px, calc(100vw - 32px)); max-height: calc(100svh - 260px); padding: 16px 18px; }
+.tc-studio .journey-panel > header { align-items: center; margin-bottom: 0; }
+.tc-studio .journey-panel > h2 { margin: 2px 0 10px; padding: 0 0 10px; font-size: 1.2rem; }
+.tc-studio .feature-guide-content .app-tour ol { display: block; }
+.tc-studio .feature-guide-content .app-tour li { display: block; width: auto; min-height: 0; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.tc-studio .feature-guide-content .app-tour-step { display: flex; width: 100%; height: auto; min-height: 44px; padding: 4px; border: 0; border-radius: 10px; background: transparent; box-shadow: none; }
+.tc-studio .feature-guide-content .app-tour-body { display: block; width: auto; padding: 0 4px 10px 42px; }
+.tc-studio .feature-guide-content .app-tour-body div { display: flex; width: auto; }
+html[data-theme="dark"] .app-tour progress { background: #3a3a5c; }
+html[data-theme="dark"] .app-tour progress::-webkit-progress-bar { background: #3a3a5c; }
+html[data-theme="dark"] .app-tour progress::-webkit-progress-value { background: #a98dff; }
+html[data-theme="dark"] .app-tour progress::-moz-progress-bar { background: #a98dff; }

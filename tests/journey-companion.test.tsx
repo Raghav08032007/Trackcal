@@ -34,8 +34,8 @@ it('ignores a different account event and shows legitimate achievement notificat
 });
 it('retains the panel and gives a recoverable error when a preference save fails',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url)=>String(url).includes('/personalization/')?Response.json({}):String(url).endsWith('/summary')?Response.json({...initial,customization:{...initial.customization,minimized:false}}):Response.json({error:'Try again later'},{status:503})));
- render(<JourneyCompanion/>);await screen.findByRole('progressbar');
+ render(<JourneyCompanion/>);await screen.findByRole('progressbar',{name:'XP toward next level'});
  await userEvent.click(screen.getByText('Customize companion & motion'));
  await userEvent.click(screen.getByRole('button',{name:'Move to left'}));
- await screen.findByText('Try again later');expect(screen.getByRole('progressbar')).toBeTruthy();
+ await screen.findByText('Try again later');expect(screen.getByRole('progressbar',{name:'XP toward next level'})).toBeTruthy();
 });

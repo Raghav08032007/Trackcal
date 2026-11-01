@@ -39,15 +39,15 @@ it('prevents restored locked choices and previews requirements without granting 
  localStorage.setItem('trackcal:play:character',JSON.stringify('sage'));
  render(<CharacterCompanion summary={{...summary,xp:249,level:1,level_xp:249}} signedIn/>);
  expect(screen.getByRole('heading',{name:'Pip is on your team.'})).toBeTruthy();
- await userEvent.click(screen.getByRole('button',{name:/^Nova.*Locked · Level 2 · Preview$/}));
- expect(screen.getByText(/1 XP to go/)).toBeTruthy();
+ await userEvent.click(screen.getByRole('button',{name:/^Nova.*Locked · 250 points · 3-day streak$/}));
+ expect(screen.getByText(/1 points and 3 streak days to go/)).toBeTruthy();
  expect(screen.getByRole('heading',{name:'Pip is on your team.'})).toBeTruthy();
 });
 it('unlocks a companion exactly at its earned XP threshold',async()=>{
  render(<CharacterCompanion summary={{...summary,xp:250,level:2,level_xp:0}} signedIn/>);
  await userEvent.click(screen.getByRole('button',{name:/^Nova(?!.*Locked)/}));
  expect(screen.getByRole('heading',{name:'Nova is on your team.'})).toBeTruthy();
- expect(screen.getByRole('button',{name:/^Milo.*Locked · Level 3 · Preview$/})).toBeTruthy();
+ expect(screen.getByRole('button',{name:/^Milo.*Locked · 500 points · 7-day streak$/})).toBeTruthy();
 });
 
 it('follows the page when away and can be dismissed',async()=>{
