@@ -89,10 +89,10 @@ async function analyzeMeal(input: { text?: string; image?: string }): Promise<im
   return data;
 }
 
-export async function analyzeMealPhoto(file: File) {
+export async function analyzeMealPhoto(file: File, note = "") {
   if (!file.size) throw new Error("Choose a nonempty image.");
   if (file.size > 10 * 1024 * 1024) throw new Error("Choose an image under 10 MB.");
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Use a JPEG, PNG or WebP photo.");
   const { preparePhoto } = await import("./photo-prep");
-  return analyzeMeal({ image: await preparePhoto(file) });
+  return analyzeMeal({ image: await preparePhoto(file), ...(note.trim() ? { text: note.trim() } : {}) });
 }

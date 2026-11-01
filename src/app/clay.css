@@ -281,3 +281,11 @@ html[data-theme="dark"] .tc-studio .play-footnote { color: #c5c7dc; }
   html:not([data-motion="reduced"]) .camera-live-count { animation: camera-rep .32s var(--clay-spring); }
 }
 @keyframes camera-rep { from { scale: 1.45; } to { scale: 1; } }
+
+/* Food scan: the photo stays visible, and each food can be corrected. */
+.scan-photo-caption { position: absolute; inset: auto 12px 12px; padding: 8px 12px; }
+.scanner-note { display: grid; gap: 6px; margin-top: 10px; font-size: .85rem; font-weight: 600; }
+.scan-item-edit { display: flex; flex: 1 0 100%; align-items: center; justify-content: flex-end; gap: 12px; }
+.scan-item-edit .camera-adjust { display: flex; align-items: center; gap: 8px; margin: 0; }
+.scan-item-edit label { display: flex; align-items: center; gap: 6px; font-size: .8rem; font-weight: 600; }
+.scan-item-edit input { width: 84px; min-height: 44px; }

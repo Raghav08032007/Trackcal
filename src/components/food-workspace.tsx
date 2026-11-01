@@ -137,7 +137,8 @@ const SAMPLE_DATABASE: FoodItem[] = [
 ];
 
 type PhotoRange = { grams: [number, number]; calories: [number, number]; confidence: "High" | "Medium" | "Low"; fromModel: boolean };
-type ScanView = (typeof SCAN_PRESETS)[number];
+type ScanItem = (typeof SCAN_PRESETS)[number]["items"][number] & { count?: number | null; edible?: number | null; ingredients?: string };
+type ScanView = Omit<(typeof SCAN_PRESETS)[number], "items"> & { items: ScanItem[] };
 type ScanSource = "none" | "sample" | "photo";
 const confidenceLabel = (value: number): PhotoRange["confidence"] => value >= 0.75 ? "High" : value >= 0.45 ? "Medium" : "Low";
 const SCAN_PRESETS = [
@@ -311,6 +312,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [scanError, setScanError] = useState("");
   const [scanReady, setScanReady] = useState(false);
   const [photoConsent,setPhotoConsent]=useState(false);
+  const [photoNote,setPhotoNote]=useState("");
   const [photoRange,setPhotoRange]=useState<PhotoRange|null>(null);
   const [pendingPhoto,setPendingPhoto]=useState<File|null>(null);
   const [cameraOpen,setCameraOpen]=useState(false);
@@ -327,7 +329,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       setIsScanning(true);
       setScanError(""); setScanReady(false);
       try {
-        const result = await analyzeMealPhoto(file);
+        const result = await analyzeMealPhoto(file, photoNote);
         if (requestId !== photoRequest.current) return;
         const grams = Math.round(result.components.reduce((sum, item) => sum + item.quantity_g, 0));
         setScanResult({
@@ -341,7 +343,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
           fat: result.total_nutrition.fat_g,
           fiber: 0,
           nova: { group: 0, label: "Not assessed", color: "text-slate-400" },
-          items: result.components.map(item => ({ name: item.name, portion: `${item.quantity_g}g`, cal: item.calories, p: item.protein_g, c: item.carbs_g, f: item.fat_g })),
+          items: result.components.map(item => ({ name: item.name, portion: `${item.quantity_g}g`, cal: item.calories, p: item.protein_g, c: item.carbs_g, f: item.fat_g, count: item.count, edible: item.edible_g, ingredients: item.ingredients?.map(row => row.name).join(", ") })),
           allergens: [],
           method: `AI estimate · ${result.model}. Review portions and nutrition before logging. Allergens not assessed.`
         });
@@ -409,6 +411,18 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const scaledProtein = Math.round(scanResult.protein * scaleFactor);
   const scaledCarbs = Math.round(scanResult.carbs * scaleFactor);
   const scaledFat = Math.round(scanResult.fat * scaleFactor * styleMult.fatMult);
+
+  /** Correct one food: its share of the meal rescales, and the total follows. */
+  const editScanItem = (index: number, grams: number, count?: number) => {
+    if (!Number.isFinite(grams) || grams <= 0 || grams > 10000) return;
+    const items = scanResult.items.map((item, i) => {
+      const shown = parseFloat(item.portion) * scaleFactor, ratio = scaleFactor * (i === index ? grams / (shown || 1) : 1), edible = item.edible ? item.edible * ratio : item.edible;
+      return { ...item, portion: `${Math.round(parseFloat(item.portion) * ratio)}g`, cal: item.cal * ratio, p: item.p * ratio, c: item.c * ratio, f: item.f * ratio, edible, count: i === index && count ? count : item.count };
+    });
+    const sum = (pick: (item: ScanItem) => number) => items.reduce((total, item) => total + pick(item), 0), total = Math.round(sum(item => parseFloat(item.portion)));
+    setScanResult({ ...scanResult, items, weight: `${total}g`, calories: sum(item => item.cal), protein: sum(item => item.p), carbs: sum(item => item.c), fat: sum(item => item.f) });
+    setPortionGrams(total); setPhotoRange(null);
+  };
 
   const today = useLocalDate();
   const [selectedDate, setJournalDate] = useState("");
@@ -624,13 +638,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                 <button className="food-camera-open" onClick={() => setCameraOpen(true)}><Camera size={20} /> Scan food with camera</button>
                 {cameraOpen && <FoodCamera consent={photoConsent} onConsent={setPhotoConsent} onClose={() => setCameraOpen(false)} onCapture={file => { setCameraOpen(false); void processPhoto(file); }} />}
-                <div className="scan-privacy-card"><label className="scanner-consent"><input type="checkbox" aria-label="Allow this photo to be sent to the configured AI provider" checked={photoConsent} onChange={e=>setPhotoConsent(e.target.checked)}/> Send this photo for AI analysis</label><p className="scanner-privacy-note">Optional transfer to the configured AI provider. Without consent, your preview stays local. Review estimates; allergens are not assessed.</p><div className="account-actions"><a className="destination-button" href="/nutrition#photo-review">Private photo & manual food selection ↗</a>{pendingPhoto&&photoConsent&&<button type="button" disabled={isScanning} onClick={()=>void handleImageFileChange({target:{files:[pendingPhoto],value:''}} as unknown as React.ChangeEvent<HTMLInputElement>)}>Analyze selected photo</button>}{uploadedImageUrl&&<button type="button" onClick={()=>{photoRequest.current++;setUploadedImageUrl(null);setPendingPhoto(null);if(fileInputRef.current)fileInputRef.current.value='';setScanReady(false);setScanError('Local photo removed.');}}>Delete selected photo</button>}</div></div>
+                <div className="scan-privacy-card"><label className="scanner-consent"><input type="checkbox" aria-label="Allow this photo to be sent to the configured AI provider" checked={photoConsent} onChange={e=>setPhotoConsent(e.target.checked)}/> Send this photo for AI analysis</label><p className="scanner-privacy-note">Optional transfer to the configured AI provider. Without consent, your preview stays local. Review estimates; allergens are not assessed.</p><label className="scanner-note">What the photo can&apos;t show (optional)<input maxLength={300} value={photoNote} onChange={e=>setPhotoNote(e.target.value)} placeholder="3 red bananas, apple 170 g"/></label><div className="account-actions"><a className="destination-button" href="/nutrition#photo-review">Private photo & manual food selection ↗</a>{pendingPhoto&&photoConsent&&<button type="button" disabled={isScanning} onClick={()=>void handleImageFileChange({target:{files:[pendingPhoto],value:''}} as unknown as React.ChangeEvent<HTMLInputElement>)}>Analyze selected photo</button>}{uploadedImageUrl&&<button type="button" onClick={()=>{photoRequest.current++;setUploadedImageUrl(null);setPendingPhoto(null);if(fileInputRef.current)fileInputRef.current.value='';setScanReady(false);setScanError('Local photo removed.');}}>Delete selected photo</button>}</div></div>
                 <div className="aspect-[4/3] rounded-xl bg-slate-950 border border-slate-800 relative flex flex-col items-center justify-center p-6 text-center overflow-hidden group">
                   {uploadedImageUrl ? (
                     <img
                       src={uploadedImageUrl}
                       alt="Uploaded Food"
-                      className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                   ) : (
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] opacity-25"></div>
@@ -649,13 +663,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       </p>
                     </div>
                   ) : (
-                    <div className="relative z-10 flex flex-col items-center gap-2 bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 backdrop-blur-xs">
-                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-0.5">
+                    <div className={`z-10 flex flex-col items-center gap-2 bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 backdrop-blur-xs ${uploadedImageUrl ? "scan-photo-caption" : "relative"}`}>
+                      {!uploadedImageUrl && <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-0.5">
                         <Utensils className="w-6 h-6" />
-                      </div>
+                      </div>}
                       <h4 className="font-semibold text-white text-base">{scanResult.foodName}</h4>
-                      <p className="text-xs text-slate-400 max-w-xs">{scanResult.method}</p>
-                      {scanSource !== "none" && <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
+                      {!uploadedImageUrl && <p className="text-xs text-slate-400 max-w-xs">{scanResult.method}</p>}
+                      {scanSource !== "none" && !uploadedImageUrl && <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Estimate — review portions and ingredients
                       </div>}
                     </div>
@@ -839,16 +853,17 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     Segmented Food Components ({scanResult.items.length})
                   </h4>
                   <div className="space-y-2">
-                    {scanResult.items.map((item) => (
+                    {scanResult.items.map((item, index) => (
                       <div
                         key={item.name}
-                        className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors"
+                        className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
                           <div>
                             <p className="text-sm font-medium text-white">{item.name}</p>
-                            <p className="text-xs text-slate-400">Estimated: {Math.round(parseFloat(item.portion) * scaleFactor)}g</p>
+                            <p className="text-xs text-slate-400">{item.count && item.count > 1 ? `${item.count} × about ${Math.round(parseFloat(item.portion) * scaleFactor / item.count)} g = ` : "Estimated: "}{Math.round(parseFloat(item.portion) * scaleFactor)}g{item.edible && item.edible < parseFloat(item.portion) ? ` · ${Math.round(item.edible * scaleFactor)} g eaten` : ""}</p>
+                            {item.ingredients && item.ingredients.toLowerCase() !== item.name.toLowerCase() && <p className="text-xs text-slate-400">{item.ingredients}</p>}
                           </div>
                         </div>
                         <div className="text-right">
@@ -857,6 +872,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                             P: {Math.round(item.p * scaleFactor * 10) / 10}g • C: {Math.round(item.c * scaleFactor * 10) / 10}g • F: {Math.round(item.f * scaleFactor * styleMult.fatMult * 10) / 10}g
                           </p>
                         </div>
+                        {scanSource === "photo" && <div className="scan-item-edit">
+                          {item.count && <div className="camera-adjust"><button type="button" aria-label={`One less ${item.name}`} disabled={item.count <= 1} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! - 1) / item.count!, item.count! - 1)}>−</button><span>{item.count}</span><button type="button" aria-label={`One more ${item.name}`} disabled={item.count >= 200} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! + 1) / item.count!, item.count! + 1)}>+</button></div>}
+                          <label>Grams<input key={item.portion + scaleFactor} type="number" min="1" max="10000" aria-label={`Grams of ${item.name}`} defaultValue={Math.round(parseFloat(item.portion) * scaleFactor)} onBlur={e => { const grams = Number(e.target.value); if (grams !== Math.round(parseFloat(item.portion) * scaleFactor)) editScanItem(index, grams); }} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}/></label>
+                        </div>}
                       </div>
                     ))}
                   </div>

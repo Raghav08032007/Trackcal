@@ -10,6 +10,12 @@ export interface MealComponent {
   portion_range_g: [number, number];
   range_basis: "model" | "confidence";
   calorie_range: [number, number];
+  /** Separate items: how many and what one weighs, peel or shell included. */
+  count?: number | null;
+  grams_each?: number | null;
+  /** The part that is eaten; nutrition is based on this. */
+  edible_g?: number | null;
+  ingredients?: { name: string; grams: number }[];
 }
 
 export interface MealAnalysis {
