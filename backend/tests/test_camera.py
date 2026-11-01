@@ -106,3 +106,9 @@ def test_the_first_finished_workout_starts_points_and_the_streak_without_opening
  _,h=account()
  s=session(h,['camera_squat'],tracking_method='camera');r=update(h,s,tracking=tracking(),exercises=records());assert r.status_code==200,r.text
  body=r.json();assert body['awarded_xp']==20 and body['summary']['engagement_streak']['current']==1
+
+
+@pytest.mark.parametrize('kind', ['lunge', 'jack', 'raise', 'knee'])
+def test_new_camera_exercises_save(kind):
+ _,h=account();init(h);key='camera_'+kind;s=session(h,[key],tracking_method='camera')
+ r=update(h,s,tracking=tracking(exercise_type=kind),exercises=[{'exercise_id':key,'sets':[{'reps':8,'load':0,'minutes':0}]}]);assert r.status_code==200,r.text
