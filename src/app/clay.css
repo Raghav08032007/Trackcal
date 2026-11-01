@@ -488,3 +488,10 @@ html[data-theme="dark"] .app-tour progress::-moz-progress-bar { background: #a98
 
 .library-estimate { min-height: 44px; margin-top: 12px; padding: 0 16px; border: 1px solid #ddd5fa; border-radius: 14px; background: transparent; color: var(--clay-violet-deep); font-weight: 700; }
 html[data-theme="dark"] .library-estimate { border-color: #3a3a5c; color: #e4dcff; }
+
+.camera-equipment { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: #eeeafb; }
+.camera-equipment button { min-height: 44px; border: 0; border-radius: 11px; background: transparent; color: inherit; font-weight: 700; }
+.camera-metrics .camera-equipment button { box-shadow: none; }
+.camera-metrics .camera-equipment button[aria-pressed="true"], .camera-metrics .camera-equipment button[aria-pressed="true"]:disabled { background: var(--clay-violet-deep); color: #fff; opacity: 1; }
+.camera-only-this { font-size: .875rem; }
+html[data-theme="dark"] .camera-equipment { background: #26263c; }

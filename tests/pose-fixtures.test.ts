@@ -12,7 +12,7 @@ type Fixture={fps:number;width:number;height:number;synthetic:boolean;base:numbe
 const load=(ex:string,sc:string):Fixture=>JSON.parse(gunzipSync(readFileSync(`tests/fixtures/pose/${ex}-${sc}.json.gz`)).toString());
 const frames=(f:Fixture)=>f.frames.map(fr=>({landmarks:[f.base.map((b,i)=>{const q=fr.p[i]??b;return {x:q[0],y:q[1],visibility:q[2],presence:1};})],timestamp:fr.t,width:f.width,height:f.height}) as PoseFrame);
 function play(ex:ExerciseKind,sc:string){const t=new SessionTracker(ex),results:TrackingResult[]=[];for(const fr of frames(load(ex,sc))){const r=t.frame(fr);if(r)results.push(r);}return {t,results,last:results.at(-1)!};}
-const none={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0};
+const none={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0,wrong_exercise:0};
 // Expected answers come from how each fixture was built, not from running the counter.
 const EXPECTED:Record<string,[number,Partial<typeof none>]>={
  clean:[5,{}],noisy:[5,{}],half_reps:[3,{too_shallow:3}],occlusion:[4,{lost_tracking:1}],walk_out:[3,{}],very_fast:[0,{too_fast:1}],very_slow:[2,{}],
