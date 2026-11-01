@@ -118,3 +118,30 @@ def test_a_note_reaches_the_model_with_the_photo(internet):
     calls, replies = internet; replies.append(model_reply(json.dumps({'components': [ITEM]})))
     assert post(browser(), '/api/analyze', {'image': phone_photo(), 'text': '3 red bananas, apple 170 g'}).status_code == 200
     assert '3 red bananas, apple 170 g' in calls[0]['json']['messages'][1]['content'][0]['text']
+
+
+def test_calories_that_disagree_with_macros_are_corrected():
+    from services.meal_analysis import _energy_checked
+    fixed, changed = _energy_checked({'calories': 500, 'protein_g': 10, 'carbs_g': 20, 'fat_g': 5})
+    assert changed and fixed['calories'] == 165
+    kept, changed = _energy_checked({'calories': 170, 'protein_g': 10, 'carbs_g': 20, 'fat_g': 5})
+    assert not changed and kept['calories'] == 170
+
+
+def test_official_values_replace_an_estimate_only_when_they_agree():
+    from services.meal_analysis import ground_in_catalog
+    item = lambda: {'name': 'Banana', 'per_100g': {'calories': 95, 'protein_g': 1, 'carbs_g': 22, 'fat_g': 0.3}}
+    official = {'calories': 89, 'protein_g': 1.1, 'carbs_g': 22.8, 'fat_g': 0.3, 'source': 'USDA FoodData Central'}
+    raw = {'components': [item()]}
+    ground_in_catalog(raw, lambda name: official)
+    assert raw['components'][0]['per_100g']['calories'] == 89 and raw['components'][0]['nutrition_source'] == 'USDA FoodData Central'
+    boiled = {'components': [{'name': 'Rice', 'per_100g': {'calories': 130, 'protein_g': 3, 'carbs_g': 28, 'fat_g': 0.3}}]}
+    ground_in_catalog(boiled, lambda name: {**official, 'calories': 360})
+    assert boiled['components'][0]['per_100g']['calories'] == 130 and 'nutrition_source' not in boiled['components'][0]
+    dish = {'components': [{**item(), 'ingredients': [{'name': 'a', 'grams': 1}, {'name': 'b', 'grams': 1}]}]}
+    ground_in_catalog(dish, lambda name: official)
+    assert dish['components'][0]['per_100g']['calories'] == 95
+    broken = {'components': [item()]}
+    def fail(name): raise RuntimeError('down')
+    ground_in_catalog(broken, fail)
+    assert broken['components'][0]['per_100g']['calories'] == 95

@@ -18,7 +18,7 @@ from urllib.parse import urlencode, urlsplit
 import httpx
 from flask import Blueprint, current_app, g, jsonify, request
 
-from services.meal_analysis import normalize_meal
+from services.meal_analysis import ground_in_catalog, normalize_meal
 from services.openrouter_client import model_fields
 
 bp = Blueprint('web', __name__, url_prefix='/api')
@@ -598,7 +598,7 @@ def analyze():
                 body = response.json(); raw = (body.get('choices') or [{}])[0].get('message', {}).get('content')
                 if not isinstance(raw, str): raise ValueError('No response')
                 cleaned = re.sub(r'\s*```$', '', re.sub(r'^```(?:json)?\s*', '', raw.strip(), flags=re.I))
-                return reply(normalize_meal(json.loads(cleaned), body.get('model') or 'unknown model'))
+                return reply(normalize_meal(ground_in_catalog(json.loads(cleaned), _official_values), body.get('model') or 'unknown model'))
             except Exception as failure:
                 if str(failure).startswith('No readable food found'): return error(str(failure), 422)
                 if attempt == 1: break
@@ -760,6 +760,15 @@ def _catalog_foods(query):
         with database.SessionLocal() as db: return food_search.search(db, query)
     except Exception:
         return []
+
+
+def _official_values(name):
+    """Per-100 g from the catalog when its best match really is that food: the name must start with the food's first word."""
+    words = re.findall(r'[a-z]+', name.lower())
+    if not words: return None
+    food = next(iter(_catalog_foods(' '.join(words[:2])) or _catalog_foods(words[0])), None)
+    if not food or not food['name'].lower().startswith(words[0][:4]): return None
+    return {'calories': food['calories'], 'protein_g': food['protein'], 'carbs_g': food['carbs'], 'fat_g': food['fat'], 'source': food['source']}
 
 
 def _world_foods(query, limit):

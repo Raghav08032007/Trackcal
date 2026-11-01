@@ -30,6 +30,32 @@ def _portion_range(item, quantity, confidence):
     return [_round1(quantity * (1 - width)), _round1(quantity * (1 + width))], 'confidence'
 
 
+def _energy_checked(per):
+    """Calories must agree with the macros (Atwater: 4, 4, 9). A claim far from them is a model slip, so the macros win.
+    Alcohol and sugar alcohols carry calories macros don't show, so only a large gap on food with real macros is corrected."""
+    worked = 4 * per['protein_g'] + 4 * per['carbs_g'] + 9 * per['fat_g']
+    if worked >= 20 and abs(per['calories'] - worked) / worked > .3: return {**per, 'calories': round(worked, 1)}, True
+    return per, False
+
+
+def ground_in_catalog(raw, lookup):
+    """Swaps the model's per-100 g for official values on single foods, only when both agree within 35% on calories.
+    A bigger gap means the match is the wrong state of the food, like raw rice for boiled, so the model's value stays."""
+    root = raw if isinstance(raw, dict) else {}
+    items = raw if isinstance(raw, list) else root.get('components') if root.get('components') is not None else root.get('items')
+    for item in items if isinstance(items, list) else []:
+        if not isinstance(item, dict) or not isinstance(item.get('name'), str): continue
+        per, parts = item.get('per_100g'), item.get('ingredients')
+        if not isinstance(per, dict) or not _is_number(per.get('calories')) or per['calories'] <= 0: continue
+        if isinstance(parts, list) and len(parts) > 1: continue
+        try: found = lookup(item['name'])
+        except Exception: continue
+        if not found or not _is_number(found.get('calories')) or abs(found['calories'] - per['calories']) / per['calories'] > .35: continue
+        item['per_100g'] = {key: found[key] for key in ('calories', 'protein_g', 'carbs_g', 'fat_g')}
+        item['nutrition_source'] = found.get('source') or 'TrackCal catalog'
+    return raw
+
+
 def _weighed(item):
     """Count times weight, then nutrition from the part that is eaten. Anything missing or implausible keeps the model's totals."""
     worked, count, each = dict(item), item.get('count'), item.get('grams_each')
@@ -45,6 +71,8 @@ def _weighed(item):
     quantity = worked.get('quantity_g')
     if all(_is_number(per.get(key)) and 0 <= per[key] <= limit for key, limit in limits.items()) and _is_number(edible) and 5 <= edible <= 100 and _is_number(quantity):
         worked['edible_g'] = _round1(quantity * edible / 100)
+        per, corrected = _energy_checked(per)
+        if corrected: worked['energy_corrected'] = True
         for key in limits: worked[key] = per[key] * worked['edible_g'] / 100
     return worked
 
@@ -81,7 +109,7 @@ def normalize_meal(raw, model):
                            'protein_g': number('protein_g', 2000), 'carbs_g': number('carbs_g', 2000), 'fat_g': number('fat_g', 2000),
                            'confidence': confidence, 'portion_range_g': portion_range, 'range_basis': basis,
                            'count': item.get('count') if 'grams_each' in item and _is_number(item.get('grams_each')) else None, 'grams_each': item.get('grams_each') if _is_number(item.get('grams_each')) else None,
-                           'edible_g': item.get('edible_g'), 'ingredients': _ingredients(item),
+                           'edible_g': item.get('edible_g'), 'nutrition_source': item.get('nutrition_source') or 'AI estimate', 'energy_corrected': bool(item.get('energy_corrected')), 'ingredients': _ingredients(item),
                            'calorie_range': [_round1(calories * portion_range[0] / quantity), _round1(calories * portion_range[1] / quantity)]})
     total = {key: _round1(sum(c[key] for c in components)) for key in ('calories', 'protein_g', 'carbs_g', 'fat_g')}
     dish = root.get('dish_name')
