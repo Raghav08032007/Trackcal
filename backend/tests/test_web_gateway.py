@@ -361,3 +361,14 @@ def test_public_health_reports_status_only(monkeypatch):
     monkeypatch.setattr(database, 'verify_connection', lambda: False)
     response = browser().get('/api/health')
     assert response.status_code == 503 and response.get_json() == {'status': 'degraded'}
+
+
+def test_barcode_digits_are_used_only_with_a_valid_check_digit(internet):
+    calls, replies = internet
+    from tests.test_photo_scan import phone_photo
+    replies.append(model_reply('{"digits":"3017620422003"}'))
+    good = post(browser(), '/api/barcode/read', {'image': phone_photo()})
+    assert good.status_code == 200 and good.get_json()['code'] == '3017620422003'
+    for guess in ('{"digits":"00260435515790"}', '{"digits":"000000000000"}', '{"digits":""}', 'not json'):
+        replies.append(model_reply(guess))
+        assert post(browser(), '/api/barcode/read', {'image': phone_photo()}).status_code == 422
