@@ -45,7 +45,7 @@ describe('blurred barcodes',()=>{
 });
 describe('live advice',()=>{
  it('says when a frame is too blurry or too dark',()=>{
-  const blurred=blur(image('3017620422003',4),8);expect(frameAdvice(blurred.gray,blurred.width,blurred.height)).toContain('blurry');
+  const blurred=blur(image('3017620422003',4),8);expect(frameAdvice(blurred.gray,blurred.width,blurred.height)).toContain('further back');
   const sharp=image('3017620422003',4);expect(frameAdvice(sharp.gray,sharp.width,sharp.height)).toBe('');
   const dark=sharp.gray.map(v=>v/8);expect(frameAdvice(Uint8ClampedArray.from(dark),sharp.width,sharp.height)).toContain('dark');
  });

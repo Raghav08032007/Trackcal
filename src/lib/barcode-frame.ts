@@ -69,5 +69,5 @@ export function frameAdvice(gray:Uint8ClampedArray,width:number,height:number){
  let low=255,high=0,edge=0;
  for(let x=4;x<width;x++){low=Math.min(low,line[x]);high=Math.max(high,line[x]);edge=Math.max(edge,Math.abs(line[x]-line[x-4]));}
  if(total/gray.length<DARK)return 'Too dark: move to brighter light.';
- return edge/(high-low||1)<EDGE?'Too blurry: move the pack further from the camera and hold it still.':'';
+ return edge/(high-low||1)<EDGE?'Hold a barcode inside the box. If it is there, move it further back and keep it still.':'';
 }
