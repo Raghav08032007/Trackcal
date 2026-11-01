@@ -1195,6 +1195,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             {foodSearchError && <p role="alert" className="text-amber-400 text-xs mb-3">{foodSearchError}</p>}
             <div className="food-list">
               {filteredFoods.length === 0 && <p className="p-6 text-center text-slate-400">No matching foods. Try another word, a barcode lookup or add it manually.</p>}
+              {searchQuery.trim().length >= 2 && <button type="button" className="library-estimate" onClick={() => { setVoiceTextPrompt(searchQuery.trim()); navigateTab("voice_text"); }}>Can&apos;t find it? Estimate &quot;{searchQuery.trim()}&quot; with AI</button>}
               {filteredFoods.map(food => <FoodRow key={food.id} food={food} remaining={Math.max(0, dailyTarget - totalCaloriesLogged)} onLog={portion => {
                 setLoggedMeals([...loggedMeals, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), ...portion, method: "Database Log" }]);
                 setNotice(`${portion.name} added to your journal.`);
