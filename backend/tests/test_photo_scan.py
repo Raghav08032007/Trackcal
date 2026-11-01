@@ -67,6 +67,9 @@ def test_signed_in_people_use_their_own_daily_allowance(internet, monkeypatch):
 
 
 def test_a_service_wide_daily_cap_bounds_cost(internet, monkeypatch):
+    import database, models
+    with database.SessionLocal() as db:
+        db.query(models.RateBucket).delete(synchronize_session=False); db.commit()  # the cap counts the whole test run otherwise
     monkeypatch.setenv('GLOBAL_DAILY_AI_LIMIT', '1')
     calls, replies = internet; replies += [model_reply(json.dumps({'components': [ITEM]})) for _ in range(2)]
     assert post(browser(), '/api/analyze', {'text': 'Egg'}).status_code == 200

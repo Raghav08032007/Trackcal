@@ -1,6 +1,7 @@
 """USDA import details, and spoken meals: local speech first, the AI service only as a backup."""
 import base64
 import io
+import json
 import wave
 
 import pytest
@@ -50,3 +51,29 @@ def test_the_ai_service_is_only_a_backup_and_silence_is_not_text(internet, monke
     assert post(browser(), '/api/transcribe', {'audio': recording()}).get_json()['text'] == 'one dosa' and len(calls) == 1
     replies.append(model_reply('NO_SPEECH'))
     assert post(browser(), '/api/transcribe', {'audio': recording()}).status_code == 422
+
+
+def test_barcode_prefixes_name_the_issuing_country_not_a_guess():
+    from services import food_codes
+    assert food_codes.registered_in('8901058002260') == 'India' and food_codes.registered_in('3017620422003') == 'France or Monaco'
+    assert food_codes.registered_in('036000291452') == 'United States or Canada' and food_codes.registered_in('96385074') is None
+    assert food_codes.registered_in('2000000000000') is None  # a store's own range belongs to no country
+
+
+def test_marks_and_additives_are_explained_and_unknown_ones_claim_nothing():
+    from services import food_codes
+    assert food_codes.describe_mark('en:fssai')['region'] == 'India' and food_codes.describe_mark('Jaivik Bharat')['name'] == 'Jaivik Bharat'
+    assert food_codes.describe_mark('en:eu-organic')['name'] == 'EU organic leaf' and food_codes.describe_mark('en:halal')['name'] == 'Halal'
+    assert food_codes.describe_mark('Some local award') == {'name': 'Some local award', 'region': None, 'meaning': None}
+    assert food_codes.additive('en:e322i')['name'].startswith('Lecithin') and food_codes.additive('en:e999') == {'code': 'E999', 'name': None}
+
+
+def test_a_pack_photo_keeps_only_checked_values(internet):
+    from tests.test_photo_scan import phone_photo
+    calls, replies = internet
+    replies.append(model_reply(json.dumps({'product_name': 'Masala Oats', 'brand': 'Acme', 'barcode_digits': '00260435515790', 'certifications': ['FSSAI', 'Unknown Seal'],
+                                           'codes': [{'kind': 'FSSAI licence', 'value': '10012345678901'}], 'terms': [{'term': 'INS 330', 'meaning': 'Citric acid'}],
+                                           'per_100g': {'calories': 5000, 'protein_g': 12, 'carbs_g': None, 'fat_g': 7}})))
+    body = post(browser(), '/api/pack/read', {'image': phone_photo()}).get_json()
+    assert body['barcode'] is None and body['per_100g'] == {'calories': None, 'protein_g': 12, 'carbs_g': None, 'fat_g': 7}
+    assert [mark['name'] for mark in body['details']['certifications']] == ['FSSAI', 'Unknown seal'] and body['details']['terms'][0]['term'] == 'INS 330'

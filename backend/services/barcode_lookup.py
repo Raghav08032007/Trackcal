@@ -17,7 +17,7 @@ import httpx
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 
 import models
-from services import nutrition_math
+from services import food_codes, nutrition_math
 from timeutil import utcnow
 
 OFF_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
@@ -99,6 +99,7 @@ def map_product(code, product):
         "consistency_warning": nutrition_math.consistency_warning(core),
         "allergens": [re.sub(r"^[a-z]{2}:", "", tag).replace("-", " ") for tag in tags if isinstance(tag, str)],
         "ingredients_text": (product.get("ingredients_text") or "").strip() or None,
+        "details": food_codes.details(code, product),
         "source": "Open Food Facts", "attribution": ATTRIBUTION, "community_data": True,
     }
 
