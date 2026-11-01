@@ -16,3 +16,12 @@ export async function personalRequest<T>(path:string,body?:unknown,method?:strin
 export function assertAdultCalculatorAllowed(state:Pick<PersonalState,'minor_account'|'preferences'>){
  if(state.minor_account||!['20_64','65plus'].includes(state.preferences?.age_group))throw new Error('Adult calorie calculations require a confirmed adult age group in your preferences. Your personal plan works without calorie targets.');
 }
+
+// An adult age typed into the calculator answers an age group that was never set. A group already chosen is never changed here.
+export async function confirmAdultForCalculator(age:number){
+ const state=await personalRequest<PersonalState>('state');
+ if(Number.isInteger(age)&&age<20)throw new Error('The calorie calculator is for ages 20 and over. Your personal plan works without calorie targets.');
+ if(state.minor_account||state.preferences?.age_group!=='unspecified'||!Number.isInteger(age)||age<20||age>100)return assertAdultCalculatorAllowed(state);
+ const timezone=state.revision?state.preferences.timezone:Intl.DateTimeFormat().resolvedOptions().timeZone;
+ await personalRequest('onboarding',{preferences:{...state.preferences,timezone,age_group:age>=65?'65plus':'20_64'},step:Math.max(1,state.step),revision:state.revision,complete:false});
+}

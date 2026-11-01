@@ -3,7 +3,7 @@ import { FoodCamera } from "@/components/food-camera";
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { consistencyWarning, FIELDS as NUTRIENT_FIELDS, rounded, scale, type Nutrients } from "@/lib/nutrition-math";
 import { useAccount } from "@/components/account-session";
-import {personalRequest,assertAdultCalculatorAllowed,type PersonalState} from "@/lib/personalization";
+import {confirmAdultForCalculator} from "@/lib/personalization";
 import { MealIdeaTransfer } from "@/components/meal-idea-transfer";
 import { VoiceInput } from "@/components/voice-input";
 import {type AppTab} from "@/components/app-design";
@@ -357,7 +357,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const calculateAndApplyOnboarding = async () => {
     setGoalError("");
     try {
-    if(user)assertAdultCalculatorAllowed(await personalRequest<PersonalState>("state"));
+    if(user)await confirmAdultForCalculator(onboardingForm.age);
     const { sex, age, weight, height, activity, goal, diet } = onboardingForm;
     const plan = await calculateOnboardingPlan({
       age,
@@ -375,7 +375,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     setTargetCarbs(plan.macros.carbs_g);
     setTargetFat(plan.macros.fat_g);
     setShowOnboarding(false);
-    setNotice("Your nutrition targets have been saved on this device.");
+    setNotice(`Your target is ${plan.calorie_target} kcal a day, with ${plan.macros.protein_g} g protein. Track it in Journal.`);
     } catch (error) { setGoalError(error instanceof Error ? error.message : "Unable to calculate goals."); }
   };
 
