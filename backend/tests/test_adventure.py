@@ -110,14 +110,17 @@ def test_account_export_includes_own_adventure_but_not_other_accounts():
     assert client.get('/api/v1/users/export',headers=other).json()['adventure']['rewards']==[]
 
 
-def test_companion_unlock_thresholds():
+def test_companions_need_both_points_and_a_streak():
     from services.adventure import unlocked_companions
-    assert unlocked_companions(0) == ['pip']
-    assert unlocked_companions(249) == ['pip']
-    for level in range(2,7):
-        xp=(level-1)*250
-        assert unlocked_companions(xp) == ['pip','nova','milo','luna','rio','sage'][:level]
-        assert len(unlocked_companions(xp-1)) == level-1
+    assert unlocked_companions(0) == ['pip'] and unlocked_companions(9999) == ['pip']  # points alone are not enough
+    assert unlocked_companions(249, 30) == ['pip']  # nor is a streak alone
+    assert unlocked_companions(250, 2) == ['pip'] and unlocked_companions(250, 3) == ['pip', 'nova']
+    names = ['pip', 'nova', 'milo', 'luna', 'rio', 'sage']
+    for level, days in zip(range(2, 7), (3, 7, 14, 21, 30)):
+        points = (level - 1) * 250
+        assert unlocked_companions(points, days) == names[:level]
+        assert len(unlocked_companions(points - 1, days)) == level - 1 and len(unlocked_companions(points, days - 1)) == level - 1
+
 
 
 def test_complete_day_streak_requires_every_daily_quest(monkeypatch):

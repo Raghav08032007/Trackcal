@@ -10,6 +10,7 @@ KINDS={'verified_challenge_completion':'verified_challenge_completed','verified_
 RULES=[('saved_meal',10,10,True),('onboarding',10,10,True),('activity_plan',10,10,True),('planner_learning',10,10,True),('fitness_learning',10,10,True),('nutrition_learning',10,10,True),('recovery',5,5,True),('meal',10,10,True),('quiz',10,10,True),('plan',10,10,True),('workout',20,20,True),('weekly',25,25,True),('community_contribution',0,0,False),('verified_event_attendance',50,50,True),('verified_challenge_completion',40,40,True)]
 ACHIEVEMENTS=[('food_explorer','Food Explorer','saved_meals',1,True),('wellness_learner','Wellness Learner','wellness_lessons',3,True),('recovery_champion','Recovery Champion','recovery_sessions',3,True),('personal_journey','Personal Journey Started','onboardings',1,True),('first_plan','First Plan Created','activity_plans',1,True),('fitness_explorer','Fitness Explorer','fitness_lessons',1,True),('first_activity','First Activity','activities',1,True),('first_workout','First Workout','workouts',1,True),('skill_builder','Skill Builder','skills',3,False),('community_contributor','Community Contributor','contributions',1,False),('consistency','Consistency Milestone','engaged_days',3,True),('recovery_awareness','Recovery Awareness','rest_days',1,True),('event_attendee','Verified Event','events',1,True),('challenge_finisher','Verified Challenge','challenges',1,True)]
 CHARACTERS=['pip','nova','milo','luna','rio','sage']
+UNLOCK_STREAKS=(0,3,7,14,21,30)  # best streak needed, alongside the points; an unlock already earned stays
 ACHIEVEMENTS += [('first_camera','First Camera Workout','camera_sessions',1,True),('movement_explorer','Movement Explorer','camera_exercises',3,True),('tracking_milestone','Tracking Milestone','camera_days',3,True)]
 
 def seed(db):
@@ -90,11 +91,11 @@ def state(db,user,day,xp,events):
         achievements.append({'code':definition.code,'title':definition.title,'status':'unlocked' if definition.code in earned else 'in_progress' if definition.enabled and value else 'locked','progress':min(value,definition.threshold),'required':definition.threshold,'operational':definition.enabled,'unlocked_at':earned[definition.code].unlocked_at.isoformat()+'Z' if definition.code in earned else None})
     unlocks={r.character_id for r in locked(db.query(models.CharacterUnlock).filter_by(user_id=user.id)).all()}
     milestones=[]
-    for index,identifier in enumerate(CHARACTERS):
-        required=index*config['level_step']
-        if xp>=required and identifier not in unlocks:writing();db.add(models.CharacterUnlock(user_id=user.id,character_id=identifier));unlocks.add(identifier)
-        milestones.append({'id':identifier,'level':index+1,'required_xp':required,'unlocked':identifier in unlocks})
     streak=flexible_streak(engaged,rests,day,prefs.protection_enabled,config['protected_days_per_week'])
+    for index,identifier in enumerate(CHARACTERS):
+        required,days=index*config['level_step'],UNLOCK_STREAKS[index]
+        if xp>=required and streak['best']>=days and identifier not in unlocks:writing();db.add(models.CharacterUnlock(user_id=user.id,character_id=identifier));unlocks.add(identifier)
+        milestones.append({'id':identifier,'level':index+1,'required_xp':required,'required_streak':days,'unlocked':identifier in unlocks})
     monday=day-timedelta(days=day.weekday());rest_used=sum(str(monday)<=v<=str(day) for v in rests)
     db.flush()
     result={'level':1+xp//config['level_step'],'level_xp':xp%config['level_step'],'level_step':config['level_step'],'unlocked_companions':[c for c in CHARACTERS if c in unlocks],'companion_unlocks':milestones,'achievements':achievements,'engagement_streak':streak,'rest_days_remaining':max(0,config['rest_days_per_week']-rest_used),'rest_today':str(day) in rests,'customization':{key:getattr(prefs,key) for key in ('character_id','accessory','enabled','minimized','muted','position','protection_enabled')},'daily_xp_cap':config['daily_cap'],'integration_contracts':[{'category':KINDS.get(k,k),'operational':bool(k in KINDS and db.get(models.GamificationRule,k) and db.get(models.GamificationRule,k).enabled)} for k,_xp,_cap,enabled in RULES if k!='weekly']}

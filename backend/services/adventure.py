@@ -5,10 +5,11 @@ from flask_app.params import HTTPException
 import models
 from services.read_only import READ_ONLY, locked
 
-COMPANION_UNLOCKS = (("pip", 0), ("nova", 250), ("milo", 500), ("luna", 750), ("rio", 1000), ("sage", 1250))
+# name, points, best streak in days. Both are needed. The best streak never falls, so a missed day costs nothing already earned.
+COMPANION_UNLOCKS = (("pip", 0, 0), ("nova", 250, 3), ("milo", 500, 7), ("luna", 750, 14), ("rio", 1000, 21), ("sage", 1250, 30))
 
-def unlocked_companions(xp):
-    return [name for name, threshold in COMPANION_UNLOCKS if xp >= threshold]
+def unlocked_companions(xp, best_streak=0):
+    return [name for name, points, days in COMPANION_UNLOCKS if xp >= points and best_streak >= days]
 
 def now(): return datetime.now(timezone.utc)
 
@@ -58,7 +59,7 @@ def summary(db,user):
     if len(meal_days)>=3: badges.append("Growing roots")
     if best>=7: badges.append("Seven-day gardener")
     if any(event.kind=="quiz" for event in events): badges.append("Label detective")
-    result={"initialized":True,"owner_id":str(user.id),"timezone":item.timezone,"today":str(day),"xp":xp,"unlocked_companions":unlocked_companions(xp),"level":1+xp//250,"level_xp":xp%250,
+    result={"initialized":True,"owner_id":str(user.id),"timezone":item.timezone,"today":str(day),"xp":xp,"unlocked_companions":unlocked_companions(xp,best_task_streak),"level":1+xp//250,"level_xp":xp%250,
             "task_streak":task_streak,"best_task_streak":best_task_streak,"completed_days":completed_days[-35:],"daily_goal":{"complete":completed_today,"total":3,"day_complete":completed_today==3},
             "streak":current,"best_streak":best,"active_days":meal_days[-35:],"weekly_days":week_days,"badges":badges,
             "quests":[{"id":kind,"title":title,"xp":points,"complete":any(e.kind==kind and e.local_day==str(day) for e in events)} for kind,title,points in [("meal","Review today's first meal",10),("plan","Generate a feasible meal plan",10),("quiz","Complete Label Detective",10)]],

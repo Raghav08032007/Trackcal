@@ -78,7 +78,11 @@ def test_customization_is_owned_persistent_and_unlock_validated():
   db.get(models.GamificationRule,'policy').settings={'level_step':10}
   db.commit()
  result=workout(owner,headers,data['today']).json()['summary']
- assert result['level']==3 and result['level_xp']==0 and result['unlocked_companions']==['pip','nova','milo']
+ assert result['level']==3 and result['level_xp']==0 and result['unlocked_companions']==['pip']  # points without the streak
+ assert [m['required_streak'] for m in result['companion_unlocks']]==[0,3,7,14,21,30]
+ with database.SessionLocal() as db:  # someone who unlocked Nova under the old points-only rule
+  db.add(models.CharacterUnlock(user_id=result['owner_id'],character_id='nova'));db.commit()
+ assert 'nova' in client.get('/api/v1/adventure/summary',headers=headers).json()['unlocked_companions']  # an earned companion is never taken away
  assert client.post('/api/v1/adventure/companion-settings',headers=headers,json={**changed,'character_id':'nova','accessory':'flower'}).json()['customization']['accessory']=='flower'
 
 
