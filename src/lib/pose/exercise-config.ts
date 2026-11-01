@@ -16,6 +16,10 @@ export type ExerciseConfig={
  optional?:[number[],number[]];
  /** Also read depth from how far the shoulders drop, which needs no legs in frame. */
  drop?:boolean;
+ /** The move starts low and rises, like an arm raise: the angle is flipped so the rep runs the same way as a squat. */
+ invert?:boolean;
+ /** Either side can do the rep, so alternating legs all count. */
+ either?:boolean;
  /** [left, right] landmarks that must be visible for the side to be tracked. */
  required:[number[],number[]];
  up:number;down:number;hysteresis:number;
@@ -52,6 +56,18 @@ export const EXERCISE_CONFIG:Record<ExerciseKind,ExerciseConfig>={
   up:150,down:115,hysteresis:8,minRangeDeg:30,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'1.5–2 m away, phone at chest height'},tips:['Stand side-on to the camera, hands on a stable wall.','Keep shoulder, elbow, wrist and hip in frame.'],experimental:true,
   suitable:(p,s)=>p[L.shoulder[s]].y<p[L.hip[s]].y},
+ lunge:{id:'lunge',title:'Lunges',template:'camera_lunge',kcalPerRep:.45,joints:[[23,25,27],[24,26,28]],span:[[23,27],[24,28]],cues:['Stand tall','Step and lower','Stand back up'],required:pick(L.shoulder),optional:pick(L.hip,L.knee,L.ankle),drop:true,
+  up:150,down:115,hysteresis:8,minRangeDeg:30,minRepMs:700,maxRepMs:20000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  camera:{view:'side',distance:'2–3 m away, laptop at table height'},tips:['Face the camera or stand side-on.','Keep your shoulders and hips in frame.','Step, lower, then stand tall before the next one.'],experimental:true},
+ jack:{id:'jack',title:'Jumping jacks',template:'camera_jack',kcalPerRep:.2,joints:[[23,11,13],[24,12,14]],invert:true,cues:['Arms by your sides','Jump and reach up','Back down'],required:pick(L.shoulder,L.elbow,L.hip),
+  up:145,down:75,hysteresis:8,minRangeDeg:50,minRepMs:350,maxRepMs:10000,minDwellMs:40,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  camera:{view:'side',distance:'2–3 m away, laptop at table height'},tips:['Face the camera.','Leave room above your head.','Bring your arms fully down each time.'],experimental:true},
+ raise:{id:'raise',title:'Side arm raises',template:'camera_raise',kcalPerRep:.12,joints:[[23,11,13],[24,12,14]],invert:true,cues:['Arms by your sides','Raise to shoulder height','Lower your arms'],required:pick(L.shoulder,L.elbow,L.hip),
+  up:145,down:105,hysteresis:8,minRangeDeg:35,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  camera:{view:'side',distance:'1.5–2 m away, laptop at chest height'},tips:['Face the camera.','Raise your arms out to the sides, up to shoulder height.','Keep shoulders, elbows and hips in frame.'],experimental:true},
+ knee:{id:'knee',title:'Knee raises',template:'camera_knee',kcalPerRep:.15,joints:[[11,23,25],[12,24,26]],span:[[23,25],[24,26]],either:true,cues:['Stand tall','Lift one knee','Lower your foot'],required:pick(L.shoulder,L.hip,L.knee),
+  up:150,down:110,hysteresis:8,minRangeDeg:30,minRepMs:400,maxRepMs:10000,minDwellMs:60,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  camera:{view:'side',distance:'2–3 m away, laptop at table height'},tips:['Face the camera or stand side-on.','Lift one knee at a time; either leg counts.','Keep your hips and knees in frame.'],experimental:true},
 };
 /** Harder levels ask for a fuller range of motion: a straighter top and a deeper bottom. Beginner is the base config. */
 export const EXERCISE_LEVELS:Record<ExerciseLevel,{title:string;up:number;down:number}>={beginner:{title:'Beginner',up:0,down:0},intermediate:{title:'Intermediate',up:5,down:10},advanced:{title:'Advanced',up:10,down:20}};

@@ -7,7 +7,7 @@ export interface ExerciseAnalyzer{observe(frame:PoseFrame):Observation;reset():v
  *  aspect-corrected before the angle is taken (normalize), and the three joint points are smoothed. */
 export class JointAnalyzer implements ExerciseAnalyzer{
  side:0|1|null=null;private center:{x:number;y:number}|null=null;private filters:OneEuroFilter[]=[];private reach=0;private span:number|null=null;private top:number|null=null;private anchor=0;private torso=0;private shoulders:number|null=null;
- constructor(readonly config:ExerciseConfig){this.resetFilters();}
+ constructor(readonly config:ExerciseConfig,private fixedSide?:0|1){this.resetFilters();}
  private resetFilters(){const {minCutoff,beta}=this.config.smoothing;this.filters=Array.from({length:6},()=>new OneEuroFilter(minCutoff,beta));}
  reset(){this.side=null;this.center=null;this.reach=0;this.span=null;this.clearDrop();this.resetFilters();}
  private clearDrop(){this.top=null;this.torso=0;this.shoulders=null;}
@@ -16,7 +16,8 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   if(!p)return bad(frame.landmarks.length>1?'Only one person should be in view.':'Step back so your whole body is in frame.');
   if(frame.brightness!==undefined&&frame.brightness<28)return bad('Try a brighter, evenly lit space.');
   const q=[confidence(p,c.required[0]),confidence(p,c.required[1])] as const;
-  if(this.side===null)this.side=q[0]>=q[1]?0:1;
+  if(this.fixedSide!==undefined)this.side=this.fixedSide;
+  else if(this.side===null)this.side=q[0]>=q[1]?0:1;
   else if(q[this.side]<c.minVisibility&&q[1-this.side]>=c.minVisibility){this.side=this.side===0?1:0;this.resetFilters();}  // the far side flickers side-on; the rep carries on
   const side=this.side,ids=c.required[side],quality=q[side];
   if(quality<c.minVisibility||!visible(frame,ids))return bad('Step back so your whole body is in frame.',quality);
@@ -29,7 +30,8 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   const joint=c.joints[side].map((id,i):Landmark=>({x:this.filters[i*2].filter(p[id].x,frame.timestamp),y:this.filters[i*2+1].filter(p[id].y,frame.timestamp)}));
   const extra=c.optional?.[side],legs=!extra||(confidence(p,extra)>=c.minVisibility&&visible(frame,extra));
   const degrees=Math.min(legs?angle(joint[0],joint[1],joint[2]):Infinity,legs?this.spanAngle(p,side):Infinity,c.drop?this.dropAngle(p,hipsSeen):Infinity);
-  return Number.isFinite(degrees)?{angle:degrees,confidence:quality,valid:true,reason:''}:bad('The movement was not detected clearly.',quality);
+  const reading=c.invert?180-degrees:degrees;
+  return Number.isFinite(reading)?{angle:reading,confidence:quality,valid:true,reason:''}:bad('The movement was not detected clearly.',quality);
  }
  /** Shoulders drop as a squat goes down, whatever is in frame. Depth is that drop in torso lengths, from the standing height, in the same
   *  degrees as the knee: half a torso is about a thigh-level squat. */
@@ -49,5 +51,15 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   this.span=this.span===null?raw:this.span*.4+raw*.6;this.reach=Math.max(this.span,this.reach*.999);
   // Near full reach asin is so steep that tracking noise reads as a bend, so the top 4% counts as straight.
   return this.reach>0?2*Math.asin(Math.min(1,this.span/(this.reach*.96)))*180/Math.PI:Infinity;
+ }
+}
+/** Watches both sides and follows whichever is mid-rep, so alternating legs all count. */
+export class EitherSideAnalyzer implements ExerciseAnalyzer{
+ private sides:[JointAnalyzer,JointAnalyzer];
+ constructor(config:ExerciseConfig){this.sides=[new JointAnalyzer(config,0),new JointAnalyzer(config,1)];}
+ reset(){this.sides.forEach(side=>side.reset());}
+ observe(frame:PoseFrame):Observation{
+  const [left,right]=this.sides.map(side=>side.observe(frame));
+  return left.valid&&right.valid?(left.angle<=right.angle?left:right):left.valid?left:right;
  }
 }

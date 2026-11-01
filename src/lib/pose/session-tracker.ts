@@ -1,8 +1,8 @@
-import {JointAnalyzer} from './analyzers';import {RepCounter} from './rep-counter';import {EXERCISE_CONFIG,withLevel} from './exercise-config';
+import {EitherSideAnalyzer,JointAnalyzer,type ExerciseAnalyzer} from './analyzers';import {RepCounter} from './rep-counter';import {EXERCISE_CONFIG,withLevel} from './exercise-config';
 import type {ExerciseKind,ExerciseLevel,PoseFrame,TrackingResult} from './types';
 export class SessionTracker{
- readonly config;readonly analyzer;readonly counter;private quality=0;private samples=0;private low=0;private last=-Infinity;private first=-Infinity;paused=false;
- constructor(readonly exercise:ExerciseKind,level:ExerciseLevel='beginner'){this.config=withLevel(EXERCISE_CONFIG[exercise],level);this.analyzer=new JointAnalyzer(this.config);this.counter=new RepCounter(this.config);}
+ readonly config;readonly analyzer:ExerciseAnalyzer;readonly counter;private quality=0;private samples=0;private low=0;private last=-Infinity;private first=-Infinity;paused=false;
+ constructor(readonly exercise:ExerciseKind,level:ExerciseLevel='beginner'){this.config=withLevel(EXERCISE_CONFIG[exercise],level);this.analyzer=this.config.either?new EitherSideAnalyzer(this.config):new JointAnalyzer(this.config);this.counter=new RepCounter(this.config);}
  frame(frame:PoseFrame):TrackingResult|null{if(this.paused||frame.timestamp<=this.last)return null;this.last=frame.timestamp;if(this.first===-Infinity)this.first=frame.timestamp;const observation=this.analyzer.observe(frame),r=this.counter.update(observation,frame.timestamp);this.samples++;this.quality+=observation.confidence;if(!r.accepted)this.low++;return r;}
  pause(){this.paused=true;this.counter.resetMovement();this.analyzer.reset();}
  resume(){this.paused=false;this.counter.resetMovement();this.analyzer.reset();}

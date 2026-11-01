@@ -49,3 +49,19 @@ describe('wall push-ups',()=>{
  }
  it('counts at 10 fps',()=>expect(run('wallpush',wallFrame,5,10,2).reps).toBe(5));
 });
+
+describe('more exercises, facing the camera',()=>{
+ /** Upright body. raise lifts both elbows from the sides (0) to level with the shoulders (1) and on overhead (2). */
+ function body(raise:number,knee:[number,number],drop:number,t:number):PoseFrame{
+  const p=standing(),angle=raise*Math.PI/2,armX=.12*Math.sin(angle),armY=.12*Math.cos(angle),top=.3+.1*drop,hip=.55+.1*drop;
+  put(p,11,.42,top);put(p,12,.58,top);put(p,13,.42-armX,top+armY);put(p,14,.58+armX,top+armY);put(p,15,.42-armX*2,top+armY*2);put(p,16,.58+armX*2,top+armY*2);
+  put(p,23,.45,hip);put(p,24,.55,hip);put(p,25,.45,hip+.17*(1-knee[0]*.7));put(p,26,.55,hip+.17*(1-knee[1]*.7));put(p,27,.45,.9);put(p,28,.55,.9);
+  return {landmarks:[p],timestamp:t,width:640,height:480};
+ }
+ it('jumping jacks at 10 fps',()=>expect(run('jack',(d,t)=>body(d*1.8,[0,0],0,t),6,10,1).reps).toBe(6));
+ it('side arm raises at 10 fps',()=>expect(run('raise',(d,t)=>body(d,[0,0],0,t),5,10,2).reps).toBe(5));
+ it('a small arm lift is not a side raise',()=>expect(run('raise',(d,t)=>body(d*.3,[0,0],0,t),3,10,2).reps).toBe(0));
+ it('lunges at 10 fps',()=>expect(run('lunge',(d,t)=>body(0,[0,0],d,t),5,10,2).reps).toBe(5));
+ it('knee raises count either leg',()=>{let rep=0,last=0;const c=run('knee',(d,t)=>{if(d<last&&d<.05)rep++;last=d;return body(0,rep%2?[d,0]:[0,d],0,t);},6,10,1.2);expect(c.reps).toBe(6);});
+ it('standing still counts nothing on any of them',()=>{for(const kind of ['jack','raise','lunge','knee'] as const)expect(run(kind,(_,t)=>body(0,[0,0],0,t),0,10,1).reps).toBe(0);});
+});
