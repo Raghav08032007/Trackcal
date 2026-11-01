@@ -84,7 +84,8 @@ def start(data:StartSession,user=Depends(get_current_active_user),db:Session=Dep
   return finish(db,user,session=view(prior),awarded_xp=0)
  require_exercises(db,user,data.exercises)
  if data.tracking_method=='camera' and (len(data.exercises)!=1 or data.exercises[0] not in ('camera_squat','camera_pushup','camera_curl','camera_press','camera_situp','camera_wallpush')):raise HTTPException(422,'Choose one supported camera exercise.')
- if db.query(models.WorkoutSession).filter_by(user_id=user.id,is_deleted=False).filter(models.WorkoutSession.status.in_(['active','paused'])).first():raise HTTPException(409,'Resume or end your existing session before starting another.')
+ # A camera workout is already finished when it is saved, so an open session elsewhere has no reason to block it.
+ if data.tracking_method!='camera' and db.query(models.WorkoutSession).filter_by(user_id=user.id,is_deleted=False).filter(models.WorkoutSession.status.in_(['active','paused'])).first():raise HTTPException(409,'Resume or end your existing session before starting another.')
  activity=None
  if data.plan_activity_id:
   activity=linked(db,user,data.plan_activity_id)
@@ -141,6 +142,9 @@ def update(identifier:UUID,data:SessionUpdate,user=Depends(get_current_active_us
   row.status='completed';row.completed_at=clock();row.running_since=None
   if activity:activity.status='completed';activity.completed_at=clock()
   profile=adventure.profile(db,user,locked=True)
+  if not profile:  # the first finished workout starts points and the streak, even for someone who has not opened Play
+   personal=db.get(models.PersonalizationProfile,user.id)
+   profile=models.AdventureProfile(user_id=user.id,timezone=(personal.preferences or {}).get('timezone') or 'UTC' if personal else 'UTC');db.add(profile);db.flush()
   if profile:points=gamification.award(db,user,'recovery' if all(k=='recovery' for k in keys) else 'workout',adventure.local_day(profile),source_id=row.plan_activity_id or row.id,payload={'tracking_method':method,'exercise':keys[0]} if method=='camera' else {})
  elif data.action=='abandon':row.status='abandoned';row.running_since=None
  return finish(db,user,session=view(row),awarded_xp=points)

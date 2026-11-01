@@ -95,3 +95,14 @@ def test_camera_summary_rejects_unknown_versions_bad_durations_and_extra_data(ba
 def test_wall_push_camera_session_saves():
  _,h=account();init(h);s=session(h,['camera_wallpush'],tracking_method='camera')
  r=update(h,s,tracking=tracking(exercise_type='wallpush'),exercises=[{'exercise_id':'camera_wallpush','sets':[{'reps':6,'load':0,'minutes':0}]}]);assert r.status_code==200,r.text
+
+
+def test_an_open_manual_workout_does_not_block_saving_a_camera_result():
+ _,h=account();init(h);session(h,['strength'])
+ s=session(h,['camera_squat'],tracking_method='camera');r=update(h,s,tracking=tracking(),exercises=records());assert r.status_code==200,r.text
+
+
+def test_the_first_finished_workout_starts_points_and_the_streak_without_opening_play():
+ _,h=account()
+ s=session(h,['camera_squat'],tracking_method='camera');r=update(h,s,tracking=tracking(),exercises=records());assert r.status_code==200,r.text
+ body=r.json();assert body['awarded_xp']==20 and body['summary']['engagement_streak']['current']==1
