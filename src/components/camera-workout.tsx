@@ -59,7 +59,7 @@ function MemberCamera(){
  const adjust=(delta:number)=>correct(count+delta);
  const reached=target>0&&count>=target,extra=Math.max(0,count-target),calories=Math.round(count*config.kcalPerRep*weight/70*10)/10,bodyGrams=Math.round(calories/7.7*10)/10;
  useEffect(()=>{if(reached&&status==='tracking'){companion('Target reached. Extra reps still count.');if(cueRef.current)repCue();}},[reached]);// eslint-disable-line react-hooks/exhaustive-deps -- fires once as the target is reached
- const coach=!result?'Starting tracking…':result.paused||result.rejection?result.message:{SETUP:config.cues[0],UP:config.cues[1],GOING_DOWN:config.cues[1],DOWN:config.cues[2],GOING_UP:config.cues[2]}[result.phase];
+ const coach=!result?'Starting tracking…':!result.accepted||result.rejection?result.message:{SETUP:config.cues[0],UP:config.cues[1],GOING_DOWN:config.cues[1],DOWN:config.cues[2],GOING_UP:config.cues[2]}[result.phase];
  const plusMinus=<div className="camera-adjust"><button type="button" aria-label="Remove one rep" disabled={count<=0} onClick={()=>adjust(-1)}>−</button><button type="button" aria-label="Add one rep" disabled={count>=100} onClick={()=>adjust(1)}>+</button></div>;
  return <main className="wellness-page camera-page"><section className="camera-intro"><span className="eyebrow">PRIVATE · ON-DEVICE · YOUR PACE</span><h1>Make room for movement.</h1><p>Camera-assisted counting for familiar exercises. Estimates, not a form or medical-safety assessment.</p></section><div id="camera-companion-slot" className="camera-companion-slot"/>
  {error&&<p role="alert" className="camera-alert">{error} <Link href="/workouts">Open manual workouts →</Link></p>}<p role="status" className="camera-notice">{notice}</p>

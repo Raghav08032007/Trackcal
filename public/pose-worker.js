@@ -1,7 +1,7 @@
 /* Local-only worker (runs off the UI thread). Tries the GPU delegate, falls back to CPU. At most one transferred frame is outstanding. */
 const BASE='/pose/mediapipe-1.2.0-lite16-1/';  // versioned, cached for a year; keep in step with scripts/prepare-pose.mjs
 let model=null,delegate='CPU';
-const options=d=>({baseOptions:{modelAssetPath:BASE+'pose_landmarker_lite.task',delegate:d},runningMode:'VIDEO',numPoses:2,minPoseDetectionConfidence:.6,minPosePresenceConfidence:.6,minTrackingConfidence:.6,outputSegmentationMasks:false});
+const options=d=>({baseOptions:{modelAssetPath:BASE+'pose_landmarker_lite.task',delegate:d},runningMode:'VIDEO',numPoses:2,minPoseDetectionConfidence:.4,minPosePresenceConfidence:.4,minTrackingConfidence:.4,outputSegmentationMasks:false});
 async function create(d){const {FilesetResolver,PoseLandmarker}=await import(BASE+'vision_bundle.mjs');return PoseLandmarker.createFromOptions(await FilesetResolver.forVisionTasks(BASE+'wasm'),options(d));}
 self.onmessage=async({data})=>{
  try{
