@@ -23,7 +23,7 @@ it('always offers +/- correction, labels estimates honestly and shows low perfor
 });
 it('pauses counting with a clear instruction when the body leaves the frame',async()=>{
  render(<CameraWorkout/>);fireEvent.click(await screen.findByRole('button',{name:'Enable camera'}));await screen.findByRole('button',{name:'Pause tracking'});
- const out=pose('squat',false,100);out.landmarks[0][27].x=1;act(()=>mock.frame!(out));
+ const out=pose('squat',false,100);out.landmarks[0][23].x=1;out.landmarks[0][24].x=1;act(()=>mock.frame!(out));const still=pose('squat',false,750);still.landmarks[0][23].x=1;still.landmarks[0][24].x=1;act(()=>mock.frame!(still));
  expect(screen.getByText(/Counting paused: Step back so your whole body is in frame/)).toBeTruthy();
 });
 it('plays the optional rep cue only when switched on and a rep is counted',async()=>{

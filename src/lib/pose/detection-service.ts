@@ -1,6 +1,6 @@
 import type {PoseFrame} from './types';
-/** Inference budget: when the recent average exceeds it, the frame rate steps down (24 → 15 → 10 fps). */
-export const BUDGET_MS=60;const RATES=[24,15,10],WINDOW=15;
+/** Inference budget: when the recent average exceeds it, the frame rate steps down (24 → 20 → 15 fps). */
+export const BUDGET_MS=60;const RATES=[24,20,15],WINDOW=15;
 export type PoseStats={fps:number;averageMs:number;delegate:'GPU'|'CPU'|'';lowPerformance:boolean};
 /** Browser camera errors, in words a person can act on. */
 export function cameraError(error:unknown):Error{

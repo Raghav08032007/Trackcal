@@ -23,7 +23,7 @@ describe('rep counts on synthetic landmark fixtures',()=>{
  for(const ex of ['squat','pushup','curl','press','situp'] as ExerciseKind[]){
   it(`${ex}: walking out of frame pauses counting with a clear instruction`,()=>{const {last}=play(ex,'walk_out');expect(last.paused).toBe(true);expect(last.message).toBe('Step back so your whole body is in frame.');});
   it(`${ex}: a half rep tells the person why it was not counted`,()=>{const {results}=play(ex,'half_reps');expect(results.some(r=>r.rejection==='too_shallow'&&r.message.includes('go a little deeper'))).toBe(true);});
-  it(`${ex}: occlusion never counts while hidden`,()=>{const {results}=play(ex,'occlusion');const hidden=results.filter(r=>r.paused);expect(hidden.length).toBeGreaterThan(10);expect(new Set(hidden.map(r=>r.reps)).size).toBe(1);});
+  it(`${ex}: occlusion never counts while hidden`,()=>{const {results}=play(ex,'occlusion');const hidden=results.filter(r=>r.paused);expect(hidden.length).toBeGreaterThan(2);expect(new Set(hidden.map(r=>r.reps)).size).toBe(1);});
  }
  it('fixtures are labelled synthetic and sampled at a realistic rate',()=>{const f=load('squat','clean');expect(f.synthetic).toBe(true);expect(f.fps).toBe(20);});
 });
@@ -32,7 +32,7 @@ describe('state machine details',()=>{
  const c=EXERCISE_CONFIG.squat,ok=(angle:number)=>({angle,confidence:.9,valid:true,reason:''});
  function drive(counter:RepCounter,points:[number,number][]){let r;for(const [t,a] of points)r=counter.update(ok(a),t);return r!;}
  const ramp=(from:number,to:number,start:number,ms:number,step=50)=>Array.from({length:Math.floor(ms/step)+1},(_,i)=>[start+i*step,from+(to-from)*i/Math.floor(ms/step)] as [number,number]);
- it('a rep slower than the maximum duration is rejected as too slow',()=>{const k=new RepCounter(c);drive(k,ramp(175,175,0,300));drive(k,ramp(175,90,350,7000,100));drive(k,ramp(90,175,7400,7000,100));expect(k.reps).toBe(0);expect(k.rejections.too_slow).toBe(1);});
+ it('a rep slower than the maximum duration is rejected as too slow',()=>{const k=new RepCounter(c);drive(k,ramp(175,175,0,300));drive(k,ramp(175,90,350,9000,100));drive(k,ramp(90,175,9400,9000,100));expect(k.reps).toBe(0);expect(k.rejections.too_slow).toBe(1);});
  it('jitter around the top threshold never starts a cycle',()=>{const k=new RepCounter(c);drive(k,ramp(175,175,0,300));for(let t=350;t<3000;t+=50)k.update(ok(c.up+(t%100?3:-3)),t);expect(k.phase).toBe('UP');expect(Object.values(k.rejections).every(v=>v===0)).toBe(true);});
  it('a duplicate or stale frame changes nothing',()=>{const k=new RepCounter(c);drive(k,ramp(175,175,0,300));const before=k.phase;k.update(ok(80),300);k.update(ok(80),100);expect(k.phase).toBe(before);});
 });

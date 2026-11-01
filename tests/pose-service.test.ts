@@ -20,8 +20,8 @@ it('steps the frame rate down when inference is over budget and reports low perf
  const stats=vi.fn(),s=new PoseDetectionService(vi.fn(),vi.fn(),stats);await s.start(v,'','user',vi.fn());
  expect(stats).toHaveBeenLastCalledWith(expect.objectContaining({fps:24,lowPerformance:false}));
  for(let i=0;i<15;i++)worker!.onmessage!({data:{type:'pose',ms:BUDGET_MS+20,landmarks:[],timestamp:i,width:640,height:480}});
- expect(stats).toHaveBeenLastCalledWith(expect.objectContaining({fps:15,lowPerformance:true}));
+ expect(stats).toHaveBeenLastCalledWith(expect.objectContaining({fps:20,lowPerformance:true}));
  for(let i=0;i<15;i++)worker!.onmessage!({data:{type:'pose',ms:BUDGET_MS+20,landmarks:[],timestamp:100+i,width:640,height:480}});
- expect(stats).toHaveBeenLastCalledWith(expect.objectContaining({fps:10,lowPerformance:true}));
+ expect(stats).toHaveBeenLastCalledWith(expect.objectContaining({fps:15,lowPerformance:true}));
  s.stop(v);
 });
