@@ -1,6 +1,8 @@
 import type {PoseFrame} from './types';
 /** Inference budget: when the recent average exceeds it, the frame rate steps down (24 → 20 → 15 fps). */
 export const BUDGET_MS=60;const RATES=[24,20,15],WINDOW=15;
+/** The model's first frame sets up the GPU and can take far longer than any later frame. */
+const STALL_MS=12000,WARM_UP_MS=60000;
 export type PoseStats={fps:number;averageMs:number;delegate:'GPU'|'CPU'|'';lowPerformance:boolean};
 /** Browser camera errors, in words a person can act on. */
 export function cameraError(error:unknown):Error{
@@ -59,7 +61,7 @@ export class PoseDetectionService{
       let brightness:number|undefined;
       if(typeof OffscreenCanvas!=='undefined'){const c=new OffscreenCanvas(16,12),ctx=c.getContext('2d',{willReadFrequently:true});if(ctx){ctx.drawImage(bitmap,0,0,16,12);const pixels=ctx.getImageData(0,0,16,12).data;let sum=0;for(let i=0;i<pixels.length;i+=4)sum+=(pixels[i]+pixels[i+1]+pixels[i+2])/3;brightness=sum/(pixels.length/4);}}
       worker.postMessage({type:'frame',bitmap,timestamp:performance.now(),width,height,brightness},[bitmap]);
-      this.watchdog=setTimeout(()=>this.fail('Tracking stopped responding. Your camera has been shut down; retry or log manually.'),12000);
+      this.watchdog=setTimeout(()=>this.fail('Tracking stopped responding. Your camera has been shut down; retry or log manually.'),this.timings.length?STALL_MS:WARM_UP_MS);
      }catch{if(version===this.generation)this.fail('A frame could not be processed. Retry or use manual workouts.');}
     }
     if(version===this.generation)this.timer=setTimeout(()=>void sample(),1000/RATES[this.rate]);
