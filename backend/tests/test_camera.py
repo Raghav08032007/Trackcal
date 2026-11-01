@@ -91,3 +91,7 @@ def test_camera_summary_rejects_unknown_versions_bad_durations_and_extra_data(ba
  _,h=account();init(h)
  s=session(h,['camera_squat'],tracking_method='camera')
  assert update(h,s,tracking=tracking(**bad),exercises=records()).status_code==422
+
+def test_wall_push_camera_session_saves():
+ _,h=account();init(h);s=session(h,['camera_wallpush'],tracking_method='camera')
+ r=update(h,s,tracking=tracking(exercise_type='wallpush'),exercises=[{'exercise_id':'camera_wallpush','sets':[{'reps':6,'load':0,'minutes':0}]}]);assert r.status_code==200,r.text

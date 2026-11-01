@@ -12,7 +12,7 @@ from services.personalization_inputs import Preferences
 from services.wellness_inputs import BlueprintInput,StartSession,SessionUpdate
 from services.abuse_limits import consume
 import models
-CATEGORIES={'walk':'endurance','chair':'mobility','strength':'bodyweight','gym':'strength','run':'endurance','mobility':'mobility','yoga':'yoga','cycle':'endurance','recovery':'recovery','camera_squat':'camera','camera_pushup':'camera','camera_curl':'camera','camera_press':'camera','camera_situp':'camera'}
+CATEGORIES={'walk':'endurance','chair':'mobility','strength':'bodyweight','gym':'strength','run':'endurance','mobility':'mobility','yoga':'yoga','cycle':'endurance','recovery':'recovery','camera_squat':'camera','camera_pushup':'camera','camera_curl':'camera','camera_press':'camera','camera_situp':'camera','camera_wallpush':'camera'}
 def catalog():return [{'id':key,**t,'category':CATEGORIES[key],'movement':{'strength':'push','gym':'resistance familiarization','walk':'locomotion','run':'locomotion','cycle':'cycling'}.get(key,'comfortable range / rest'),'safety':rules.RECOVERY,'accessibility':['seated'] if t['seated'] else [] if t['floor'] else ['no_floor'],'media':None} for key,t in rules.TEMPLATES.items()]
 def clock():return adventure.now().astimezone(timezone.utc).replace(tzinfo=None)
 def lock(db,user):db.query(models.User).filter_by(id=user.id).with_for_update().one()
@@ -83,7 +83,7 @@ def start(data:StartSession,user=Depends(get_current_active_user),db:Session=Dep
   if prior.user_id!=user.id or prior.is_deleted:raise HTTPException(404,'Session not found.')
   return finish(db,user,session=view(prior),awarded_xp=0)
  require_exercises(db,user,data.exercises)
- if data.tracking_method=='camera' and (len(data.exercises)!=1 or data.exercises[0] not in ('camera_squat','camera_pushup','camera_curl','camera_press','camera_situp')):raise HTTPException(422,'Choose one supported camera exercise.')
+ if data.tracking_method=='camera' and (len(data.exercises)!=1 or data.exercises[0] not in ('camera_squat','camera_pushup','camera_curl','camera_press','camera_situp','camera_wallpush')):raise HTTPException(422,'Choose one supported camera exercise.')
  if db.query(models.WorkoutSession).filter_by(user_id=user.id,is_deleted=False).filter(models.WorkoutSession.status.in_(['active','paused'])).first():raise HTTPException(409,'Resume or end your existing session before starting another.')
  activity=None
  if data.plan_activity_id:
