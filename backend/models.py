@@ -443,10 +443,12 @@ class Food(Base):
     serving_size_description = Column(String(100), nullable=True)
     data_completeness_score = Column(Float, default=0.0)  # 0-1
     allergen_ids = Column(JSON, nullable=True)
+    ingredients = Column(JSON, nullable=True)  # names, for mixed dishes
     created_at = Column(DateTime, default=_now)
     updated_at = Column(DateTime, default=_now, onupdate=_now)
 
     brand = relationship("Brand", back_populates="foods")
+    portions = relationship("FoodPortion", back_populates="food", cascade="all, delete-orphan")
     nutrients = relationship("FoodNutrient", back_populates="food", cascade="all, delete-orphan")
     barcodes = relationship("Barcode", back_populates="food", cascade="all, delete-orphan")
     translations = relationship("FoodTranslation", back_populates="food", cascade="all, delete-orphan")
@@ -492,6 +494,19 @@ class Barcode(Base):
     barcode_type = Column(String(20))  # EAN-13, UPC-A, QR, etc.
 
     food = relationship("Food", back_populates="barcodes")
+
+
+class FoodPortion(Base):
+    """A real serving size: "1 cup, chopped" is 150 g."""
+    __tablename__ = "food_portions"
+
+    id = Column(CHAR(36), primary_key=True, default=_uuid)
+    food_id = Column(CHAR(36), ForeignKey("foods.id", ondelete="CASCADE"), nullable=False, index=True)
+    label = Column(String(120), nullable=False)
+    grams = Column(Float, nullable=False)
+    position = Column(Integer, nullable=False, default=0)
+
+    food = relationship("Food", back_populates="portions")
 
 
 class NutrientDefinition(Base):

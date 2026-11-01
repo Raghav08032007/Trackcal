@@ -33,6 +33,14 @@ def environment(monkeypatch):
     monkeypatch.setenv('APP_ENV', 'testing'); monkeypatch.setenv('OPENROUTER_API_KEY', 'unit-test-key')
 
 
+@pytest.fixture(autouse=True)
+def no_cached_barcodes():
+    """Lookups are cached in the database, so a real scan of a test barcode would otherwise change these results."""
+    import database, models
+    with database.SessionLocal() as db:
+        db.query(models.BarcodeCache).filter(models.BarcodeCache.barcode.in_(('3017620422003', '5449000000996'))).delete(synchronize_session=False); db.commit()
+
+
 @pytest.fixture
 def internet(monkeypatch):
     calls, replies = [], []
