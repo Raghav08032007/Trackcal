@@ -268,7 +268,7 @@ html[data-theme="dark"] .tc-studio .play-footnote { color: #c5c7dc; }
   .tc-studio .journey-float .journey-orb img { width: 40px; height: 40px; }
 }
 
-/* Camera: the count and the next move sit on the video, and the laptop navigation scrolls away instead of covering it. */
+/* Camera: the count and the next move sit on the video. The laptop navigation scrolls away on every page instead of covering content. */
 .camera-live { position: absolute; inset: auto 12px 12px; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 20px; background: #15123cd9; color: #fff; }
 .camera-live-count { min-width: 2ch; font-size: clamp(2.2rem, 7vw, 3.6rem); line-height: 1; text-align: center; color: #d9f5a8; }
 .camera-live-coach { display: grid; flex: 1; gap: 8px; min-width: 0; font-size: 1rem; font-weight: 700; }
@@ -276,7 +276,7 @@ html[data-theme="dark"] .tc-studio .play-footnote { color: #c5c7dc; }
 .camera-live-coach progress::-webkit-progress-bar { background: #ffffff33; }
 .camera-live-coach progress::-webkit-progress-value { background: #a6ec3f; }
 .camera-live-coach progress::-moz-progress-bar { background: #a6ec3f; }
-@media (min-width: 860px) { .tc-studio:has(.camera-page) .app-tabbar { position: absolute; } }
+@media (min-width: 860px) { .tc-studio .app-tabbar { position: absolute; } }
 @media (prefers-reduced-motion: no-preference) {
   html:not([data-motion="reduced"]) .camera-live-count { animation: camera-rep .32s var(--clay-spring); }
 }
