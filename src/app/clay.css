@@ -516,3 +516,11 @@ html[data-theme="dark"] .camera-equipment { background: #26263c; }
 html[data-theme="dark"] .exercise-demo { background: #26263c; }
 
 .camera-difficulty { grid-template-columns: repeat(4, 1fr); margin-top: 8px; }
+
+.library-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.library-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px solid #e6e1f7; }
+.library-row div { min-width: 0; flex: 1 1 180px; }
+.library-row small { display: block; }
+.library-row a, .library-row button { min-height: 44px; display: inline-flex; align-items: center; }
+.gym-result { font-size: 1.1rem; font-weight: 700; }
+html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
