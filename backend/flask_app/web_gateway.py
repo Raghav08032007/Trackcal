@@ -762,11 +762,37 @@ def _catalog_foods(query):
         return []
 
 
+def _world_foods(query, limit):
+    """Packaged foods from every country through Open Food Facts search. It's a bonus: any failure simply adds nothing."""
+    try:
+        response = _external('GET', 'https://search.openfoodfacts.org/search', timeout=6, params={'q': query, 'page_size': '24'})
+        hits = response.json().get('hits') if response.status_code == 200 else []
+    except Exception:
+        return []
+    results = []
+    for hit in hits if isinstance(hits, list) else []:
+        n = hit.get('nutriments') if isinstance(hit.get('nutriments'), dict) else {}
+        values = [n.get(key) for key in ('energy-kcal_100g', 'proteins_100g', 'carbohydrates_100g', 'fat_100g')]
+        name = hit.get('product_name')
+        if isinstance(name, dict): name = name.get('en') or next(iter(name.values()), None)
+        if not isinstance(name, str) or not name.strip() or any(not isinstance(v, (int, float)) or isinstance(v, bool) or v < 0 for v in values) or values[0] > 900: continue
+        brands = hit.get('brands')
+        brand = brands[0] if isinstance(brands, list) and brands else brands if isinstance(brands, str) else ''
+        places = hit.get('countries_tags') if isinstance(hit.get('countries_tags'), list) else []
+        country = re.sub(r'^[a-z]{2}:', '', places[0]).replace('-', ' ').title() if places and isinstance(places[0], str) else 'Worldwide'
+        results.append({'id': f"off-{hit.get('code')}", 'name': f'{name.strip()} — {brand}' if brand else name.strip(), 'cuisine': country, 'category': 'Packaged food', 'serving_size': '100g',
+                        'calories': values[0], 'protein': values[1], 'carbs': values[2], 'fat': values[3], 'fiber': n.get('fiber_100g') if isinstance(n.get('fiber_100g'), (int, float)) else 0,
+                        'source': 'Open Food Facts (community data)', 'verified': False, 'allergens': []})
+        if len(results) >= limit: break
+    return results
+
+
 @bp.get('/foods')
 def foods():
     query = (request.args.get('q') or '').strip()
     if not 2 <= len(query) <= 100: return error('Enter a food name between 2 and 100 characters.', 400)
     local = _catalog_foods(query)
+    local += [food for food in _world_foods(query, 12 - len(local))] if len(local) < 12 else []
     if len(local) >= 12: return reply({'results': local, 'source': 'TrackCal catalog', 'note': 'Values per 100g. Choose a serving or enter grams.'})
     try:
         response = _external('GET', 'https://api.nal.usda.gov/fdc/v1/foods/search', timeout=12,

@@ -112,3 +112,9 @@ def test_the_first_finished_workout_starts_points_and_the_streak_without_opening
 def test_new_camera_exercises_save(kind):
  _,h=account();init(h);key='camera_'+kind;s=session(h,[key],tracking_method='camera')
  r=update(h,s,tracking=tracking(exercise_type=kind),exercises=[{'exercise_id':key,'sets':[{'reps':8,'load':0,'minutes':0}]}]);assert r.status_code==200,r.text
+
+
+@pytest.mark.parametrize('kind', ['sumo', 'bridge', 'calf', 'sideleg', 'donkey', 'incline', 'kneepush', 'row', 'superman', 'kickback', 'overhead', 'hammer', 'front', 'uprow', 'crunch', 'legraise', 'sidebend', 'highknee', 'burpee', 'climber'])
+def test_body_area_exercises_save(kind):
+ _,h=account();init(h);key='camera_'+kind;s=session(h,[key],tracking_method='camera')
+ r=update(h,s,tracking=tracking(exercise_type=kind),exercises=[{'exercise_id':key,'sets':[{'reps':8,'load':0,'minutes':0}]}]);assert r.status_code==200,r.text

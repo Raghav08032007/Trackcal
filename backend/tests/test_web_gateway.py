@@ -4,6 +4,7 @@ import json
 import threading
 import uuid
 
+import httpx
 import pytest
 
 from flask_app import web_gateway
@@ -287,6 +288,7 @@ def test_barcode_reports_not_found_and_timeouts(internet):
 
 
 def test_food_search_validates_and_keeps_only_complete_records(internet, monkeypatch):
+    monkeypatch.setattr('flask_app.web_gateway._world_foods', lambda query, limit: [])
     _, replies = internet
     monkeypatch.setattr('flask_app.web_gateway._catalog_foods', lambda query: [])
     assert browser().get('/api/foods?q=').status_code == 400
@@ -306,6 +308,7 @@ def test_the_catalog_answers_first_and_needs_no_outside_service(internet, monkey
 
 
 def test_food_search_reports_limits_and_failures_without_fabricated_food(internet, monkeypatch):
+    monkeypatch.setattr('flask_app.web_gateway._world_foods', lambda query, limit: [])
     monkeypatch.setattr('flask_app.web_gateway._catalog_foods', lambda query: [])
     _, replies = internet; replies += [Fake(429, text='limit'), ConnectionError('offline')]
     assert browser().get('/api/foods?q=banana').status_code == 429
@@ -389,3 +392,14 @@ def test_barcode_digits_are_used_only_with_a_valid_check_digit(internet):
     for guess in ('{"digits":"00260435515790"}', '{"digits":"000000000000"}', '{"digits":""}', 'not json'):
         replies.append(model_reply(guess))
         assert post(browser(), '/api/barcode/read', {'image': phone_photo()}).status_code == 422
+
+
+def test_world_foods_keep_complete_records_and_never_break_search(internet):
+    from flask_app.web_gateway import _world_foods
+    _, replies = internet
+    good = {'code': '1', 'product_name': 'Pierogi', 'brands': ['Virtu'], 'countries_tags': ['en:poland'], 'nutriments': {'energy-kcal_100g': 190, 'proteins_100g': 6, 'carbohydrates_100g': 30, 'fat_100g': 4}}
+    replies.append(Fake(200, {'hits': [good, {'code': '2', 'product_name': 'No numbers', 'nutriments': {}}]}))
+    found = _world_foods('pierogi', 12)
+    assert len(found) == 1 and found[0]['name'] == 'Pierogi — Virtu' and found[0]['cuisine'] == 'Poland' and found[0]['calories'] == 190
+    replies.append(httpx.ReadTimeout('slow'))
+    assert _world_foods('pierogi', 12) == []
