@@ -495,3 +495,17 @@ html[data-theme="dark"] .library-estimate { border-color: #3a3a5c; color: #e4dcf
 .camera-metrics .camera-equipment button[aria-pressed="true"], .camera-metrics .camera-equipment button[aria-pressed="true"]:disabled { background: var(--clay-violet-deep); color: #fff; opacity: 1; }
 .camera-only-this { font-size: .875rem; }
 html[data-theme="dark"] .camera-equipment { background: #26263c; }
+
+.exercise-demo { margin: 0 0 12px; padding: 10px; border-radius: 16px; background: #f4f2fc; }
+.exercise-demo svg { display: block; width: 100%; max-width: 240px; margin: 0 auto; aspect-ratio: 1; }
+.exercise-demo .demo-near { stroke: var(--clay-violet-deep); }
+.exercise-demo .demo-far { stroke: #a99be8; }
+.exercise-demo .demo-head { fill: var(--clay-violet-deep); }
+.exercise-demo .demo-floor { stroke: #cfc9e6; }
+.exercise-demo figcaption { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: .85rem; }
+.exercise-demo figcaption button { min-height: 44px; min-width: 64px; }
+html[data-theme="dark"] .exercise-demo { background: #26263c; }
+html[data-theme="dark"] .exercise-demo .demo-near { stroke: #e4dcff; }
+html[data-theme="dark"] .exercise-demo .demo-head { fill: #e4dcff; }
+html[data-theme="dark"] .exercise-demo .demo-far { stroke: #8577c9; }
+html[data-theme="dark"] .exercise-demo .demo-floor { stroke: #4a4a6a; }
