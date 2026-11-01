@@ -145,7 +145,8 @@ def test_nonfinite_measurements_and_empty_unsafe_plans_are_rejected():
  assert client.post('/api/v1/personalization/plans',headers=headers,json={'revision':1}).status_code==409
 
 def test_feedback_can_be_reviewed_after_regeneration_without_automatic_progression():
- _,headers,_,_=setup({'available_days':list(range(7)),'rest_days':[6]})
+ rest=(date.today().weekday()+3)%7  # never today: on the rest day itself the plan has no activity to review
+ _,headers,_,_=setup({'available_days':list(range(7)),'rest_days':[rest]})
  data=plan(headers);activity=next(a for a in data['plan']['activities'] if a['template_id']!='recovery')
  path='/api/v1/personalization/activities/'+activity['id']
  assert client.post(path,headers=headers,json={'action':'feedback','feedback':'pain'}).status_code==200

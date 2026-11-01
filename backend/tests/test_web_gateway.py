@@ -286,8 +286,9 @@ def test_barcode_reports_not_found_and_timeouts(internet):
     assert browser().get('/api/barcode?code=5449000000996').status_code == 502  # a timeout, retried once
 
 
-def test_food_search_validates_and_keeps_only_complete_records(internet):
+def test_food_search_validates_and_keeps_only_complete_records(internet, monkeypatch):
     _, replies = internet
+    monkeypatch.setattr('flask_app.web_gateway._catalog_foods', lambda query: [])
     assert browser().get('/api/foods?q=').status_code == 400
     replies.append(Fake(200, {'foods': [
         {'fdcId': 1, 'description': 'Test banana', 'foodNutrients': [{'nutrientName': 'Energy', 'unitName': 'KCAL', 'value': 89}, {'nutrientName': 'Protein', 'value': 1.1},
@@ -297,7 +298,15 @@ def test_food_search_validates_and_keeps_only_complete_records(internet):
     assert len(results) == 1 and results[0]['name'] == 'Test banana' and results[0]['calories'] == 89 and results[0]['serving_size'] == '100g'
 
 
-def test_food_search_reports_limits_and_failures_without_fabricated_food(internet):
+def test_the_catalog_answers_first_and_needs_no_outside_service(internet, monkeypatch):
+    calls, _ = internet
+    foods = [{'id': str(i), 'name': f'Food {i}'} for i in range(12)]
+    monkeypatch.setattr('flask_app.web_gateway._catalog_foods', lambda query: foods)
+    assert browser().get('/api/foods?q=banana').get_json()['results'] == foods and calls == []
+
+
+def test_food_search_reports_limits_and_failures_without_fabricated_food(internet, monkeypatch):
+    monkeypatch.setattr('flask_app.web_gateway._catalog_foods', lambda query: [])
     _, replies = internet; replies += [Fake(429, text='limit'), ConnectionError('offline')]
     assert browser().get('/api/foods?q=banana').status_code == 429
     assert browser().get('/api/foods?q=banana').status_code == 502
