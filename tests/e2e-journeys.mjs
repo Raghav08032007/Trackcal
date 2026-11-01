@@ -38,7 +38,7 @@ try{
   pass(`${label}: barcode lookup shows the product and logs it`);
 
   // Describe → AI breakdown.
-  await page.goto(root+'/describe');await page.getByRole('textbox',{name:'Meal description'}).fill('two idli with sambar');await page.getByRole('button',{name:'Parse & Break Down Meal'}).click();
+  await page.goto(root+'/describe');await page.getByRole('textbox',{name:'Meal description'}).fill('two idli with sambar');await page.getByRole('button',{name:'Estimate calories'}).click();
   await page.getByText('Journey idli').first().waitFor();
   pass(`${label}: describing a meal shows the estimated breakdown`);
 

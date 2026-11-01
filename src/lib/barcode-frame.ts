@@ -1,4 +1,4 @@
-import {BarcodeFormat,BinaryBitmap,DecodeHintType,GlobalHistogramBinarizer,HybridBinarizer,MultiFormatOneDReader,RGBLuminanceSource} from '@zxing/library';
+import {BarcodeFormat,BinaryBitmap,DecodeHintType,GlobalHistogramBinarizer,HybridBinarizer,MultiFormatOneDReader,QRCodeReader,RGBLuminanceSource} from '@zxing/library';
 /** Reads product barcodes from blurry webcam frames: enlarged crop, stronger bar edges, two binarizers. Nothing leaves the device. */
 const hints=new Map<DecodeHintType,unknown>([[DecodeHintType.TRY_HARDER,true],[DecodeHintType.POSSIBLE_FORMATS,[BarcodeFormat.EAN_13,BarcodeFormat.EAN_8,BarcodeFormat.UPC_A,BarcodeFormat.UPC_E]]]);
 const EDGE=.35,DARK=45;
@@ -8,6 +8,16 @@ export function validGtin(code:string){
  if(!/^(\d{8}|\d{12,14})$/.test(code)||/^(\d)\1+$/.test(code))return false;
  const digits=[...code].map(Number),check=digits.pop() as number;
  return (10-digits.reverse().reduce((sum,value,i)=>sum+value*(i%2?1:3),0)%10)%10===check;
+}
+/** The product number in anything a pack code can hold: plain digits, a GS1 Digital Link URL, or (01) element strings. Null when it holds none. */
+export function productCode(text:string){
+ const value=text.trim(),found=/^\d{8,14}$/.test(value)?value:value.match(/\/01\/(\d{8,14})(?:[/?#]|$)/)?.[1]??value.match(/^(?:\(01\)|\u001d?01)(\d{14})/)?.[1];
+ if(!found||!validGtin(found))return null;
+ return found.length===14&&found[0]==='0'?found.slice(1):found;
+}
+/** A QR code's text, from one grayscale frame. */
+export function decodeQr(gray:Uint8ClampedArray,width:number,height:number){
+ try{return new QRCodeReader().decode(new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(gray,width,height)))).getText();}catch{return null;}
 }
 export function toGray(rgba:Uint8ClampedArray,width:number,height:number){
  const gray=new Uint8ClampedArray(width*height);

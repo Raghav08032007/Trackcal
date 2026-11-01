@@ -55,6 +55,36 @@ export interface BarcodeProductResult {
   attribution: string;
   community_data: boolean;
   cached: boolean;
+  details?: ProductDetails;
+}
+
+export interface ProductDetails {
+  registered_in?: string | null;
+  made_in?: string | null;
+  sold_in?: string[];
+  certifications?: { name: string; region: string | null; meaning: string | null }[];
+  additives?: { code: string; name: string | null }[];
+  codes?: { kind: string; value: string }[];
+  terms?: { term: string; meaning: string }[];
+  ingredients?: string | null;
+  allergens?: string[];
+}
+
+export interface PackReading {
+  product_name: string;
+  brand: string;
+  barcode: string | null;
+  per_100g: { calories: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null };
+  details: ProductDetails;
+}
+
+/** Reads the name, marks, codes and terms printed on a pack. */
+export async function readPackPhoto(file: File): Promise<PackReading> {
+  const { preparePhoto } = await import("./photo-prep");
+  const response = await fetch("/api/pack/read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: await preparePhoto(file) }), signal: AbortSignal.timeout(45000) });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Could not read that photo.");
+  return data;
 }
 
 export async function calculateOnboardingPlan(params: OnboardingParams): Promise<OnboardingPlanResult> {

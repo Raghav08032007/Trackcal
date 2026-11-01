@@ -1,7 +1,7 @@
 // Real decoding of generated EAN-13 images, clean and blurred like a webcam out of focus.
 import {describe,it,expect} from 'vitest';
-import {BarcodeFormat,BinaryBitmap,DecodeHintType,HybridBinarizer,MultiFormatOneDReader,RGBLuminanceSource} from '@zxing/library';
-import {decodeGray,frameAdvice,validGtin} from '@/lib/barcode-frame';
+import {BarcodeFormat,BinaryBitmap,DecodeHintType,HybridBinarizer,MultiFormatOneDReader,QRCodeDecoderErrorCorrectionLevel,QRCodeEncoder,RGBLuminanceSource} from '@zxing/library';
+import {decodeGray,decodeQr,frameAdvice,productCode,validGtin} from '@/lib/barcode-frame';
 
 const L=['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
 const G=L.map(c=>[...c].map(b=>b==='0'?'1':'0').reverse().join(''));
@@ -49,4 +49,14 @@ describe('live advice',()=>{
   const sharp=image('3017620422003',4);expect(frameAdvice(sharp.gray,sharp.width,sharp.height)).toBe('');
   const dark=sharp.gray.map(v=>v/8);expect(frameAdvice(Uint8ClampedArray.from(dark),sharp.width,sharp.height)).toContain('dark');
  });
+});
+describe('QR codes on packs',()=>{
+ function qrImage(text:string,scale=5){
+  const matrix=QRCodeEncoder.encode(text,QRCodeDecoderErrorCorrectionLevel.M).getMatrix(),size=matrix.getWidth(),quiet=4*scale,width=size*scale+quiet*2,gray=new Uint8ClampedArray(width*width).fill(235);
+  for(let y=0;y<size*scale;y++)for(let x=0;x<size*scale;x++)if(matrix.get(Math.floor(x/scale),Math.floor(y/scale))===1)gray[(y+quiet)*width+x+quiet]=25;
+  return {gray,width};
+ }
+ it('reads a GS1 Digital Link QR into its product number',()=>{const q=qrImage('https://id.gs1.org/01/03017620422003/10/ABC');const text=decodeQr(q.gray,q.width,q.width);expect(text).toContain('/01/03017620422003');expect(productCode(text as string)).toBe('3017620422003');});
+ it('understands every way a pack carries the number',()=>{expect(productCode('3017620422003')).toBe('3017620422003');expect(productCode('(01)03017620422003')).toBe('3017620422003');});
+ it('a website QR is not a product, and a bad number is refused',()=>{expect(productCode('https://brand.example/offers')).toBeNull();expect(productCode('https://id.gs1.org/01/03017620422004')).toBeNull();});
 });

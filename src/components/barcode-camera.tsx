@@ -19,8 +19,9 @@ async function rescuePhoto(file:File){
  canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
  const context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return null;
  context.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
- const {decodeGray,toGray}=await import('@/lib/barcode-frame');
- return decodeGray(toGray(context.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height),canvas.width,canvas.height);
+ const {decodeGray,decodeQr,productCode,toGray}=await import('@/lib/barcode-frame');
+ const gray=toGray(context.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height),qr=decodeQr(gray,canvas.width,canvas.height);
+ return (qr&&productCode(qr))||decodeGray(gray,canvas.width,canvas.height);
 }
 export function BarcodeCamera({onCode}:{onCode:(code:string)=>void}){
   const video=useRef<HTMLVideoElement>(null),controls=useRef<IScannerControls|null>(null),callback=useRef(onCode),request=useRef(0);
@@ -62,16 +63,19 @@ export function BarcodeCamera({onCode}:{onCode:(code:string)=>void}){
           if(working||found||cancelled)return;const frame=guideCanvas(preview);if(!frame)return;guideFrame.current=frame;
           working=true;
           void (async()=>{
-            const {decodeGray,frameAdvice,toGray,validGtin}=await import('@/lib/barcode-frame');
+            const {decodeGray,decodeQr,frameAdvice,productCode,toGray,validGtin}=await import('@/lib/barcode-frame');
             const native=(window as unknown as {BarcodeDetector?:new(o:object)=>{detect(c:HTMLCanvasElement):Promise<{rawValue:string}[]>}}).BarcodeDetector;
-            const seen=native?await new native({formats:['ean_13','ean_8','upc_a','upc_e']}).detect(frame).catch(()=>[]):[];
+            const seen=native?await new native({formats:['ean_13','ean_8','upc_a','upc_e','qr_code']}).detect(frame).catch(()=>[]):[];
             if(found||cancelled)return;
-            const nativeCode=seen.map(row=>row.rawValue).find(validGtin);if(nativeCode){finish(nativeCode);return;}
+            const nativeCode=seen.map(row=>productCode(row.rawValue)).find(value=>value&&validGtin(value));if(nativeCode){finish(nativeCode);return;}
             const pixels=frame.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,frame.width,frame.height);if(!pixels)return;
-            const gray=toGray(pixels.data,frame.width,frame.height),code=decodeGray(gray,frame.width,frame.height);
+            const gray=toGray(pixels.data,frame.width,frame.height),qr=decodeQr(gray,frame.width,frame.height),qrCode=qr?productCode(qr):null;
+            if(qrCode){finish(qrCode);return;}
+            if(qr)setAdvice('This QR code has no product number. Scan the barcode instead.');
+            const code=decodeGray(gray,frame.width,frame.height);
             /* Two frames in a row must agree before a sharpened read is trusted. */
             if(code&&code===candidate)finish(code);candidate=code||'';
-            if(!code)setAdvice(frameAdvice(gray,frame.width,frame.height));
+            if(!code&&!qr)setAdvice(frameAdvice(gray,frame.width,frame.height));
           })().catch(()=>{}).finally(()=>{working=false;});
         },350);
       };resumeScan.current=begin;
@@ -106,10 +110,10 @@ export function BarcodeCamera({onCode}:{onCode:(code:string)=>void}){
     const preview=video.current;if(!preview||busy)return;
     const strip=guideCanvas(preview);if(!strip){setError('The camera is not ready yet. Try again in a moment.');return;}
     guideFrame.current=strip;setError('');setStatus('Reading your photo…');
-    const {decodeGray,toGray}=await import('@/lib/barcode-frame');
-    const read=(canvas:HTMLCanvasElement)=>{const pixels=canvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,canvas.width,canvas.height);return pixels?decodeGray(toGray(pixels.data,canvas.width,canvas.height),canvas.width,canvas.height):null;};
+    const {decodeGray,decodeQr,productCode,toGray}=await import('@/lib/barcode-frame');
+    const read=(canvas:HTMLCanvasElement)=>{const pixels=canvas.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,canvas.width,canvas.height);if(!pixels)return null;const gray=toGray(pixels.data,canvas.width,canvas.height),qr=decodeQr(gray,canvas.width,canvas.height);return (qr&&productCode(qr))||decodeGray(gray,canvas.width,canvas.height);};
     const whole=document.createElement('canvas');whole.width=preview.videoWidth;whole.height=preview.videoHeight;whole.getContext('2d',{willReadFrequently:true})?.drawImage(preview,0,0);
-    const code=read(strip)||read(whole);
+    const code=read(whole)||read(strip);
     if(code){setActive(false);setStatus(`Barcode detected: ${code}. Looking up product nutrition…`);callback.current(code);return;}
     await readDigits(true);
   }

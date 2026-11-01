@@ -12,6 +12,7 @@ import {foodRoutes,foodNames} from "@/lib/feature-guide";
 import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
 import { FoodRow, type LibraryFood } from "@/components/food-row";
+import { ProductFacts } from "@/components/product-facts";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
 import { wellnessRequest } from "@/lib/wellness";
 import {
@@ -40,7 +41,9 @@ import {
   lookupBarcodeNutrition,
   calculateOnboardingPlan,
   parseMealWithAI,
-  analyzeMealPhoto
+  analyzeMealPhoto,
+  readPackPhoto,
+  type ProductDetails
 } from "../lib/api";
 
 interface FoodItem {
@@ -425,6 +428,19 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     setPortionGrams(total); setPhotoRange(null);
   };
 
+  async function readPack(file: File) {
+    setReadingPack(true); setBarcodeError(null);
+    try {
+      const pack = await readPackPhoto(file);
+      if (pack.barcode) { await handleSearchBarcode(pack.barcode); setProductFacts(facts => ({ ...pack.details, ...Object.fromEntries(Object.entries(facts ?? {}).filter(([, value]) => Array.isArray(value) ? value.length : value)) })); return; }
+      setProductFacts(pack.details);
+      barcodeRequest.current++; setBarcodeOverrides({}); setBarcodeInput(""); setBarcodeSource("Your pack photo, read by AI");
+      setSelectedBarcodeProduct({ code: "No barcode", name: pack.product_name || "Product from your photo", brand: pack.brand || "Brand not read", serving: "Not stated", caloriesPer100g: pack.per_100g.calories, proteinPer100g: pack.per_100g.protein_g, carbsPer100g: pack.per_100g.carbs_g, fatPer100g: pack.per_100g.fat_g, attribution: "Read from your photo. Check it against the pack.", novaGroup: 0, novaLabel: "NOVA not assessed", allergens: pack.details.allergens ?? [] });
+      setBarcodeReady(true);
+    } catch (error) { setBarcodeError(error instanceof Error ? error.message : "Could not read that photo."); }
+    finally { setReadingPack(false); }
+  }
+
   const today = useLocalDate();
   const [selectedDate, setJournalDate] = useState("");
   const journalDate = selectedDate || today;
@@ -470,6 +486,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [barcodeInput, setBarcodeInput] = useState("3017620422003");
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const [barcodeError, setBarcodeError] = useState<string | null>(null);
+  const [productFacts, setProductFacts] = useState<ProductDetails | null>(null);
+  const [readingPack, setReadingPack] = useState(false);
   const [barcodeGrams, setBarcodeGrams] = useState(100);
   const [barcodeReady, setBarcodeReady] = useState(true);
   const [barcodeSource, setBarcodeSource] = useState("Demo product — sample data");
@@ -484,6 +502,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     try {
       const res = await lookupBarcodeNutrition(codeToSearch.trim());
       if (requestId !== barcodeRequest.current) return;
+      setProductFacts({ ...res.details, ingredients: res.ingredients_text, allergens: res.allergens });
       setSelectedBarcodeProduct({
         code: res.barcode,
         name: res.product_name || "Unnamed product",
@@ -613,7 +632,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       {/* Main Content */}
       <main className="app-main" data-active-tab={activeTab}>
         {notice && <div role="status" className="app-toast"><CheckCircle2 size={16} /><span>{notice}</span><button aria-label="Dismiss notification" onClick={() => setNotice("")}>×</button></div>}
-        <header className="food-page-heading"><div><p className="eyebrow">ONE FOCUSED WORKSPACE</p><h1>{foodNames[activeTab]}</h1></div><button className="destination-button" onClick={()=>setShowOnboarding(true)}>My goals</button><details className="food-tool-picker"><summary>Choose another food tool</summary><div className="destination-mini-grid">{(Object.keys(foodRoutes) as AppTab[]).map(tab=><button key={tab} className="destination-button" aria-current={activeTab===tab?'page':undefined} onClick={()=>navigateTab(tab)}>{foodNames[tab]}</button>)}</div></details></header>
+        <header className="food-page-heading"><div><h1>{foodNames[activeTab]}</h1></div><button className="destination-button" onClick={()=>setShowOnboarding(true)}>My goals</button><details className="food-tool-picker"><summary>Choose another food tool</summary><div className="destination-mini-grid">{(Object.keys(foodRoutes) as AppTab[]).map(tab=><button key={tab} className="destination-button" aria-current={activeTab===tab?'page':undefined} onClick={()=>navigateTab(tab)}>{foodNames[tab]}</button>)}</div></details></header>
         <MealIdeaTransfer onChoose={idea=>{setVoiceTextPrompt(idea);setActiveTab("voice_text");setNotice("Meal idea loaded. Add actual ingredients and quantities, then review the estimate before logging.");}}/>
         <div id="tracking-workspace" className="focused-tool-content"/>
         {/* TAB 1: AI PHOTO SCANNER */}
@@ -921,6 +940,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
             {/* Custom Barcode Input */}
             <BarcodeCamera onCode={handleSearchBarcode} />
+            <label className="pack-photo">{readingPack ? "Reading the pack…" : "Read a photo of the pack"}<input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" disabled={readingPack} onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void readPack(file); }} /></label>
+            <p className="pack-photo-note">For certifications, codes and terms, or a product with no barcode match. The photo is sent to the AI provider and not stored.</p>
             <div className="flex flex-col sm:flex-row gap-2 mb-5">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
@@ -983,6 +1004,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               ))}
             </div>
 
+            {productFacts && <ProductFacts facts={productFacts} />}
             {/* Barcode Lookup Result Card */}
             <p className="text-xs text-slate-400 mb-3">Source: {barcodeSource}. Confirm against your packaging label.</p>
             <label className="block mb-4 text-sm text-slate-300">Amount eaten (grams)<input aria-label="Barcode amount in grams" type="number" min="1" max="10000" value={barcodeGrams} onChange={e => setBarcodeGrams(Math.max(1, Math.min(10000, Number(e.target.value) || 1)))} className="ml-3 w-24 p-2 bg-slate-950 border border-slate-700 rounded-lg" /></label>
@@ -1083,19 +1105,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         {/* TAB 3: VOICE & TEXT MEAL LOGGER */}
         {activeTab === "voice_text" && (
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                <Mic className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Describe or Speak Your Meal</h2>
-                <p className="text-xs text-slate-400">AI natural language food entity extraction & macro decomposition</p>
-              </div>
-            </div>
-
-            {/* Input Box */}
-            <VoiceInput value={voiceTextPrompt} onText={text => { setVoiceTextPrompt(text); setParsedVoiceResult(null); }} />
-            <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 mb-4">
+            <div className="composer-head"><h2>What did you eat?</h2><p>Type it or say it, and we&apos;ll work out the calories.</p></div>
+            <div className="meal-composer">
               <textarea
                 aria-label="Meal description"
                 maxLength={4000}
@@ -1103,23 +1114,16 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 onChange={(e) => { setVoiceTextPrompt(e.target.value); setParsedVoiceResult(null); }}
                 disabled={isParsingVoice}
                 rows={3}
-                className="w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none"
-                placeholder="Example: 2 rotis, a cup of dal tadka and a bowl of curd"
+                placeholder="2 rotis, a cup of dal and a bowl of curd"
               />
-              <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-800">
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  AI estimates · review before saving
-                </div>
-                <button
-                  onClick={handleSimulateVoiceParse}
-                  disabled={isParsingVoice || !voiceTextPrompt.trim()}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition-all shadow-lg shadow-purple-500/20 cursor-pointer"
-                >
-                  {isParsingVoice ? "Parsing Entities..." : "Parse & Break Down Meal"}
+              <div className="meal-composer-bar">
+                <VoiceInput value={voiceTextPrompt} onText={text => { setVoiceTextPrompt(text); setParsedVoiceResult(null); }} />
+                <button className="meal-composer-send" onClick={handleSimulateVoiceParse} disabled={isParsingVoice || !voiceTextPrompt.trim()}>
+                  {isParsingVoice ? "Estimating…" : "Estimate calories"}
                 </button>
               </div>
             </div>
+            {!voiceTextPrompt && <div className="meal-chips" aria-label="Try an example">{["Masala dosa with chutney", "2 eggs on toast", "Chicken biryani, one plate"].map(example => <button key={example} type="button" onClick={() => setVoiceTextPrompt(example)}>{example}</button>)}</div>}
 
             {/* Parsed Result */}
             {textError && <p role="alert" className="text-rose-300 text-sm mb-4">{textError}</p>}
@@ -1127,7 +1131,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="bg-slate-950 border border-slate-800 rounded-xl p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">AI NLP Breakdown</span>
+                    <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Your estimate</span>
                     <h3 className="text-lg font-bold text-white mt-0.5">{parsedVoiceResult.title}</h3>
                   </div>
                   <button
@@ -1174,28 +1178,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         {/* TAB 4: DATABASE */}
         {activeTab === "database" && (
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-white">Global Food & Nutrition Catalog</h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Search thousands of foods and dishes. Pick a serving or enter grams to see the calories for that amount. Allergens are not included.
-                </p>
-              </div>
-
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  placeholder="Search food, cuisine, allergen..."
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setRemoteFoods([]); setFoodSearchError(""); foodSearchRequest.current++; setFoodSearchLoading(false); }}
-                  onKeyDown={e => { if (e.key === "Enter" && searchQuery.trim().length >= 2) searchGlobalFoods(); }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
-                />
-              </div>
+            <div className="composer-head"><h2>Find any food</h2><p>Over 14,000 foods and dishes, with real serving sizes.</p></div>
+            <div className="library-search">
+              <Search aria-hidden="true" size={18} />
+              <input
+                type="text"
+                aria-label="Search food, cuisine, allergen"
+                placeholder="Search rice, dosa, banana…"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setRemoteFoods([]); setFoodSearchError(""); foodSearchRequest.current++; setFoodSearchLoading(false); }}
+                onKeyDown={e => { if (e.key === "Enter" && searchQuery.trim().length >= 2) searchGlobalFoods(); }}
+              />
+              <button aria-label="Search global foods" disabled={foodSearchLoading || searchQuery.trim().length < 2} onClick={searchGlobalFoods}>{foodSearchLoading ? "Searching…" : "Search"}</button>
             </div>
-
-            <button disabled={foodSearchLoading || searchQuery.trim().length < 2} onClick={searchGlobalFoods} className="mb-4 px-4 py-2 rounded-lg bg-emerald-500 text-sm">{foodSearchLoading ? "Searching USDA…" : "Search global foods"}</button>
+            <h3 className="library-label">{searchQuery.trim() ? "Results" : "Popular to start with"}</h3>
             {foodSearchError && <p role="alert" className="text-amber-400 text-xs mb-3">{foodSearchError}</p>}
             <div className="food-list">
               {filteredFoods.length === 0 && <p className="p-6 text-center text-slate-400">No matching foods. Try another word, a barcode lookup or add it manually.</p>}

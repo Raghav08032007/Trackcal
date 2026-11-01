@@ -79,5 +79,5 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
   }
   const label = mode === "listening" ? "Stop listening" : mode === "recording" ? "Stop and write it down" : mode === "working" ? "Writing it down…" : "Speak a meal";
   const hint = mode === "listening" ? "Listening. Your words appear below." : mode === "recording" ? "Recording. Press stop when you finish." : "Say what you ate and how much. Audio is sent to a speech or AI service to write it down.";
-  return <div className={`voice-input voice-${mode}`}><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button><span>{hint}</span>{error && <p role="alert">{error}</p>}</div>;
+  return <div className={`voice-input voice-${mode}`}><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button>{mode !== "idle" && <span>{hint}</span>}{error && <p role="alert">{error}</p>}</div>;
 }
