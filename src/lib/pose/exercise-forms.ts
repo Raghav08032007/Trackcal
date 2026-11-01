@@ -45,7 +45,7 @@ const HINGE={moves:{shoulders:.3},still:{ankles:.4}};
 const LIFT_HIPS={never:notLying,still:{shoulders:.35},moves:{hips:.15}};
 /** Head-on, a lifted knee comes towards the camera and the hip angle hardly changes, so that check is for side-on only. */
 const RAISE_KNEE={never:notUpright,atBottom:(b:Body)=>b.hipGap<20&&b.facing<.45||b.kneeWide<140||b.facing>.5&&b.stance>.7,still:{shoulders:.3},moves:{knees:.25}};
-const STAND_LEG={never:either(notUpright,legsBent),still:{hips:.3,wrists:.4}};
+const STAND_LEG={never:either(notUpright,legsBent,armsOverhead),still:{hips:.3,wrists:.4}};
 const FOURS={never:either(notFloorHands,(b)=>b.tilt<55)};
 export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  // Legs
@@ -60,7 +60,7 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  knee:RAISE_KNEE,
  highknee:RAISE_KNEE,
  buttkick:{never:either(notUpright,(b)=>b.hip<135),atBottom:(b)=>b.kneeWide<120,still:{shoulders:.3},moves:{ankles:.25}},
- sideleg:{never:either(notUpright,legsBent),still:{shoulders:.25},moves:{ankles:.2}},
+ sideleg:{never:either(notUpright,legsBent,armsOverhead),still:{shoulders:.25},moves:{ankles:.2}},
  calf:STAND_LEG,
  wcalf:STAND_LEG,
  donkey:{...FOURS,still:{wrists:.3}},
@@ -68,7 +68,7 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  hipthrust:LIFT_HIPS,
  rdl:{...HINGE,never:either((b)=>b.knee<145,(b)=>b.wristUp>-.25),atBottom:notHinged},
  // Chest and shoulders
- pushup:{...PUSH,never:either(handsAbove,notLying,(b)=>b.knee<145,(b)=>b.hip<135,(b)=>b.headDown>.4,feetFromHands)},
+ pushup:{...PUSH,never:either((b)=>b.handHeight<-.6,handsAbove,notLying,(b)=>b.knee<145,(b)=>b.hip<135,(b)=>b.headDown>.4,feetFromHands)},
  kneepush:{...PUSH,never:either(handsAbove,(b)=>b.tilt<40,(b)=>b.headDown>.4,feetFromHands),atBottom:legsStraight},
  incline:{...PUSH,never:either(handsAbove,(b)=>b.tilt<22,(b)=>b.tilt>80,legsBent,(b)=>b.headDown>.05,(b)=>b.handHeight<.6)},
  wallpush:{...PUSH,never:either((b)=>b.tilt>42,legsBent,handsLow,armsOverhead)},
@@ -101,12 +101,12 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  crunch:{never:notLying,still:{hips:.25},moves:{shoulders:.1}},
  legraise:{never:either(notLying,legsBent,(b)=>b.hipGap>25),still:{shoulders:.35},moves:{knees:.35}},
  revcrunch:{never:notLying,atBottom:(b)=>b.kneeWide>125,still:{shoulders:.35},moves:{knees:.2}},
- vup:{atBottom:kneesDown,moves:{shoulders:.35,knees:.35}},
+ vup:{banned:(b)=>b.tilt<20,atBottom:kneesDown,moves:{shoulders:.35,knees:.35}},
  flutter:{never:either(notLying,legsBent,(b)=>b.wristLow<-.5),atBottom:(b)=>b.hipGap<6,still:{shoulders:.3}},
  bicycle:{never:either(notLying,(b)=>b.wristLow<-.5),atBottom:(b)=>b.hipGap<20||b.kneeWide>165&&b.knee>130},
  sidebend:{never:either((b)=>b.tilt>50,notFacing),atBottom:(b)=>b.tilt<6,still:{hips:.3},moves:{shoulders:.2}},
  // Added moves with their own signature
- latpull:{never:either((b)=>b.wristUp<-.1,legsStraight),still:{shoulders:.3},moves:{wrists:.2}},
+ latpull:{never:either((b)=>b.wristUp<-.1,legsStraight,(b)=>b.tilt>30),still:{shoulders:.3},moves:{wrists:.2}},
  pullover:{never:either(notLying,armBent),atBottom:feetFromHands,moves:{wrists:.5}},
  legext:{never:either(notUpright,(b)=>b.hipWide>135),still:{hips:.25,shoulders:.25},moves:{ankles:.3}},
  bulgarian:{...LUNGE,never:either(notUpright,(b)=>b.footStep<.25),atBottom:(b)=>b.knee>130||b.kneeWide>150||b.facing>.5},
@@ -114,8 +114,17 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  shouldertap:{never:either(notLying,handsAbove,feetFromHands),still:{hips:.2,shoulders:.25},moves:{wrists:.3}},
  legcurl:{never:notLying,still:{hips:.25,knees:.3},moves:{ankles:.3}},
  kbswing:{never:either(armBent,(b)=>b.wristUp>.3),atBottom:(b)=>b.wristUp<-.35,reaches:(b)=>b.tilt>30,moves:{wrists:.6,shoulders:.15}},
+ hspu:{never:either((b)=>b.headDown<.4,(b)=>b.hip<140),still:{wrists:.3},moves:{shoulders:.2}},
+ hangleg:{never:(b)=>b.wristUp<.3,still:{wrists:.3,shoulders:.3},moves:{knees:.35}},
+ decline:{...PUSH,never:either(handsAbove,notLying,legsBent,(b)=>b.handHeight>-.5)},
+ nordic:{never:(b)=>b.hip<140,still:{knees:.3,ankles:.3},moves:{shoulders:.6}},
+ jumplunge:{...LUNGE,moves:{ankles:.35,shoulders:.15}},
+ tuckjump:{banned:(b)=>b.tilt>50,never:either(notUpright,armsOverhead),atBottom:(b)=>b.hipGap>20,moves:{ankles:.5,knees:.3}},
+ cleanpress:{never:notUpright,atBottom:(b)=>b.wristUp<.4,reaches:(b)=>b.elbow<110,moves:{wrists:.8}},
+ snatch:{atBottom:(b)=>b.wristUp<.4,reaches:(b)=>b.tilt>30,moves:{wrists:.8,shoulders:.15}},
+ inclinebench:{never:either((b)=>b.tilt<25,(b)=>b.tilt>62,(b)=>b.wristUp<-.2),moves:{elbows:.2}},
  // Full body
- jack:{never:notUpright,atBottom:(b)=>b.wristUp<.15,reaches:(b)=>!(b.wristUp>-.5),moves:{wrists:.8}},
+ jack:{banned:(b)=>b.elbow<70||b.tilt>45,never:notUpright,atBottom:(b)=>b.wristUp<.15,reaches:(b)=>!(b.wristUp>-.5),moves:{wrists:.8}},
  burpee:{banned:(b)=>b.kneeUp>.3,atBottom:(b)=>b.tilt<45,moves:{shoulders:.6,ankles:.4}},
  climber:{never:either(notLying,handsAbove,notFloorHands),still:{wrists:.3}},
  punch:{never:either(notUpright,legsBent,armsOverhead,(b)=>b.wristUp<-.7),still:{shoulders:.25},moves:{wrists:.35}},

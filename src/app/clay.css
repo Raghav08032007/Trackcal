@@ -498,14 +498,21 @@ html[data-theme="dark"] .camera-equipment { background: #26263c; }
 
 .exercise-demo { margin: 0 0 12px; padding: 10px; border-radius: 16px; background: #f4f2fc; }
 .exercise-demo svg { display: block; width: 100%; max-width: 240px; margin: 0 auto; aspect-ratio: 1; }
-.exercise-demo .demo-near { stroke: var(--clay-violet-deep); }
-.exercise-demo .demo-far { stroke: #a99be8; }
-.exercise-demo .demo-head { fill: var(--clay-violet-deep); }
-.exercise-demo .demo-floor { stroke: #cfc9e6; }
+.exercise-demo svg { border-radius: 14px; background: linear-gradient(#f7f5ff 70%, #e6e1f7); }
+.exercise-demo .demo-shadow { fill: #2b2550; }
+.exercise-demo [class*="-leg"], .exercise-demo [class*="-arm"], .exercise-demo .demo-neck, .exercise-demo .demo-head { fill: #c98b63; }
+.exercise-demo .demo-far-leg, .exercise-demo .demo-far-arm { fill: #a9704c; }
+.exercise-demo .demo-torso, .exercise-demo [class*="-sleeve"] { fill: #5b3fd6; }
+.exercise-demo .demo-far-sleeve { fill: #4630ab; }
+.exercise-demo .demo-hips, .exercise-demo [class*="-short"] { fill: #23233f; }
+.exercise-demo .demo-far-short { fill: #14142b; }
+.exercise-demo [class*="-shoe"] { fill: #f26b4e; }
+.exercise-demo .demo-far-shoe { fill: #c9523a; }
+.exercise-demo [class*="-weight"] { fill: #3b3b4d; }
+.exercise-demo .demo-hair { fill: #2a1d16; }
+.exercise-demo .demo-eyes { fill: #1b1311; }
 .exercise-demo figcaption { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: .85rem; }
 .exercise-demo figcaption button { min-height: 44px; min-width: 64px; }
 html[data-theme="dark"] .exercise-demo { background: #26263c; }
-html[data-theme="dark"] .exercise-demo .demo-near { stroke: #e4dcff; }
-html[data-theme="dark"] .exercise-demo .demo-head { fill: #e4dcff; }
-html[data-theme="dark"] .exercise-demo .demo-far { stroke: #8577c9; }
-html[data-theme="dark"] .exercise-demo .demo-floor { stroke: #4a4a6a; }
+
+.camera-difficulty { grid-template-columns: repeat(4, 1fr); margin-top: 8px; }

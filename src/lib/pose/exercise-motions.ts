@@ -103,4 +103,13 @@ export const MOVES:Record<ExerciseKind,Move>={
  pistol:{view:'side',anchor:'foot',keys:[{thigh:[0,62],shin:[0,62]},{torso:28,thigh:[78,82],shin:[-36,82]}]},
  shouldertap:{view:'side',anchor:'hip',keys:[{...PLANK},{...PLANK,arm:[-30,0],fore:[95,0]}]},
  legcurl:{view:'side',anchor:'hip',keys:[{torso:88,thigh:both(-88),shin:both(-88),arm:both(92),fore:both(92)},{torso:88,thigh:both(-88),shin:both(-188),arm:both(92),fore:both(92)}]},
+ hspu:{view:'side',anchor:'hand',keys:[{torso:180,thigh:both(180),shin:both(180)},{torso:176,thigh:both(180),shin:both(180),arm:both(62),fore:both(-62)}]},
+ hangleg:{view:'side',anchor:'hand',keys:[{...UP},{...UP,thigh:both(105),shin:both(105)}]},
+ decline:{view:'side',anchor:'hand',keys:[{torso:100,thigh:both(-100),shin:both(-100)},{torso:108,thigh:both(-108),shin:both(-108),arm:both(-58),fore:both(62)}]},
+ nordic:{view:'side',anchor:'foot',keys:[{thigh:both(0),shin:both(-90)},{torso:72,thigh:both(-72),shin:both(-90)}]},
+ jumplunge:{view:'side',anchor:'foot',keys:[{},{torso:3,thigh:[72,-12],shin:[-14,-74]},{lift:.1}]},
+ tuckjump:{view:'side',anchor:'hip',keys:[{},{thigh:both(105),shin:both(-15),lift:.15}]},
+ cleanpress:{view:'side',anchor:'hip',keys:[{},{...RACK},{...UP},{...RACK}]},
+ snatch:{view:'side',anchor:'foot',keys:[{torso:62,thigh:both(30),shin:both(-20),arm:both(-40),fore:both(-40)},{...UP}]},
+ inclinebench:{view:'side',anchor:'shoulder',keys:[{torso:-45,thigh:both(92),shin:both(10),...UP},{torso:-45,thigh:both(92),shin:both(10),arm:both(100),fore:both(190)}]},
 };

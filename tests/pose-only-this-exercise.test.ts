@@ -1,7 +1,7 @@
 // A jointed skeleton performs every exercise and every exercise's tracker watches it: each must count its own move and no other.
 import {describe,it,expect} from 'vitest';
 import {SessionTracker} from '@/lib/pose/session-tracker';
-import {EXERCISES,type ExerciseKind,type Landmark,type PoseFrame} from '@/lib/pose/types';
+import {EXERCISES,EXERCISE_DIFFICULTY,type ExerciseKind,type Landmark,type PoseFrame} from '@/lib/pose/types';
 import {MOVES,blend,full,layout,placement,type Move,type Pose} from '@/lib/pose/exercise-motions';
 
 let seed=1;const noise=()=>{seed=(seed*16807)%2147483647;return (seed/2147483647-.5)*.004;};
@@ -19,13 +19,14 @@ function watch(kind:ExerciseKind,m:Move,reps:number,report?:string[]){
  return t.counter.reps;
 }
 /** Same movement, same body: the camera sees no difference, so these are one exercise for counting. Weights themselves can't be seen. */
-const SAME:ExerciseKind[][]=[['curl','hammer'],['knee','highknee'],['calf','wcalf'],['bridge','hipthrust'],['lunge','wlunge'],['squat','wsquat']];
+const SAME:ExerciseKind[][]=[['curl','hammer'],['knee','highknee'],['calf','wcalf'],['bridge','hipthrust'],['lunge','wlunge','jumplunge'],['squat','wsquat']];
 /** The first counts the second because the second contains it: a jump squat is a squat with a jump on the end. */
-const CONTAINS:[ExerciseKind,ExerciseKind][]=[['squat','squatjump'],['lunge','bulgarian'],['wlunge','bulgarian'],['deadlift','kbswing']];
+const CONTAINS:[ExerciseKind,ExerciseKind][]=[['squat','squatjump'],['lunge','bulgarian'],['wlunge','bulgarian'],['deadlift','kbswing'],['jumplunge','bulgarian'],['pushup','decline']];
 const same=(a:ExerciseKind,b:ExerciseKind)=>SAME.some(g=>g.includes(a)&&g.includes(b))||CONTAINS.some(([x,y])=>x===a&&y===b);
 const KINDS=Object.keys(EXERCISES) as ExerciseKind[];
 const REPS=3;
 describe('each exercise counts only itself',()=>{
+ it('every exercise has a difficulty, and every filter leaves something to pick',()=>{for(const e of Object.values(EXERCISES))expect(EXERCISE_DIFFICULTY).toHaveProperty(e.difficulty);for(const q of ['none','weights'])for(const d of Object.keys(EXERCISE_DIFFICULTY))expect(Object.values(EXERCISES).some(e=>e.equipment===q&&e.difficulty===d)).toBe(true);});
  it('has a motion for every exercise',()=>{expect(KINDS.filter(k=>!MOVES[k])).toEqual([]);});
  for(const k of KINDS)it(`${k} counts its own reps`,()=>{const why:string[]=[];expect(watch(k,MOVES[k],REPS,why),why.join()).toBe(REPS);});
  it('no exercise counts any other exercise',()=>{
