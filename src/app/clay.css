@@ -289,3 +289,51 @@ html[data-theme="dark"] .tc-studio .play-footnote { color: #c5c7dc; }
 .scan-item-edit .camera-adjust { display: flex; align-items: center; gap: 8px; margin: 0; }
 .scan-item-edit label { display: flex; align-items: center; gap: 6px; font-size: .8rem; font-weight: 600; }
 .scan-item-edit input { width: 84px; min-height: 44px; }
+
+/* Food pages: heading, tabs and cards share the same edges. The tabs already do the picker's job. */
+.tc-studio .food-tool-picker { display: none; }
+.tc-studio .food-page-heading { margin-bottom: 16px; }
+.tc-studio .food-focus .focused-tool-content:empty { display: none; }
+
+/* Voice: one clear action, and it shows when it is listening. */
+.voice-input { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; font-size: .875rem; color: var(--tc-muted, #5d5a78); }
+.voice-input button { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 0; border-radius: 16px; background: linear-gradient(180deg, #8467ff, #5530e8); color: #fff; font-weight: 700; box-shadow: 0 5px 0 #3d1fb8; }
+.voice-input span { flex: 1 1 220px; }
+.voice-input p { flex: 1 0 100%; margin: 0; color: #a3311f; }
+.voice-listening button, .voice-recording button { background: linear-gradient(180deg, #ff7a66, #d93a2b); box-shadow: 0 5px 0 #a02416; }
+html[data-theme="dark"] .voice-input { color: #c5c7dc; }
+html[data-theme="dark"] .voice-input p { color: #ffb4a8; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) :is(.voice-listening, .voice-recording) button { animation: voice-pulse 1.4s ease-in-out infinite; }
+}
+@keyframes voice-pulse { 50% { scale: 1.04; } }
+
+/* Food library: each food reads left to right, name, amount, result, log. */
+.food-list { display: grid; gap: 10px; }
+.food-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 16px; border-radius: 18px; background: #f6f2ff; }
+.food-row h3 { margin: 0; font-size: .95rem; font-weight: 700; color: var(--tc-ink); }
+.food-row p, .food-row small { display: block; margin: 2px 0 0; font-size: .75rem; color: #5d5a78; }
+.food-row summary { min-height: 24px; font-size: .75rem; color: var(--clay-violet-deep); cursor: pointer; }
+.food-row-amount { display: grid; grid-template-columns: minmax(0, 1fr) 84px; gap: 8px; }
+.food-row-amount label { display: grid; gap: 4px; min-width: 0; font-size: .72rem; font-weight: 600; color: #5d5a78; }
+.food-row-amount select, .food-row-amount input { width: 100%; min-height: 44px; font-size: .8rem; }
+.food-row-result strong { display: block; font-size: 1.05rem; color: var(--clay-violet-deep); }
+.food-row > button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 14px; background: var(--clay-violet-deep); color: #fff; font-weight: 700; }
+html[data-theme="dark"] .food-row { background: #2a2a47; }
+html[data-theme="dark"] .food-row :is(p, small, .food-row-amount label) { color: #c5c7dc; }
+html[data-theme="dark"] .food-row-result strong, html[data-theme="dark"] .food-row summary { color: #c9bcff; }
+html[data-theme="dark"] .food-row > button { background: #5530e8; }
+@media (max-width: 859px) { .food-row { grid-template-columns: 1fr; } .food-row > button { justify-content: center; } }
+
+/* Journal: delete sits at the end of each meal. */
+.journal-meal-end { display: flex; align-items: center; gap: 12px; }
+.journal-meal-delete { display: inline-grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 12px; background: #ffe6dc; color: #a3311f; }
+.journal-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; padding: 8px 14px; border-radius: 14px; background: #efeaff; font-size: .85rem; color: #2b2750; }
+.journal-undo button { min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--clay-violet-deep); font-weight: 700; }
+html[data-theme="dark"] .journal-meal-delete { background: #4a2a35; color: #ffb4a8; }
+html[data-theme="dark"] .journal-undo { background: #262842; color: #e6e4f5; }
+html[data-theme="dark"] .journal-undo button { color: #c9bcff; }
+
+@media (max-width: 600px) { .journal-meal { flex-wrap: wrap; gap: 10px; } .journal-meal-end { flex: 1 0 100%; justify-content: space-between; } }
+/* Page heading, tabs and cards line up on laptop: the old sidebar-era widths are still in the earlier sheets. */
+@media (min-width: 860px) { .tc-studio .trackcal-app.food-focus > main.app-main { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: 24px; } }

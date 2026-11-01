@@ -11,6 +11,7 @@ import {useRouter} from "@/lib/navigation";
 import {foodRoutes,foodNames} from "@/lib/feature-guide";
 import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
+import { FoodRow, type LibraryFood } from "@/components/food-row";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
 import { wellnessRequest } from "@/lib/wellness";
 import {
@@ -268,7 +269,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [scanSource, setScanSource] = useState<ScanSource>("none");
   const [portionGrams, setPortionGrams] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [remoteFoods, setRemoteFoods] = useState<FoodItem[]>([]);
+  const [remoteFoods, setRemoteFoods] = useState<LibraryFood[]>([]);
   const [foodSearchLoading, setFoodSearchLoading] = useState(false);
   const [foodSearchError, setFoodSearchError] = useState("");
   const foodSearchRequest = useRef(0);
@@ -428,6 +429,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [selectedDate, setJournalDate] = useState("");
   const journalDate = selectedDate || today;
   const [loggedMeals, setLoggedMeals] = useLocalState<MealLog[]>(`trackcal:journal:${journalDate}`, []);
+  const [deletedMeal, setDeletedMeal] = useState<{ meal: MealLog; index: number } | null>(null);
 
   const totalCaloriesLogged = loggedMeals.reduce((acc, m) => acc + m.calories, 0);
   const calPercent = Math.min(100, Math.round((totalCaloriesLogged / (dailyTarget || 2000)) * 100));
@@ -505,7 +507,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   }, [setBarcodeInput, setBarcodeLoading, setBarcodeReady, setBarcodeError, setSelectedBarcodeProduct, setBarcodeSource]);
 
   // Voice/Text State & AI Parser
-  const [voiceTextPrompt, setVoiceTextPrompt] = useState("Had 2 rotis, a cup of yellow dal tadka, and a bowl of fresh cucumber curd");
+  const [voiceTextPrompt, setVoiceTextPrompt] = useState("");
   const [isParsingVoice, setIsParsingVoice] = useState(false);
   const [parsedVoiceResult, setParsedVoiceResult] = useState<{ title: string; calories: number; protein: number; carbs: number; fat: number; items: { name: string; grams: string; cal: number; p: number; c: number; f: number }[] } | null>(null);
   const [textError, setTextError] = useState("");
@@ -587,7 +589,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       f.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.allergens.some(allergen => allergen.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-  const filteredFoods = [...localFoods, ...remoteFoods];
+  const filteredFoods: LibraryFood[] = [...localFoods.map(food => ({ ...food, source: "Sample food" })), ...remoteFoods];
+  useEffect(() => {
+    if (activeTab !== "database" || searchQuery.trim().length < 2) return;
+    const timer = setTimeout(() => void searchGlobalFoods(), 350);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchGlobalFoods reads the query this effect depends on
+  }, [searchQuery, activeTab]);
   const searchGlobalFoods = async () => {
     const id = ++foodSearchRequest.current; setFoodSearchError(""); setFoodSearchLoading(true);
     try {
@@ -900,7 +908,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
         {/* TAB 2: BARCODE SCANNER */}
         {activeTab === "barcode" && (
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-4xl mx-auto">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
                 <Barcode className="w-5 h-5" />
@@ -1074,7 +1082,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
         {/* TAB 3: VOICE & TEXT MEAL LOGGER */}
         {activeTab === "voice_text" && (
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-4xl mx-auto">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
                 <Mic className="w-5 h-5" />
@@ -1086,7 +1094,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             </div>
 
             {/* Input Box */}
-            <VoiceInput onText={setVoiceTextPrompt} />
+            <VoiceInput value={voiceTextPrompt} onText={text => { setVoiceTextPrompt(text); setParsedVoiceResult(null); }} />
             <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 mb-4">
               <textarea
                 aria-label="Meal description"
@@ -1096,7 +1104,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 disabled={isParsingVoice}
                 rows={3}
                 className="w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none"
-                placeholder="Example: Had 2 scrambled eggs with cheddar cheese, a slice of sourdough toast, and an iced black coffee..."
+                placeholder="Example: 2 rotis, a cup of dal tadka and a bowl of curd"
               />
               <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-800">
                 <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -1170,7 +1178,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div>
                 <h2 className="text-xl font-bold text-white">Global Food & Nutrition Catalog</h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Starter foods stay available offline. Search USDA for more foods; remote results are per 100g and do not include allergens.
+                  Search thousands of foods and dishes. Pick a serving or enter grams to see the calories for that amount. Allergens are not included.
                 </p>
               </div>
 
@@ -1189,67 +1197,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
             <button disabled={foodSearchLoading || searchQuery.trim().length < 2} onClick={searchGlobalFoods} className="mb-4 px-4 py-2 rounded-lg bg-emerald-500 text-sm">{foodSearchLoading ? "Searching USDA…" : "Search global foods"}</button>
             {foodSearchError && <p role="alert" className="text-amber-400 text-xs mb-3">{foodSearchError}</p>}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 font-semibold">
-                    <th className="py-3 px-4">Food Name</th>
-                    <th className="py-3 px-4">Cuisine / Origin</th>
-                    <th className="py-3 px-4">Serving Size</th>
-                    <th className="py-3 px-4">Calories</th>
-                    <th className="py-3 px-4">Macros (P / C / F)</th>
-                    <th className="py-3 px-4">Fiber</th>
-                    <th className="py-3 px-4">Provenance</th>
-                    <th className="py-3 px-4">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {filteredFoods.length === 0 && <tr><td colSpan={8} className="p-6 text-center text-slate-400">No matching starter foods. Try a barcode lookup or add the meal manually in your journal.</td></tr>}
-                  {filteredFoods.map((f) => (
-                    <tr key={f.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3.5 px-4 font-medium text-white flex items-center gap-2">
-                        {f.name}
-                        {f.verified && (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-300">{f.cuisine}</td>
-                      <td className="py-3.5 px-4 text-slate-400">{f.serving_size}</td>
-                      <td className="py-3.5 px-4 font-bold text-emerald-400">{f.calories} kcal</td>
-                      <td className="py-3.5 px-4 text-slate-300">
-                        {f.protein}g / {f.carbs}g / {f.fat}g
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-400">{f.fiber}g</td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full bg-slate-800 text-[11px] text-slate-300 border border-slate-700">
-                          {f.source}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <button
-                          onClick={() => {
-                            setLoggedMeals([
-                              ...loggedMeals,
-                              {
-                                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                                name: f.name,
-                                calories: f.calories,
-                                protein: f.protein,
-                                carbs: f.carbs,
-                                fat: f.fat,
-                                method: "Database Log"
-                              }
-                            ]);
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
-                        >
-                          <Plus className="w-3 h-3" /> Log
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="food-list">
+              {filteredFoods.length === 0 && <p className="p-6 text-center text-slate-400">No matching foods. Try another word, a barcode lookup or add it manually.</p>}
+              {filteredFoods.map(food => <FoodRow key={food.id} food={food} remaining={Math.max(0, dailyTarget - totalCaloriesLogged)} onLog={portion => {
+                setLoggedMeals([...loggedMeals, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), ...portion, method: "Database Log" }]);
+                setNotice(`${portion.name} added to your journal.`);
+              }} />)}
             </div>
           </div>
         )}
@@ -1261,12 +1214,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
               <h2 className="text-xl font-bold text-white mb-4">Meal Journal · {journalDate}</h2>
+              {deletedMeal && <p role="status" className="journal-undo">Removed {deletedMeal.meal.name}. <button type="button" onClick={() => { const rows = [...loggedMeals]; rows.splice(deletedMeal.index, 0, deletedMeal.meal); setLoggedMeals(rows); setDeletedMeal(null); }}>Undo</button></p>}
               {loggedMeals.length === 0 && <p className="text-slate-400 text-sm">No meals yet. Add one above or log a reviewed scan.</p>}
               <div className="space-y-3">
                 {loggedMeals.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-4 rounded-xl bg-slate-950 border border-slate-800"
+                    className="journal-meal flex items-center justify-between p-4 rounded-xl bg-slate-950 border border-slate-800"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs font-bold">
@@ -1283,12 +1237,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="journal-meal-end"><div className="text-right">
                       <p className="text-base font-bold text-white">{item.calories} kcal</p>
                       <p className="text-[11px] text-slate-400">
                         {item.protein}g P • {item.carbs}g C • {item.fat}g F
                       </p>
                     </div>
+                    <button type="button" className="journal-meal-delete" aria-label={`Delete ${item.name}`} onClick={() => { setDeletedMeal({ meal: item, index: idx }); setLoggedMeals(loggedMeals.filter((_, i) => i !== idx)); }}><Trash2 size={16} aria-hidden="true" /></button></div>
                   </div>
                 ))}
               </div>
@@ -1431,7 +1386,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
         {/* TAB 6: CUSTOM RECIPE BUILDER */}
         {activeTab === "recipes" && (
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-4xl mx-auto">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
                 <BookOpen className="w-5 h-5" />
