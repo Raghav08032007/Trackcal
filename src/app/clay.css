@@ -260,3 +260,10 @@ html:not([data-theme="dark"]) .tc-studio .play-stat-blue { background: linear-gr
 html:not([data-theme="dark"]) .tc-studio .play-game-main { background: linear-gradient(160deg, #e5f6ff, #cdeeff) !important; }
 .tc-studio .play-footnote { color: #4f5d4b; }
 html[data-theme="dark"] .tc-studio .play-footnote { color: #c5c7dc; }
+
+/* Phones: the closed companion rests against the screen edge, so it covers less of the page. */
+@media (max-width: 600px) {
+  .tc-studio .journey-float.journey-right:not(.journey-camera, .journey-celebrating):not(:has(.journey-orb[aria-expanded="true"])) { right: -12px; }
+  .tc-studio .journey-float.journey-left:not(.journey-camera, .journey-celebrating):not(:has(.journey-orb[aria-expanded="true"])) { left: -12px; }
+  .tc-studio .journey-float .journey-orb img { width: 40px; height: 40px; }
+}
