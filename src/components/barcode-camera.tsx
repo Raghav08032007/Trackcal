@@ -5,18 +5,37 @@ async function reader(){
   const hints=new Map();hints.set(DecodeHintType.TRY_HARDER,true);hints.set(DecodeHintType.POSSIBLE_FORMATS,[BarcodeFormat.EAN_13,BarcodeFormat.EAN_8,BarcodeFormat.UPC_A,BarcodeFormat.UPC_E,BarcodeFormat.ITF,BarcodeFormat.CODE_128]);
   return new BrowserMultiFormatOneDReader(hints,{delayBetweenScanAttempts:180,delayBetweenScanSuccess:500});
 }
+/** The area inside the on-screen guide, enlarged. Only the barcode strip, so a face in the shot is never processed or sent. */
+function guideCanvas(preview:HTMLVideoElement){
+ const {videoWidth:width,videoHeight:height}=preview;if(!width||!height)return null;
+ const canvas=document.createElement('canvas');canvas.width=Math.min(1400,Math.round(width*.82*2));canvas.height=240;
+ const context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return null;
+ context.imageSmoothingQuality='high';context.drawImage(preview,width*.09,height*.32,width*.82,height*.38,0,0,canvas.width,canvas.height);
+ return canvas;
+}
+/** A second try on an uploaded photo, with the same clean-up as the live camera. */
+async function rescuePhoto(file:File){
+ const bitmap=await createImageBitmap(file),scale=Math.min(1,1400/bitmap.width),canvas=document.createElement('canvas');
+ canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
+ const context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return null;
+ context.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
+ const {decodeGray,toGray}=await import('@/lib/barcode-frame');
+ return decodeGray(toGray(context.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height),canvas.width,canvas.height);
+}
 export function BarcodeCamera({onCode}:{onCode:(code:string)=>void}){
   const video=useRef<HTMLVideoElement>(null),controls=useRef<IScannerControls|null>(null),callback=useRef(onCode),request=useRef(0);
   const [active,setActive]=useState(false),[device,setDevice]=useState(''),[devices,setDevices]=useState<MediaDeviceInfo[]>([]),[error,setError]=useState(''),[status,setStatus]=useState(''),[busy,setBusy]=useState(false),[help,setHelp]=useState(false);
   const resumeScan=useRef<(()=>void)|null>(null);
   const [playing,setPlaying]=useState(false);
   const [zoom,setZoom]=useState<{min:number;max:number;step:number;value:number}|null>(null);
+  const [advice,setAdvice]=useState('');
+  const guideFrame=useRef<HTMLCanvasElement|null>(null);
   useEffect(()=>{callback.current=onCode;},[onCode]);
   useEffect(()=>()=>{request.current++;},[]);
   useEffect(()=>{
     if(!active)return;
     let cancelled=false,found=false;const preview=video.current;
-    let ownedStream:MediaStream|null=null,ownedControls:IScannerControls|null=null,begin:(()=>void)|null=null;
+    let ownedStream:MediaStream|null=null,ownedControls:IScannerControls|null=null,begin:(()=>void)|null=null,enhanced:ReturnType<typeof setInterval>|undefined;
     const timer=setTimeout(()=>{if(!cancelled&&!found)setHelp(true);},10000);
     const hide=()=>{if(document.hidden&&ownedStream)setActive(false);};document.addEventListener('visibilitychange',hide);
     void (async()=>{
@@ -29,10 +48,32 @@ export function BarcodeCamera({onCode}:{onCode:(code:string)=>void}){
       preview.srcObject=stream;
       begin=()=>{
         if(cancelled||ownedControls)return;
+        let plainCandidate='';
+        const finish=(code:string)=>{found=true;clearInterval(enhanced);ownedControls?.stop();setActive(false);setAdvice('');setStatus(`Barcode detected: ${code}. Looking up product nutrition…`);callback.current(code);};
         ownedControls=scan.scan(preview,(result,_error,current)=>{
           if(!result||found||cancelled)return;const code=result.getText().trim();if(!/^\d{8,14}$/.test(code))return;
-          found=true;current.stop();setActive(false);setStatus(`Barcode detected: ${code}. Looking up product nutrition…`);callback.current(code);
+          /* A blurred frame can misread: the same code must come back on a second frame. */
+          if(code!==plainCandidate){plainCandidate=code;return;}
+          current.stop();finish(code);
         });controls.current=ownedControls;
+        /* The plain reader only sees raw frames. This enlarges the guide area and rescues what a webcam leaves blurry. */
+        let working=false,candidate='';
+        enhanced=setInterval(()=>{
+          if(working||found||cancelled)return;const frame=guideCanvas(preview);if(!frame)return;guideFrame.current=frame;
+          working=true;
+          void (async()=>{
+            const {decodeGray,frameAdvice,toGray,validGtin}=await import('@/lib/barcode-frame');
+            const native=(window as unknown as {BarcodeDetector?:new(o:object)=>{detect(c:HTMLCanvasElement):Promise<{rawValue:string}[]>}}).BarcodeDetector;
+            const seen=native?await new native({formats:['ean_13','ean_8','upc_a','upc_e']}).detect(frame).catch(()=>[]):[];
+            if(found||cancelled)return;
+            const nativeCode=seen.map(row=>row.rawValue).find(validGtin);if(nativeCode){finish(nativeCode);return;}
+            const pixels=frame.getContext('2d',{willReadFrequently:true})?.getImageData(0,0,frame.width,frame.height);if(!pixels)return;
+            const gray=toGray(pixels.data,frame.width,frame.height),code=decodeGray(gray,frame.width,frame.height);
+            /* Two frames in a row must agree before a sharpened read is trusted. */
+            if(code&&code===candidate)finish(code);candidate=code||'';
+            if(!code)setAdvice(frameAdvice(gray,frame.width,frame.height));
+          })().catch(()=>{}).finally(()=>{working=false;});
+        },350);
       };resumeScan.current=begin;
       try{await preview.play();begin();}catch{if(!cancelled)setStatus('Camera connected. Tap Show camera preview to start playback.');}
       if(cancelled)return;
@@ -43,7 +84,7 @@ export function BarcodeCamera({onCode}:{onCode:(code:string)=>void}){
       }
       if(navigator.mediaDevices?.enumerateDevices){const all=await navigator.mediaDevices.enumerateDevices().catch(()=>[]);if(!cancelled)setDevices(all.filter(item=>item.kind==='videoinput'));}
     })().catch(reason=>{if(!cancelled){const name=reason instanceof Error?reason.name:'';setError(name==='NotAllowedError'?'Camera permission denied. Allow access in your browser, then retry.':name==='NotReadableError'?'The camera is busy or unavailable. Close other camera apps or tabs, then retry.':'Camera could not start. Retry or use a barcode photo. Camera access requires localhost or HTTPS.');setActive(false);}});
-    return()=>{cancelled=true;clearTimeout(timer);document.removeEventListener('visibilitychange',hide);ownedControls?.stop();if(resumeScan.current===begin)resumeScan.current=null;if(controls.current===ownedControls)controls.current=null;ownedStream?.getTracks().forEach(track=>track.stop());if(preview&&preview.srcObject===ownedStream)preview.srcObject=null;};
+    return()=>{cancelled=true;clearInterval(enhanced);clearTimeout(timer);document.removeEventListener('visibilitychange',hide);ownedControls?.stop();if(resumeScan.current===begin)resumeScan.current=null;if(controls.current===ownedControls)controls.current=null;ownedStream?.getTracks().forEach(track=>track.stop());if(preview&&preview.srcObject===ownedStream)preview.srcObject=null;};
   },[active,device]);
   async function showPreview(){
     const preview=video.current;if(!preview)return;
@@ -54,11 +95,25 @@ export function BarcodeCamera({onCode}:{onCode:(code:string)=>void}){
     if(!/^image\/(jpeg|png|webp|bmp)$/.test(file.type)||file.size>10*1024*1024){setError('Choose a JPG, PNG, WebP or BMP barcode photo smaller than 10 MB.');return;}
     const id=++request.current;setBusy(true);setStatus('Reading barcode photo on this device…');const url=URL.createObjectURL(file);
     try{const scan=await reader();const result=await scan.decodeFromImageUrl(url);if(id!==request.current)return;const code=result.getText().trim();if(!/^\d{8,14}$/.test(code))throw new Error('Unsupported code');setStatus(`Barcode detected: ${code}. Looking up product nutrition…`);callback.current(code);}
-    catch{if(id===request.current){setStatus('');setError('No readable product barcode found. Crop closely around the full barcode, avoid glare, or type the printed digits below.');}}
+    catch{
+      const rescued=await rescuePhoto(file).catch(()=>null);
+      if(rescued&&id===request.current){setStatus(`Barcode detected: ${rescued}. Looking up product nutrition…`);callback.current(rescued);return;}
+      if(id===request.current){setStatus('');setError('No readable product barcode found. Crop closely around the full barcode, avoid glare, or type the printed digits below.');}}
     finally{URL.revokeObjectURL(url);if(id===request.current)setBusy(false);}
+  }
+  async function readDigits(){
+    const frame=guideFrame.current;if(!frame||busy)return;
+    const id=++request.current;setBusy(true);setError('');setStatus('Reading the printed digits…');
+    try{
+      const response=await fetch('/api/barcode/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:frame.toDataURL('image/jpeg',.9)}),signal:AbortSignal.timeout(30000)});
+      const data=await response.json();if(id!==request.current)return;
+      if(!response.ok)throw new Error(data.error||'Could not read the digits.');
+      setActive(false);setStatus(`Barcode detected: ${data.code}. Looking up product nutrition…`);callback.current(data.code);
+    }catch(reason){if(id===request.current){setStatus('');setError(reason instanceof Error?reason.message:'Could not read the digits.');}}
+    finally{if(id===request.current)setBusy(false);}
   }
   async function zoomTo(value:number){const track=(video.current?.srcObject as MediaStream|null)?.getVideoTracks()[0];if(!track||!zoom)return;try{await track.applyConstraints({advanced:[{zoom:value} as MediaTrackConstraintSet]});setZoom({...zoom,value});}catch{setError('Zoom unavailable on this camera. Adjust your distance from the product.');}}
   return <section className="barcode-capture" aria-label="Product barcode capture"><div className="barcode-capture-actions"><button disabled={busy} onClick={()=>{setError('');setHelp(false);setZoom(null);setPlaying(false);setStatus(active?'Camera stopped.':'Opening camera…');setActive(value=>!value);}}>{active?'Stop camera':'Scan barcode with camera'}</button><label className="barcode-photo-action">{busy?'Reading photo…':'Upload barcode photo'}<input aria-label="Upload barcode photo" type="file" accept="image/jpeg,image/png,image/webp,image/bmp" disabled={busy} onChange={event=>{void photo(event.target.files?.[0]);event.target.value='';}}/></label></div>
-  {active&&<><label className="barcode-camera-choice">Camera<select aria-label="Barcode camera" value={device} onChange={event=>{setDevice(event.target.value);setZoom(null);setHelp(false);setPlaying(false);}}><option value="">Automatic / rear camera preferred</option>{devices.map((item,index)=><option key={item.deviceId} value={item.deviceId}>{item.label||`Camera ${index+1}`}</option>)}</select></label><div className="barcode-preview"><video ref={video} autoPlay muted playsInline aria-label="Barcode camera preview" onPlaying={()=>{setPlaying(true);setStatus('Camera ready. Place the full barcode inside the guide.');}} onPause={()=>setPlaying(false)} onError={()=>{setPlaying(false);setError('The preview could not play. Tap Show camera preview or restart the camera.');}}/>{playing?<div className="barcode-scan-guide" aria-hidden="true"/>:<div className="barcode-preview-start"><strong>Waiting for camera preview</strong><span>Allow camera access if your browser asks.</span><button onClick={()=>void showPreview()}>Show camera preview</button></div>}<span className="barcode-preview-tip">Keep all bars and both white margins visible</span></div>{zoom&&<label className="barcode-zoom">Camera zoom<input type="range" aria-label="Barcode camera zoom" min={zoom.min} max={zoom.max} step={zoom.step} value={zoom.value} onChange={event=>void zoomTo(Number(event.target.value))}/></label>}</>}
-  {status&&<p role="status" className="barcode-capture-status">{status}</p>}{error&&<p role="alert" className="barcode-capture-error">{error}</p>}<div className="barcode-scan-tips"><strong>{help?'Not detecting yet? Try this:':'For a clear scan'}</strong><p>Use good light without glare. Hold the label still and slowly adjust the distance until the bars look sharp. For a bottle, rotate it so the barcode faces the camera directly.</p>{help&&<p>Try another camera, upload a close-up barcode photo, or type the digits below.</p>}</div><small>Photos are decoded on this device; only the barcode number is sent for lookup. Detect → look up → review nutrition → choose grams → save. Some products are absent or incomplete in Open Food Facts.</small></section>;
+  {active&&<><label className="barcode-camera-choice">Camera<select aria-label="Barcode camera" value={device} onChange={event=>{setDevice(event.target.value);setZoom(null);setHelp(false);setPlaying(false);}}><option value="">Automatic / rear camera preferred</option>{devices.map((item,index)=><option key={item.deviceId} value={item.deviceId}>{item.label||`Camera ${index+1}`}</option>)}</select></label><div className="barcode-preview"><video ref={video} autoPlay muted playsInline aria-label="Barcode camera preview" onPlaying={()=>{setPlaying(true);setStatus('Camera ready. Place the full barcode inside the guide.');}} onPause={()=>setPlaying(false)} onError={()=>{setPlaying(false);setError('The preview could not play. Tap Show camera preview or restart the camera.');}}/>{playing?<div className="barcode-scan-guide" aria-hidden="true"/>:<div className="barcode-preview-start"><strong>Waiting for camera preview</strong><span>Allow camera access if your browser asks.</span><button onClick={()=>void showPreview()}>Show camera preview</button></div>}<span className="barcode-preview-tip">{advice||'Hold it about 25 cm back. It can look small; the app enlarges it.'}</span></div>{zoom&&<label className="barcode-zoom">Camera zoom<input type="range" aria-label="Barcode camera zoom" min={zoom.min} max={zoom.max} step={zoom.step} value={zoom.value} onChange={event=>void zoomTo(Number(event.target.value))}/></label>}</>}
+  {status&&<p role="status" className="barcode-capture-status">{status}</p>}{error&&<p role="alert" className="barcode-capture-error">{error}</p>}<div className="barcode-scan-tips"><strong>{help?'Not detecting yet? Try this:':'For a clear scan'}</strong><p>Use good light without glare. Laptop cameras can't focus up close, so hold the label about 25 cm back and keep it still. For a bottle, rotate it so the barcode faces the camera directly.</p>{help&&<p>Try another camera, upload a barcode photo from your phone, or type the digits below.</p>}{help&&active&&<button type="button" disabled={busy} onClick={()=>void readDigits()}>Read the digits with AI</button>}{help&&active&&<small>Sends only the strip inside the guide to the AI provider. A code is used only if its check digit is right.</small>}</div><small>Photos are decoded on this device; only the barcode number is sent for lookup. Detect → look up → review nutrition → choose grams → save. Some products are absent or incomplete in Open Food Facts.</small></section>;
 }
