@@ -14,6 +14,7 @@ import { JournalTools, type MealLog } from "@/components/journal-tools";
 import { FoodRow, type LibraryFood } from "@/components/food-row";
 import { ProductFacts } from "@/components/product-facts";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
+import { earnedBack } from "@/lib/workout-coach";
 import { wellnessRequest } from "@/lib/wellness";
 import {
   Camera,
@@ -448,7 +449,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [deletedMeal, setDeletedMeal] = useState<{ meal: MealLog; index: number } | null>(null);
 
   const totalCaloriesLogged = loggedMeals.reduce((acc, m) => acc + m.calories, 0);
-  const calPercent = Math.min(100, Math.round((totalCaloriesLogged / (dailyTarget || 2000)) * 100));
+  const [workoutBurn] = useLocalState(`trackcal:burn:${journalDate}`, 0), workoutBack = earnedBack(workoutBurn), budgetLeft = Math.max(0, dailyTarget + workoutBack - totalCaloriesLogged);
+  const calPercent = Math.min(100, Math.round((totalCaloriesLogged / ((dailyTarget + workoutBack) || 2000)) * 100));
 
   const addCurrentScanToLog = () => {
     if (!scanReady || isScanning) return;
@@ -1196,7 +1198,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             <div className="food-list">
               {filteredFoods.length === 0 && <p className="p-6 text-center text-slate-400">No matching foods. Try another word, a barcode lookup or add it manually.</p>}
               {searchQuery.trim().length >= 2 && <button type="button" className="library-estimate" onClick={() => { setVoiceTextPrompt(searchQuery.trim()); navigateTab("voice_text"); }}>Can&apos;t find it? Estimate &quot;{searchQuery.trim()}&quot; with AI</button>}
-              {filteredFoods.map(food => <FoodRow key={food.id} food={food} remaining={Math.max(0, dailyTarget - totalCaloriesLogged)} onLog={portion => {
+              {filteredFoods.map(food => <FoodRow key={food.id} food={food} remaining={budgetLeft} onLog={portion => {
                 setLoggedMeals([...loggedMeals, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), ...portion, method: "Database Log" }]);
                 setNotice(`${portion.name} added to your journal.`);
               }} />)}
@@ -1253,11 +1255,11 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <h3 className="text-sm font-bold text-white">Meal ideas (sample suggestions)</h3>
                   </div>
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {Math.max(0, dailyTarget - totalCaloriesLogged)} kcal gap
+                    {budgetLeft} kcal gap
                   </span>
                 </div>
                 <p className="text-xs text-slate-300 mb-3">
-                  Your remaining budget for this date is <strong>{Math.max(0, dailyTarget - totalCaloriesLogged)} kcal</strong> and <strong>{Math.max(0, targetProtein - loggedMeals.reduce((a, b) => a + b.protein, 0))}g protein</strong>. These sample ideas are not personalized recommendations:
+                  Your remaining budget for this date is <strong>{budgetLeft} kcal</strong> and <strong>{Math.max(0, targetProtein - loggedMeals.reduce((a, b) => a + b.protein, 0))}g protein</strong>. These sample ideas are not personalized recommendations:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
@@ -1323,7 +1325,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-slate-400">Total Calories</span>
                       <span className="font-bold text-white">
-                        {totalCaloriesLogged} / {dailyTarget} kcal
+                        {totalCaloriesLogged} / {dailyTarget + workoutBack} kcal{workoutBack > 0 ? ` (includes +${workoutBack} from your workout)` : ""}
                       </span>
                     </div>
                     <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">

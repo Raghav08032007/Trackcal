@@ -524,3 +524,6 @@ html[data-theme="dark"] .exercise-demo { background: #26263c; }
 .library-row a, .library-row button { min-height: 44px; display: inline-flex; align-items: center; }
 .gym-result { font-size: 1.1rem; font-weight: 700; }
 html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
+
+.camera-rest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; font-weight: 700; }
+.camera-rest button { min-height: 44px; }
