@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import Link from '@/lib/navigation';
 import {useAccount} from './account-session';
+import {CoachLine} from './coach-card';
 import type {MealLog} from './journal-tools';
 import {pickDishes,type MenuDish} from '@/lib/fitness-plans';
 import {personalRequest,type PersonalState} from '@/lib/personalization';
@@ -41,6 +42,7 @@ export function MenuPicker(){
    {notice&&<p role="status">{notice}</p>}
   </section>
   {picked&&<section className="account-card"><h2>Best fits for today</h2>
+   {picked.best[0]&&<CoachLine text={`I would go for ${picked.best[0].name}. It has the most protein for what you have left.`}/>}
    {picked.best.length?picked.best.map(dish=><div className="library-row" key={dish.name}><div><strong>{dish.name}</strong><small>About {Math.round(dish.calories)} kcal · {Math.round(dish.protein_g)} g protein</small></div><button type="button" className="account-secondary" aria-label={`Log ${dish.name}`} onClick={()=>log(dish)}>Log</button></div>):<p>{picked.checked?'Nothing here fits what is left today. A smaller portion or a shared dish could work.':'No vegetarian dishes were clearly marked on this menu.'}</p>}
    <p className="rep-replay-note">{picked.checked} dishes checked, {picked.tooBig} above what is left today. Calories are AI estimates of a normal serving, and restaurant portions vary. Check allergens with the restaurant.</p>
   </section>}

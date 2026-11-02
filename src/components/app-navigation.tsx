@@ -8,7 +8,7 @@ import { PageCompanion } from "./feature-companion";
 type Section = { id: string; label: string; href: string; icon: LucideIcon; pages: [string, string][] };
 
 export const SECTIONS: Section[] = [
-  { id: "home", label: "Home", href: "/", icon: House, pages: [["/", "Today"]] },
+  { id: "home", label: "Home", href: "/", icon: House, pages: [["/", "Today"], ["/coach", "Coach"]] },
   { id: "food", label: "Food", href: "/nutrition", icon: Utensils, pages: [["/nutrition", "Diary"], ["/scanner", "Scanner"], ["/barcode", "Barcode"], ["/describe", "Describe"], ["/menu", "Menu"], ["/food-library", "Library"], ["/journal", "Journal"], ["/recipes", "Recipes"], ["/fasting", "Fasting"]] },
   { id: "move", label: "Move", href: "/workouts", icon: Activity, pages: [["/workouts", "Workouts"], ["/workouts/camera", "Camera"], ["/programs", "Programs"], ["/recovery", "Recovery"], ["/plan", "My plan"], ["/progress", "Progress"]] },
   { id: "play", label: "Play", href: "/play", icon: Sparkles, pages: [["/play", "Quests"], ["/feed", "Feed"], ["/communities", "Communities"], ["/events", "Events"], ["/challenges", "Challenges"]] },

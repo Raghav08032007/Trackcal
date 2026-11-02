@@ -1,0 +1,57 @@
+import {useEffect,useState} from 'react';
+import Link from '@/lib/navigation';
+import {useAccount} from './account-session';
+import {companions} from './character-companion';
+import type {MealLog} from './journal-tools';
+import {adventureRequest,type AdventureSummary} from '@/lib/adventure';
+import {coachCharacter,foodStep,moveStep,streakDays,type Checkin,type CoachDay} from '@/lib/coach';
+import {nextProgramDay,PROGRAMS} from '@/lib/fitness-plans';
+import {personalRequest,type PersonalState} from '@/lib/personalization';
+import {movesFrom,muscleStates,restedChoice} from '@/lib/training-insights';
+import {useLocalDate,useLocalState} from '@/lib/use-local-state';
+import {wellnessRequest,type TrainingData} from '@/lib/wellness';
+import {earnedBack} from '@/lib/workout-coach';
+
+export function useCoachCharacter(){
+ const {user}=useAccount(),[id,setId]=useState<string|null>('pip');
+ useEffect(()=>{if(!user)return;let live=true;adventureRequest<AdventureSummary>('summary').then(summary=>{if(live)setId(coachCharacter(summary));}).catch(()=>{});return()=>{live=false;};},[user]);
+ const found=companions.find(item=>item.id===id);
+ return id&&found?{id,name:found.name,trait:found.trait,hello:found.hello,cheer:found.cheer}:null;
+}
+
+/** Your character saying one thing, on any page. */
+export function CoachLine({text}:{text:string}){
+ const coach=useCoachCharacter();
+ if(!coach)return <p>{text}</p>;
+ return <div className="coach-line"><img src={`/characters/${coach.id}-256.webp`} alt="" width={48} height={48}/><p><strong>{coach.name}</strong> {text}</p></div>;
+}
+
+export function useCoachDay():CoachDay|null{
+ const date=useLocalDate(),[training,setTraining]=useState<TrainingData|null>(null),[state,setState]=useState<PersonalState|null>(null),[loaded,setLoaded]=useState(false);
+ const [target]=useLocalState('trackcal:target:calories',2100),[proteinTarget]=useLocalState('trackcal:target:protein',130),[burned]=useLocalState(`trackcal:burn:${date}`,0),[meals]=useLocalState<MealLog[]>(`trackcal:journal:${date}`,[]),[done]=useLocalState<string[]>('trackcal:studio:program-days',[]),[checkins]=useLocalState<Checkin[]>('trackcal:studio:checkins',[]);
+ useEffect(()=>{let live=true;Promise.allSettled([wellnessRequest<TrainingData>('training'),personalRequest<PersonalState>('state')]).then(([work,person])=>{if(!live)return;if(work.status==='fulfilled')setTraining(work.value);if(person.status==='fulfilled')setState(person.value);setLoaded(true);});return()=>{live=false;};},[]);
+ if(!loaded)return null;
+ const now=Date.now(),moves=movesFrom(training?.sessions??[]),program=PROGRAMS.find(row=>done.some(id=>id.startsWith(row.id+':'))&&nextProgramDay(row,done)!==null);
+ return {hour:new Date(now).getHours(),minor:state?!!state.minor_account:true,meals:meals.length,caloriesLeft:target+earnedBack(burned)-meals.reduce((total,meal)=>total+meal.calories,0),proteinEaten:meals.reduce((total,meal)=>total+(meal.protein||0),0),proteinTarget,program:program?.name??null,rested:restedChoice(muscleStates(moves,now)),streak:streakDays(moves,now),checkin:checkins.find(row=>row.date===date)??null};
+}
+
+function CheckinButtons(){
+ const date=useLocalDate(),[,setCheckins]=useLocalState<Checkin[]>('trackcal:studio:checkins',[]),[energy,setEnergy]=useState<Checkin['energy']|null>(null);
+ const save=(sore:Checkin['sore'])=>setCheckins(all=>[...all.filter(row=>row.date!==date),{date,energy:energy!,sore}].slice(-30));
+ return <div className="coach-checkin">{!energy?<><span id="coach-energy">How is your energy today?</span><div className="account-actions" role="group" aria-labelledby="coach-energy"><button type="button" onClick={()=>setEnergy('low')}>Low</button><button type="button" onClick={()=>setEnergy('ok')}>Okay</button><button type="button" onClick={()=>setEnergy('great')}>Great</button></div></>:<><span id="coach-sore">Any soreness?</span><div className="account-actions" role="group" aria-labelledby="coach-sore"><button type="button" onClick={()=>save('no')}>None</button><button type="button" onClick={()=>save('bit')}>A bit</button><button type="button" onClick={()=>save('very')}>Very sore</button></div></>}</div>;
+}
+
+/** The daily plan from your character. It runs on the device, with no AI and no data sent anywhere. */
+export function CoachCard({compact=false}:{compact?:boolean}){
+ const coach=useCoachCharacter(),day=useCoachDay();
+ if(!day)return null;
+ const move=moveStep(day);
+ return <section className="coach-card" aria-label={`${coach?.name??'Coach'}: your plan for today`}>
+  {coach&&<img src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72}/>}
+  <div className="coach-bubble"><span className="eyebrow">{coach?`${coach.name.toUpperCase()}, YOUR COACH`:'YOUR PLAN TODAY'}</span>
+   {!day.checkin&&<CheckinButtons/>}
+   <p>{move.text}</p><p>{foodStep(day)}</p>
+   <div className="account-actions"><Link className="destination-button" href={move.href}>{move.label}</Link>{compact&&<Link className="destination-button" href="/coach">Talk to {coach?.name??'your coach'}</Link>}</div>
+  </div>
+ </section>;
+}
