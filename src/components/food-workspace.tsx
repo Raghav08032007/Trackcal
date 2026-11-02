@@ -12,6 +12,8 @@ import {foodRoutes,foodNames} from "@/lib/feature-guide";
 import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
 import { FoodRow, type LibraryFood } from "@/components/food-row";
+import { AddDish } from "@/components/add-dish";
+import { addDish, dropDish, foodDish, plateTotals } from "@/lib/plate";
 import { ProductFacts } from "@/components/product-facts";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
 import { earnedBack } from "@/lib/workout-coach";
@@ -424,9 +426,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       const shown = parseFloat(item.portion) * scaleFactor, ratio = scaleFactor * (i === index ? grams / (shown || 1) : 1), edible = item.edible ? item.edible * ratio : item.edible;
       return { ...item, portion: `${Math.round(parseFloat(item.portion) * ratio)}g`, cal: item.cal * ratio, p: item.p * ratio, c: item.c * ratio, f: item.f * ratio, edible, count: i === index && count ? count : item.count };
     });
-    const sum = (pick: (item: ScanItem) => number) => items.reduce((total, item) => total + pick(item), 0), total = Math.round(sum(item => parseFloat(item.portion)));
-    setScanResult({ ...scanResult, items, weight: `${total}g`, calories: sum(item => item.cal), protein: sum(item => item.p), carbs: sum(item => item.c), fat: sum(item => item.f) });
-    setPortionGrams(total); setPhotoRange(null);
+    setPlate(items);
+  };
+  /** The range no longer applies once the person has corrected the plate. */
+  const setPlate = (items: ScanItem[]) => {
+    const totals = plateTotals(items);
+    setScanResult({ ...scanResult, items, ...totals });
+    setPortionGrams(parseInt(totals.weight)); setPhotoRange(null);
   };
 
   async function readPack(file: File) {
@@ -884,7 +890,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   <div className="space-y-2">
                     {scanResult.items.map((item, index) => (
                       <div
-                        key={item.name}
+                        key={`${item.name}-${index}`}
                         className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors"
                       >
                         <div className="flex items-center gap-3">
@@ -904,10 +910,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                         {scanSource === "photo" && <div className="scan-item-edit">
                           {item.count && <div className="camera-adjust"><button type="button" aria-label={`One less ${item.name}`} disabled={item.count <= 1} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! - 1) / item.count!, item.count! - 1)}>−</button><span>{item.count}</span><button type="button" aria-label={`One more ${item.name}`} disabled={item.count >= 200} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! + 1) / item.count!, item.count! + 1)}>+</button></div>}
                           <label>Grams<input key={item.portion + scaleFactor} type="number" min="1" max="10000" aria-label={`Grams of ${item.name}`} defaultValue={Math.round(parseFloat(item.portion) * scaleFactor)} onBlur={e => { const grams = Number(e.target.value); if (grams !== Math.round(parseFloat(item.portion) * scaleFactor)) editScanItem(index, grams); }} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}/></label>
+                          <button type="button" className="account-secondary" aria-label={`Remove ${item.name}`} disabled={scanResult.items.length < 2} onClick={() => setPlate(dropDish(scanResult.items, index, scaleFactor))}>Remove</button>
                         </div>}
                       </div>
                     ))}
                   </div>
+                  {scanSource === "photo" && <AddDish onAdd={(food, grams) => setPlate(addDish(scanResult.items, foodDish(food, grams), scaleFactor))} />}
                 </div>
 
                 {/* Allergen & Safety Alerts */}
