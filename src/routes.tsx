@@ -49,6 +49,9 @@ const pages: Record<string, () => Promise<PageModule>> = {
   "/workouts": () => import("@/app/workouts/page"),
   "/workouts/camera": () => import("@/app/workouts/camera/page"),
   "/recovery": () => import("@/app/recovery/page"),
+  "/menu": () => import("@/app/menu/page"),
+  "/programs": () => import("@/app/programs/page"),
+  "/fasting": () => import("@/app/fasting/page"),
 };
 
 function titled(load: () => Promise<PageModule>) {

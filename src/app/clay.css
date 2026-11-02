@@ -543,3 +543,17 @@ html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
 .rep-replay line { stroke: #6d4ae8; stroke-width: .012; stroke-linecap: round; }
 .rep-replay-note { font-size: .8rem; }
 .rep-replay [aria-pressed="true"] { outline: 2px solid currentColor; }
+
+.menu-upload { display: block; margin: 12px 0; text-align: center; cursor: pointer; }
+.fast-guide { font-size: .9rem; }
+.fast-guide p { margin: 4px 0; }
+.share-pot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: .85rem; font-weight: 600; }
+.share-pot select { min-height: 44px; }
+.voice-language { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: .85rem; font-weight: 600; }
+.voice-language select { min-height: 44px; }
+.today-move { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; padding: 14px 16px; border-radius: 20px; background: var(--surface-2, #f1eefb); }
+.today-move strong { display: block; }
+.weekly-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 12px 0; padding: 0; list-style: none; font-size: .85rem; }
+.weekly-stats strong { display: block; font-size: 1.3rem; }
+.weekly-bars { display: flex; align-items: flex-end; gap: 6px; height: 64px; }
+.weekly-bars span { flex: 1; border-radius: 6px 6px 2px 2px; background: #6d4ae8; }

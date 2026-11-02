@@ -53,6 +53,7 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
     clip.start(); setMode("recording"); silence.current = setTimeout(() => clip.stop(), MAX_RECORDING_MS);
   }
 
+  const [language, setLanguage] = useState("en-IN");
   function start() {
     if (mode === "listening") { clearTimeout(silence.current); recognition.current?.stop?.() ?? recognition.current?.abort(); setMode("idle"); return; }
     if (mode === "recording") { recorder.current?.stop(); return; }
@@ -60,7 +61,7 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
     const Constructor = (window as SpeechWindow).SpeechRecognition || (window as SpeechWindow).webkitSpeechRecognition;
     if (!Constructor) { void record(); return; }
     const instance = new Constructor(), base = latest.current; recognition.current = instance;
-    instance.lang = "en-IN"; instance.interimResults = true; instance.continuous = true;
+    instance.lang = language; instance.interimResults = true; instance.continuous = true;
     instance.onresult = event => {
       const text = Array.from(event.results).map(result => result[0]?.transcript || "").join(" ").replace(/\s+/g, " ").trim();
       if (text) onText(withBase(base, text));
@@ -79,5 +80,5 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
   }
   const label = mode === "listening" ? "Stop listening" : mode === "recording" ? "Stop and write it down" : mode === "working" ? "Writing it down…" : "Speak a meal";
   const hint = mode === "listening" ? "Listening. Your words appear below." : mode === "recording" ? "Recording. Press stop when you finish." : "Say what you ate and how much. Audio is sent to a speech or AI service to write it down.";
-  return <div className={`voice-input voice-${mode}`}><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button>{mode !== "idle" && <span>{hint}</span>}{error && <p role="alert">{error}</p>}</div>;
+  return <div className={`voice-input voice-${mode}`}><label className="voice-language">Language<select value={language} disabled={mode !== "idle"} onChange={event => setLanguage(event.target.value)}><option value="en-IN">English</option><option value="hi-IN">हिन्दी</option><option value="ta-IN">தமிழ்</option></select></label><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button>{mode !== "idle" && <span>{hint}</span>}{error && <p role="alert">{error}</p>}</div>;
 }

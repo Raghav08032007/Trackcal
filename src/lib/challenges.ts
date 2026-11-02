@@ -9,6 +9,7 @@ export const METRIC_OPTIONS: [string, string, string][] = [
   ["active_days", "Active days", "a workout, a logged meal or an event"],
   ["workouts", "Workouts", "completed, 10+ minutes, up to 2 a day"],
   ["camera_workouts", "Camera workouts", "camera-tracked, 10+ minutes"],
+  ["camera_reps", "Camera reps", "only reps the camera counted, up to 500 a day"],
   ["meal_days", "Meal-logging days", "meals logged during the challenge"],
   ["events", "Events attended", "checked in with the organizer's QR code"],
 ];

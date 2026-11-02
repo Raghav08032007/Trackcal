@@ -3,6 +3,7 @@ import {useWorkspaceScope} from "./account-session";
 import type {MealLog} from "./journal-tools";
 import {adaptiveGoal,oneRepMax,platesPerSide,type GoalDay} from "@/lib/gym-math";
 import {exportLocalEntries,useLocalState} from "@/lib/use-local-state";
+import {FAST_MODES} from "@/lib/fitness-plans";
 
 const PLATES=[25,20,15,10,5,2.5,1.25];
 export function GymTools(){
@@ -18,13 +19,13 @@ export function GymTools(){
 const PLANS=[12,14,16,18] as const;
 const clock=(ms:number)=>{const m=Math.max(0,Math.floor(ms/60000));return `${Math.floor(m/60)}h ${String(m%60).padStart(2,"0")}m`;};
 export function FastingTimer(){
- const [saved,setSaved]=useLocalState<{start:number;hours:number}[]>("trackcal:studio:fast",[]),fast=saved[0]??null,setFast=(value:{start:number;hours:number}|null)=>setSaved(value?[value]:[]),[hours,setHours]=useState<number>(14),[now,setNow]=useState(()=>Date.now()),[agreed,setAgreed]=useState(false);
+ const [saved,setSaved]=useLocalState<{start:number;hours:number}[]>("trackcal:studio:fast",[]),fast=saved[0]??null,setFast=(value:{start:number;hours:number}|null)=>setSaved(value?[value]:[]),[hours,setHours]=useState<number>(14),[modeId,setModeId]=useState("time"),mode=FAST_MODES.find(row=>row.id===modeId)??FAST_MODES[0],[now,setNow]=useState(()=>Date.now()),[agreed,setAgreed]=useState(false);
  const running=!!fast;
  useEffect(()=>{if(!running)return;setNow(Date.now());const timer=setInterval(()=>setNow(Date.now()),30000);return ()=>clearInterval(timer);},[running]);
  const elapsed=fast?now-fast.start:0,goal=fast?fast.hours*3600000:0;
  return <section className="account-card"><h2>Fasting timer</h2><p>Optional. Fasting isn&apos;t right for everyone. Skip it if you are pregnant, have diabetes, take medicine with food, or have a history of eating disorders, and ask your doctor if you are unsure.</p>
   {fast?<><p className="gym-result" role="status">{clock(elapsed)} of {fast.hours}h{elapsed>=goal?" · goal reached":""}</p><progress max={1} value={Math.min(1,goal?elapsed/goal:0)} aria-label="Fasting progress"/><button className="account-secondary" onClick={()=>setFast(null)}>End fast</button></>
-  :<><label>Fasting window<select value={hours} onChange={e=>setHours(Number(e.target.value))}>{PLANS.map(h=><option key={h} value={h}>{h} hours</option>)}</select></label><label><input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}/> This is right for me</label><button className="account-primary" disabled={!agreed} onClick={()=>setFast({start:Date.now(),hours})}>Start fast</button></>}
+  :<><label>Kind of fast<select value={modeId} onChange={e=>{setModeId(e.target.value);setHours(FAST_MODES.find(row=>row.id===e.target.value)?.hours??14);}}>{FAST_MODES.map(row=><option key={row.id} value={row.id}>{row.label}</option>)}</select></label>{mode.id!=="time"&&<div className="fast-guide"><p><strong>Often eaten:</strong> {mode.eat}</p><p><strong>Often avoided:</strong> {mode.skip}</p><p>Customs differ by family and community, so follow yours.</p></div>}<label>Fasting window<select value={hours} onChange={e=>setHours(Number(e.target.value))}>{PLANS.map(h=><option key={h} value={h}>{h} hours</option>)}</select></label><label><input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}/> This is right for me</label><button className="account-primary" disabled={!agreed} onClick={()=>setFast({start:Date.now(),hours})}>Start fast</button></>}
  </section>;
 }
 export function AdaptiveGoal(){

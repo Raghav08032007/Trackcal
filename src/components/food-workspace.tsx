@@ -841,6 +841,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     onChange={(e) => setPortionGrams(Number(e.target.value))}
                     className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
                   />
+                  {scanSource === "photo" && <label className="share-pot">Shared between<select key={scanResult.foodName} aria-label="Shared between how many people" defaultValue="1" onChange={e => setPortionGrams(Math.max(1, Math.round(parseInt(scanResult.weight) / Number(e.target.value))))}>{[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n === 1 ? "Just me" : `${n} people`}</option>)}</select></label>}
                   {photoRange && scanResult.label === "Uploaded Meal" && (
                     <p role="note" className="photo-range mt-2 text-xs text-slate-300">
                       Likely <strong>{photoRange.grams[0]}–{photoRange.grams[1]} g</strong> (about {photoRange.calories[0]}–{photoRange.calories[1]} kcal) · {photoRange.confidence} confidence.{" "}

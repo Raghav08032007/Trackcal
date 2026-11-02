@@ -44,7 +44,7 @@ function CreateChallenge({ onCreated, onCancel }: { onCreated: (id: string) => v
     <h2>Start a challenge</h2>
     <label>Name<input required minLength={3} maxLength={120} value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Five active days this week" /></label>
     <label>What counts<select value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })}>{METRIC_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select><small>{hint}</small></label>
-    <label>Goal<input type="number" min={1} max={120} value={form.target} onChange={e => setForm({ ...form, target: Number(e.target.value) })} /></label>
+    <label>Goal<input type="number" min={1} max={form.metric === "camera_reps" ? 30000 : 120} value={form.target} onChange={e => setForm({ ...form, target: Number(e.target.value) })} /></label>
     <label>Starts<input type="date" required value={form.starts_on} onChange={e => setForm({ ...form, starts_on: e.target.value })} /></label>
     <label>Ends<input type="date" required value={form.ends_on} onChange={e => setForm({ ...form, ends_on: e.target.value })} /></label>
     <label>Details<textarea maxLength={1000} rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Why, and how you'll cheer each other on" /></label>
