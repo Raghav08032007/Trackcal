@@ -1,5 +1,5 @@
 import {describe,expect,it} from 'vitest';
-import {coachCharacter,coachContext,foodStep,moveStep,newBest,streakDays,type CoachDay} from '@/lib/coach';
+import {coachCharacter,coachContext,firstSteps,foodStep,moveStep,newBest,proteinIdeas,streakDays,type CoachDay} from '@/lib/coach';
 import type {AdventureSummary} from '@/lib/adventure';
 
 const day=(extra:Partial<CoachDay>={}):CoachDay=>({hour:13,minor:false,meals:2,caloriesLeft:800,proteinEaten:120,proteinTarget:130,program:null,rested:'squat',streak:1,checkin:null,...extra});
@@ -52,4 +52,15 @@ describe('what the AI sees',()=>{
   expect(seen).not.toMatch(/calories|protein/);expect(seen).toContain('workout_streak_days');
  });
  it('gives adults the numbers',()=>expect(coachContext(day())).toMatchObject({calories_left:800,protein_target_g:130}));
+});
+
+describe('diet and first steps',()=>{
+ it('never suggests meat or eggs to a vegetarian or vegan',()=>{
+  expect(proteinIdeas('vegetarian')).not.toMatch(/egg|fish|chicken/);
+  expect(proteinIdeas('vegan')).not.toMatch(/egg|fish|chicken|paneer|curd/);
+  expect(foodStep(day({diet:'vegan',proteinEaten:0}))).toContain('tofu');
+ });
+ it('falls back safely on an unknown diet',()=>expect(proteinIdeas('other')).toBe(proteinIdeas('balanced')));
+ it('passes diet to the AI',()=>expect(coachContext(day({diet:'vegetarian'})).diet_preference).toBe('vegetarian'));
+ it('ticks off first steps from real activity',()=>expect(firstSteps({meals:true,workouts:0,checkedIn:false}).map(step=>step.done)).toEqual([true,false,false]));
 });

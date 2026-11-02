@@ -32,12 +32,12 @@ export function useCoachDay():CoachDay|null{
  useEffect(()=>{let live=true;Promise.allSettled([wellnessRequest<TrainingData>('training'),personalRequest<PersonalState>('state')]).then(([work,person])=>{if(!live)return;if(work.status==='fulfilled')setTraining(work.value);if(person.status==='fulfilled')setState(person.value);setLoaded(true);});return()=>{live=false;};},[]);
  if(!loaded)return null;
  const now=Date.now(),moves=movesFrom(training?.sessions??[]),program=PROGRAMS.find(row=>done.some(id=>id.startsWith(row.id+':'))&&nextProgramDay(row,done)!==null);
- return {hour:new Date(now).getHours(),minor:state?!!state.minor_account:true,meals:meals.length,caloriesLeft:target+earnedBack(burned)-meals.reduce((total,meal)=>total+meal.calories,0),proteinEaten:meals.reduce((total,meal)=>total+(meal.protein||0),0),proteinTarget,program:program?.name??null,rested:restedChoice(muscleStates(moves,now)),streak:streakDays(moves,now),checkin:checkins.find(row=>row.date===date)??null};
+ return {diet:state?.preferences?.diet,hour:new Date(now).getHours(),minor:state?!!state.minor_account:true,meals:meals.length,caloriesLeft:target+earnedBack(burned)-meals.reduce((total,meal)=>total+meal.calories,0),proteinEaten:meals.reduce((total,meal)=>total+(meal.protein||0),0),proteinTarget,program:program?.name??null,rested:restedChoice(muscleStates(moves,now)),streak:streakDays(moves,now),checkin:checkins.find(row=>row.date===date)??null};
 }
 
 function CheckinButtons(){
  const date=useLocalDate(),[,setCheckins]=useLocalState<Checkin[]>('trackcal:studio:checkins',[]),[energy,setEnergy]=useState<Checkin['energy']|null>(null);
- const save=(sore:Checkin['sore'])=>setCheckins(all=>[...all.filter(row=>row.date!==date),{date,energy:energy!,sore}].slice(-30));
+ const save=(sore:Checkin['sore'])=>{try{navigator.vibrate?.(30);}catch{/* not supported */}setCheckins(all=>[...all.filter(row=>row.date!==date),{date,energy:energy!,sore}].slice(-30));};
  return <div className="coach-checkin">{!energy?<><span id="coach-energy">How is your energy today?</span><div className="account-actions" role="group" aria-labelledby="coach-energy"><button type="button" onClick={()=>setEnergy('low')}>Low</button><button type="button" onClick={()=>setEnergy('ok')}>Okay</button><button type="button" onClick={()=>setEnergy('great')}>Great</button></div></>:<><span id="coach-sore">Any soreness?</span><div className="account-actions" role="group" aria-labelledby="coach-sore"><button type="button" onClick={()=>save('no')}>None</button><button type="button" onClick={()=>save('bit')}>A bit</button><button type="button" onClick={()=>save('very')}>Very sore</button></div></>}</div>;
 }
 
@@ -46,8 +46,8 @@ export function CoachCard({compact=false}:{compact?:boolean}){
  const coach=useCoachCharacter(),day=useCoachDay();
  if(!day)return null;
  const move=moveStep(day);
- return <section className="coach-card" aria-label={`${coach?.name??'Coach'}: your plan for today`}>
-  {coach&&<img src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72}/>}
+ return <section className="coach-card" data-coach-mood={day.checkin?.energy??"ok"} aria-label={`${coach?.name??'Coach'}: your plan for today`}>
+  {coach&&<img className="coach-avatar" src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72}/>}
   <div className="coach-bubble"><span className="eyebrow">{coach?`${coach.name.toUpperCase()}, YOUR COACH`:'YOUR PLAN TODAY'}</span>
    {!day.checkin&&<CheckinButtons/>}
    <p>{move.text}</p><p>{foodStep(day)}</p>

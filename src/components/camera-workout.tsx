@@ -8,6 +8,7 @@ import {wellnessRequest,type Session,type TrainingData} from '@/lib/wellness';
 import {SessionTracker} from '@/lib/pose/session-tracker';
 import {ExerciseDemo} from '@/components/exercise-demo';
 import {RepReplayCard} from '@/components/rep-replay';
+import {Celebration} from '@/components/celebration';
 import {CoachLine,useCoachCharacter} from '@/components/coach-card';
 import {newBest} from '@/lib/coach';
 import {PROGRAMS,programDay} from '@/lib/fitness-plans';
@@ -111,7 +112,7 @@ function MemberCamera(){
  return <main className="wellness-page camera-page"><section className="camera-intro"><span className="eyebrow">PRIVATE · ON-DEVICE · YOUR PACE</span><h1>Make room for movement.</h1><p>Camera-assisted counting for familiar exercises. Estimates, not a form or medical-safety assessment.</p></section><div id="camera-companion-slot" className="camera-companion-slot"/>
  {error&&<p role="alert" className="camera-alert">{error} <Link href="/workouts">Open manual workouts →</Link></p>}<p role="status" className="camera-notice">{notice}</p>
  {draft&&status!=='review'&&status!=='saved'&&<section className="account-card"><h2>A review draft is waiting</h2><p>Only count summaries are stored locally in this account workspace. No frames or landmarks.</p><button disabled={active||status==='loading'} onClick={restore}>Restore camera review</button><button disabled={busy} onClick={()=>void discardReview()}>Discard saved review draft</button></section>}
- {status==='saved'&&best&&<CoachLine text={best}/>}
+ {status==='saved'&&best&&<div className="celebration-host"><Celebration/><CoachLine text={best}/></div>}
  {replay&&(status==='review'||status==='saved'||status==='paused')&&<RepReplayCard {...replay}/>}
  {clip&&(status==='review'||status==='saved'||status==='paused')&&<section className="account-card camera-clip"><h2>Check your form</h2><video src={clip} controls playsInline aria-label="Your recorded set"/><p>Watch how you moved. This video stays in this browser and is gone when you leave the page. It is never uploaded.</p><div className="account-actions"><a className="destination-button" href={clip} download="trackcal-workout.webm">Keep a copy on this device</a><button type="button" onClick={clearClip}>Discard video</button></div></section>}
  {circuitRun.length>0&&status==='setup'&&<section className="account-card"><h2>A workout is waiting to be saved</h2><button disabled={busy} onClick={()=>setStatus('review')}>Review workout</button></section>}

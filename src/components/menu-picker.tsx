@@ -12,7 +12,7 @@ import {earnedBack} from '@/lib/workout-coach';
 export function MenuPicker(){
  const {ready}=useAccount(),date=useLocalDate(),[target]=useLocalState('trackcal:target:calories',2100),[burned]=useLocalState(`trackcal:burn:${date}`,0),[meals,setMeals]=useLocalState<MealLog[]>(`trackcal:journal:${date}`,[]);
  const [consent,setConsent]=useState(false),[dishes,setDishes]=useState<MenuDish[]|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[vegetarian,setVegetarian]=useState(false),[minor,setMinor]=useState(false);
- useEffect(()=>{let live=true;personalRequest<PersonalState>('state').then(state=>{if(live)setMinor(!!state.minor_account);}).catch(()=>{});return()=>{live=false;};},[]);
+ useEffect(()=>{let live=true;personalRequest<PersonalState>('state').then(state=>{if(live){setMinor(!!state.minor_account);if(['vegetarian','vegan'].includes(state.preferences?.diet))setVegetarian(true);}}).catch(()=>{});return()=>{live=false;};},[]);
  const left=Math.max(0,target+earnedBack(burned)-meals.reduce((total,meal)=>total+meal.calories,0));
  async function read(file:File){
   if(!consent){setError('Tick the box above to send this photo first.');return;}

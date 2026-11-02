@@ -572,3 +572,71 @@ html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
 .coach-user { justify-self: end; max-width: 85%; }
 .coach-chat form { display: grid; gap: 8px; }
 .coach-chat input[type="text"], .coach-chat form input { width: 100%; min-height: 44px; }
+
+/* Home extras and section More */
+.first-steps { margin: 12px 0; padding: 16px; border-radius: 24px; background: var(--surface-2, #f1eefb); }
+.first-steps ol { display: grid; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+.first-steps li { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; }
+.first-steps li::before { content: ""; flex: none; width: 22px; height: 22px; border: 2px solid #6d4ae8; border-radius: 50%; transition: background .3s, box-shadow .3s; }
+.first-steps li[data-done]::before { background: #6d4ae8; box-shadow: inset 0 0 0 4px #fff; }
+.first-steps li[data-done] { opacity: .65; text-decoration: line-through; }
+.first-steps-meter { height: 8px; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, #6d4ae8 15%, transparent); }
+.first-steps-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6d4ae8, #3fbf8f); transition: width .7s var(--clay-spring, ease-out); }
+.home-shortcuts { display: flex; gap: 8px; margin: 12px 0; overflow-x: auto; scrollbar-width: none; }
+.home-shortcuts a { flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; background: var(--surface-2, #f1eefb); font-weight: 600; text-decoration: none; }
+.app-section-pages button { flex: 0 0 auto; min-height: 44px; padding: 0 16px; border: 1px dashed currentColor; border-radius: 999px; background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+.celebration-host { position: relative; }
+.celebration { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Keep the bars steady while the page changes beneath them. */
+  html:not([data-motion="reduced"]) .app-tabbar { view-transition-name: tabbar; }
+  html:not([data-motion="reduced"]) .app-topbar { view-transition-name: topbar; }
+  ::view-transition-old(tabbar), ::view-transition-new(tabbar), ::view-transition-old(topbar), ::view-transition-new(topbar) { animation: none; }
+  html:not([data-motion="reduced"]) .coach-card .coach-avatar { view-transition-name: coach-avatar; }
+  ::view-transition-group(coach-avatar) { animation-duration: .45s; animation-timing-function: var(--clay-spring, ease-out); }
+
+  html:not([data-motion="reduced"]) .app-tabbar a[aria-current="page"] svg { animation: tab-hop .45s var(--clay-spring, ease-out); }
+  html:not([data-motion="reduced"]) .app-section-pages a { transition: background-color .25s, color .25s, scale .15s; }
+  html:not([data-motion="reduced"]) .app-section-pages a:active, html:not([data-motion="reduced"]) .home-shortcuts a:active { scale: .94; }
+
+  html:not([data-motion="reduced"]) .coach-card { animation: coach-rise .5s var(--clay-spring, ease-out) both; }
+  html:not([data-motion="reduced"]) .coach-avatar { animation: coach-idle 4s ease-in-out infinite; transform-origin: 50% 90%; }
+  html:not([data-motion="reduced"]) .coach-card[data-coach-mood="great"] .coach-avatar { animation-duration: 2s; }
+  html:not([data-motion="reduced"]) .coach-card[data-coach-mood="low"] .coach-avatar { animation-duration: 7s; }
+  html:not([data-motion="reduced"]) .coach-line { animation: coach-rise .4s var(--clay-spring, ease-out) both; }
+  html:not([data-motion="reduced"]) .coach-line img { animation: coach-wave .7s .15s ease-in-out; transform-origin: 50% 90%; }
+  html:not([data-motion="reduced"]) .coach-message { animation: message-in .3s var(--clay-spring, ease-out) both; }
+  html:not([data-motion="reduced"]) .coach-checkin button { animation: coach-rise .35s var(--clay-spring, ease-out) both; }
+  html:not([data-motion="reduced"]) .coach-checkin button:nth-child(2) { animation-delay: 60ms; }
+  html:not([data-motion="reduced"]) .coach-checkin button:nth-child(3) { animation-delay: 120ms; }
+
+  html:not([data-motion="reduced"]) .first-steps li { animation: coach-rise .4s var(--clay-spring, ease-out) both; }
+  html:not([data-motion="reduced"]) .first-steps li:nth-child(2) { animation-delay: 80ms; }
+  html:not([data-motion="reduced"]) .first-steps li:nth-child(3) { animation-delay: 160ms; }
+
+  html:not([data-motion="reduced"]) .weekly-bars span { animation: bar-grow .6s calc(var(--bar, 0) * 60ms) var(--clay-spring, ease-out) both; transform-origin: bottom; }
+  html:not([data-motion="reduced"]) .recovery-bodies svg { animation: coach-rise .6s var(--clay-spring, ease-out) both; }
+  html:not([data-motion="reduced"]) .recovery-bodies svg:nth-child(2) { animation-delay: 120ms; }
+  html:not([data-motion="reduced"]) .recovery-bodies polygon { transition: fill .6s; }
+  html:not([data-motion="reduced"]) .menu-page .library-row, html:not([data-motion="reduced"]) .programs-page .account-card { animation: coach-rise .45s var(--clay-spring, ease-out) both; }
+  html:not([data-motion="reduced"]) .menu-page .library-row:nth-of-type(2) { animation-delay: 80ms; }
+  html:not([data-motion="reduced"]) .menu-page .library-row:nth-of-type(3) { animation-delay: 160ms; }
+  html:not([data-motion="reduced"]) progress { transition: all .6s; }
+
+  html:not([data-motion="reduced"]) .celebration { display: block; position: absolute; top: 50%; left: 50%; pointer-events: none; }
+  html:not([data-motion="reduced"]) .celebration i { position: absolute; width: 9px; height: 9px; border-radius: 3px; opacity: 0; animation: burst .95s var(--delay, 0ms) cubic-bezier(.15,.8,.3,1) both; }
+}
+@keyframes tab-hop { 40% { translate: 0 -5px; scale: 1.15; } }
+@keyframes coach-rise { from { opacity: 0; translate: 0 12px; scale: .97; } }
+@keyframes coach-idle { 0%, 100% { rotate: -2deg; translate: 0 0; } 50% { rotate: 2deg; translate: 0 -3px; } }
+@keyframes coach-wave { 30% { rotate: -9deg; } 65% { rotate: 7deg; } }
+@keyframes message-in { from { opacity: 0; translate: 0 8px; } }
+@keyframes bar-grow { from { scale: 1 0; } }
+@keyframes burst { 0% { opacity: 1; transform: rotate(var(--angle)) translateY(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--angle)) translateY(calc(var(--far) * -1)) scale(.4); } }
+
+.coach-checkin .account-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+.coach-checkin .account-actions button { width: 100%; min-width: 0; padding-inline: 6px; }
+.coach-bubble > .account-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.coach-bubble > .account-actions .destination-button { flex: 1 1 130px; width: auto; max-width: 240px; justify-content: center; text-align: center; }
+.first-steps p { margin: 0 0 10px; }

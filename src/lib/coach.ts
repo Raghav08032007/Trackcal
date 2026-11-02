@@ -3,11 +3,15 @@ import type {AdventureSummary} from './adventure';
 import type {MoveRecord} from './training-insights';
 
 export type Checkin={date:string;energy:'low'|'ok'|'great';sore:'no'|'bit'|'very'};
-export type CoachDay={hour:number;minor:boolean;meals:number;caloriesLeft:number;proteinEaten:number;proteinTarget:number;program:string|null;rested:ExerciseKind|null;streak:number;checkin:Checkin|null};
+export type CoachDay={diet?:string;hour:number;minor:boolean;meals:number;caloriesLeft:number;proteinEaten:number;proteinTarget:number;program:string|null;rested:ExerciseKind|null;streak:number;checkin:Checkin|null};
 export type CoachStep={text:string;href:string;label:string};
 
 export const REST_AFTER_DAYS=6,PROTEIN_GAP=25;
-export const PROTEIN_IDEAS='a bowl of dal, 100 g of paneer, two eggs or a cup of curd';
+const IDEAS:Record<string,string>={balanced:'a bowl of dal, 100 g of paneer, two eggs or a cup of curd',vegetarian:'a bowl of dal, 100 g of paneer, a cup of curd or a bowl of chana',vegan:'a bowl of dal, 100 g of tofu, a bowl of chana or soya chunks',pescatarian:'a piece of fish, a bowl of dal, two eggs or a cup of curd'};
+export const proteinIdeas=(diet?:string)=>IDEAS[diet??'']??IDEAS.balanced;
+export function firstSteps(done:{meals:boolean;workouts:number;checkedIn:boolean}){
+ return [{label:'Log your first meal',href:'/scanner',done:done.meals},{label:'Do your first camera workout',href:'/workouts/camera',done:done.workouts>0},{label:'Tell your coach how you feel',href:'/coach',done:done.checkedIn}];
+}
 
 /** The chosen companion, falling back to Pip unless it is unlocked. Null when the person has turned companions off. */
 export function coachCharacter(summary:AdventureSummary|null){
@@ -42,10 +46,10 @@ export function foodStep(day:CoachDay){
  if(!day.meals)return day.hour<11?'Log your breakfast and we can plan the day from there.':'Nothing logged yet. Snap your next meal and I will keep track.';
  const gap=Math.round(day.proteinTarget-day.proteinEaten);
  if(day.caloriesLeft<=0)return 'You have reached today\'s food target. No need to make up for it tomorrow, just carry on as normal.';
- if(gap>=PROTEIN_GAP)return `You are about ${gap} g short on protein. Try ${PROTEIN_IDEAS}.`;
+ if(gap>=PROTEIN_GAP)return `You are about ${gap} g short on protein. Try ${proteinIdeas(day.diet)}.`;
  return `About ${Math.round(day.caloriesLeft)} kcal left today, and your protein is on track.`;
 }
 /** What the AI coach may see: a few numbers, with no names, photos or meal history. */
 export function coachContext(day:CoachDay){
- return {time_of_day:day.hour<12?'morning':day.hour<17?'afternoon':'evening',meals_logged:day.meals,...(day.minor?{}:{calories_left:Math.round(day.caloriesLeft),protein_eaten_g:Math.round(day.proteinEaten),protein_target_g:day.proteinTarget}),workout_streak_days:day.streak,current_program:day.program,suggested_exercise:day.rested?EXERCISES[day.rested].title:null,energy_today:day.checkin?.energy??null,soreness_today:day.checkin?.sore??null};
+ return {diet_preference:day.diet??null,time_of_day:day.hour<12?'morning':day.hour<17?'afternoon':'evening',meals_logged:day.meals,...(day.minor?{}:{calories_left:Math.round(day.caloriesLeft),protein_eaten_g:Math.round(day.proteinEaten),protein_target_g:day.proteinTarget}),workout_streak_days:day.streak,current_program:day.program,suggested_exercise:day.rested?EXERCISES[day.rested].title:null,energy_today:day.checkin?.energy??null,soreness_today:day.checkin?.sore??null};
 }

@@ -2,6 +2,7 @@ import Link from '@/lib/navigation';
 import {nextProgramDay,PROGRAMS,programDay,programDays,stepsLabel} from '@/lib/fitness-plans';
 import {useLocalState} from '@/lib/use-local-state';
 import {CoachLine} from './coach-card';
+import {Celebration} from './celebration';
 
 /** Multi-week plans. Each day opens in the camera, and finishing it moves the program on. */
 export function ProgramList(){
@@ -12,7 +13,7 @@ export function ProgramList(){
    const total=programDays(program),next=nextProgramDay(program,done),finished=done.filter(id=>id.startsWith(program.id+':')).length,day=next===null?null:programDay(program,next);
    return <section className="account-card" key={program.id}><h2>{program.name}</h2><p>{program.summary} {program.weeks} weeks, {total} workouts.</p>
     <progress max={total} value={finished} aria-label={`${program.name}: ${finished} of ${total} done`}/>
-    {day?<><p><strong>Next: week {Math.floor(next!/program.days.length)+1}, day {next!%program.days.length+1}</strong><br/>{stepsLabel(day)}</p><div className="account-actions"><Link className="destination-button" href={`/workouts/camera?program=${program.id}&day=${next}`}>Start {program.name}</Link></div></>:<><p>Finished. Well done.</p><button type="button" className="account-secondary" onClick={()=>setDone(all=>all.filter(id=>!id.startsWith(program.id+':')))}>Start {program.name} again</button></>}
+    {day?<><p><strong>Next: week {Math.floor(next!/program.days.length)+1}, day {next!%program.days.length+1}</strong><br/>{stepsLabel(day)}</p><div className="account-actions"><Link className="destination-button" href={`/workouts/camera?program=${program.id}&day=${next}`}>Start {program.name}</Link></div></>:<><div className="celebration-host"><Celebration/><p>Finished. Well done.</p></div><button type="button" className="account-secondary" onClick={()=>setDone(all=>all.filter(id=>!id.startsWith(program.id+':')))}>Start {program.name} again</button></>}
    </section>;
   })}
  </main>;
