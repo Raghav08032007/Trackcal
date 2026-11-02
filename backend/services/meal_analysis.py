@@ -83,6 +83,19 @@ def _ingredients(item):
             if isinstance(row, dict) and isinstance(row.get('name'), str) and row['name'].strip() and _is_number(row.get('grams')) and 0 <= row['grams'] <= 10000]
 
 
+def normalize_menu(raw):
+    """Dishes read off a menu. Anything incomplete or impossible is dropped, never guessed at."""
+    rows = raw.get('dishes') if isinstance(raw, dict) else None
+    dishes = []
+    for row in rows[:60] if isinstance(rows, list) else []:
+        if not isinstance(row, dict) or not isinstance(row.get('name'), str) or not row['name'].strip(): continue
+        per = {key: row.get(key) for key in ('calories', 'protein_g', 'carbs_g', 'fat_g')}
+        if not all(_is_number(value) and value >= 0 for value in per.values()) or not 0 < per['calories'] <= 3000 or max(per['protein_g'], per['carbs_g'], per['fat_g']) > 400: continue
+        per, _ = _energy_checked(per)
+        dishes.append({'name': row['name'].strip()[:120], **{key: _round1(value) for key, value in per.items()}, 'vegetarian': row['vegetarian'] if isinstance(row.get('vegetarian'), bool) else None})
+    return dishes
+
+
 def normalize_meal(raw, model):
     root = raw if isinstance(raw, dict) else {}
     items = raw if isinstance(raw, list) else root.get('components') if root.get('components') is not None else root.get('items')

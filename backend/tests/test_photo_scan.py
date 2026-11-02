@@ -145,3 +145,24 @@ def test_official_values_replace_an_estimate_only_when_they_agree():
     def fail(name): raise RuntimeError('down')
     ground_in_catalog(broken, fail)
     assert broken['components'][0]['per_100g']['calories'] == 95
+
+
+def test_a_menu_becomes_dishes_and_bad_rows_are_dropped(internet):
+    calls, replies = internet
+    good = {'name': 'Paneer tikka', 'calories': 300, 'protein_g': 20, 'carbs_g': 10, 'fat_g': 20, 'vegetarian': True}
+    replies.append(model_reply(json.dumps({'dishes': [good, {'name': 'Missing numbers'}, {**good, 'name': 'Impossible', 'calories': -5}]})))
+    response = post(browser(), '/api/menu/read', {'image': phone_photo()})
+    assert response.status_code == 200 and [dish['name'] for dish in response.get_json()['dishes']] == ['Paneer tikka']
+    assert 'menu' in calls[0]['json']['messages'][0]['content'][0]['text']
+
+
+def test_something_that_is_not_a_menu_says_so(internet):
+    calls, replies = internet; replies.append(model_reply(json.dumps({'dishes': []})))
+    assert post(browser(), '/api/menu/read', {'image': phone_photo()}).status_code == 422
+
+
+def test_a_menu_needs_a_real_image_and_counts_against_the_daily_cap(internet, monkeypatch):
+    calls, replies = internet
+    assert post(browser(), '/api/menu/read', {'image': 'nope'}).status_code == 400 and not calls
+    monkeypatch.setenv('GUEST_DAILY_AI_LIMIT', '0')
+    assert post(browser(), '/api/menu/read', {'image': phone_photo()}).status_code == 429 and not calls

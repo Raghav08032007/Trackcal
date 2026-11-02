@@ -19,10 +19,23 @@ METRICS = {
     'active_days': 'Active days (a workout, a logged meal or an event)',
     'workouts': 'Workouts of 10+ minutes',
     'camera_workouts': 'Camera-tracked workouts of 10+ minutes',
+    'camera_reps': 'Reps the camera counted',
     'meal_days': 'Days with a logged meal',
     'events': 'Verified events attended',
 }
 MIN_MINUTES, WORKOUTS_PER_DAY = 10, 2
+REPS_PER_DAY = 500
+
+
+def camera_counted(details):
+    """Reps the camera saw. A correction can lower the number, but typing a higher one adds nothing."""
+    sets = ((details or {}).get('tracking') or {}).get('sets') or []
+    total = 0
+    for row in sets:
+        if not isinstance(row, dict): continue
+        seen, corrected = row.get('estimated_reps') or 0, row.get('corrected_reps')
+        total += seen if corrected is None else min(seen, corrected)
+    return total
 
 
 def window(challenge):
@@ -67,7 +80,19 @@ def progress(db, challenge, participant):
                                                                       models.EventRegistration.checked_in_at < end).all()
         return [_day(r[0], zone) for r in rows]
 
+    def camera_reps():
+        rows = db.query(models.WorkoutSession).filter(models.WorkoutSession.user_id == uid, models.WorkoutSession.status == 'completed',
+                                                      models.WorkoutSession.is_deleted.is_(False), models.WorkoutSession.completed_at >= start,
+                                                      models.WorkoutSession.completed_at < end).all()
+        per_day, flagged = Counter(), False
+        for r in rows:
+            if (r.details or {}).get('tracking_method') != 'camera': continue
+            per_day[_day(r.completed_at, zone)] += camera_counted(r.details)
+            flagged = flagged or bool(((r.details or {}).get('tracking') or {}).get('large_edit'))
+        return sum(min(REPS_PER_DAY, reps) for reps in per_day.values()), flagged
+
     m = challenge.metric
+    if m == 'camera_reps': return camera_reps()
     if m in ('workouts', 'camera_workouts'):
         kept, flagged = workouts(m == 'camera_workouts'); return len(kept), flagged
     if m == 'meal_days': return len(meal_days()), False

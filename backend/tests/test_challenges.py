@@ -170,3 +170,9 @@ def test_joining_twice_is_harmless():
     c = challenge(owner)
     assert [client.post(f"{C}/{c['id']}/participation", headers=h).status_code for _ in range(2)] == [200, 200]
     assert detail(owner, c['id'])['challenge']['participants'] == 2
+
+
+def test_camera_reps_count_only_what_the_camera_saw():
+    from services.challenge_progress import camera_counted
+    assert camera_counted({'tracking': {'sets': [{'estimated_reps': 10, 'corrected_reps': None}, {'estimated_reps': 8, 'corrected_reps': 50}, {'estimated_reps': 12, 'corrected_reps': 9}]}}) == 27
+    assert camera_counted({}) == 0 and camera_counted(None) == 0
