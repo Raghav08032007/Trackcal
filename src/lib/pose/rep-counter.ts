@@ -10,13 +10,13 @@ const GAP_MS=750,GRACE_MS=600,TIP_MS=2500,MAX_REPS=100,CROSSING_MARGIN=6,BOBBING
 /** More of a rep than this in the wrong shape, and it is a different exercise. Brief glitches stay below it. */
 const WRONG_SHARE=.35,BANNED_FRAMES=4;
 export class RepCounter{
- reps=0;phase:Phase='SETUP';mismatches:string[]=[];rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0,wrong_exercise:0};
+ reps=0;phase:Phase='SETUP';mismatches:string[]=[];repLog:{ms:number;range:number}[]=[];rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0,wrong_exercise:0};
  private last=-Infinity;private held:{key:string;since:number;frames:number}|null=null;
  private cycle:{start:number;top:number;bottom:number;crossings:number;below:boolean;frames:number;wrong:number;low:number;lowWrong:number;banned:number;reached:boolean;travel:Travel}|null=null;private top=0;private rejected:{reason:RejectionReason;at:number}|null=null;private lost:number|null=null;
  constructor(private config:ExerciseConfig){}
  /** Forget the movement in progress (pause, camera switch, rotation); the count stays. */
  resetMovement(){this.phase='SETUP';this.held=null;this.cycle=null;}
- reset(){this.reps=0;this.mismatches=[];this.last=-Infinity;this.rejected=null;for(const k in this.rejections)this.rejections[k as RejectionReason]=0;this.resetMovement();}
+ reset(){this.reps=0;this.mismatches=[];this.repLog=[];this.last=-Infinity;this.rejected=null;for(const k in this.rejections)this.rejections[k as RejectionReason]=0;this.resetMovement();}
  private reject(reason:RejectionReason,t:number){this.rejections[reason]++;this.rejected={reason,at:t};this.cycle=null;}
  /** True once `key` has held for the dwell time (at least two frames). */
  private hold(key:string,on:boolean,t:number){
@@ -77,7 +77,7 @@ export class RepCounter{
      if(wrong)this.reject('wrong_exercise',t);
      else if(this.cycle.crossings>BOBBING||duration<c.minRepMs)this.reject('too_fast',t);
      else if(range<c.minRangeDeg)this.reject('too_shallow',t);
-     else{this.reps=Math.min(MAX_REPS,this.reps+1);this.rejected=null;this.cycle=null;}
+     else{if(this.reps<MAX_REPS)this.repLog.push({ms:duration,range});this.reps=Math.min(MAX_REPS,this.reps+1);this.rejected=null;this.cycle=null;}
      this.phase='UP';this.top=a;}
     break;
   }

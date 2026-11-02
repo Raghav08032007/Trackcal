@@ -21,7 +21,7 @@ function dumbbell(elbow:Point,wrist:Point){
 const PARTS=['far-leg','far-short','far-shoe','far-arm','far-sleeve','far-weight','neck','torso','hips','near-leg','near-short','near-shoe','head','hair','eyes','near-arm','near-sleeve','near-weight'];
 /** One moment of the move, painted back to front: far limbs, body, near limbs. */
 function draw(svg:SVGSVGElement,kind:ExerciseKind,progress:number,floor:number){
- const m=MOVES[kind],keys=m.keys.map(full),at=progress%keys.length,i=Math.floor(at),k=(1-Math.cos(Math.PI*(at-i)))/2;
+ const m=MOVES[kind],keys=m.keys.map(full),at=(progress%keys.length+keys.length)%keys.length,i=Math.floor(at),k=(1-Math.cos(Math.PI*(at-i)))/2;
  const p=layout(m,blend(keys[i],keys[(i+1)%keys.length],k),placement(m)) as Record<number,Point>;
  const set=(name:string,d:string)=>svg.querySelector(`.demo-${name}`)?.setAttribute('d',d);
  const leg=(s:0|1)=>limb(p[23+s],p[25+s],.05,.036)+limb(p[25+s],p[27+s],.037,.021);
