@@ -3,6 +3,12 @@
 import {journeys as base} from './A.mjs';
 
 const quick = {
+  // Progress now sits with workouts under Move.
+  J7: async (page, {act}) => {
+    await act.tap(page.getByRole('link', {name: 'Move', exact: true}).first());
+    await act.tap(page.getByRole('link', {name: 'Progress', exact: true}).first());
+    await page.getByRole('heading', {name: /See how far you/}).waitFor();
+  },
   J3: async (page, {act}) => {
     await act.tap(page.getByRole('button', {name: 'Log Idli with sambar'}));
     await page.getByRole('status').filter({hasText: 'Logged Idli with sambar'}).waitFor();

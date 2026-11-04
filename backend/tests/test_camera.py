@@ -118,3 +118,11 @@ def test_new_camera_exercises_save(kind):
 def test_body_area_exercises_save(kind):
  _,h=account();init(h);key='camera_'+kind;s=session(h,[key],tracking_method='camera')
  r=update(h,s,tracking=tracking(exercise_type=kind),exercises=[{'exercise_id':key,'sets':[{'reps':8,'load':0,'minutes':0}]}]);assert r.status_code==200,r.text
+
+
+def test_every_equipment_variant_is_a_known_template_with_the_right_gear():
+    from routers.training import CATEGORIES
+    from services import personalization as rules
+    for key, gear in (('bandcurl', 'resistance bands'), ('bbrow', 'barbell'), ('kbpress', 'kettlebell'), ('widepush', None)):
+        template = rules.TEMPLATES['camera_' + key]
+        assert CATEGORIES['camera_' + key] == 'camera' and template['equipment'] == ([gear] if gear else [])
