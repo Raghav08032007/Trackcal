@@ -126,3 +126,14 @@ def test_every_equipment_variant_is_a_known_template_with_the_right_gear():
     for key, gear in (('bandcurl', 'resistance bands'), ('bbrow', 'barbell'), ('kbpress', 'kettlebell'), ('widepush', None)):
         template = rules.TEMPLATES['camera_' + key]
         assert CATEGORIES['camera_' + key] == 'camera' and template['equipment'] == ([gear] if gear else [])
+
+
+def test_holds_are_camera_exercises_saved_as_time():
+    from routers.training import CATEGORIES
+    from services import personalization as rules
+    from services.wellness_inputs import CameraTracking
+    for key in ('plank', 'tree', 'downdog'):
+        assert CATEGORIES['camera_' + key] == 'camera' and 'hold' in rules.TEMPLATES['camera_' + key]['name']
+    tracking = CameraTracking(exercise_type='plank', engine='mediapipe-pose-lite', version=2, confidence_mean=.9, sampled_frames=10, low_confidence_frames=0,
+                              sets=[{'estimated_reps': 0, 'corrected_reps': None, 'duration_s': 42.5}])
+    assert tracking.sets[0].duration_s == 42.5
