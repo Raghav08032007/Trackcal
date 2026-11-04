@@ -1,8 +1,9 @@
 // A jointed skeleton performs every exercise and every exercise's tracker watches it: each must count its own move and no other.
 import {describe,it,expect} from 'vitest';
 import {SessionTracker} from '@/lib/pose/session-tracker';
-import {EXERCISES,EXERCISE_DIFFICULTY,type ExerciseKind,type Landmark,type PoseFrame} from '@/lib/pose/types';
+import {EXERCISES,EXERCISE_VARIANTS,GEAR_CHOICES,gearOf,EXERCISE_DIFFICULTY,type ExerciseKind,type Landmark,type PoseFrame} from '@/lib/pose/types';
 import {MOVES,blend,full,layout,placement,type Move,type Pose} from '@/lib/pose/exercise-motions';
+import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
 
 let seed=1;const noise=()=>{seed=(seed*16807)%2147483647;return (seed/2147483647-.5)*.004;};
 function frameFor(m:Move,p:Required<Pose>,t:number,start:[number,number]):PoseFrame{
@@ -23,15 +24,17 @@ const SAME:ExerciseKind[][]=[['curl','hammer'],['knee','highknee'],['calf','wcal
 /** The first counts the second because the second contains it: a jump squat is a squat with a jump on the end. */
 const CONTAINS:[ExerciseKind,ExerciseKind][]=[['squat','squatjump'],['lunge','bulgarian'],['wlunge','bulgarian'],['deadlift','kbswing'],['jumplunge','bulgarian'],['pushup','decline']];
 const same=(a:ExerciseKind,b:ExerciseKind)=>SAME.some(g=>g.includes(a)&&g.includes(b))||CONTAINS.some(([x,y])=>x===a&&y===b);
-const KINDS=Object.keys(EXERCISES) as ExerciseKind[];
+const KINDS=Object.keys(EXERCISES) as ExerciseKind[],OWN=KINDS.filter(k=>!EXERCISE_VARIANTS[k]);
 const REPS=3;
 describe('each exercise counts only itself',()=>{
  it('every exercise has a difficulty, and every filter leaves something to pick',()=>{for(const e of Object.values(EXERCISES))expect(EXERCISE_DIFFICULTY).toHaveProperty(e.difficulty);for(const q of ['none','weights'])for(const d of Object.keys(EXERCISE_DIFFICULTY))expect(Object.values(EXERCISES).some(e=>e.equipment===q&&e.difficulty===d)).toBe(true);});
+ it('every variant shares its base movement and rules, so the matrix covers it',()=>{for(const [id,base] of Object.entries(EXERCISE_VARIANTS)){const a=EXERCISE_CONFIG[id as ExerciseKind],b=EXERCISE_CONFIG[base];expect(a.form).toBe(b.form);expect([a.up,a.down,a.minRangeDeg,a.minRepMs]).toEqual([b.up,b.down,b.minRangeDeg,b.minRepMs]);expect(a.title).toBe(EXERCISES[id as ExerciseKind].title);expect(a.template).toBe(`camera_${id}`);expect(MOVES[id as ExerciseKind]).toBe(MOVES[base]);expect(EXERCISES[id as ExerciseKind].group).toBe(EXERCISES[base].group);}});
+ it('every equipment choice has exercises',()=>{for(const [equipment,gears] of Object.entries(GEAR_CHOICES))for(const gear of gears)expect(KINDS.filter(k=>EXERCISES[k].equipment===equipment&&gearOf(k)===gear).length,gear).toBeGreaterThan(0);});
  it('has a motion for every exercise',()=>{expect(KINDS.filter(k=>!MOVES[k])).toEqual([]);});
  for(const k of KINDS)it(`${k} counts its own reps`,()=>{const why:string[]=[];expect(watch(k,MOVES[k],REPS,why),why.join()).toBe(REPS);});
  it('no exercise counts any other exercise',()=>{
   const wrong:string[]=[];
-  for(const tracker of KINDS)for(const done of KINDS){if(tracker===done||same(tracker,done))continue;const n=watch(tracker,MOVES[done],REPS);if(n>0)wrong.push(`${tracker} counted ${n} of ${done}`);}
+  for(const tracker of OWN)for(const done of OWN){if(tracker===done||same(tracker,done))continue;const n=watch(tracker,MOVES[done],REPS);if(n>0)wrong.push(`${tracker} counted ${n} of ${done}`);}
   expect(wrong).toEqual([]);
  },240000);
 });

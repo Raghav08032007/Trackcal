@@ -640,3 +640,12 @@ html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
 .coach-bubble > .account-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .coach-bubble > .account-actions .destination-button { flex: 1 1 130px; width: auto; max-width: 240px; justify-content: center; text-align: center; }
 .first-steps p { margin: 0 0 10px; }
+
+.camera-gear { flex-wrap: wrap; }
+
+.exercise-demo-3d .athlete-3d { position: relative; width: 100%; aspect-ratio: 1; border-radius: 22px; overflow: hidden; touch-action: pan-y; cursor: grab; background: radial-gradient(120% 90% at 50% 20%, #ffffff 0%, #efeafd 55%, #ddd3fb 100%); }
+.exercise-demo-3d .athlete-3d canvas { display: block; width: 100% !important; height: 100% !important; }
+.exercise-demo-3d .athlete-3d[aria-busy="true"]::after { content: ""; position: absolute; inset: 40% 42%; border-radius: 50%; border: 3px solid #6d4ae8; border-top-color: transparent; animation: spin .8s linear infinite; }
+.exercise-demo-3d figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+@media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) .athlete-3d[data-ready] { animation: coach-rise .5s var(--clay-spring, ease-out) both; } }
+@keyframes spin { to { rotate: 360deg; } }

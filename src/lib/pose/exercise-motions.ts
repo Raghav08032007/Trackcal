@@ -1,4 +1,4 @@
-import type {ExerciseKind} from './types';
+import {EXERCISE_VARIANTS,type ExerciseKind} from './types';
 /** How each exercise moves, as joint angles between key poses. The page plays these as the example, and the tests run
  *  the rep counter on the very same motions, so the example shown is the movement that counts. */
 export type Pose={back?:number;torso?:number;arm?:[number,number];fore?:[number,number];thigh?:[number,number];shin?:[number,number];heel?:number;lift?:number};
@@ -38,7 +38,7 @@ const both=(v:number):[number,number]=>[v,v];
 const LIE={torso:-88,thigh:both(92),shin:both(92),arm:both(95),fore:both(95)},KNEES={torso:-85,thigh:both(130),shin:both(30),arm:both(95),fore:both(95)},PLANK={torso:76,thigh:both(-76),shin:both(-76)},FOURS={torso:88,thigh:both(0),shin:both(-90)};
 const SQUAT={torso:25,thigh:both(75),shin:both(-35)},CHEST={arm:both(30),fore:both(150)},UP={arm:both(178),fore:both(178)},RACK={arm:both(30),fore:both(172)};
 const SEAT={torso:4,thigh:both(82),shin:both(4)};
-export const MOVES:Record<ExerciseKind,Move>={
+export const MOVES={
  squat:{view:'side',anchor:'foot',keys:[{},{...SQUAT,arm:both(25),fore:both(25)}]},
  sumo:{view:'front',anchor:'foot',keys:[{thigh:[-24,24],shin:[-24,24]},{thigh:[-82,82],shin:[-4,4]}]},
  wsquat:{view:'side',anchor:'foot',keys:[{...CHEST},{...SQUAT,...CHEST}]},
@@ -112,4 +112,5 @@ export const MOVES:Record<ExerciseKind,Move>={
  cleanpress:{view:'side',anchor:'hip',keys:[{},{...RACK},{...UP},{...RACK}]},
  snatch:{view:'side',anchor:'foot',keys:[{torso:62,thigh:both(30),shin:both(-20),arm:both(-40),fore:both(-40)},{...UP}]},
  inclinebench:{view:'side',anchor:'shoulder',keys:[{torso:-45,thigh:both(92),shin:both(10),...UP},{torso:-45,thigh:both(92),shin:both(10),arm:both(100),fore:both(190)}]},
-};
+} as Record<ExerciseKind,Move>;
+for(const [id,base] of Object.entries(EXERCISE_VARIANTS))MOVES[id as ExerciseKind]=MOVES[base];

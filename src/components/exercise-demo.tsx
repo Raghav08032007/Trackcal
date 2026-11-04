@@ -1,10 +1,12 @@
 'use client';
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {lazy,Suspense,useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
 import {MOVES,blend,full,layout,placement} from '@/lib/pose/exercise-motions';
-import {EXERCISES,type ExerciseKind} from '@/lib/pose/types';
+import {EXERCISES,gearOf,type ExerciseKind} from '@/lib/pose/types';
 
 const LEG_MS=1300,HEAD=.058;
+const Athlete3D=lazy(()=>import('./athlete-3d').then(module=>({default:module.Athlete3D})));
+const canDraw3d=()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'));}catch{return false;}};
 type Point=[number,number];
 const lerp=(a:Point,b:Point,k:number):Point=>[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k];
 const n3=(v:number)=>v.toFixed(4);
@@ -31,7 +33,7 @@ function draw(svg:SVGSVGElement,kind:ExerciseKind,progress:number,floor:number){
  const sleeve=(s:0|1)=>limb(p[11+s],lerp(p[11+s],p[13+s],.42),.034,.03);
  set('far-leg',leg(1));set('far-short',short(1));set('far-shoe',shoe(1));set('far-arm',arm(1));set('far-sleeve',sleeve(1));
  set('near-leg',leg(0));set('near-short',short(0));set('near-shoe',shoe(0));set('near-arm',arm(0));set('near-sleeve',sleeve(0));
- const weights=EXERCISES[kind].equipment==='weights';
+ const weights=['dumbbell','barbell','kettlebell'].includes(gearOf(kind));
  set('far-weight',weights?dumbbell(p[14],p[16]):'');set('near-weight',weights?dumbbell(p[13],p[15]):'');
  const s=lerp(p[11],p[12],.5),h=lerp(p[23],p[24],.5),width=Math.hypot(p[11][0]-p[12][0],p[11][1]-p[12][1])/2,hipWidth=Math.hypot(p[23][0]-p[24][0],p[23][1]-p[24][1])/2;
  set('torso',limb(s,lerp(s,h,.9),.05+width*.9,.044+hipWidth*.75));
@@ -49,10 +51,15 @@ function draw(svg:SVGSVGElement,kind:ExerciseKind,progress:number,floor:number){
 /** Where the floor is for this move: below the lowest point of any key pose. */
 function floorOf(kind:ExerciseKind){const m=MOVES[kind],at=placement(m);let low=0;for(const key of m.keys){const p=layout(m,full(key),at);for(const id of [15,16,23,24,25,26,27,28,31,32])low=Math.max(low,p[id][1]);}return low+.035;}
 /** The example for each exercise: an illustrated athlete on a loop, stopped at any time, and still for people who ask for less motion. */
+/** The 3D athlete where the device can draw it, and the flat drawing otherwise. */
 export function ExerciseDemo({kind}:{kind:ExerciseKind}){
- const svg=useRef<SVGSVGElement>(null),title=EXERCISES[kind].title;
  const still=useMemo(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,[]);
- const [playing,setPlaying]=useState(!still);
+ const [mode,setMode]=useState<'3d'|'flat'>(()=>typeof window!=='undefined'&&canDraw3d()?'3d':'flat'),[playing,setPlaying]=useState(!still),failed=useCallback(()=>setMode('flat'),[]);
+ if(mode==='flat')return <FlatDemo kind={kind} playing={playing} setPlaying={setPlaying} switchable={false}/>;
+ return <figure className="exercise-demo exercise-demo-3d"><Suspense fallback={<div className="athlete-3d" aria-busy="true"/>}><Athlete3D kind={kind} playing={playing} onFail={failed}/></Suspense><figcaption><span>Example: {EXERCISE_CONFIG[kind].cues.join(' · ')}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?'Pause':'Play'}</button><button type="button" onClick={()=>setMode('flat')}>Simple view</button></figcaption></figure>;
+}
+function FlatDemo({kind,playing,setPlaying}:{kind:ExerciseKind;playing:boolean;setPlaying:(update:(value:boolean)=>boolean)=>void;switchable:boolean}){
+ const svg=useRef<SVGSVGElement>(null),title=EXERCISES[kind].title;
  const clock=useRef(0);
  useEffect(()=>{
   const figure=svg.current;if(!figure)return;

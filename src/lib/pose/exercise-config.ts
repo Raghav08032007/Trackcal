@@ -1,4 +1,4 @@
-import type {ExerciseKind,ExerciseLevel,Landmark} from './types';
+import {EXERCISES,EXERCISE_VARIANTS,type ExerciseKind,type ExerciseLevel,type Landmark} from './types';
 import {EXERCISE_FORMS,type ExerciseForm} from './exercise-forms';
 /** Every threshold the rep counter uses lives here, one typed config per exercise. Angles are degrees at the middle
  *  joint of the triplet; "up" is the starting position (straight joint), "down" the bent position.
@@ -37,7 +37,7 @@ const L={shoulder:[11,12],elbow:[13,14],wrist:[15,16],hip:[23,24],knee:[25,26],a
 /** The body lies along the floor rather than standing up. Judged on the torso for floor moves: a lifted leg must not fail it. */
 const flat=(end:number[])=>(p:Landmark[],s:0|1)=>Math.abs(p[L.shoulder[s]].x-p[end[s]].x)>Math.abs(p[L.shoulder[s]].y-p[end[s]].y)*.9;
 const pick=(...parts:number[][])=>[parts.map(p=>p[0]),parts.map(p=>p[1])] as [number[],number[]];
-export const EXERCISE_CONFIG:Record<ExerciseKind,ExerciseConfig>={
+export const EXERCISE_CONFIG={
  squat:{id:'squat',title:'Squats',template:'camera_squat',kcalPerRep:.4,joints:[[23,25,27],[24,26,28]],span:[[23,27],[24,28]],cues:['Stand tall','Squat down','Stand up'],required:pick(L.shoulder),optional:pick(L.hip,L.knee,L.ankle),drop:true,
   up:150,down:110,hysteresis:8,minRangeDeg:45,minRepMs:700,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2–3 m away, phone at hip height'},tips:['Put the laptop at table height and stand back until your head and hips show.','Face the camera or turn side-on, whichever is easier.','Stand still for a moment first, then squat.','Even, bright light helps.'],experimental:true},
@@ -283,8 +283,9 @@ export const EXERCISE_CONFIG:Record<ExerciseKind,ExerciseConfig>={
  inclinebench:{id:'inclinebench',title:'Incline dumbbell press',template:'camera_inclinebench',kcalPerRep:0.35,joints:[[11,13,15],[12,14,16]],cues:['Lean back, arms up', 'Lower to your chest', 'Press up'],required:pick(L.shoulder,L.elbow,L.wrist,L.hip),
   up:150,down:95,hysteresis:8,minRangeDeg:40,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2 m away, phone at bench height'},tips:['Stand the phone side-on to the bench.'],experimental:true},
-};
+} as Record<ExerciseKind,ExerciseConfig>;
 for(const [id,form] of Object.entries(EXERCISE_FORMS))EXERCISE_CONFIG[id as ExerciseKind].form=form;
+for(const [id,base] of Object.entries(EXERCISE_VARIANTS))EXERCISE_CONFIG[id as ExerciseKind]={...EXERCISE_CONFIG[base],id:id as ExerciseKind,title:EXERCISES[id as ExerciseKind].title,template:`camera_${id}`};
 /** Harder levels ask for a fuller range of motion: a straighter top and a deeper bottom. Beginner is the base config. */
 export const EXERCISE_LEVELS:Record<ExerciseLevel,{title:string;up:number;down:number}>={beginner:{title:'Beginner',up:0,down:0},intermediate:{title:'Intermediate',up:5,down:10},advanced:{title:'Advanced',up:10,down:20}};
 export const withLevel=(config:ExerciseConfig,level:ExerciseLevel):ExerciseConfig=>({...config,up:Math.min(176,config.up+EXERCISE_LEVELS[level].up),down:Math.max(config.down*.6,config.down-EXERCISE_LEVELS[level].down)});  // small movements keep a reachable target
