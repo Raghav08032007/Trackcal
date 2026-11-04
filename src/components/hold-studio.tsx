@@ -6,7 +6,9 @@ import {CoachLine} from './coach-card';
 import {MoveDemo} from './exercise-demo';
 import {markWorkoutActive} from './app-updates';
 import {HOLD_KINDS,HOLD_STYLES,HOLDS,HoldTracker,type HoldKind,type HoldStyle} from '@/lib/pose/holds';
-import {focusPerson} from '@/lib/pose/landmarks';
+import {focusPerson,normalize} from '@/lib/pose/landmarks';
+import {FORM_TIPS,FormChecker} from '@/lib/pose/form-check';
+import {ExerciseMuscles} from './exercise-muscles';
 import type {PoseDetectionService} from '@/lib/pose/detection-service';
 import type {PoseFrame} from '@/lib/pose/types';
 import {say,stepMinutes} from '@/lib/workout-coach';
@@ -20,21 +22,22 @@ export function HoldStudio(){const {ready,user}=useAccount();return !ready?<main
 
 /** Planks, balance and stretches, timed by the camera. Only time actually in position counts. */
 function Studio(){
- const video=useRef<HTMLVideoElement>(null),service=useRef<PoseDetectionService|null>(null),tracker=useRef(new HoldTracker('plank')),started=useRef(0),stats=useRef({frames:0,low:0,quality:0}),spoken=useRef(0),cheered=useRef(false);
+ const video=useRef<HTMLVideoElement>(null),service=useRef<PoseDetectionService|null>(null),tracker=useRef(new HoldTracker('plank')),started=useRef(0),stats=useRef({frames:0,low:0,quality:0}),spoken=useRef(0),cheered=useRef(false),form=useRef(new FormChecker(null)),voiceRef=useRef(false);
  const [kind,setKind]=useState<HoldKind>(()=>{const asked=typeof window==='undefined'?null:new URLSearchParams(window.location.search).get('hold');return asked&&asked in HOLDS?asked as HoldKind:'plank';});
- const [target,setTarget]=useState(30),[status,setStatus]=useState<Status>('setup'),[live,setLive]=useState({inPose:false,visible:false,current:0,best:0,held:0}),[error,setError]=useState(''),[voice,setVoice]=useState(false),[busy,setBusy]=useState(false),[earned,setEarned]=useState(0);
+ const [target,setTarget]=useState(30),[status,setStatus]=useState<Status>('setup'),[live,setLive]=useState({inPose:false,visible:false,current:0,best:0,held:0}),[error,setError]=useState(''),[voice,setVoice]=useState(false),[busy,setBusy]=useState(false),[earned,setEarned]=useState(0),[tip,setTip]=useState<{text:string;at:number}|null>(null);
+ useEffect(()=>{voiceRef.current=voice;},[voice]);
  const hold=HOLDS[kind];
  useEffect(()=>{markWorkoutActive(status==='loading'||status==='holding');return()=>markWorkoutActive(false);},[status]);
  useEffect(()=>{const hide=()=>{if(document.hidden)stop();};document.addEventListener('visibilitychange',hide);return()=>{document.removeEventListener('visibilitychange',hide);service.current?.stop(video.current||undefined);};},[]);// eslint-disable-line react-hooks/exhaustive-deps -- stop reads refs only
  function receive(raw:PoseFrame){
-  const frame=focusPerson(raw),result=tracker.current.update(frame);stats.current.frames++;if(!result.visible)stats.current.low++;else stats.current.quality+=1;
+  const frame=focusPerson(raw),result=tracker.current.update(frame);if(tracker.current.kind==='plank'){const issue=form.current.update(normalize(frame),'UP');if(issue){setTip({text:FORM_TIPS[issue],at:Date.now()});if(voiceRef.current)say(FORM_TIPS[issue]);}}stats.current.frames++;if(!result.visible)stats.current.low++;else stats.current.quality+=1;
   setLive({inPose:result.inPose,visible:result.visible,current:result.current,best:result.best,held:result.held});
   const now=seconds(result.current);
   if(voice&&result.inPose&&now>0&&now!==spoken.current&&(now%10===0||target-now<=3&&now<target)){spoken.current=now;say(target-now<=3&&now<target?String(target-now):`${now} seconds`);}
   if(!cheered.current&&result.current>=target*1000){cheered.current=true;try{navigator.vibrate?.([60,40,60]);}catch{/* not supported */}if(voice)say('Target reached. Great hold.');}
  }
  async function start(){
-  setError('');setStatus('loading');tracker.current=new HoldTracker(kind);stats.current={frames:0,low:0,quality:0};spoken.current=0;cheered.current=false;started.current=performance.now();
+  setError('');setStatus('loading');tracker.current=new HoldTracker(kind);form.current=new FormChecker(kind==='plank'?'plank':null);stats.current={frames:0,low:0,quality:0};spoken.current=0;cheered.current=false;started.current=performance.now();
   try{const {PoseDetectionService}=await import('@/lib/pose/detection-service');const controller=new PoseDetectionService(receive,message=>{setError(message);stop();});service.current=controller;await controller.start(video.current!,'','user',()=>setStatus('holding'));}
   catch(failure){service.current?.stop(video.current||undefined);setStatus('setup');setError(failure instanceof Error?failure.message:'Camera unavailable.');}
  }
@@ -58,14 +61,14 @@ function Studio(){
   <div className="hold-layout">
    <section className="account-card hold-choose">
     {(Object.keys(HOLD_STYLES) as HoldStyle[]).map(style=><div key={style} className="hold-group"><h2>{HOLD_STYLES[style]}</h2><div className="camera-equipment" role="group" aria-label={HOLD_STYLES[style]}>{HOLD_KINDS.filter(k=>HOLDS[k].style===style).map(k=><button key={k} type="button" aria-pressed={kind===k} disabled={status!=='setup'} onClick={()=>pick(k)}>{HOLDS[k].title}</button>)}</div></div>)}
-    <p className="camera-muscles"><strong>Works:</strong> {hold.muscles}</p><p className="camera-muscles"><strong>Set up:</strong> {hold.setup}</p>
+    <p className="camera-muscles"><strong>Works:</strong> {hold.muscles}</p><ExerciseMuscles muscles={hold.muscles} title={hold.title}/><p className="camera-muscles"><strong>Set up:</strong> {hold.setup}</p>
     <MoveDemo move={hold.move} gear="body" title={hold.title} cues={[hold.cue]}/>
    </section>
    <section className="account-card hold-stage">
     <div className="camera-preview camera-mirrored"><video ref={video} autoPlay muted playsInline aria-label="Live hold camera preview"/>
      {status==='holding'&&<div className="hold-ring" data-in={live.inPose||undefined} data-done={done||undefined} style={{'--hold':progress} as React.CSSProperties} role="timer" aria-live="off" aria-label={`${seconds(live.current)} of ${target} seconds`}><strong>{seconds(live.current)}</strong><small>of {target} s</small></div>}
     </div>
-    <p role="status" className="hold-status">{status==='holding'?(!live.visible?'Step back so your whole body is in view.':live.inPose?(done?'Target reached. Hold on if you can, or rest.':`Holding. ${hold.cue}.`):`Get into position: ${hold.cue.toLowerCase()}.`):status==='loading'?'Starting the camera…':'Camera off'}</p>
+    <p role="status" className="hold-status">{status==='holding'&&tip&&Date.now()-tip.at<3000?tip.text:status==='holding'?(!live.visible?'Step back so your whole body is in view.':live.inPose?(done?'Target reached. Hold on if you can, or rest.':`Holding. ${hold.cue}.`):`Get into position: ${hold.cue.toLowerCase()}.`):status==='loading'?'Starting the camera…':'Camera off'}</p>
     {status==='setup'&&<><label>Target<select value={target} onChange={e=>setTarget(Number(e.target.value))}>{TARGETS.map(value=><option key={value} value={value}>{value} seconds</option>)}</select></label>
      <label className="scanner-consent"><input type="checkbox" checked={voice} onChange={e=>setVoice(e.target.checked)}/> Count out loud</label>
      <button className="account-primary" onClick={()=>void start()}>Start {hold.title}</button></>}

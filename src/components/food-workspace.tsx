@@ -13,6 +13,7 @@ import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
 import { FoodRow, type LibraryFood } from "@/components/food-row";
 import { AddDish } from "@/components/add-dish";
+import { AllergenAlert } from "@/components/allergen-alert";
 import { addDish, dropDish, foodDish, plateTotals } from "@/lib/plate";
 import { ProductFacts } from "@/components/product-facts";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
@@ -885,6 +886,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                 {/* Sub-item Segmented Breakdown */}
                 <div className="mt-6">
+                  {scanSource === "photo" && <AllergenAlert sources={[{ level: "possible", texts: [scanResult.foodName, ...scanResult.items.flatMap(item => [item.name, item.ingredients ?? ""])] }]} />}
                   <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">
                     Segmented Food Components ({scanResult.items.length})
                   </h4>
@@ -1103,6 +1105,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               {!barcodeComplete && <p role="status" className="mt-4 text-xs text-amber-300">Open Food Facts doesn&apos;t list every value for this product. Enter the missing values from the packaging label to log it.</p>}
               {barcodeComplete && consistencyWarning(barcodeValues) && <p role="status" className="mt-4 text-xs text-amber-300">These values don&apos;t add up (calories compared with protein, carbs and fat). Please double-check the label.</p>}
               {selectedBarcodeProduct.attribution && <p className="mt-3 text-[11px] text-slate-400">{selectedBarcodeProduct.attribution}</p>}
+              <AllergenAlert sources={[{ level: "declared", texts: selectedBarcodeProduct.allergens }, { level: "possible", texts: [selectedBarcodeProduct.name, productFacts?.ingredients ?? ""] }]} />
               {selectedBarcodeProduct.allergens.length > 0 && (
                 <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 text-xs text-amber-300">
                   <AlertTriangle className="w-4 h-4 flex-shrink-0" />

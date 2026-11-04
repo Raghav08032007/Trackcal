@@ -23,3 +23,8 @@ export function adaptiveGoal(days:GoalDay[],kgPerWeek:number){
  const average=eaten.reduce((a,d)=>a+(d.calories as number),0)/eaten.length,burn=average-slope*KCAL_PER_KG;
  return {burn:Math.round(burn),average:Math.round(average),kgPerWeek:Math.round(slope*7*100)/100,target:Math.max(MIN_CALORIES,Math.round((burn+kgPerWeek*KCAL_PER_KG/7)/10)*10)};
 }
+/** A gentle step toward the suggested target, from fud-ai's adaptive goals (MIT): at most 150 kcal a week, and changes under 25 kcal are skipped. */
+export function weeklyStep(current:number,target:number){
+ const raw=Math.round(target-current),change=Math.abs(raw)<25?0:Math.max(-150,Math.min(150,raw));
+ return {next:current+change,change};
+}

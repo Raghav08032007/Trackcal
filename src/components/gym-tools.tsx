@@ -4,6 +4,7 @@ import type {MealLog} from "./journal-tools";
 import {adaptiveGoal,oneRepMax,platesPerSide,type GoalDay} from "@/lib/gym-math";
 import {exportLocalEntries,useLocalState} from "@/lib/use-local-state";
 import {FAST_MODES} from "@/lib/fitness-plans";
+import {weeklyStep} from "@/lib/gym-math";
 
 const PLATES=[25,20,15,10,5,2.5,1.25];
 export function GymTools(){
@@ -29,7 +30,7 @@ export function FastingTimer(){
  </section>;
 }
 export function AdaptiveGoal(){
- const scope=useWorkspaceScope(),[pace,setPace]=useState(-.25);
+ const scope=useWorkspaceScope(),[pace,setPace]=useState(-.25),[target,setTarget]=useLocalState("trackcal:target:calories",2100);
  const days=useMemo(()=>{
   const all=exportLocalEntries(scope) as Record<string,unknown>,rows=new Map<string,GoalDay>(),cut=new Date(Date.now()-42*86400000).toISOString().slice(0,10);
   const at=(date:string)=>{const row=rows.get(date)??{date};rows.set(date,row);return row;};
@@ -43,7 +44,7 @@ export function AdaptiveGoal(){
  const goal=adaptiveGoal(days,pace);
  return <section className="account-card"><h2>Adaptive calorie goal</h2><p>Works out what you really burn from your food log and weight trend, then suggests a daily target.</p>
   <label>Your aim<select value={pace} onChange={e=>setPace(Number(e.target.value))}><option value={-.5}>Lose 0.5 kg a week</option><option value={-.25}>Lose 0.25 kg a week</option><option value={0}>Stay the same</option><option value={.25}>Gain 0.25 kg a week</option></select></label>
-  {goal?<p className="gym-result" role="status">Suggested: {goal.target} kcal a day</p>:<p role="status">Not enough data yet. It needs meals on 10 days and 4 weigh-ins across at least 2 weeks.</p>}
+  {goal?<><p className="gym-result" role="status">Suggested: {goal.target} kcal a day</p>{(()=>{const step=weeklyStep(target,goal.target);return step.change?<p>To get there gently, change your target by {step.change>0?"+":""}{step.change} kcal this week, from {target} to {step.next}. <button type="button" className="account-secondary" onClick={()=>setTarget(step.next)}>Use {step.next} kcal</button></p>:<p>Your current target of {target} kcal is already close. No change needed this week.</p>;})()}</>:<p role="status">Not enough data yet. It needs meals on 10 days and 4 weigh-ins across at least 2 weeks.</p>}
   {goal&&<small>You eat about {goal.average} kcal, your weight is moving {goal.kgPerWeek} kg a week, so you burn about {goal.burn} kcal. An estimate, not medical advice.</small>}
  </section>;
 }

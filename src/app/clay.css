@@ -664,3 +664,28 @@ html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
 .hold-stage .account-primary, .hold-stage label { margin-top: 8px; }
 @media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) .hold-ring[data-done] { animation: hold-pulse 1.2s ease-in-out infinite; } }
 @keyframes hold-pulse { 50% { scale: 1.08; } }
+
+.exercise-muscles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 220px; margin: 6px 0 10px; }
+.exercise-muscles svg { width: 100%; height: auto; }
+.form-notes ul { margin: 6px 0; padding-left: 20px; }
+.make-for-me { display: grid; gap: 8px; margin: 10px 0 16px; padding: 12px; border-radius: 16px; background: var(--surface-2, #f1eefb); }
+.make-for-me h3 { margin: 0; font-size: 1rem; }
+.make-for-me .camera-equipment { flex-wrap: wrap; }
+.made-workout { display: grid; gap: 6px; }
+
+.insight-line { display: block; width: 100%; height: 72px; margin: 6px 0; overflow: visible; }
+.insight-stack { position: relative; height: 72px; }
+.insight-stack .insight-line { position: absolute; inset: 0; margin: 0; }
+.insight-legend { display: flex; gap: 14px; font-size: .8rem; font-weight: 600; }
+.insight-legend span::before { content: ""; display: inline-block; width: 10px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+.key-fitness::before { background: #6d4ae8; } .key-fatigue::before { background: #f5a524; }
+.habit-list { display: grid; gap: 10px; margin: 8px 0 0; padding: 0; list-style: none; }
+.habit-list li { display: grid; grid-template-columns: 80px 1fr 36px 70px; align-items: center; gap: 8px; font-size: .9rem; }
+.habit-list small { opacity: .8; }
+.habit-meter { height: 10px; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, #6d4ae8 14%, transparent); }
+.habit-meter span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6d4ae8, #3fbf8f); transition: width .8s var(--clay-spring, ease-out); }
+.insight-best { font-weight: 600; }
+.allergen-alert { margin: 10px 0; padding: 10px 12px; border-radius: 12px; border: 1px solid #e5484d; background: color-mix(in srgb, #e5484d 12%, transparent); font-size: .9rem; }
+.gps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; text-align: center; }
+.gps-stats strong { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.gps-stats small { opacity: .8; }

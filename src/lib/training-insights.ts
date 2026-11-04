@@ -15,7 +15,8 @@ const NAMES:Record<string,MapMuscle[]>={quads:['quadriceps'],glutes:['gluteal'],
 export const NOT_A_MUSCLE=new Set(['heart rate','balance','grip']);
 export const MUSCLE_LABELS:Record<MapMuscle,string>={quadriceps:'Quads',gluteal:'Glutes',hamstring:'Hamstrings',calves:'Calves',adductor:'Inner thighs',abductors:'Outer hips',chest:'Chest','front-deltoids':'Front shoulders','back-deltoids':'Rear shoulders',biceps:'Biceps',triceps:'Triceps',forearm:'Forearms',abs:'Abs',obliques:'Obliques','upper-back':'Upper back','lower-back':'Lower back',trapezius:'Traps'};
 
-export const musclesOf=(kind:ExerciseKind):MapMuscle[]=>[...new Set(EXERCISES[kind].muscles.toLowerCase().split(',').map(name=>name.trim()).flatMap(name=>NAMES[name]??[]))];
+export const musclesFromText=(text:string):MapMuscle[]=>[...new Set(text.toLowerCase().split(',').map(name=>name.trim()).flatMap(name=>NAMES[name]??[]))];
+export const musclesOf=(kind:ExerciseKind):MapMuscle[]=>musclesFromText(EXERCISES[kind].muscles);
 
 export function movesFrom(sessions:Session[]):MoveRecord[]{
  return sessions.flatMap(session=>{
