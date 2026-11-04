@@ -1,8 +1,8 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import type * as Three from 'three';
-import {MOVES,blend,full,layout,placement} from '@/lib/pose/exercise-motions';
-import {EXERCISES,gearOf,type ExerciseKind} from '@/lib/pose/types';
+import {MOVES,blend,full,layout,placement,type Move} from '@/lib/pose/exercise-motions';
+import type {ExerciseGear,ExerciseKind} from '@/lib/pose/types';
 
 type P2=Record<number,[number,number]>;
 const LEG_MS=1300;
@@ -11,15 +11,16 @@ const SKIN=0xc68a63,SHIRT=0x6d4ae8,SHORTS=0x22223a,SHOE=0xf4f4f8,HAIR=0x2a1d17,M
 const DEPTH:Record<number,number>={11:.1,13:.11,15:.11,23:.07,25:.07,27:.07,29:.07,31:.07};
 
 /** One moment of a move as 3D points: the same joint layout the rep counter is tested on, with depth added. */
-export function pose3d(kind:ExerciseKind,progress:number){
- const m=MOVES[kind],keys=m.keys.map(full),at=(progress%keys.length+keys.length)%keys.length,i=Math.floor(at),k=(1-Math.cos(Math.PI*(at-i)))/2;
+export const pose3d=(kind:ExerciseKind,progress:number)=>pose3dOf(MOVES[kind],progress);
+export function pose3dOf(m:Move,progress:number){
+ const keys=m.keys.map(full),at=(progress%keys.length+keys.length)%keys.length,i=Math.floor(at),k=(1-Math.cos(Math.PI*(at-i)))/2;
  const p=layout(m,blend(keys[i],keys[(i+1)%keys.length],k),placement(m)) as P2,out:Record<number,[number,number,number]>={};
  for(const [id,[x,y]] of Object.entries(p)){const n=Number(id),side=n%2===1?1:-1,base=DEPTH[n-(n%2===0?1:0)]??.07;out[n]=[x,-y,m.view==='side'?side*base:0];}
  return out;
 }
 
 /** A shaded 3D athlete doing the exercise. Built lazily, so the 3D library only loads on this page. */
-export function Athlete3D({kind,playing,onFail}:{kind:ExerciseKind;playing:boolean;onFail:()=>void}){
+export function Athlete3D({move,gear,title,playing,onFail}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void}){
  const host=useRef<HTMLDivElement>(null),clock=useRef(0),drag=useRef({turn:0,down:false,x:0}),[ready,setReady]=useState(false);
  useEffect(()=>{
   const el=host.current;if(!el)return;
@@ -48,16 +49,16 @@ export function Athlete3D({kind,playing,onFail}:{kind:ExerciseKind;playing:boole
    const joint=(material:Three.Material)=>{const mesh=add(ball,material);return (at:Three.Vector3,r:number)=>{mesh.position.copy(at);mesh.scale.setScalar(r);};};
    const limbs={thigh:[segment(shorts),segment(shorts)],shin:[segment(skin),segment(skin)],knee:[joint(skin),joint(skin)],foot:[segment(shoe),segment(shoe)],upper:[segment(shirt),segment(shirt)],fore:[segment(skin),segment(skin)],hand:[joint(skin),joint(skin)],hip:[joint(shorts),joint(shorts)],shoulder:[joint(shirt),joint(shirt)]};
    const torso=add(new THREE.LatheGeometry([[.78,0],[.74,.12],[.66,.3],[.74,.5],[.92,.7],[1,.84],[.86,.95],[.5,1]].map(([r,y])=>new THREE.Vector2(r,y)),32),shirt),pelvis=add(ball,shorts),neck=segment(skin),head=add(ball,skin),cap=add(new THREE.SphereGeometry(1,24,16,0,Math.PI*2,0,Math.PI*.55),hair),eyes=[add(ball,plate),add(ball,plate)];
-   const gear=gearOf(kind),bells=['dumbbell','kettlebell'].includes(gear)?[0,1].map(()=>{const g=new THREE.Group();const bar=new THREE.Mesh(disc,metal);bar.scale.set(.008,.12,.008);bar.rotation.z=Math.PI/2;const a=new THREE.Mesh(disc,plate),b=new THREE.Mesh(disc,plate);for(const [w,x] of [[a,-.05],[b,.05]] as const){w.scale.set(.032,.024,.032);w.rotation.z=Math.PI/2;w.position.x=x;}for(const mesh of [bar,a,b]){mesh.castShadow=true;g.add(mesh);}scene.add(g);return g;}):[];
+   const bells=['dumbbell','kettlebell'].includes(gear)?[0,1].map(()=>{const g=new THREE.Group();const bar=new THREE.Mesh(disc,metal);bar.scale.set(.008,.12,.008);bar.rotation.z=Math.PI/2;const a=new THREE.Mesh(disc,plate),b=new THREE.Mesh(disc,plate);for(const [w,x] of [[a,-.05],[b,.05]] as const){w.scale.set(.032,.024,.032);w.rotation.z=Math.PI/2;w.position.x=x;}for(const mesh of [bar,a,b]){mesh.castShadow=true;g.add(mesh);}scene.add(g);return g;}):[];
    const barbell=gear==='barbell'?(()=>{const g=new THREE.Group(),bar=new THREE.Mesh(disc,metal);bar.scale.set(.009,.86,.009);bar.rotation.x=Math.PI/2;g.add(bar);for(const z of [-.36,.36]){const w=new THREE.Mesh(disc,plate);w.scale.set(.085,.03,.085);w.rotation.x=Math.PI/2;w.position.z=z;g.add(w);}g.traverse(o=>{o.castShadow=true;});scene.add(g);return g;})():null;
    const bands=gear==='band'?[segment(band),segment(band)]:[];
-   const fit=new THREE.Box3();for(let t=0;t<MOVES[kind].keys.length;t+=.25)for(const p of Object.values(pose3d(kind,t)))fit.expandByPoint(v(p));
-   const centre=fit.getCenter(new THREE.Vector3()),size=fit.getSize(new THREE.Vector3()),lowest=fit.min.y-.035,view=MOVES[kind].view;
+   const fit=new THREE.Box3();for(let t=0;t<move.keys.length;t+=.25)for(const p of Object.values(pose3dOf(move,t)))fit.expandByPoint(v(p));
+   const centre=fit.getCenter(new THREE.Vector3()),size=fit.getSize(new THREE.Vector3()),lowest=fit.min.y-.035,view=move.view;
    floor.position.set(centre.x,lowest,0);mat2.position.set(centre.x,lowest+.006,0);
    const resize=()=>{const w=el.clientWidth||300,h=el.clientHeight||300;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};resize();
    const watcher=typeof ResizeObserver==='undefined'?null:new ResizeObserver(resize);watcher?.observe(el);
    const render=(progress:number,now:number)=>{
-    const p=pose3d(kind,progress),q=(id:number)=>v(p[id]);
+    const p=pose3dOf(move,progress),q=(id:number)=>v(p[id]);
     for(const s of [0,1] as const){
      const hip=q(23+s),knee=q(25+s),ankle=q(27+s),toe=q(31+s),shoulder=q(11+s),elbow=q(13+s),wrist=q(15+s);
      limbs.thigh[s](hip,knee,.056,.045);limbs.knee[s](knee,.044);limbs.shin[s](knee,ankle,.042,.028);limbs.foot[s](ankle,toe,.032,.03);
@@ -89,7 +90,7 @@ export function Athlete3D({kind,playing,onFail}:{kind:ExerciseKind;playing:boole
    if(disposed)cleanup();
   })();
   return ()=>{disposed=true;cleanup();};
- },[kind,playing,onFail]);
- const press=(x:number)=>{drag.current.down=true;drag.current.x=x;},move=(x:number)=>{if(!drag.current.down)return;drag.current.turn+=(x-drag.current.x)/120;drag.current.x=x;},release=()=>{drag.current.down=false;};
- return <div ref={host} className="athlete-3d" data-ready={ready||undefined} role="img" aria-label={`3D example of ${EXERCISES[kind].title}. Drag to turn the athlete.`} onPointerDown={e=>press(e.clientX)} onPointerMove={e=>move(e.clientX)} onPointerUp={release} onPointerLeave={release}/>;
+ },[move,gear,playing,onFail]);
+ const press=(x:number)=>{drag.current.down=true;drag.current.x=x;},turnTo=(x:number)=>{if(!drag.current.down)return;drag.current.turn+=(x-drag.current.x)/120;drag.current.x=x;},release=()=>{drag.current.down=false;};
+ return <div ref={host} className="athlete-3d" data-ready={ready||undefined} role="img" aria-label={`3D example of ${title}. Drag to turn the athlete.`} onPointerDown={e=>press(e.clientX)} onPointerMove={e=>turnTo(e.clientX)} onPointerUp={release} onPointerLeave={release}/>;
 }
