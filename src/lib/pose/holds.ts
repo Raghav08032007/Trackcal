@@ -24,7 +24,8 @@ const standingOnOne=(p:Landmark[])=>{const [a,b]=legs(p),lifted=a.ank.y<b.ank.y?
 export const HOLDS:Record<HoldKind,Hold>={
  plank:{title:'Plank',style:'core',muscles:'Abs, shoulders, glutes',setup:'Side-on to the camera, whole body in view.',cue:'Straight line from head to heels',
   move:{view:'side',anchor:'hand',keys:[{torso:76,thigh:both(-76),shin:both(-76)}]},
-  check:p=>{const s=side(p);return tilt(s.sh,s.hip)<35&&angle(s.sh,s.hip,s.ank)>150&&angle(s.hip,s.knee,s.ank)>150&&s.wr.y>s.sh.y;}},
+  // A straight body reads 140-175 degrees through camera noise. Forearm planks rest on the elbows, so either the elbow or the wrist is below the shoulder.
+  check:p=>{const s=side(p);return tilt(s.sh,s.hip)<35&&angle(s.sh,s.hip,s.ank)>140&&angle(s.hip,s.knee,s.ank)>140&&(s.wr.y>s.sh.y||s.el.y>s.sh.y);}},
  wallsit:{title:'Wall sit or squat hold',style:'strength',muscles:'Quads, glutes',setup:'Side-on, back against a wall or free-standing.',cue:'Thighs level, knees over ankles',
   move:{view:'side',anchor:'foot',keys:[{torso:5,thigh:both(88),shin:both(0),arm:both(0),fore:both(0)}]},
   check:p=>{const s=side(p),knee=angle(s.hip,s.knee,s.ank),hip=angle(s.sh,s.hip,s.knee),[a,b]=legs(p);return knee>65&&knee<115&&hip>65&&hip<125&&tilt(s.sh,s.hip)>55&&Math.abs(a.ank.x-b.ank.x)<.35*a.len;}},
@@ -50,13 +51,14 @@ export const HOLDS:Record<HoldKind,Hold>={
 };
 export const HOLD_KINDS=Object.keys(HOLDS) as HoldKind[];
 
-const GRACE_MS=500,MAX_STEP_MS=250,ALL=[11,12,13,14,15,16,23,24,25,26,27,28];
+const GRACE_MS=1000,MAX_STEP_MS=250,LEFT=[11,13,15,23,25,27],RIGHT=[12,14,16,24,26,28];
+/** Side-on, the far arm and leg hide behind the body, so one clear side is enough to judge the position. */
 /** Seconds in position. A brief tracking blip doesn't reset the hold, but no time is added while out of position. */
 export class HoldTracker{
  held=0;current=0;best=0;private last=-1;private lastIn=-Infinity;private streak=0;
  constructor(readonly kind:HoldKind){}
  update(frame:PoseFrame){
-  const t=frame.timestamp,p=normalize(frame),visible=!!p&&ALL.filter(id=>(p[id]?.visibility??0)>.5).length>=9,inPose=visible&&HOLDS[this.kind].check(p!);
+  const t=frame.timestamp,p=normalize(frame),visible=!!p&&Math.max(...[LEFT,RIGHT].map(ids=>ids.filter(id=>(p[id]?.visibility??0)>.5).length))>=5,inPose=visible&&HOLDS[this.kind].check(p!);
   const step=this.last<0?0:Math.min(MAX_STEP_MS,Math.max(0,t-this.last));this.last=t;
   if(inPose){this.streak++;this.lastIn=t;if(this.streak>=2){this.held+=step;this.current+=step;this.best=Math.max(this.best,this.current);}}
   else{this.streak=0;if(t-this.lastIn>GRACE_MS)this.current=0;}

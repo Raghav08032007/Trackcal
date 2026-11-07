@@ -9,7 +9,10 @@ export function focusPerson(frame:PoseFrame):PoseFrame{
  if(frame.landmarks.length<2)return frame;
  const area=(p:Landmark[])=>(Math.max(...p.map(l=>l.x))-Math.min(...p.map(l=>l.x)))*(Math.max(...p.map(l=>l.y))-Math.min(...p.map(l=>l.y)));
  const [main,next]=[...frame.landmarks].sort((a,b)=>area(b)-area(a));
- return area(next)<area(main)*.35?{...frame,landmarks:[main]}:frame;
+ // The model sometimes reports the same person twice. Two outlines that mostly overlap are one person, not two.
+ const box=(p:Landmark[])=>[Math.min(...p.map(l=>l.x)),Math.min(...p.map(l=>l.y)),Math.max(...p.map(l=>l.x)),Math.max(...p.map(l=>l.y))];
+ const [a,b]=[box(main),box(next)],overlap=Math.max(0,Math.min(a[2],b[2])-Math.max(a[0],b[0]))*Math.max(0,Math.min(a[3],b[3])-Math.max(a[1],b[1]));
+ return area(next)<area(main)*.35||overlap>.6*area(next)?{...frame,landmarks:[main]}:frame;
 }
 export function angle(a:Landmark,b:Landmark,c:Landmark){const ux=a.x-b.x,uy=a.y-b.y,vx=c.x-b.x,vy=c.y-b.y;const n=Math.hypot(ux,uy)*Math.hypot(vx,vy);return n<.0001?NaN:Math.acos(Math.min(1,Math.max(-1,(ux*vx+uy*vy)/n)))*180/Math.PI;}
 export function confidence(points:Landmark[],ids:number[]){return Math.min(...ids.map(i=>Math.min(points[i]?.visibility??0,points[i]?.presence??1)));}

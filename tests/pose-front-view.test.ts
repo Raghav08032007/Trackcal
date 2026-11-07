@@ -37,7 +37,7 @@ describe('counting while facing the camera',()=>{
 describe('other things the model detects',()=>{
  const person=(size:number):Landmark[]=>standing().map((l,i)=>({...l,x:.5+size*(i/33-.5),y:.5+size*(i%7/7-.5)}));
  it('a small figure in the background is ignored',()=>{const main=person(.8),frame=focusPerson({landmarks:[person(.2),main],timestamp:1,width:640,height:480});expect(frame.landmarks).toEqual([main]);});
- it('a second person of similar size still pauses counting',()=>expect(focusPerson({landmarks:[person(.7),person(.8)],timestamp:1,width:640,height:480}).landmarks).toHaveLength(2));
+ it('a second person of similar size still pauses counting',()=>{const beside=person(.75).map(l=>({...l,x:l.x+.7}));expect(focusPerson({landmarks:[person(.8),beside],timestamp:1,width:640,height:480}).landmarks).toHaveLength(2);});
 });
 describe('wall push-ups',()=>{
  /** Side view: hand fixed on the wall, the body leans in and the elbow bends. */
@@ -64,4 +64,10 @@ describe('more exercises, facing the camera',()=>{
  it('lunges at 10 fps',()=>expect(run('lunge',(d,t)=>body(0,[0,0],d,t),5,10,2).reps).toBe(5));
  it('knee raises count either leg',()=>{let rep=0,last=0;const c=run('knee',(d,t)=>{if(d<last&&d<.05)rep++;last=d;return body(0,rep%2?[d,0]:[0,d],0,t);},6,10,1.2);expect(c.reps).toBe(6);});
  it('standing still counts nothing on any of them',()=>{for(const kind of ['jack','raise','lunge','knee'] as const)expect(run(kind,(_,t)=>body(0,[0,0],0,t),0,10,1).reps).toBe(0);});
+});
+
+describe('the model reporting one person twice',()=>{
+ const person=(shift:number):Landmark[]=>standing().map((l,i)=>({...l,x:.3+shift+.4*(i/33),y:.1+.8*(i%7/7)}));
+ it('two outlines that mostly overlap are one person',()=>expect(focusPerson({landmarks:[person(0),person(.02)],timestamp:1,width:640,height:480}).landmarks).toHaveLength(1));
+ it('two people side by side still pause counting',()=>expect(focusPerson({landmarks:[person(-.25),person(.3)],timestamp:1,width:640,height:480}).landmarks).toHaveLength(2));
 });

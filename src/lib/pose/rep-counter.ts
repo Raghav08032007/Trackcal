@@ -36,7 +36,8 @@ export class RepCounter{
   const y=this.cycle,form=this.config.form;if(!y||!form||!y.frames)return '';
   if(y.banned>=BANNED_FRAMES)return 'banned';
   if(y.wrong/y.frames>WRONG_SHARE)return 'shape';
-  if(y.low>0&&y.lowWrong/y.low>.5)return 'bottom';
+  // On a slow camera only a frame or two may land at the bottom: one odd frame must not decide the rep.
+  if(y.low>=3&&y.lowWrong/y.low>.5)return 'bottom';
   if(form.reaches&&!y.reached)return 'reach';
   for(const [part,most] of Object.entries(form.still??{}))if(y.travel.of(part as BodyPart)>most)return 'moved '+part;
   for(const [part,least] of Object.entries(form.moves??{}))if(y.travel.of(part as BodyPart)<least)return 'still '+part;
