@@ -689,3 +689,28 @@ html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
 .gps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; text-align: center; }
 .gps-stats strong { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
 .gps-stats small { opacity: .8; }
+
+.muscle-layout { display: grid; gap: 16px; }
+@media (min-width: 900px) { .muscle-layout { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: start; } .muscle-picker { position: sticky; top: 90px; } }
+.muscle-bodies { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 420px; margin: 0 auto 12px; text-align: center; }
+.muscle-bodies small { display: block; font-weight: 600; opacity: .75; }
+.muscle-bodies svg { width: 100%; height: auto; cursor: pointer; }
+.muscle-bodies polygon { transition: fill .25s; }
+.muscle-bodies polygon:hover { opacity: .8; }
+.muscle-chips { flex-wrap: wrap; margin-bottom: 8px; }
+.muscle-filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.muscle-filters label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600; }
+.muscle-filters select { min-height: 44px; }
+.muscle-row { display: grid; gap: 8px; padding: 12px 0; border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent); }
+.muscle-row small { display: block; opacity: .8; }
+.muscle-badge { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #6d4ae8; color: #fff; font-size: .7rem; font-weight: 700; vertical-align: middle; }
+.muscle-row .account-actions { flex-wrap: wrap; align-items: center; }
+.muscle-add { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 600; font-size: .85rem; }
+.manual-log { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; align-items: end; padding: 10px; border-radius: 14px; background: var(--surface-2, #f1eefb); }
+.manual-log label { display: grid; gap: 4px; font-size: .8rem; font-weight: 600; }
+.manual-log input, .manual-log button { min-height: 44px; }
+.muscle-tray { position: sticky; bottom: calc(var(--tabbar-offset, 0px) + 10px); z-index: 30; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 12px 14px; border-radius: 18px; background: #1d1640; color: #fff; box-shadow: 0 10px 30px rgba(20, 10, 60, .3); }
+@media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) .muscle-row { animation: coach-rise .35s var(--clay-spring, ease-out) both; } html:not([data-motion="reduced"]) .muscle-tray { animation: coach-rise .3s var(--clay-spring, ease-out) both; } }
+.muscle-row .account-actions { display: flex; flex-direction: row; gap: 8px; }
+.muscle-row .account-actions > a, .muscle-row .account-actions > button { flex: 1 1 130px; width: auto; min-height: 44px; margin: 0; justify-content: center; text-align: center; }
+.muscle-row .muscle-add { flex: 1 0 100%; }
