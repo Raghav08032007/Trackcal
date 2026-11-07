@@ -71,3 +71,17 @@ function FlatDemo({move,weights,title,cues,playing,setPlaying}:{move:Move;weight
  },[move,weights,playing]);
  return <figure className="exercise-demo"><svg ref={svg} viewBox="-.04 -.06 1.08 1.14" role="img" aria-label={`Animated example of ${title}: ${cues.join(', ')}`}><ellipse className="demo-shadow" rx=".24" ry=".022"/>{PARTS.map(part=>part==='head'?<circle key={part} className="demo-head" r={HEAD}/>:<path key={part} className={`demo-${part}`}/>)}</svg><figcaption><span>Example: {cues.join(' · ')}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?'Pause':'Play'}</button></figcaption></figure>;
 }
+/** A small moving picture of a move for lists. It animates only while on screen, and stands still for people who ask for less motion. */
+export function MoveThumb({move,weights,title}:{move:Move;weights:boolean;title:string}){
+ const svg=useRef<SVGSVGElement>(null);
+ useEffect(()=>{
+  const figure=svg.current;if(!figure)return;
+  const floor=floorOf(move);let clock=1,frame=0,last=0,visible=false;draw(figure,move,weights,clock,floor);
+  const still=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.motion==='reduced';
+  if(still||typeof requestAnimationFrame==='undefined'||typeof IntersectionObserver==='undefined')return;
+  const tick=(now:number)=>{if(last)clock+=(now-last)/LEG_MS;last=now;draw(figure,move,weights,clock,floor);frame=requestAnimationFrame(tick);};
+  const watcher=new IntersectionObserver(([entry])=>{if(entry.isIntersecting&&!visible){visible=true;last=0;frame=requestAnimationFrame(tick);}else if(!entry.isIntersecting&&visible){visible=false;cancelAnimationFrame(frame);}});
+  watcher.observe(figure);return ()=>{watcher.disconnect();cancelAnimationFrame(frame);};
+ },[move,weights]);
+ return <svg ref={svg} className="move-thumb" viewBox="-.04 -.06 1.08 1.14" role="img" aria-label={`How to do ${title}`}><ellipse className="demo-shadow" rx=".24" ry=".022"/>{PARTS.map(part=>part==='head'?<circle key={part} className="demo-head" r={HEAD}/>:<path key={part} className={`demo-${part}`}/>)}</svg>;
+}

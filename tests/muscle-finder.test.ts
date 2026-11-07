@@ -1,6 +1,6 @@
 import {describe,expect,it} from 'vitest';
-import {cameraLink,exercisesFor,fromDiagram,parseSteps} from '@/lib/muscle-finder';
-import {EXERCISES} from '@/lib/pose/types';
+import {MUSCLE_CATEGORIES,cameraLink,dailyPackage,exercisesFor,fromDiagram,parseSteps,todaysCategory} from '@/lib/muscle-finder';
+import {EXERCISES,EXERCISE_VARIANTS} from '@/lib/pose/types';
 
 describe('train by muscle',()=>{
  it('finds exercises for a muscle, main target first',()=>{
@@ -28,4 +28,16 @@ describe('train by muscle',()=>{
   const reachable=new Set(exercisesFor([...all],{equipment:'any',level:'any'}).map(r=>r.kind));
   expect(Object.keys(EXERCISES).filter(k=>!reachable.has(k as never))).toEqual([]);
  });
+});
+
+describe('muscle groups and daily packages',()=>{
+ const legs=MUSCLE_CATEGORIES.find(c=>c.id==='legs')!,any={equipment:'any',level:'any'} as const;
+ it('the same day and group always give the same standard plan',()=>expect(dailyPackage(legs,any,'2026-11-07:legs')).toEqual(dailyPackage(legs,any,'2026-11-07:legs')));
+ it('a shuffle gives a different plan',()=>{const plans=new Set(['a','b','c','d'].map(s=>JSON.stringify(dailyPackage(legs,any,s))));expect(plans.size).toBeGreaterThan(1);});
+ it('five exercises, no repeated movement, all for the group',()=>{
+  for(const category of MUSCLE_CATEGORIES){const plan=dailyPackage(category,any,'x:'+category.id);expect(plan.length,category.id).toBe(5);
+   expect(new Set(plan.map(s=>EXERCISE_VARIANTS[s.kind]??s.kind)).size).toBe(5);}
+ });
+ it('keeps to the beginner level and no equipment when asked',()=>{for(const s of dailyPackage(legs,{equipment:'none',level:'easy'},'y'))expect([EXERCISES[s.kind].equipment,EXERCISES[s.kind].difficulty]).toEqual(['none','easy']);});
+ it('follows a weekly split with a rest day',()=>{expect(todaysCategory(new Date('2026-11-08T10:00:00'))).toBe('rest');expect(todaysCategory(new Date('2026-11-09T10:00:00'))).toBe('push');});
 });

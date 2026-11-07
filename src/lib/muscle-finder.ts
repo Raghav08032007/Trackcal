@@ -33,3 +33,38 @@ export function parseSteps(raw:string|null){
  if(!raw)return [];
  return raw.split(',').slice(0,12).flatMap(part=>{const [kind,target]=part.split(':');const n=Math.floor(Number(target));return kind in EXERCISES&&n>=1&&n<=100?[{kind:kind as ExerciseKind,target:n}]:[];});
 }
+
+/* ── Muscle groups and daily packages ─────────────────────────────────────────────────────────────────── */
+export type MuscleCategory={id:string;label:string;hint:string;muscles:MapMuscle[]};
+export const MUSCLE_CATEGORIES:MuscleCategory[]=[
+ {id:'push',label:'Push',hint:'Chest, shoulders, triceps',muscles:['chest','front-deltoids','triceps']},
+ {id:'pull',label:'Pull',hint:'Back, biceps, rear shoulders',muscles:['upper-back','trapezius','biceps','back-deltoids','forearm']},
+ {id:'legs',label:'Legs',hint:'Quads, glutes, hamstrings, calves',muscles:['quadriceps','gluteal','hamstring','calves','adductor','abductors']},
+ {id:'core',label:'Core',hint:'Abs, obliques, lower back',muscles:['abs','obliques','lower-back']},
+ {id:'arms',label:'Arms',hint:'Biceps, triceps, forearms',muscles:['biceps','triceps','forearm']},
+ {id:'upper',label:'Upper body',hint:'Chest, back, shoulders, arms',muscles:['chest','upper-back','front-deltoids','back-deltoids','biceps','triceps']},
+ {id:'lower',label:'Lower body',hint:'Legs and glutes',muscles:['quadriceps','gluteal','hamstring','calves']},
+ {id:'full',label:'Full body',hint:'A bit of everything',muscles:['quadriceps','gluteal','chest','upper-back','front-deltoids','abs']},
+];
+/** A simple weekly split: what today suggests. Sunday is for rest or gentle holds. */
+export const WEEK_SPLIT=['rest','push','pull','legs','core','upper','lower'] as const;
+export const todaysCategory=(date:Date)=>WEEK_SPLIT[date.getDay()];
+
+const hash=(text:string)=>{let h=2166136261;for(const c of text){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;};
+/** A repeatable random sequence: the same seed always gives the same plan. */
+export function seeded(seed:string){let a=hash(seed)||1;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+export type PackageStep={kind:ExerciseKind;target:number};
+/** Five camera-tracked exercises for a group: one per movement, main targets first, spread across the group's muscles.
+ *  The same day and group give the same "standard" plan for everyone; a different seed gives a shuffle. */
+export function dailyPackage(category:MuscleCategory,filters:FinderFilters,seed:string,size=5,targetFor:(kind:ExerciseKind,level:ExerciseDifficulty)=>number=()=>10):PackageStep[]{
+ const random=seeded(seed),pool=exercisesFor(category.muscles,filters).filter(row=>row.kind&&row.primary);
+ const motion=(kind:ExerciseKind)=>EXERCISE_VARIANTS[kind]??kind,used=new Set<ExerciseKind>(),covered=new Set<MapMuscle>(),out:PackageStep[]=[];
+ const shuffled=[...pool].map(row=>({row,key:random()})).sort((a,b)=>a.key-b.key).map(x=>x.row);
+ // First pass: a new muscle each time. Second pass: fill up with anything left.
+ for(const pass of [0,1])for(const row of shuffled){
+  if(out.length>=size)break;const kind=row.kind!;if(used.has(motion(kind)))continue;
+  if(pass===0&&row.matched.every(m=>covered.has(m)))continue;
+  used.add(motion(kind));row.matched.forEach(m=>covered.add(m));out.push({kind,target:targetFor(kind,row.difficulty)});
+ }
+ return out;
+}

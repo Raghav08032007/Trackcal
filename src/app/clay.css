@@ -714,3 +714,28 @@ html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
 .muscle-row .account-actions { display: flex; flex-direction: row; gap: 8px; }
 .muscle-row .account-actions > a, .muscle-row .account-actions > button { flex: 1 1 130px; width: auto; min-height: 44px; margin: 0; justify-content: center; text-align: center; }
 .muscle-row .muscle-add { flex: 1 0 100%; }
+.muscle-groups h2 { margin-top: 0; }
+.muscle-today { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
+.group-grid > button, .group-grid > .group-link { display: grid; gap: 2px; min-height: 64px; padding: 12px; border-radius: 16px; border: 1px solid color-mix(in srgb, #6d4ae8 25%, transparent); background: var(--surface-2, #f1eefb); color: inherit; text-align: left; text-decoration: none; cursor: pointer; transition: transform .15s, background-color .2s, border-color .2s; }
+.group-grid small { font-size: .78rem; opacity: .75; font-weight: 500; }
+.group-grid > button[aria-pressed="true"] { background: #6d4ae8; border-color: #6d4ae8; color: #fff; }
+.group-grid > button:active, .group-grid > .group-link:active { transform: scale(.97); }
+.day-plan { margin-top: 8px; padding: 14px; border-radius: 18px; background: var(--surface-2, #f1eefb); }
+.day-plan h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.day-plan ol { display: grid; gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; counter-reset: plan; }
+.day-plan li { display: flex; align-items: center; gap: 10px; }
+.day-plan li small { display: block; opacity: .8; }
+.move-thumb-box { flex: none; display: inline-block; margin: 0; padding: 0; background: transparent; }
+.move-thumb-box svg.move-thumb { width: 64px; max-width: none; height: 64px; }
+.muscle-row-head { display: flex; align-items: center; gap: 12px; }
+.muscle-badge-easy { background: #3fbf8f; }
+.muscle-row .exercise-demo-3d, .muscle-row .exercise-demo { max-width: 360px; }
+@media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) .day-plan li { animation: coach-rise .35s var(--clay-spring, ease-out) both; } html:not([data-motion="reduced"]) .day-plan li:nth-child(2) { animation-delay: 50ms; } html:not([data-motion="reduced"]) .day-plan li:nth-child(3) { animation-delay: 100ms; } html:not([data-motion="reduced"]) .day-plan li:nth-child(4) { animation-delay: 150ms; } html:not([data-motion="reduced"]) .day-plan li:nth-child(5) { animation-delay: 200ms; } }
+/* Selected choices look selected on every page, not only the camera page. */
+.tc-studio .camera-equipment button[aria-pressed="true"], body .camera-equipment button[aria-pressed="true"] { background: var(--clay-violet-deep, #5b3fd6); border-color: var(--clay-violet-deep, #5b3fd6); color: #fff; }
+.tc-studio .group-grid > button[aria-pressed="true"], body .group-grid > button[aria-pressed="true"] { background: #6d4ae8; border-color: #6d4ae8; color: #fff; box-shadow: 0 8px 20px rgba(109, 74, 232, .3); }
+body .group-grid > button[aria-pressed="true"] small { opacity: .9; }
+.day-plan .camera-equipment { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0 0 10px; padding: 0; background: transparent; }
+.day-plan .camera-equipment button { min-height: 44px; padding: 0 6px; }
+.muscle-badge { display: inline-block; white-space: nowrap; margin-bottom: 2px; }
