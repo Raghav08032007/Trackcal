@@ -22,7 +22,7 @@ const either=(...checks:((b:Body)=>boolean)[])=>(b:Body)=>checks.some(check=>che
 const notUpright=(b:Body)=>b.tilt>40;
 const notLying=(b:Body)=>b.tilt<50;
 /** Shoulders look wide only when facing the camera; side-on they nearly overlap. */
-const sideOnly=(check:(b:Body)=>boolean)=>(b:Body)=>!(b.facing>.5)&&check(b);
+const sideOnly=(check:(b:Body)=>boolean)=>(b:Body)=>b.facing<=.5&&check(b);  // unknown facing (filmed head-on) skips it too
 const notHinged=(b:Body)=>b.tilt<30&&!(b.torso<.75);
 const legsBent=(b:Body)=>b.knee<125;
 const legsStraight=(b:Body)=>b.kneeWide>150;
@@ -40,8 +40,10 @@ const shallow=(b:Body)=>b.knee>125&&b.facing<.45||b.torso<.6;
 const kneesDown=(b:Body)=>b.kneeUp<.15;
 /** Real squats lean at most about 40 degrees, even with a weight held in front; bending over to pick something up leans 60 or more. */
 const SQUAT={never:(b:Body)=>b.wristUp>.3,banned:(b:Body)=>b.tilt>55,atBottom:(b:Body)=>shallow(b)||b.stance>1.2,moves:{shoulders:.2}};
-const SIDE_ARM={never:either(armBent,notUpright,(b)=>b.wristUp>.5),banned:(b:Body)=>b.elbow<90,atBottom:(b:Body)=>b.wristUp<-.3,reaches:(b:Body)=>!(b.wristUp>-.65),moves:{wrists:.6}};
-const CURL={never:either(notUpright,legsBent,handsAbove),atBottom:handsLow,still:{hips:.35,elbows:.45},moves:{wrists:.4}};
+/** Lying down seen head-on looks upright but very short: a torso this foreshortened is not standing. */
+const lyingHeadOn=(b:Body)=>b.torso<.6;
+const SIDE_ARM={never:either(armBent,notUpright,lyingHeadOn,(b)=>b.wristUp>.5),banned:(b:Body)=>b.elbow<90,atBottom:(b:Body)=>b.wristUp<-.3,reaches:(b:Body)=>!(b.wristUp>-.65),moves:{wrists:.6}};
+const CURL={never:either(notUpright,legsBent,handsAbove),atBottom:handsLow,still:{hips:.35,elbows:.35},moves:{wrists:.4}};
 const PUSH={still:{wrists:.3},moves:{shoulders:.12}};
 const LUNGE={never:notUpright,atBottom:(b:Body)=>b.hipGap<14&&b.facing<.45||b.facing>.5&&b.stance>.8,moves:{shoulders:.15}};
 const HINGE={moves:{shoulders:.3},still:{ankles:.4}};
@@ -53,16 +55,16 @@ const FOURS={never:either(notFloorHands,(b)=>b.tilt<55)};
 export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  // Legs
  squat:SQUAT,
- sumo:{...SQUAT,never:either(SQUAT.never,notFacing),atBottom:(b)=>shallow(b)||b.stance<.8||b.kneeGap>25},
+ sumo:{...SQUAT,never:either(SQUAT.never,notFacing,(b)=>b.torso<.7,(b)=>b.facing>1.05),atBottom:(b)=>shallow(b)||b.stance<.8||b.kneeGap>25},
  wsquat:{...SQUAT,never:(b)=>b.wristChest>.8},
  ohsquat:{...SQUAT,never:(b)=>b.wristLow<.3},
  squatjump:{...SQUAT,moves:{ankles:.35,shoulders:.2}},
  lunge:LUNGE,
  wlunge:{...LUNGE,never:either(notUpright,(b)=>b.wristUp>-.25)},
- sidelunge:{never:notUpright,atBottom:(b)=>b.stance<.8||b.kneeGap<20||b.facing<.3},
+ sidelunge:{never:either(notUpright,lyingHeadOn),atBottom:(b)=>b.stance<.8||b.kneeGap<20||b.facing<.3},
  knee:RAISE_KNEE,
  highknee:RAISE_KNEE,
- buttkick:{never:either(notUpright,(b)=>b.hip<135),atBottom:(b)=>b.kneeWide<120,still:{shoulders:.3},moves:{ankles:.25}},
+ buttkick:{never:either(notUpright,(b)=>b.hip<135),atBottom:(b)=>b.kneeWide<120,still:{shoulders:.3,hips:.15},moves:{ankles:.25}},
  sideleg:{never:either(notUpright,legsBent,armsOverhead),still:{shoulders:.25},moves:{ankles:.2}},
  calf:STAND_LEG,
  wcalf:STAND_LEG,
@@ -88,7 +90,7 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  goodmorning:{...HINGE,never:either((b)=>b.wristChest>.8,legsBent),atBottom:notHinged},
  row:{never:either(notHinged,handsAbove,(b)=>b.handHeight<.5),still:{hips:.35,shoulders:.3},moves:{wrists:.2,elbows:.15}},
  revfly:{never:either(notHinged,armBent,(b)=>b.handHeight<.4),still:{hips:.35},moves:{wrists:.4}},
- seatrow:{never:either((b)=>b.tilt>30,(b)=>b.wristUp>.15,(b)=>b.wristUp<-.75,sideOn),atBottom:(b)=>b.wristUp>-.3,still:{hips:.25},moves:{wrists:.3}},
+ seatrow:{never:either(legsStraight,(b)=>b.tilt>30,(b)=>b.wristUp>.15,(b)=>b.wristUp<-.75,sideOn),atBottom:(b)=>b.wristUp>-.3,still:{hips:.25},moves:{wrists:.3}},
  superman:{never:either(notLying,legsBent),still:{hips:.25,knees:.3}},
  pullup:{never:(b)=>b.wristUp<.1,still:{wrists:.3},moves:{shoulders:.25}},
  birddog:{...FOURS,moves:{wrists:.4}},
@@ -128,7 +130,7 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  snatch:{atBottom:(b)=>b.wristUp<.4,reaches:(b)=>b.tilt>30,moves:{wrists:.8,shoulders:.15}},
  inclinebench:{never:either((b)=>b.tilt<25,(b)=>b.tilt>62,(b)=>b.wristUp<-.2),moves:{elbows:.2}},
  // Full body
- jack:{banned:(b)=>b.elbow<70||b.tilt>45,never:notUpright,atBottom:(b)=>b.wristUp<.15,reaches:(b)=>!(b.wristUp>-.5),moves:{wrists:.8}},
+ jack:{banned:(b)=>b.elbow<70||b.tilt>45,never:notUpright,atBottom:(b)=>b.wristUp<.15,reaches:(b)=>!(b.wristUp>-.5),moves:{wrists:.8,ankles:.15}},
  burpee:{banned:(b)=>b.kneeUp>.3,atBottom:(b)=>b.tilt<45,moves:{shoulders:.6,ankles:.4}},
  climber:{never:either(notLying,handsAbove,notFloorHands),still:{wrists:.3}},
  punch:{never:either(notUpright,legsBent,armsOverhead,(b)=>b.wristUp<-.7),still:{shoulders:.25},moves:{wrists:.35}},

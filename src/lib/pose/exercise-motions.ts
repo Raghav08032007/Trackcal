@@ -2,14 +2,24 @@ import {EXERCISE_VARIANTS,type ExerciseKind} from './types';
 /** How each exercise moves, as joint angles between key poses. The page plays these as the example, and the tests run
  *  the rep counter on the very same motions, so the example shown is the movement that counts. */
 export type Pose={back?:number;torso?:number;arm?:[number,number];fore?:[number,number];thigh?:[number,number];shin?:[number,number];heel?:number;lift?:number};
-export type Move={view:'side'|'front';anchor:'hip'|'foot'|'hand'|'shoulder';keys:Pose[]};
+/** view is the plane the body moves in; camera is where the phone stands (the same unless set). A move that goes forward and
+ *  back, seen from the front, loses its depth; a move out to the sides, seen side-on, loses its width. */
+export type Move={view:'side'|'front';anchor:'hip'|'foot'|'hand'|'shoulder';keys:Pose[];camera?:'side'|'front'};
+/** The same move filmed from the other angle. */
+export const seenFrom=(m:Move,camera:'side'|'front'):Move=>({...m,camera});
 const T=.25,ARM=.13,LEG=.21;
 const dir=(deg:number):[number,number]=>[Math.sin(deg*Math.PI/180),Math.cos(deg*Math.PI/180)];
 const mix=(a:number,b:number,k:number)=>a+(b-a)*k;
 export const full=(p:Pose):Required<Pose>=>({torso:0,arm:[0,0],fore:[0,0],thigh:[0,0],shin:[0,0],heel:0,lift:0,back:0,...p});
 export const blend=(a:Required<Pose>,b:Required<Pose>,k:number):Required<Pose>=>({torso:mix(a.torso,b.torso,k),heel:mix(a.heel,b.heel,k),lift:mix(a.lift,b.lift,k),back:mix(a.back,b.back,k),arm:[mix(a.arm[0],b.arm[0],k),mix(a.arm[1],b.arm[1],k)],fore:[mix(a.fore[0],b.fore[0],k),mix(a.fore[1],b.fore[1],k)],thigh:[mix(a.thigh[0],b.thigh[0],k),mix(a.thigh[1],b.thigh[1],k)],shin:[mix(a.shin[0],b.shin[0],k),mix(a.shin[1],b.shin[1],k)]});
 /** Lays the 33 landmarks out from the hip. Side-on, left and right nearly overlap; from the front they sit a shoulder apart. */
-function skeleton(p:Required<Pose>,view:Move['view']){
+function skeleton(p:Required<Pose>,view:Move['view'],camera:Move['view']=view){
+ if(camera!==view){
+  // Lay the move out flat in its own plane, then keep only what this camera sees: height, plus where each side sits across the body.
+  const flat=skeleton(p,view,view),width=camera==='front'?[.09,.06]:[.012,.012],out:Record<number,[number,number]>={};
+  for(const [id,at] of Object.entries(flat)){const n=Number(id),right=n%2===0,arm=n>=11&&n<=22,head=n<11;out[n]=[head?0:(right?1:-1)*(arm?width[0]:width[1]),at[1]];}
+  return out;
+ }
  const [tx,ty]=dir(p.torso),gap=view==='front'?[.09,.06]:[.012,.012],out:Record<number,[number,number]>={};
  const shoulder:[number,number]=[tx*T,-ty*T];
  for(const i of [0,1]){
@@ -24,14 +34,14 @@ function skeleton(p:Required<Pose>,view:Move['view']){
 const anchorOf=(s:Record<number,[number,number]>,a:Move['anchor']):[number,number]=>a==='hip'?[0,0]:a==='foot'?[(s[27][0]+s[28][0])/2,Math.max(s[27][1],s[28][1])]:a==='hand'?s[15]:s[11];
 /** Every joint's place in the picture for one moment of a move. */
 export function layout(m:Move,p:Required<Pose>,start:[number,number]){
- const s=skeleton(p,m.view),base=anchorOf(skeleton({...p,heel:0},m.view),m.anchor),out:Record<number,[number,number]>={};
+ const s=skeleton(p,m.view,m.camera),base=anchorOf(skeleton({...p,heel:0},m.view,m.camera),m.anchor),out:Record<number,[number,number]>={};
  for(const [id,at] of Object.entries(s))out[Number(id)]=[at[0]+start[0]-base[0]-p.back,at[1]+start[1]-base[1]-p.lift];
  return out;
 }
 /** Where the model must stand so every landmark of every key pose stays in the picture. */
 export function placement(m:Move):[number,number]{
  let x0=9,x1=-9,y0=9,y1=-9;
- for(const k of m.keys){const p=full(k),s=skeleton(p,m.view),b=anchorOf(skeleton({...p,heel:0},m.view),m.anchor);for(const v of Object.values(s)){x0=Math.min(x0,v[0]-b[0]-p.back);x1=Math.max(x1,v[0]-b[0]-p.back);y0=Math.min(y0,v[1]-b[1]-p.lift);y1=Math.max(y1,v[1]-b[1]);}}
+ for(const k of m.keys){const p=full(k),s=skeleton(p,m.view,m.camera),b=anchorOf(skeleton({...p,heel:0},m.view,m.camera),m.anchor);for(const v of Object.values(s)){x0=Math.min(x0,v[0]-b[0]-p.back);x1=Math.max(x1,v[0]-b[0]-p.back);y0=Math.min(y0,v[1]-b[1]-p.lift);y1=Math.max(y1,v[1]-b[1]);}}
  return [.5-(x0+x1)/2,.5-(y0+y1)/2];
 }
 const both=(v:number):[number,number]=>[v,v];

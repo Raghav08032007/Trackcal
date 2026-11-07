@@ -1,5 +1,6 @@
 import type {Observation,TrackingResult} from './types';
 import {REJECTION_TIPS,type ExerciseConfig,type RejectionReason} from './exercise-config';
+import type {ExerciseForm} from './exercise-forms';
 import {Travel,type Body,type BodyPart} from './body-shape';
 /** Heuristic participation estimates, never a form/medical-safety assessment.
  *  SETUP -> UP -> GOING_DOWN -> DOWN -> GOING_UP -> UP. A rep counts only on a full cycle: enough range of motion, a
@@ -9,10 +10,17 @@ export type Phase='SETUP'|'UP'|'GOING_DOWN'|'DOWN'|'GOING_UP';
 const GAP_MS=750,GRACE_MS=600,TIP_MS=2500,MAX_REPS=100,CROSSING_MARGIN=6,BOBBING=4;
 /** More of a rep than this in the wrong shape, and it is a different exercise. Brief glitches stay below it. */
 const WRONG_SHARE=.35,BANNED_FRAMES=4;
+/** What the other camera angle can't measure, marked unknown so no check fails on it.
+ *  Head-on, a forward-and-back move hides lean and joint angles (a shorter torso still shows the lean).
+ *  Side-on, a move out to the sides keeps lean and bends but hides how wide the feet and knees are. */
+function unseen(b:Body,plane:'side'|'front'):Body{
+ return plane==='side'?{...b,tilt:NaN,knee:NaN,kneeWide:NaN,kneeGap:NaN,hip:NaN,hipWide:NaN,hipGap:NaN,elbow:NaN,elbowWide:NaN,facing:NaN}
+  :{...b,facing:NaN,stance:NaN,kneeGap:NaN,hipGap:NaN};
+}
 export class RepCounter{
  reps=0;phase:Phase='SETUP';mismatches:string[]=[];repLog:{ms:number;range:number}[]=[];rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0,wrong_exercise:0};
  private last=-Infinity;private held:{key:string;since:number;frames:number}|null=null;
- private cycle:{start:number;top:number;bottom:number;crossings:number;below:boolean;frames:number;wrong:number;low:number;lowWrong:number;banned:number;reached:boolean;travel:Travel}|null=null;private top=0;private rejected:{reason:RejectionReason;at:number}|null=null;private lost:number|null=null;
+ private cycle:{start:number;top:number;bottom:number;crossings:number;below:boolean;frames:number;wrong:number;low:number;lowWrong:number;banned:number;reached:boolean;travel:Travel;across:number}|null=null;private top=0;private rejected:{reason:RejectionReason;at:number}|null=null;private lost:number|null=null;
  constructor(private config:ExerciseConfig){}
  /** Forget the movement in progress (pause, camera switch, rotation); the count stays. */
  resetMovement(){this.phase='SETUP';this.held=null;this.cycle=null;}
@@ -27,10 +35,12 @@ export class RepCounter{
  /** Follow the shape of the whole body through a rep. */
  private watch(body:Body|undefined,a:number){
   const y=this.cycle,form=this.config.form;if(!y||!body||!form)return;
-  y.frames++;y.travel.add(body);if(form.never?.(body))y.wrong++;
+  y.frames++;y.travel.add(body);if(this.across(body)){y.across++;body=unseen(body,this.config.plane!);}if(form.never?.(body))y.wrong++;
   if(form.reaches?.(body))y.reached=true;if(form.banned?.(body))y.banned++;
   if(a<=this.config.down+this.config.hysteresis){y.low++;if(form.atBottom?.(body))y.lowWrong++;}
  }
+ /** Filmed from the other angle than the exercise moves in: side-on for a move out to the sides, head-on for one forward and back. */
+ private across(body:Body){const plane=this.config.plane;return plane==='side'?body.facing>.5:plane==='front'?body.facing<.3:false;}
  /** Which check the movement that just finished failed, if any. */
  private mismatch(){
   const y=this.cycle,form=this.config.form;if(!y||!form||!y.frames)return '';
@@ -38,9 +48,15 @@ export class RepCounter{
   if(y.wrong/y.frames>WRONG_SHARE)return 'shape';
   // On a slow camera only a frame or two may land at the bottom: one odd frame must not decide the rep.
   if(y.low>=3&&y.lowWrong/y.low>.5)return 'bottom';
-  if(form.reaches&&!y.reached)return 'reach';
+  // From the other angle the rep starts and ends at slightly different moments, so the start position may fall outside it.
+  if(form.reaches&&!y.reached&&y.across/y.frames<=.5)return 'reach';
+  // From the other angle part of the travel runs towards the camera, so half the usual distance on screen is enough.
+  return this.travelled(form,y.across/y.frames>.5?.5:1);
+ }
+ private travelled(form:ExerciseForm,share=1){
+  const y=this.cycle!;
   for(const [part,most] of Object.entries(form.still??{}))if(y.travel.of(part as BodyPart)>most)return 'moved '+part;
-  for(const [part,least] of Object.entries(form.moves??{}))if(y.travel.of(part as BodyPart)<least)return 'still '+part;
+  for(const [part,least] of Object.entries(form.moves??{}))if(y.travel.of(part as BodyPart)<least*share)return 'still '+part;
   return '';
  }
  update(o:Observation,t:number,body?:Body):TrackingResult{
@@ -60,7 +76,7 @@ export class RepCounter{
    case 'SETUP':if(this.hold('up',a>=c.up,t)){this.phase='UP';this.top=a;}break;
    case 'UP':
     this.top=Math.max(this.top,a);
-    if(a<c.up-c.hysteresis){this.phase='GOING_DOWN';this.cycle={start:t,top:this.top,bottom:a,crossings:0,below:false,frames:0,wrong:0,low:0,lowWrong:0,banned:0,reached:false,travel:new Travel()};this.held=null;}break;
+    if(a<c.up-c.hysteresis){this.phase='GOING_DOWN';this.cycle={start:t,top:this.top,bottom:a,crossings:0,below:false,frames:0,wrong:0,low:0,lowWrong:0,banned:0,reached:false,travel:new Travel(),across:0};this.held=null;}break;
    case 'GOING_DOWN':
     if(this.hold('down',a<=c.down,t))this.phase='DOWN';
     else if(this.hold('up',a>=c.up,t)){

@@ -2,7 +2,7 @@
 import {describe,it,expect} from 'vitest';
 import {SessionTracker} from '@/lib/pose/session-tracker';
 import {EXERCISES,EXERCISE_VARIANTS,GEAR_CHOICES,gearOf,EXERCISE_DIFFICULTY,type ExerciseKind,type Landmark,type PoseFrame} from '@/lib/pose/types';
-import {MOVES,blend,full,layout,placement,type Move,type Pose} from '@/lib/pose/exercise-motions';
+import {MOVES,blend,full,layout,placement,seenFrom,type Move,type Pose} from '@/lib/pose/exercise-motions';
 import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
 
 let seed=1;const noise=()=>{seed=(seed*16807)%2147483647;return (seed/2147483647-.5)*.004;};
@@ -34,7 +34,8 @@ describe('each exercise counts only itself',()=>{
  for(const k of KINDS)it(`${k} counts its own reps`,()=>{const why:string[]=[];expect(watch(k,MOVES[k],REPS,why),why.join()).toBe(REPS);});
  it('no exercise counts any other exercise',()=>{
   const wrong:string[]=[];
-  for(const tracker of OWN)for(const done of OWN){if(tracker===done||same(tracker,done))continue;const n=watch(tracker,MOVES[done],REPS);if(n>0)wrong.push(`${tracker} counted ${n} of ${done}`);}
+  // Filmed from the angle the picked exercise is best seen from. From the other angle some moves look alike (a side lunge and a squat, side-on).
+  for(const tracker of OWN)for(const done of OWN){if(tracker===done||same(tracker,done))continue;const n=watch(tracker,seenFrom(MOVES[done],EXERCISE_CONFIG[tracker].plane??MOVES[done].view),REPS);if(n>0)wrong.push(`${tracker} counted ${n} of ${done}`);}
   expect(wrong).toEqual([]);
  },240000);
 });

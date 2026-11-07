@@ -58,7 +58,10 @@ describe('more exercises, facing the camera',()=>{
   put(p,23,.45,hip);put(p,24,.55,hip);put(p,25,.45,hip+.17*(1-knee[0]*.7));put(p,26,.55,hip+.17*(1-knee[1]*.7));put(p,27,.45,.9);put(p,28,.55,.9);
   return {landmarks:[p],timestamp:t,width:640,height:480};
  }
- it('jumping jacks at 10 fps',()=>expect(run('jack',(d,t)=>body(d*1.8,[0,0],0,t),6,10,1).reps).toBe(6));
+ // Feet jump out as the arms go up: that is what tells a jack from an overhead lift seen head-on.
+ const jack=(d:number,t:number)=>{const f=body(d*1.8,[0,0],0,t),p=f.landmarks[0];put(p,27,.45-.08*d,.9);put(p,28,.55+.08*d,.9);put(p,25,.45-.04*d,p[25].y);put(p,26,.55+.04*d,p[26].y);return f;};
+ it('jumping jacks at 10 fps',()=>expect(run('jack',jack,6,10,1).reps).toBe(6));
+ it('arms alone going overhead is not a jumping jack',()=>expect(run('jack',(d,t)=>body(d*1.8,[0,0],0,t),6,10,1).reps).toBe(0));
  it('side arm raises at 10 fps',()=>expect(run('raise',(d,t)=>body(d,[0,0],0,t),5,10,2).reps).toBe(5));
  it('a small arm lift is not a side raise',()=>expect(run('raise',(d,t)=>body(d*.3,[0,0],0,t),3,10,2).reps).toBe(0));
  it('lunges at 10 fps',()=>expect(run('lunge',(d,t)=>body(0,[0,0],d,t),5,10,2).reps).toBe(5));
