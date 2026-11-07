@@ -5,6 +5,7 @@ import {Celebration} from './celebration';
 import {CoachLine} from './coach-card';
 import {MoveDemo} from './exercise-demo';
 import {markWorkoutActive} from './app-updates';
+import {CameraModeSwitch} from './camera-mode-switch';
 import {HOLD_KINDS,HOLD_STYLES,HOLDS,HoldTracker,type HoldKind,type HoldStyle} from '@/lib/pose/holds';
 import {focusPerson,normalize} from '@/lib/pose/landmarks';
 import {FORM_TIPS,FormChecker} from '@/lib/pose/form-check';
@@ -56,7 +57,7 @@ function Studio(){
  }
  const pick=(next:HoldKind)=>{if(status!=='setup')return;setKind(next);tracker.current=new HoldTracker(next);};
  const progress=Math.min(1,live.current/(target*1000)),done=live.current>=target*1000;
- return <main className="wellness-page hold-page"><section className="camera-intro"><span className="eyebrow">CORE · BALANCE · FLEXIBILITY</span><h1>Holds</h1><p>Get into position and the camera times you. Only time actually in position counts. It is not a form or safety check, so stop if anything hurts.</p></section>
+ return <main className="wellness-page hold-page"><CameraModeSwitch mode="hold"/><section className="camera-intro"><span className="eyebrow">CORE · BALANCE · FLEXIBILITY</span><h1>Holds</h1><p>Get into position and the camera times you. Only time actually in position counts. It is not a form or safety check, so stop if anything hurts.</p></section>
   {error&&<p role="alert" className="camera-alert">{error}</p>}
   <div className="hold-layout">
    <section className="account-card hold-choose">

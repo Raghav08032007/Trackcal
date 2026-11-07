@@ -59,7 +59,9 @@ export type PackageStep={kind:ExerciseKind;target:number};
 export function dailyPackage(category:MuscleCategory,filters:FinderFilters,seed:string,size=5,targetFor:(kind:ExerciseKind,level:ExerciseDifficulty)=>number=()=>10):PackageStep[]{
  const random=seeded(seed),pool=exercisesFor(category.muscles,filters).filter(row=>row.kind&&row.primary);
  const motion=(kind:ExerciseKind)=>EXERCISE_VARIANTS[kind]??kind,used=new Set<ExerciseKind>(),covered=new Set<MapMuscle>(),out:PackageStep[]=[];
- const shuffled=[...pool].map(row=>({row,key:random()})).sort((a,b)=>a.key-b.key).map(x=>x.row);
+ // Shuffle, then put moves at the chosen level first, so an advanced plan is mostly advanced moves.
+ const fit=(row:Found)=>filters.level==='any'?0:Math.abs(ORDER[row.difficulty]-ORDER[filters.level]);
+ const shuffled=[...pool].map(row=>({row,key:random()})).sort((a,b)=>fit(a.row)-fit(b.row)||a.key-b.key).map(x=>x.row);
  // First pass: a new muscle each time. Second pass: fill up with anything left.
  for(const pass of [0,1])for(const row of shuffled){
   if(out.length>=size)break;const kind=row.kind!;if(used.has(motion(kind)))continue;
@@ -68,3 +70,16 @@ export function dailyPackage(category:MuscleCategory,filters:FinderFilters,seed:
  }
  return out;
 }
+
+/** How many exercises a daily plan has: fewer to start, more as you progress. */
+export const PLAN_SIZE={easy:4,medium:6,hard:8} as const;
+/** Holds for mobility and balance days, easiest first for beginners. */
+const MOBILITY:HoldKind[]=['forwardfold','legbalance','downdog','warrior','tree','bridgehold'];
+export const HOLD_SECONDS={easy:20,medium:30,hard:45} as const;
+export function mobilityPlan(level:'easy'|'medium'|'hard',seed:string){
+ const random=seeded(seed),count={easy:3,medium:4,hard:5}[level];
+ const pool=MOBILITY.filter(h=>ORDER[HOLD_LEVEL[h]]<=ORDER[level]).map(h=>({h,key:random()})).sort((a,b)=>a.key-b.key).map(x=>x.h);
+ return pool.slice(0,count).map(hold=>({hold,seconds:HOLD_SECONDS[level]}));
+}
+/** A hold that rounds off a group's workout. */
+export const FINISHER:Partial<Record<string,HoldKind>>={push:'plank',core:'plank',full:'plank',legs:'wallsit',lower:'wallsit',upper:'plank',pull:'bridgehold'};

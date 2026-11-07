@@ -33,6 +33,8 @@ export function MotionLayer() {
       const cx = Math.max(-bx + 8, Math.min(innerWidth - bx - r.width - 8, x)), cy = Math.max(-by + 8, Math.min(innerHeight - by - r.height - 8, y));
       el.dataset.dx = String(cx); el.dataset.dy = String(cy); el.style.translate = `${cx}px ${cy}px`;
     };
+    /** After a resize, pull a dragged companion back into view instead of leaving it off the edge. */
+    const keepInView = () => { const el = document.querySelector<HTMLElement>(".journey-float"); if (el?.dataset.dx) place(el, Number(el.dataset.dx), Number(el.dataset.dy)); else apply(); };
     const apply = () => { const saved = read(), el = document.querySelector<HTMLElement>(".journey-float"); if (el && saved && !el.dataset.dx) place(el, saved.x, saved.y); };
     const down = (e: PointerEvent) => {
       const orb = (e.target as Element | null)?.closest?.(".journey-orb"), el = orb?.closest<HTMLElement>(".journey-float");
@@ -52,8 +54,8 @@ export function MotionLayer() {
     const noNativeDrag = (e: DragEvent) => { if ((e.target as Element | null)?.closest?.(".journey-orb")) e.preventDefault(); };  // image drag would cancel the gesture
     const reset = (e: MouseEvent) => { const el = (e.target as Element | null)?.closest?.(".journey-orb")?.closest<HTMLElement>(".journey-float"); if (!el) return; el.style.translate = ""; delete el.dataset.dx; delete el.dataset.dy; try { localStorage.removeItem(KEY); } catch { /* storage off */ } };
     apply(); const mo = new MutationObserver(apply); mo.observe(document.body, { childList: true, subtree: true });
-    addEventListener("pointerdown", down); addEventListener("pointermove", move); addEventListener("pointerup", up); addEventListener("pointercancel", up); addEventListener("dblclick", reset); addEventListener("resize", apply); addEventListener("dragstart", noNativeDrag);
-    return () => { mo.disconnect(); removeEventListener("pointerdown", down); removeEventListener("pointermove", move); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); removeEventListener("dblclick", reset); removeEventListener("resize", apply); removeEventListener("dragstart", noNativeDrag); };
+    addEventListener("pointerdown", down); addEventListener("pointermove", move); addEventListener("pointerup", up); addEventListener("pointercancel", up); addEventListener("dblclick", reset); addEventListener("resize", keepInView); addEventListener("dragstart", noNativeDrag);
+    return () => { mo.disconnect(); removeEventListener("pointerdown", down); removeEventListener("pointermove", move); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); removeEventListener("dblclick", reset); removeEventListener("resize", keepInView); removeEventListener("dragstart", noNativeDrag); };
   }, []);
   return null;
 }

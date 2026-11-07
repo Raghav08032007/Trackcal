@@ -26,6 +26,11 @@ export function useRouter() {
   return useInRouterContext() ? RoutedRouter() : browserRouter;
 }
 
+/** The query string, kept in sync with in-app navigation. */
+export function useSearch() {
+  return useInRouterContext() ? useLocation().search : window.location.search; // eslint-disable-line react-hooks/rules-of-hooks
+}
+
 export function usePathname() {
   return useInRouterContext() ? useLocation().pathname : window.location.pathname; // eslint-disable-line react-hooks/rules-of-hooks
 }

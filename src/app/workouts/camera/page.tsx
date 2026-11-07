@@ -1,3 +1,6 @@
 import {CameraWorkout} from '@/components/camera-workout';
+import {HoldStudio} from '@/components/hold-studio';
+import {useSearch} from '@/lib/navigation';
 export const metadata={title:'TrackCal — Private camera workouts'};
-export default function Page(){return <CameraWorkout/>;}
+/** Reps and holds share one camera page; ?mode=hold (or ?hold=…) opens the hold timer. */
+export default function Page(){const query=new URLSearchParams(useSearch());return query.get('mode')==='hold'||query.has('hold')?<HoldStudio key="hold"/>:<CameraWorkout key="reps"/>;}

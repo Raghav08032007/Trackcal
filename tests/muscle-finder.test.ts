@@ -1,5 +1,5 @@
 import {describe,expect,it} from 'vitest';
-import {MUSCLE_CATEGORIES,cameraLink,dailyPackage,exercisesFor,fromDiagram,parseSteps,todaysCategory} from '@/lib/muscle-finder';
+import {FINISHER,MUSCLE_CATEGORIES,PLAN_SIZE,mobilityPlan,cameraLink,dailyPackage,exercisesFor,fromDiagram,parseSteps,todaysCategory} from '@/lib/muscle-finder';
 import {EXERCISES,EXERCISE_VARIANTS} from '@/lib/pose/types';
 
 describe('train by muscle',()=>{
@@ -40,4 +40,12 @@ describe('muscle groups and daily packages',()=>{
  });
  it('keeps to the beginner level and no equipment when asked',()=>{for(const s of dailyPackage(legs,{equipment:'none',level:'easy'},'y'))expect([EXERCISES[s.kind].equipment,EXERCISES[s.kind].difficulty]).toEqual(['none','easy']);});
  it('follows a weekly split with a rest day',()=>{expect(todaysCategory(new Date('2026-11-08T10:00:00'))).toBe('rest');expect(todaysCategory(new Date('2026-11-09T10:00:00'))).toBe('push');});
+});
+
+describe('plan sizes, mobility and finishers',()=>{
+ const legs=MUSCLE_CATEGORIES.find(c=>c.id==='legs')!;
+ it('beginner plans are shortest and advanced the longest',()=>{expect([PLAN_SIZE.easy,PLAN_SIZE.medium,PLAN_SIZE.hard]).toEqual([4,6,8]);expect(dailyPackage(legs,{equipment:'any',level:'hard'},'s',PLAN_SIZE.hard)).toHaveLength(8);});
+ it('an advanced plan leans on harder moves',()=>{const plan=dailyPackage(legs,{equipment:'any',level:'hard'},'s',PLAN_SIZE.hard);expect(plan.filter(s=>EXERCISES[s.kind].difficulty!=='easy').length).toBeGreaterThan(plan.length/2);});
+ it('mobility plans are holds, fewer for beginners, and the same for the same seed',()=>{expect(mobilityPlan('easy','a')).toHaveLength(3);expect(mobilityPlan('hard','a')).toHaveLength(5);expect(mobilityPlan('easy','a')).toEqual(mobilityPlan('easy','a'));expect(mobilityPlan('easy','a').every(h=>h.seconds===20)).toBe(true);});
+ it('groups finish with a hold',()=>{expect(FINISHER.core).toBe('plank');expect(FINISHER.legs).toBe('wallsit');});
 });
