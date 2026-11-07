@@ -121,3 +121,11 @@ def test_disabling_reward_does_not_break_the_existing_module():
  response=review(owner,headers,data['today'])
  assert response.status_code==200 and response.json()['awarded_xp']==0
  assert next(q for q in response.json()['summary']['quests'] if q['id']=='meal')['xp']==0
+
+
+def test_a_daily_check_in_keeps_the_streak_and_pays_once_a_day():
+ _,headers=account();init(headers)
+ first=client.post('/api/v1/adventure/check-in',headers=headers);assert first.status_code==200,first.text
+ body=first.json();assert body['awarded_xp']==5 and body['summary']['engagement_streak']['current']==1
+ again=client.post('/api/v1/adventure/check-in',headers=headers).json();assert again['awarded_xp']==0 and again['summary']['xp']==body['summary']['xp']
+ assert not any(a['code']=='first_activity' and a['status']=='unlocked' for a in again['summary']['achievements'])  # opening the app is not an activity

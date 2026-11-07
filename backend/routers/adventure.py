@@ -143,6 +143,15 @@ def rest_day(data:RestDay,user=Depends(get_current_active_user),db:Session=Depen
         db.add(models.StreakRecord(user_id=user.id,local_day=str(day),kind='rest'))
     db.commit();return {'awarded_xp':0,'summary':service.summary(db,user)}
 
+def check_in(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    """Opening the app once a day: a few points and a day on the streak. A second call the same day earns nothing."""
+    from services import gamification
+    consume(db,'check-in',str(user.id),30,3600)
+    item=require_profile(db,user);day=service.local_day(item)
+    if not db.get(models.GamificationRule,'checkin'):gamification.seed(db)
+    points=gamification.award(db,user,'checkin',day,key=f'v1:checkin:{day}')
+    db.commit();return {'awarded_xp':points,'summary':service.summary(db,user)}
+
 class BondChoice(BaseModel):
     model_config=ConfigDict(extra='forbid')
     aura:Literal[bond.AURAS]
