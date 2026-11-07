@@ -539,7 +539,7 @@ html[data-theme="dark"] .library-row { border-color: #3a3a5c; }
 .recovery-bodies svg { width: 100%; height: auto; }
 .recovery-legend { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: .9rem; }
 .recovery-legend span { display: inline-block; width: 12px; height: 12px; margin-right: 6px; border-radius: 50%; }
-.rep-replay svg { display: block; width: min(100%, 300px); margin: 0 auto 12px; aspect-ratio: 1; border-radius: 16px; background: var(--surface-2, #f1eefb); }
+.rep-replay > svg { display: block; width: min(100%, 300px); margin: 0 auto 12px; aspect-ratio: 1; border-radius: 16px; background: var(--surface-2, #f1eefb); }
 .rep-replay line { stroke: #6d4ae8; stroke-width: .012; stroke-linecap: round; }
 .rep-replay-note { font-size: .8rem; }
 .rep-replay [aria-pressed="true"] { outline: 2px solid currentColor; }

@@ -21,6 +21,8 @@ const either=(...checks:((b:Body)=>boolean)[])=>(b:Body)=>checks.some(check=>che
 // Whole-body positions.
 const notUpright=(b:Body)=>b.tilt>40;
 const notLying=(b:Body)=>b.tilt<50;
+/** Shoulders look wide only when facing the camera; side-on they nearly overlap. */
+const sideOnly=(check:(b:Body)=>boolean)=>(b:Body)=>!(b.facing>.5)&&check(b);
 const notHinged=(b:Body)=>b.tilt<30&&!(b.torso<.75);
 const legsBent=(b:Body)=>b.knee<125;
 const legsStraight=(b:Body)=>b.kneeWide>150;
@@ -36,7 +38,8 @@ const sideOn=(b:Body)=>b.facing>.55;
 /** A bent knee seen head-on still looks straight, so the knee only rules a squat out side-on. From the front, a bow shows as a short torso instead. */
 const shallow=(b:Body)=>b.knee>125&&b.facing<.45||b.torso<.6;
 const kneesDown=(b:Body)=>b.kneeUp<.15;
-const SQUAT={never:(b:Body)=>b.wristUp>.3,banned:(b:Body)=>b.tilt>60&&b.handHeight<.5,atBottom:(b:Body)=>shallow(b)||b.stance>1.2,moves:{shoulders:.2}};
+/** Real squats lean at most about 40 degrees, even with a weight held in front; bending over to pick something up leans 60 or more. */
+const SQUAT={never:(b:Body)=>b.wristUp>.3,banned:(b:Body)=>b.tilt>55,atBottom:(b:Body)=>shallow(b)||b.stance>1.2,moves:{shoulders:.2}};
 const SIDE_ARM={never:either(armBent,notUpright,(b)=>b.wristUp>.5),banned:(b:Body)=>b.elbow<90,atBottom:(b:Body)=>b.wristUp<-.3,reaches:(b:Body)=>!(b.wristUp>-.65),moves:{wrists:.6}};
 const CURL={never:either(notUpright,legsBent,handsAbove),atBottom:handsLow,still:{hips:.35,elbows:.45},moves:{wrists:.4}};
 const PUSH={still:{wrists:.3},moves:{shoulders:.12}};
@@ -68,8 +71,9 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  hipthrust:LIFT_HIPS,
  rdl:{...HINGE,never:either((b)=>b.knee<145,(b)=>b.wristUp>-.25),atBottom:notHinged},
  // Chest and shoulders
- pushup:{...PUSH,never:either((b)=>b.handHeight<-.6,handsAbove,notLying,(b)=>b.knee<145,(b)=>b.hip<135,(b)=>b.headDown>.4,feetFromHands)},
- kneepush:{...PUSH,never:either(handsAbove,(b)=>b.tilt<40,(b)=>b.headDown>.4,feetFromHands),atBottom:legsStraight},
+ // Head-on the body looks upright and the legs are hidden behind it, so only the hand rule applies; the lying-down rules are side-on only.
+ pushup:{...PUSH,never:either(handsAbove,sideOnly((b)=>b.handHeight<-.6),sideOnly(notLying),sideOnly((b)=>b.knee<145),sideOnly((b)=>b.hip<135),sideOnly((b)=>b.headDown>.4),sideOnly(feetFromHands))},
+ kneepush:{...PUSH,never:either(handsAbove,sideOnly((b)=>b.tilt<40),sideOnly((b)=>b.headDown>.4),sideOnly(feetFromHands)),atBottom:sideOnly(legsStraight)},
  incline:{...PUSH,never:either(handsAbove,(b)=>b.tilt<22,(b)=>b.tilt>80,legsBent,(b)=>b.headDown>.05,(b)=>b.handHeight<.6)},
  wallpush:{...PUSH,never:either((b)=>b.tilt>42,legsBent,handsLow,armsOverhead)},
  pikepush:{...PUSH,never:(b)=>b.headDown<.05,atBottom:(b)=>b.hip>135},
@@ -116,7 +120,7 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  kbswing:{never:either(armBent,(b)=>b.wristUp>.3),atBottom:(b)=>b.wristUp<-.35,reaches:(b)=>b.tilt>30,moves:{wrists:.6,shoulders:.15}},
  hspu:{never:either((b)=>b.headDown<.4,(b)=>b.hip<140),still:{wrists:.3},moves:{shoulders:.2}},
  hangleg:{never:(b)=>b.wristUp<.3,still:{wrists:.3,shoulders:.3},moves:{knees:.35}},
- decline:{...PUSH,never:either(handsAbove,notLying,legsBent,(b)=>b.handHeight>-.5)},
+ decline:{...PUSH,never:either(handsAbove,sideOnly(notLying),sideOnly(legsBent),sideOnly((b)=>b.handHeight>-.5))},
  nordic:{never:(b)=>b.hip<140,still:{knees:.3,ankles:.3},moves:{shoulders:.6}},
  jumplunge:{...LUNGE,moves:{ankles:.35,shoulders:.15}},
  tuckjump:{banned:(b)=>b.tilt>50,never:either(notUpright,armsOverhead),atBottom:(b)=>b.hipGap>20,moves:{ankles:.5,knees:.3}},

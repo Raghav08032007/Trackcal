@@ -71,3 +71,17 @@ describe('the model reporting one person twice',()=>{
  it('two outlines that mostly overlap are one person',()=>expect(focusPerson({landmarks:[person(0),person(.02)],timestamp:1,width:640,height:480}).landmarks).toHaveLength(1));
  it('two people side by side still pause counting',()=>expect(focusPerson({landmarks:[person(-.25),person(.3)],timestamp:1,width:640,height:480}).landmarks).toHaveLength(2));
 });
+
+describe('push-ups facing the camera',()=>{
+ /** Phone on the floor in front of the head: shoulders wide, hands below them, legs hidden behind the body. depth 1 is chest down. */
+ function front(depth:number,t:number):PoseFrame{
+  const p=standing().map(l=>({...l,visibility:.2})),sy=.42+.2*depth,flare=.1*depth;
+  put(p,11,.38,sy);put(p,12,.62,sy);put(p,13,.36-flare,(sy+.68)/2);put(p,14,.64+flare,(sy+.68)/2);put(p,15,.34,.68);put(p,16,.66,.68);
+  put(p,0,.5,sy-.08);
+  return {landmarks:[p],timestamp:t,width:640,height:480};
+ }
+ for(const fps of [10,15,24])it(`counts at ${fps} fps`,()=>expect(run('pushup',front,6,fps,2).reps).toBe(6));
+ it('a small dip is not a push-up',()=>{const c=run('pushup',front,3,15,2,.3);expect(c.reps).toBe(0);});
+ it('holding still at the top counts nothing',()=>expect(run('pushup',front,0,15,2).reps).toBe(0));
+ for(const kind of ['kneepush','decline'] as const)it(`${kind} facing the camera counts too`,()=>expect(run(kind,front,5,15,2).reps).toBe(5));
+});

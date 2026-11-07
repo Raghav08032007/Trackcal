@@ -15,6 +15,8 @@ export type ExerciseConfig={
  cues:[string,string,string];
  /** [left, right] landmarks that help when visible but may be out of frame, like feet on a laptop camera. */
  optional?:[number[],number[]];
+ /** Points that, when confidently tracked, must be inside the frame: a body cut off at the edge is asked to step back. */
+ inFrame?:[number[],number[]];
  /** Also read depth from how far the shoulders drop, which needs no legs in frame. */
  drop?:boolean;
  /** The move starts low and rises, like an arm raise: the angle is flipped so the rep runs the same way as a squat. */
@@ -36,15 +38,21 @@ export type ExerciseConfig={
 const L={shoulder:[11,12],elbow:[13,14],wrist:[15,16],hip:[23,24],knee:[25,26],ankle:[27,28],toe:[31,32]};
 /** The body lies along the floor rather than standing up. Judged on the torso for floor moves: a lifted leg must not fail it. */
 const flat=(end:number[])=>(p:Landmark[],s:0|1)=>Math.abs(p[L.shoulder[s]].x-p[end[s]].x)>Math.abs(p[L.shoulder[s]].y-p[end[s]].y)*.9;
+/** A push-up seen side-on (body along the floor) or head-on (shoulders wide, hands below them). Null when it's neither. */
+export function pushupView(p:Landmark[],s:0|1):'side'|'front'|null{
+ const shoulder=p[L.shoulder[s]],ankle=p[L.ankle[s]],width=Math.abs(p[11].x-p[12].x),handsLow=p[15].y>p[11].y-.02&&p[16].y>p[12].y-.02;
+ if((ankle?.visibility??0)>=.5&&Math.abs(shoulder.x-ankle.x)>Math.abs(shoulder.y-ankle.y)*1.3)return 'side';
+ return handsLow&&width>.08&&width>.35*Math.abs(p[11].y-p[15].y)?'front':null;
+}
 const pick=(...parts:number[][])=>[parts.map(p=>p[0]),parts.map(p=>p[1])] as [number[],number[]];
 export const EXERCISE_CONFIG={
  squat:{id:'squat',title:'Squats',template:'camera_squat',kcalPerRep:.4,joints:[[23,25,27],[24,26,28]],span:[[23,27],[24,28]],cues:['Stand tall','Squat down','Stand up'],required:pick(L.shoulder),optional:pick(L.hip,L.knee,L.ankle),drop:true,
   up:150,down:110,hysteresis:8,minRangeDeg:45,minRepMs:700,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2–3 m away, phone at hip height'},tips:['Put the laptop at table height and stand back until your head and hips show.','Face the camera or turn side-on, whichever is easier.','Stand still for a moment first, then squat.','Even, bright light helps.'],experimental:true},
- pushup:{id:'pushup',title:'Push-ups',template:'camera_pushup',kcalPerRep:.32,joints:[[11,13,15],[12,14,16]],cues:['Arms straight','Lower your chest','Push up'],required:pick(L.shoulder,L.elbow,L.wrist,L.hip,L.ankle),
+ pushup:{id:'pushup',title:'Push-ups',template:'camera_pushup',kcalPerRep:.32,joints:[[11,13,15],[12,14,16]],span:[[11,15],[12,16]],cues:['Arms straight','Lower your chest','Push up'],required:pick(L.shoulder,L.elbow,L.wrist),inFrame:pick(L.hip,L.ankle),
   up:150,down:100,hysteresis:8,minRangeDeg:40,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
-  camera:{view:'side',distance:'2 m away, phone on the floor'},tips:['Floor push-ups, side-on to the camera.','Keep your whole body in frame, head to feet.'],experimental:true,
-  suitable:(p,s)=>{const shoulder=p[L.shoulder[s]],ankle=p[L.ankle[s]];return Math.abs(shoulder.x-ankle.x)>Math.abs(shoulder.y-ankle.y)*1.3;}},
+  camera:{view:'side',distance:'1.5–2 m away, phone on the floor'},tips:['Side-on or facing the camera, whichever fits your room.','Facing it: put the phone on the floor in front of your head and keep your shoulders and hands in view.','Side-on: keep your whole body in frame.'],experimental:true,
+  suitable:(p,s)=>pushupView(p,s)!==null},
  curl:{id:'curl',title:'Bicep curls',template:'camera_curl',kcalPerRep:.18,joints:[[11,13,15],[12,14,16]],span:[[11,15],[12,16]],cues:['Arm straight','Curl up','Lower your arm'],required:pick(L.shoulder,L.elbow,L.wrist,L.hip),
   up:145,down:70,hysteresis:8,minRangeDeg:55,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'1.5–2 m away, phone at chest height'},tips:['Face the camera or stand side-on; one arm is tracked per set.','Keep shoulder, elbow, wrist and hip in frame.'],experimental:true,
@@ -95,10 +103,10 @@ export const EXERCISE_CONFIG={
  incline:{id:'incline',title:'Incline push-ups',template:'camera_incline',kcalPerRep:0.2,joints:[[11,13,15],[12,14,16]],cues:['Arms straight','Lower your chest','Push up'],required:pick(L.shoulder,L.elbow,L.wrist,L.hip),
   up:150,down:110,hysteresis:8,minRangeDeg:30,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2–3 m away, laptop at table height'},tips:['Hands on a sturdy table or bench, side-on to the camera.','Keep shoulder, elbow, wrist and hip in frame.'],experimental:true},
- kneepush:{id:'kneepush',title:'Knee push-ups',template:'camera_kneepush',kcalPerRep:0.22,joints:[[11,13,15],[12,14,16]],cues:['Arms straight','Lower your chest','Push up'],required:pick(L.shoulder,L.elbow,L.wrist,L.hip,L.knee),
+ kneepush:{id:'kneepush',title:'Knee push-ups',template:'camera_kneepush',kcalPerRep:0.22,joints:[[11,13,15],[12,14,16]],span:[[11,15],[12,16]],cues:['Arms straight','Lower your chest','Push up'],required:pick(L.shoulder,L.elbow,L.wrist),inFrame:pick(L.hip,L.knee),
   up:150,down:100,hysteresis:8,minRangeDeg:40,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2 m away, phone on the floor'},tips:['Knees on the floor, side-on to the camera.','Keep your head to knees in frame.'],experimental:true,
-  suitable:flat(L.hip)},
+  suitable:(p,s)=>flat(L.hip)(p,s)||pushupView(p,s)==='front'},
  row:{id:'row',title:'Bent-over rows',template:'camera_row',kcalPerRep:0.2,joints:[[11,13,15],[12,14,16]],cues:['Hinge forward, arm long','Pull your elbow back','Lower your arm'],required:pick(L.shoulder,L.elbow,L.wrist,L.hip),
   up:145,down:95,hysteresis:8,minRangeDeg:40,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'1.5–2 m away, laptop at chest height'},tips:['Hinge at the hips, side-on to the camera.','A light weight or a full bottle works.'],experimental:true},
@@ -261,10 +269,10 @@ export const EXERCISE_CONFIG={
  hangleg:{id:'hangleg',title:'Hanging leg raises',template:'camera_hangleg',kcalPerRep:0.5,joints:[[11,23,25],[12,24,26]],cues:['Hang with legs down', 'Lift your legs', 'Lower with control'],required:pick(L.shoulder,L.hip,L.knee),
   up:150,down:100,hysteresis:8,minRangeDeg:40,minRepMs:800,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2–3 m away, laptop at table height'},tips:['Try not to swing.'],experimental:true},
- decline:{id:'decline',title:'Decline push-ups',template:'camera_decline',kcalPerRep:0.45,joints:[[11,13,15],[12,14,16]],cues:['Feet raised, arms straight', 'Lower your chest', 'Push up'],required:pick(L.shoulder,L.elbow,L.wrist,L.hip,L.ankle),
+ decline:{id:'decline',title:'Decline push-ups',template:'camera_decline',kcalPerRep:0.45,joints:[[11,13,15],[12,14,16]],span:[[11,15],[12,16]],cues:['Feet raised, arms straight', 'Lower your chest', 'Push up'],required:pick(L.shoulder,L.elbow,L.wrist),inFrame:pick(L.hip,L.ankle),
   up:150,down:100,hysteresis:8,minRangeDeg:40,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2 m away, phone on the floor'},tips:['Keep your body in one straight line.'],experimental:true,
-  suitable:flat(L.hip)},
+  suitable:(p,s)=>flat(L.hip)(p,s)||pushupView(p,s)==='front'},
  nordic:{id:'nordic',title:'Nordic curls',template:'camera_nordic',kcalPerRep:0.6,joints:[[23,25,27],[24,26,28]],invert:true,cues:['Kneel tall, ankles anchored', 'Lower forward slowly', 'Pull back up'],required:pick(L.hip,L.knee,L.ankle),
   up:65,down:25,hysteresis:8,minRangeDeg:30,minRepMs:1000,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2 m away, phone on the floor'},tips:['Keep your hips straight.', 'Use your hands to catch yourself.'],experimental:true},

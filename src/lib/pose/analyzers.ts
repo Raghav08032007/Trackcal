@@ -21,6 +21,7 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   else if(q[this.side]<c.minVisibility&&q[1-this.side]>=c.minVisibility){this.side=this.side===0?1:0;this.resetFilters();}  // the far side flickers side-on; the rep carries on
   const side=this.side,ids=c.required[side],quality=q[side];
   if(quality<c.minVisibility||!visible(frame,ids))return bad('Step back so your whole body is in frame.',quality);
+  const edge=c.inFrame?.[side];if(edge&&confidence(p,edge)>=c.minVisibility&&!visible(frame,edge))return bad('Step back so your whole body is in frame.',quality);
   const hipsSeen=confidence(p,[c.required[side][0],23+side])>=c.minVisibility&&visible(frame,[23+side]);
   const anchor=hipsSeen||!c.drop?[23,24]:[11,12],center={x:(p[anchor[0]].x+p[anchor[1]].x)/2,y:(p[anchor[0]].y+p[anchor[1]].y)/2};
   // Switching between hips and shoulders is not the camera moving.

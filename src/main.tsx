@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 // Fonts are bundled with the app (no requests to third-party font services).
 import "@fontsource-variable/geist";
-import "@fontsource-variable/bricolage-grotesque";
+import "@fontsource-variable/plus-jakarta-sans";
 import "@/app/globals.css";
 import "@/app/studio.css";
 import "@/app/focused.css";

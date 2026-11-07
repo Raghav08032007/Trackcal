@@ -1,66 +1,140 @@
-/* Design pass 5: one confident system on top of the older sheets. Bold display type, pill buttons that feel
-   tactile, tiles for choices, crisp cards. Loaded last, so it wins without rewriting what came before. */
+/* Final design layer: one calm, professional system on top of the older sheets. Loaded last, so it wins.
+   Flat surfaces with a hairline edge and soft depth, one accent colour, one typeface, no floating decorations.
+   Earlier layers drew "clay" 3D edges under every button; this layer replaces them through their shared tokens. */
 :root {
-  --vibe-violet: #5b2ef5; --vibe-violet-deep: #3d17c9; --vibe-ink: #17122e; --vibe-muted: #5b5676;
-  --vibe-line: #e3dcfa; --vibe-soft: #f4f0ff; --vibe-lime: #c4f23f; --vibe-coral: #ff6a55;
-  --vibe-glow: 0 10px 24px -10px #5b2ef599, 0 2px 0 #3d17c9;
-  --tc-display: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --pro-font: "Plus Jakarta Sans Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --pro-bg: #f6f5fa; --pro-surface: #ffffff; --pro-sunken: #f1eff8;
+  --pro-ink: #16131f; --pro-muted: #5e5a70; --pro-line: #e6e3ef; --pro-line-strong: #d4cfe3;
+  --pro-accent: #5531e8; --pro-accent-hover: #4623d6; --pro-accent-soft: #efebff; --pro-accent-ink: #3d1fc0;
+  --pro-good: #1f8f4e; --pro-lime: #c4f23f;
+  --pro-fill: #5531e8; --pro-fill-hover: #4623d6; --surface-2: var(--pro-sunken);
+  --pro-shadow: 0 1px 2px #16131f0d, 0 8px 24px -16px #16131f33;
+  --pro-shadow-lift: 0 2px 4px #16131f0f, 0 16px 36px -18px #16131f40;
+  --pro-ring: 0 0 0 4px #5531e826;
+  /* Older layers read these; flatten them everywhere at once. */
+  --tc-display: var(--pro-font); --tc-bg: var(--pro-bg);
+  --clay-card: var(--pro-surface); --clay-depth: var(--pro-shadow); --clay-depth-lift: var(--pro-shadow-lift);
+  --tc-clay: var(--pro-shadow); --tc-clay-lift: var(--pro-shadow-lift); --tc-edge: transparent; --tc-edge-soft: transparent;
+  --tc-mesh-a: transparent; --tc-mesh-b: transparent; --tc-mesh-c: transparent;
+  --font-geist-sans: var(--pro-font);
 }
-html[data-theme="dark"] { --vibe-ink: #f3f0ff; --vibe-muted: #c5c7dc; --vibe-line: #34345a; --vibe-soft: #23233d; }
+html[data-theme="dark"] {
+  --pro-bg: #0f0f17; --pro-surface: #181823; --pro-sunken: #1f1f2c;
+  --pro-ink: #f2f1f7; --pro-muted: #b3b0c4; --pro-line: #2a2a3a; --pro-line-strong: #3a3a4e;
+  --pro-accent: #8b74ff; --pro-accent-hover: #9d89ff; --pro-accent-soft: #241f3f; --pro-accent-ink: #c9bdff;
+  --pro-good: #5fd38d;
+  --pro-fill: #5b3df0; --pro-fill-hover: #6a4ef5; --surface-2: var(--pro-sunken);
+  --pro-shadow: 0 1px 0 #ffffff08 inset, 0 10px 28px -18px #000000cc;
+  --pro-shadow-lift: 0 1px 0 #ffffff0d inset, 0 18px 40px -20px #000000e6;
+}
 
-/* Type: a display face with character for headings, tight and confident. */
-.tc-studio main :is(h1, h2, h3), .tc-studio .journey-panel h2 { font-family: var(--tc-display); font-optical-sizing: auto; }
-.tc-studio main h1 { font-weight: 800; letter-spacing: -.035em; line-height: 1.02; font-size: clamp(2.1rem, 4.6vw, 3.4rem); }
-.tc-studio main h2 { font-weight: 750; letter-spacing: -.02em; line-height: 1.12; }
+/* Page: a quiet background. The floating 3D balls are gone. */
+body.tc-studio { background: var(--pro-bg); color: var(--pro-ink); font-family: var(--pro-font); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body.tc-studio::before, body.tc-studio::after { display: none; }
+body.tc-studio :is(button, input, select, textarea) { font-family: inherit; }
+
+/* Type: one family, a clear scale, tight headings. */
+.tc-studio main :is(h1, h2, h3), .tc-studio .journey-panel h2 { font-family: var(--pro-font); text-wrap: balance; }
+.tc-studio main h1 { font-weight: 800; letter-spacing: -.035em; line-height: 1.05; font-size: clamp(2rem, 4.2vw, 3.1rem); }
+.tc-studio main h2 { font-weight: 750; letter-spacing: -.02em; line-height: 1.2; font-size: clamp(1.2rem, 2vw, 1.45rem); }
 .tc-studio main h3 { font-weight: 700; letter-spacing: -.01em; }
-.tc-studio .eyebrow { font-size: .72rem; font-weight: 750; letter-spacing: .14em; color: var(--vibe-violet); }
-html[data-theme="dark"] .tc-studio .eyebrow { color: #c9bcff; }
+.tc-studio main p { text-wrap: pretty; }
+.tc-studio .eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .12em; color: var(--pro-accent); }
+html[data-theme="dark"] .tc-studio .eyebrow { color: var(--pro-accent-ink); }
+.tc-studio main .rep-replay-note, .tc-studio main .account-card > p { color: var(--pro-muted); }
 
-/* Primary: an electric pill that glows, lifts on hover and presses down. */
-.tc-studio :is(.account-primary, .gate-primary) {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 26px;
-  border: 0; border-radius: 999px; background: linear-gradient(180deg, #7048ff 0%, var(--vibe-violet) 55%, var(--vibe-violet-deep) 100%);
-  color: #fff; font-weight: 750; font-size: 1rem; letter-spacing: -.005em; box-shadow: var(--vibe-glow);
-  transition-property: transform, box-shadow, filter; transition-duration: 160ms; transition-timing-function: ease-out;
+/* Cards: white, a hairline edge, soft depth. No gradient, no 3D lip. */
+.tc-studio .account-card { background: var(--pro-surface); border: 1px solid var(--pro-line); border-radius: 22px; box-shadow: var(--pro-shadow); }
+.tc-studio main > * + .account-card, .tc-studio .account-card + .account-card { margin-top: 20px; }
+
+/* Buttons. Primary: solid accent. Secondary and plain: white with an edge. All flat, all the same height. */
+.tc-studio :is(.account-primary, .gate-primary, .play-button:not(.play-button-white), .food-camera-open, .barcode-photo-row button),
+.tc-studio .trackcal-app :is(.bg-emerald-500, .bg-sky-500, .bg-purple-600, .bg-sky-700), .tc-studio :is(.barcode-capture-actions > button:first-child, .barcode-photo-action.primary) {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px;
+  border: 0; border-radius: 14px; background: var(--pro-fill) !important; color: #fff !important; font-weight: 700; font-size: .98rem; letter-spacing: -.005em;
+  box-shadow: 0 1px 2px #16131f26, 0 6px 16px -8px #5531e899; transition-property: background-color, transform, box-shadow; transition-duration: 150ms; transition-timing-function: ease-out;
 }
-.tc-studio :is(.account-primary, .gate-primary):disabled { background: #e7e2f7; color: #5b5676; box-shadow: none; }
-html[data-theme="dark"] .tc-studio :is(.account-primary, .gate-primary):disabled { background: #2f2f4f; color: #c5c7dc; }
-
-/* Secondary: a clean outlined pill. */
-.tc-studio :is(.account-secondary, .gate-secondary) {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 20px;
-  border: 1.5px solid var(--vibe-line); border-radius: 999px; background: #fff; color: var(--vibe-ink); font-weight: 700; box-shadow: 0 1px 2px #17122e14;
-  transition-property: transform, border-color, background-color; transition-duration: 160ms;
+.tc-studio :is(.account-primary, .gate-primary):disabled { background: var(--pro-sunken) !important; color: var(--pro-muted) !important; box-shadow: none; cursor: not-allowed; }
+.tc-studio :is(.account-secondary, .gate-secondary, .destination-button, .quick-log-button, .companion-checkin button),
+.tc-studio .account-card :is(.account-actions, .challenge-cover, .event-cover) button:not([class]), .tc-studio .account-actions > button:not([class]), .tc-studio .camera-review > button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border: 1px solid var(--pro-line-strong); border-radius: 14px; background: var(--pro-surface); color: var(--pro-ink); font-weight: 650;
+  box-shadow: 0 1px 2px #16131f0d; transition-property: background-color, border-color, transform; transition-duration: 150ms;
 }
-html[data-theme="dark"] .tc-studio :is(.account-secondary, .gate-secondary) { background: #1d1d36; }
+.tc-studio :is(.account-secondary, .gate-secondary, .destination-button):disabled, .tc-studio .account-actions > button:not([class]):disabled { opacity: .55; cursor: not-allowed; }
+.tc-studio .account-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.tc-studio .account-actions > button:not([class]) { width: auto; }
 
-/* Choices: big tiles instead of a cramped tray, and the picked one is unmistakable. */
+/* Navigation: the current page is a solid chip, not a raised block. */
+.tc-studio .app-tabbar { background: var(--pro-surface); border: 1px solid var(--pro-line); box-shadow: var(--pro-shadow); }
+.tc-studio .app-tabbar a[aria-current="page"], .tc-studio .app-section-pages a[aria-current="page"] { background: var(--pro-fill); color: #fff; box-shadow: none; }
+.tc-studio .studio-tabs button[aria-current="page"] { background: var(--pro-surface); color: var(--pro-accent-ink); box-shadow: 0 1px 2px #16131f1a; }
+.tc-studio .social-post { box-shadow: var(--pro-shadow); }
+
+/* Choices: tiles, and the picked one is unmistakable. */
 .tc-studio .camera-equipment { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 0; border: 0; background: transparent; box-shadow: none; }
 .tc-studio .camera-equipment button {
-  position: relative; display: flex; align-items: center; justify-content: flex-start; min-height: 58px; padding: 12px 16px;
-  border: 1.5px solid var(--vibe-line); border-radius: 18px; background: #fff; color: var(--vibe-ink); font-weight: 700; font-size: .95rem; text-align: left; box-shadow: 0 1px 2px #17122e10;
-  transition-property: transform, border-color, background-color, box-shadow; transition-duration: 160ms;
+  position: relative; display: flex; align-items: center; justify-content: flex-start; min-height: 56px; padding: 12px 16px;
+  border: 1px solid var(--pro-line-strong); border-radius: 16px; background: var(--pro-surface); color: var(--pro-ink); font-weight: 650; font-size: .95rem; text-align: left; box-shadow: 0 1px 2px #16131f0d;
+  transition-property: transform, border-color, background-color, box-shadow; transition-duration: 150ms;
 }
-.tc-studio .camera-equipment button[aria-pressed="true"] { border-color: var(--vibe-violet); background: var(--vibe-ink); color: #fff; box-shadow: 0 10px 22px -12px #17122ea6; }
-.tc-studio .camera-equipment button[aria-pressed="true"]::after { content: ""; position: absolute; top: 12px; right: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--vibe-lime); box-shadow: 0 0 0 4px #c4f23f40; }
-html[data-theme="dark"] .tc-studio .camera-equipment button { background: #1d1d36; }
-html[data-theme="dark"] .tc-studio .camera-equipment button[aria-pressed="true"] { background: #5b2ef5; border-color: #8f72ff; }
-.tc-studio .hold-group h2 { margin: 20px 0 10px; font-size: 1.1rem; }
-
-/* Cards: crisp edge, soft depth. */
-.tc-studio .account-card { border: 1px solid var(--vibe-line); border-radius: 28px; box-shadow: 0 1px 2px #17122e0d, 0 18px 40px -28px #3d17c94d; }
-html[data-theme="dark"] .tc-studio .account-card { box-shadow: 0 18px 40px -28px #000000b3; }
+.tc-studio .camera-equipment button[aria-pressed="true"] { border-color: var(--pro-accent); background: var(--pro-accent-soft); color: var(--pro-accent-ink); box-shadow: 0 0 0 1px var(--pro-accent) inset; }
+.tc-studio .camera-equipment button[aria-pressed="true"]::after { content: ""; position: absolute; top: 50%; right: 14px; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; background: var(--pro-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; }
+.tc-studio .hold-group h2 { margin: 20px 0 10px; font-size: 1.05rem; }
 
 /* Fields: calm until focused, then a clear ring. */
-.tc-studio :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea):focus-visible { outline: 0; border-color: var(--vibe-violet); box-shadow: 0 0 0 4px #5b2ef526; }
-.tc-studio :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--vibe-violet); width: 20px; height: 20px; }
-.tc-studio :is(button, a, input, select, textarea, summary):focus-visible { outline: 3px solid #8f72ff; outline-offset: 2px; }
+.tc-studio :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea) { border-color: var(--pro-line-strong); border-radius: 12px; background: var(--pro-surface); color: var(--pro-ink); }
+.tc-studio :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea):focus-visible { outline: 0; border-color: var(--pro-accent); box-shadow: var(--pro-ring); }
+.tc-studio :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--pro-accent); width: 20px; height: 20px; }
+.tc-studio :is(button, a, summary):focus-visible { outline: 2px solid var(--pro-accent); outline-offset: 3px; }
 
 /* Camera stage before it starts: a calm surface, not a black hole. */
-.tc-studio .camera-preview { background: radial-gradient(120% 90% at 50% 0%, #2a1f66 0%, #15122e 70%); }
+.tc-studio .camera-preview { background: radial-gradient(120% 90% at 50% 0%, #26215a 0%, #12111f 70%); }
+
+html[data-theme="dark"] .tc-studio .segmented button[aria-pressed="true"] { background: #3a3a55; color: #fff; }
+.tc-studio .camera-mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tc-studio .camera-mode-switch > * { min-width: 0; }
+
+/* Older grey-green small print, darkened to read on the new background. */
+.tc-studio :is(.account-title p, .report-actions p, .smart-heading p) { color: var(--pro-muted); }
+.tc-studio .smart-heading h1 span { color: #4f7a1c; }
+html[data-theme="dark"] .tc-studio .smart-heading h1 span { color: var(--pro-lime); }
+
+/* Small print stays small. */
+.tc-studio .camera-footnote { margin-top: 28px; }
+.tc-studio .camera-footnote p { max-width: 72ch; font-size: .86rem; line-height: 1.55; color: var(--pro-muted); }
+
+/* Rep replay: a dark stage with a bright figure, and a compact control row. */
+.tc-studio .rep-replay > svg { width: min(100%, 340px); border-radius: 18px; background: radial-gradient(120% 100% at 50% 0%, #241f4d 0%, #12111f 75%); }
+.tc-studio .rep-replay line { stroke: var(--pro-lime); stroke-linecap: round; }
+.tc-studio .rep-replay circle { fill: #fff; }
+.tc-studio .rep-replay [aria-pressed="true"] { outline: 0; }
+.replay-controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin: 4px 0 12px; }
+.segmented { display: inline-flex; padding: 4px; border-radius: 14px; background: var(--pro-sunken); border: 1px solid var(--pro-line); }
+.tc-studio .segmented button { min-height: 38px; padding: 0 16px; border: 0; border-radius: 10px; background: transparent; color: var(--pro-muted); font-weight: 650; box-shadow: none; }
+.tc-studio .segmented button[aria-pressed="true"] { background: var(--pro-surface); color: var(--pro-ink); box-shadow: 0 1px 2px #16131f1f, 0 2px 8px -4px #16131f33; }
+.tc-studio .replay-play { display: inline-grid; place-items: center; width: 46px; height: 46px; border: 1px solid var(--pro-line-strong); border-radius: 50%; background: var(--pro-surface); color: var(--pro-ink); box-shadow: 0 1px 2px #16131f0d; }
+.replay-stats { display: flex; justify-content: center; gap: 22px; margin: 0 0 10px; font-variant-numeric: tabular-nums; }
+.replay-stats div { display: grid; justify-items: center; }
+.replay-stats strong { font-size: 1.25rem; font-weight: 800; letter-spacing: -.02em; }
+.replay-stats span { font-size: .78rem; color: var(--pro-muted); }
+
+/* Finish: a real moment. A green tick, big numbers, then the next step. */
+.tc-studio .camera-finish { text-align: center; padding: clamp(24px, 4vw, 40px); }
+.tc-studio .camera-finish h2 { display: grid; justify-items: center; gap: 12px; font-size: clamp(1.6rem, 3vw, 2.1rem); }
+.tc-studio .camera-finish h2 span { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--pro-good); color: #fff; font-size: 1.9rem; box-shadow: 0 0 0 8px color-mix(in srgb, var(--pro-good) 18%, transparent); }
+.tc-studio .camera-finish-stats { max-width: 520px; margin: 20px auto; gap: 12px; }
+.tc-studio .camera-finish-stats div { padding: 16px 8px; border: 1px solid var(--pro-line); border-radius: 18px; background: var(--pro-sunken); color: var(--pro-muted); }
+.tc-studio .camera-finish-stats strong { font-size: clamp(1.7rem, 4vw, 2.2rem); font-weight: 800; letter-spacing: -.03em; color: var(--pro-ink); }
+.tc-studio .camera-finish-stats div:nth-child(2) strong { color: var(--pro-accent); }
+.tc-studio .camera-finish-stats div:nth-child(3) strong::before { content: "🔥 "; font-size: .8em; }
+.tc-studio .camera-finish a { display: inline-flex; margin: 8px 8px 0; font-weight: 700; color: var(--pro-accent-ink); }
 
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-motion="reduced"]) .tc-studio :is(.account-primary, .gate-primary):not(:disabled):hover { transform: translateY(-2px); filter: saturate(1.1); box-shadow: 0 16px 28px -12px #5b2ef5b3, 0 2px 0 #3d17c9; }
-  html:not([data-motion="reduced"]) .tc-studio :is(.account-primary, .gate-primary, .account-secondary, .gate-secondary, .camera-equipment button):not(:disabled):active { transform: scale(.96); }
-  html:not([data-motion="reduced"]) .tc-studio :is(.account-secondary, .gate-secondary, .camera-equipment button):not(:disabled):hover { transform: translateY(-2px); border-color: #b9a6ff; }
+  html:not([data-motion="reduced"]) .tc-studio :is(.account-primary, .gate-primary, .play-button:not(.play-button-white)):not(:disabled):hover { background: var(--pro-fill-hover) !important; transform: translateY(-1px); box-shadow: 0 2px 4px #16131f26, 0 10px 22px -10px #5531e8b3; }
+  html:not([data-motion="reduced"]) .tc-studio :is(.account-secondary, .gate-secondary, .destination-button, .camera-equipment button, .replay-play):not(:disabled):hover,
+  html:not([data-motion="reduced"]) .tc-studio .account-actions > button:not([class]):not(:disabled):hover { border-color: var(--pro-accent); }
+  html:not([data-motion="reduced"]) .tc-studio :is(.account-primary, .gate-primary, .account-secondary, .gate-secondary, .camera-equipment button, .segmented button, .replay-play):not(:disabled):active { transform: scale(.97); }
+  html:not([data-motion="reduced"]) .tc-studio .camera-finish h2 span { animation: pro-pop .5s cubic-bezier(.34, 1.56, .64, 1) both; }
 }
+@keyframes pro-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
