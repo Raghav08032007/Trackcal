@@ -1311,3 +1311,24 @@ class LabResult(Base):
     value=Column(Float,nullable=False)
     ref_low=Column(Float,nullable=True)
     ref_high=Column(Float,nullable=True)
+
+
+class DailyWellness(Base):
+    """One row per person per day: water, movement, calories burned, sleep and how they felt. Blank means not logged."""
+    __tablename__='daily_wellness'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False)
+    day=Column(String(10),nullable=False)               # YYYY-MM-DD in the person's own time zone
+    water_ml=Column(Integer,nullable=False,default=0)
+    water_goal_ml=Column(Integer,nullable=True)         # blank: worked out from weight
+    steps=Column(Integer,nullable=False,default=0)
+    active_minutes=Column(Integer,nullable=False,default=0)
+    activity=Column(String(100),nullable=False,default='')
+    burn_kcal=Column(Float,nullable=False,default=0)    # camera workouts and manual exercise; recorded activities are added on read
+    weight_kg=Column(Float,nullable=True)
+    sleep_hours=Column(Float,nullable=True)
+    sleep_quality=Column(String(8),nullable=True)       # poor, ok, good
+    energy=Column(String(8),nullable=True)              # low, ok, great
+    sore=Column(String(8),nullable=True)                # no, bit, very
+    updated_at=Column(DateTime,nullable=False,default=_now,onupdate=_now)
+    __table_args__=(UniqueConstraint('user_id','day',name='uq_daily_wellness_user_day'),)

@@ -207,3 +207,58 @@ def set_targets(data:TargetInput,user=Depends(get_current_active_user),db:Sessio
     except ValueError as failure:raise HTTPException(422,str(failure).split('\n')[-1][:200])
     row.preferences=checked.model_dump();row.revision+=1;db.commit()
     return targets(user,db)
+
+
+# ── One day of water, movement, calories burned, sleep and mood (services/wellness_days.py) ──
+from services import wellness_days as days_rules
+from services.wellness_days import DayUpdate, DayImport
+
+
+def day_context(db,user):
+    prefs=prefs_for(db.get(models.PersonalizationProfile,user.id));return prefs.timezone,latest_weight(db,user) or prefs.weight_kg
+
+
+def checked_day(day,tz):
+    try:return days_rules.check_day(day,tz)
+    except ValueError as failure:raise HTTPException(422,str(failure))
+
+
+def day_view(db,user,day,row=None,missing=False):
+    tz,weight=day_context(db,user)
+    if row is None and not missing:row=db.query(models.DailyWellness).filter_by(user_id=user.id,day=day).first()
+    return days_rules.view(day,row,weight,days_rules.routes_by_day(db,user.id,tz,day,day,weight).get(day,0))
+
+
+def recent_days(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    """The last 35 days, newest first, with blanks for days nothing was logged."""
+    tz,weight=day_context(db,user);today=local_now(prefs_for(db.get(models.PersonalizationProfile,user.id))).date()
+    keys=[(today-timedelta(days=n)).isoformat() for n in range(days_rules.HISTORY_DAYS)]
+    rows={r.day:r for r in db.query(models.DailyWellness).filter(models.DailyWellness.user_id==user.id,models.DailyWellness.day>=keys[-1],models.DailyWellness.day<=keys[0])}
+    routes=days_rules.routes_by_day(db,user.id,tz,keys[-1],keys[0],weight)
+    zone=ZoneInfo(tz);start=datetime.combine(date.fromisoformat(keys[-1]),datetime.min.time(),zone).astimezone(timezone.utc).replace(tzinfo=None)
+    meals={}
+    for (at,) in db.query(models.MealLog.logged_at).filter(models.MealLog.user_id==user.id,models.MealLog.is_deleted.is_(False),models.MealLog.logged_at>=start):
+        key=at.replace(tzinfo=timezone.utc).astimezone(zone).date().isoformat();meals[key]=meals.get(key,0)+1
+    return {'today':keys[0],'days':[{**days_rules.view(k,rows.get(k),weight,routes.get(k,0)),'meals':meals.get(k,0)} for k in keys]}
+
+
+def get_day(day:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    if day=='import':raise HTTPException(404,'Not found')
+    tz,_=day_context(db,user);return day_view(db,user,checked_day(day,tz))
+
+
+def update_day(day:str,data:DayUpdate,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    if day=='import':raise HTTPException(404,'Not found')
+    tz,_=day_context(db,user);day=checked_day(day,tz)
+    row=days_rules.row_for(db,user.id,day);days_rules.apply(row,data);db.commit()
+    return day_view(db,user,day,row)
+
+
+def import_days(data:DayImport,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    """Days that were only kept in this browser, copied once; the account's own values always win."""
+    tz,_=day_context(db,user);count=0
+    for item in data.days:
+        try:days_rules.check_day(item.day,tz)
+        except ValueError:continue
+        if days_rules.fill_gaps(days_rules.row_for(db,user.id,item.day),item):count+=1
+    db.commit();return {'imported':count}
