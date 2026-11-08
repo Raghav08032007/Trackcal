@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import { useTarget } from "@/lib/targets";
 import { useDiaryMeals } from "@/lib/diary";
 import Link from '@/lib/navigation';
 import {useAccount} from './account-session';
@@ -29,7 +30,7 @@ export function CoachLine({text}:{text:string}){
 
 export function useCoachDay():CoachDay|null{
  const date=useLocalDate(),[training,setTraining]=useState<TrainingData|null>(null),[state,setState]=useState<PersonalState|null>(null),[loaded,setLoaded]=useState(false);
- const [target]=useLocalState('trackcal:target:calories',2100),[proteinTarget]=useLocalState('trackcal:target:protein',130),[burned]=useLocalState(`trackcal:burn:${date}`,0),[meals]=useDiaryMeals(date),[done]=useLocalState<string[]>('trackcal:studio:program-days',[]),[checkins]=useLocalState<Checkin[]>('trackcal:studio:checkins',[]);
+ const [target]=useTarget("calories"),[proteinTarget]=useTarget("protein"),[burned]=useLocalState(`trackcal:burn:${date}`,0),[meals]=useDiaryMeals(date),[done]=useLocalState<string[]>('trackcal:studio:program-days',[]),[checkins]=useLocalState<Checkin[]>('trackcal:studio:checkins',[]);
  useEffect(()=>{let live=true;Promise.allSettled([wellnessRequest<TrainingData>('training'),personalRequest<PersonalState>('state')]).then(([work,person])=>{if(!live)return;if(work.status==='fulfilled')setTraining(work.value);if(person.status==='fulfilled')setState(person.value);setLoaded(true);});return()=>{live=false;};},[]);
  if(!loaded)return null;
  const now=Date.now(),moves=movesFrom(training?.sessions??[]),program=PROGRAMS.find(row=>done.some(id=>id.startsWith(row.id+':'))&&nextProgramDay(row,done)!==null);

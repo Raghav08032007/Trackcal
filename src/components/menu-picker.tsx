@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import { useTarget } from "@/lib/targets";
 import { useDiaryMeals } from "@/lib/diary";
 import Link from '@/lib/navigation';
 import {useAccount} from './account-session';
@@ -11,7 +12,7 @@ import {earnedBack} from '@/lib/workout-coach';
 
 /** Photograph a menu or screenshot a delivery app, and see which dishes suit the rest of your day. */
 export function MenuPicker(){
- const {ready}=useAccount(),date=useLocalDate(),[target]=useLocalState('trackcal:target:calories',2100),[burned]=useLocalState(`trackcal:burn:${date}`,0),[meals,setMeals]=useDiaryMeals(date);
+ const {ready}=useAccount(),date=useLocalDate(),[target]=useTarget("calories"),[burned]=useLocalState(`trackcal:burn:${date}`,0),[meals,setMeals]=useDiaryMeals(date);
  const [consent,setConsent]=useState(false),[dishes,setDishes]=useState<MenuDish[]|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[vegetarian,setVegetarian]=useState(false),[minor,setMinor]=useState(false);
  useEffect(()=>{let live=true;personalRequest<PersonalState>('state').then(state=>{if(live){setMinor(!!state.minor_account);if(['vegetarian','vegan'].includes(state.preferences?.diet))setVegetarian(true);}}).catch(()=>{});return()=>{live=false;};},[]);
  const left=Math.max(0,target+earnedBack(burned)-meals.reduce((total,meal)=>total+meal.calories,0));

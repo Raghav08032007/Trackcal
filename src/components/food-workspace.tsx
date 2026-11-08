@@ -1,5 +1,6 @@
 
 import { FoodCamera } from "@/components/food-camera";
+import { useTarget } from "@/lib/targets";
 import { useDiaryMeals } from "@/lib/diary";
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { consistencyWarning, FIELDS as NUTRIENT_FIELDS, rounded, scale, type Nutrients } from "@/lib/nutrition-math";
@@ -305,10 +306,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     diet: "standard"
   });
 
-  const [dailyTarget, setDailyTarget] = useLocalState("trackcal:target:calories", 2100);
-  const [targetProtein, setTargetProtein] = useLocalState("trackcal:target:protein", 130);
-  const [targetCarbs, setTargetCarbs] = useLocalState("trackcal:target:carbs", 220);
-  const [targetFat, setTargetFat] = useLocalState("trackcal:target:fat", 65);
+  const [dailyTarget, setDailyTarget] = useTarget("calories");
+  const [targetProtein, setTargetProtein] = useTarget("protein");
+  const [targetCarbs, setTargetCarbs] = useTarget("carbs");
+  const [targetFat, setTargetFat] = useTarget("fat");
 
   // Backend Health Ping
 

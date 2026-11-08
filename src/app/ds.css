@@ -264,3 +264,15 @@ html[data-theme="dark"] .health-safety.is-soon { color: #ffe3b0; }
 .health-reports { display: grid; gap: 10px; padding: 0; list-style: none; }
 .health-reports li { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 @media (max-width: 600px) { .health-table thead { display: none; } .health-table tr { display: grid; grid-template-columns: 1fr auto; } .health-table td.health-range { grid-column: 1; } }
+
+/* ── Daily targets ─────────────────────────────────────────────────────── */
+.targets-card { margin: 0 0 20px; }
+.targets-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.targets-head h2 { margin: 0; font-size: 1.2rem; }
+.targets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; margin: 16px 0 8px; }
+.targets-grid dt { display: grid; gap: 2px; font-size: .8rem; color: var(--ds-muted); font-weight: 650; }
+.targets-grid dd { margin: 2px 0 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.targets-grid dd small { font-size: .55em; color: var(--ds-muted); font-weight: 650; }
+.targets-mine { font-size: .7rem; color: var(--ds-indigo-ink); }
+.targets-how summary { cursor: pointer; font-weight: 650; color: var(--ds-indigo-ink); }
+.targets-how ul { margin: 10px 0; padding-left: 20px; display: grid; gap: 6px; color: var(--ds-muted); }

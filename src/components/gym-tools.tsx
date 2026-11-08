@@ -1,4 +1,5 @@
 import {useEffect,useMemo,useState} from "react";
+import { useTarget } from "@/lib/targets";
 import {useWorkspaceScope} from "./account-session";
 import type {MealLog} from "./journal-tools";
 import {adaptiveGoal,oneRepMax,platesPerSide,type GoalDay} from "@/lib/gym-math";
@@ -30,7 +31,7 @@ export function FastingTimer(){
  </section>;
 }
 export function AdaptiveGoal(){
- const scope=useWorkspaceScope(),[pace,setPace]=useState(-.25),[target,setTarget]=useLocalState("trackcal:target:calories",2100);
+ const scope=useWorkspaceScope(),[pace,setPace]=useState(-.25),[target,setTarget]=useTarget("calories");
  const days=useMemo(()=>{
   const all=exportLocalEntries(scope) as Record<string,unknown>,rows=new Map<string,GoalDay>(),cut=new Date(Date.now()-42*86400000).toISOString().slice(0,10);
   const at=(date:string)=>{const row=rows.get(date)??{date};rows.set(date,row);return row;};
