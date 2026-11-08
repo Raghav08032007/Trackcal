@@ -20,6 +20,8 @@ export type ExerciseConfig={
  inFrame?:[number[],number[]];
  /** Also read depth from how far the shoulders drop, which needs no legs in frame. */
  drop?:boolean;
+ /** Count how far the whole body rises above its standing level instead of a joint angle (calf raises). */
+ rise?:boolean;
  /** The move starts low and rises, like an arm raise: the angle is flipped so the rep runs the same way as a squat. */
  invert?:boolean;
  /** Either side can do the rep, so alternating legs all count. */
@@ -93,9 +95,9 @@ export const EXERCISE_CONFIG={
   up:42,down:18,hysteresis:8,minRangeDeg:20,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'2 m away, phone on the floor'},tips:['Lie side-on to the camera with your knees bent.','Keep shoulders, hips and knees in frame.'],experimental:true,
   suitable:flat(L.hip)},
- calf:{id:'calf',title:'Calf raises',template:'camera_calf',kcalPerRep:0.1,joints:[[25,27,31],[26,28,32]],invert:true,cues:['Stand tall','Rise onto your toes','Lower your heels'],required:pick(L.hip,L.knee,L.ankle,L.toe),
-  up:62,down:50,hysteresis:4,minRangeDeg:10,minRepMs:500,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
-  camera:{view:'side',distance:'1.5–2 m away, laptop at chest height'},tips:['Stand side-on, with your feet clearly in frame.','Rise slowly: this is a small movement.'],experimental:true,
+ calf:{id:'calf',title:'Calf raises',template:'camera_calf',kcalPerRep:0.1,joints:[[25,27,31],[26,28,32]],rise:true,cues:['Stand tall','Rise onto your toes','Lower your heels'],required:pick(L.shoulder,L.hip,L.ankle),
+  up:172,down:161,hysteresis:3,minRangeDeg:11,minRepMs:500,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  camera:{view:'side',distance:'1.5–2 m away, laptop at chest height'},tips:['Stand side-on or facing the camera, with your feet in frame.','Rise slowly onto your toes and pause for a moment at the top.'],experimental:true,
   suitable:(p,s)=>p[L.shoulder[s]].y<p[L.hip[s]].y},
  sideleg:{id:'sideleg',title:'Side leg raises',template:'camera_sideleg',kcalPerRep:0.15,joints:[[24,23,25],[23,24,26]],either:true,invert:true,cues:['Stand tall','Lift one leg sideways','Lower your leg'],required:pick(L.shoulder,L.hip,L.knee),
   up:72,down:55,hysteresis:4,minRangeDeg:12,minRepMs:500,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
@@ -182,9 +184,9 @@ export const EXERCISE_CONFIG={
  goodmorning:{id:'goodmorning',title:'Good mornings',template:'camera_goodmorning',kcalPerRep:0.3,joints:[[11,23,25],[12,24,26]],span:[[11,25],[12,26]],cues:['Weight on your shoulders', 'Hinge forward', 'Stand up'],required:pick(L.shoulder,L.hip,L.knee),
   up:155,down:120,hysteresis:8,minRangeDeg:30,minRepMs:800,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:'1.5–2 m away, laptop at chest height'},tips:['Keep your hands at your shoulders.'],experimental:true},
- wcalf:{id:'wcalf',title:'Dumbbell calf raises',template:'camera_wcalf',kcalPerRep:0.14,joints:[[25,27,31],[26,28,32]],invert:true,cues:['Stand tall', 'Rise onto your toes', 'Lower your heels'],required:pick(L.hip,L.knee,L.ankle,L.toe),
-  up:62,down:50,hysteresis:4,minRangeDeg:10,minRepMs:500,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
-  camera:{view:'side',distance:'1.5–2 m away, laptop at chest height'},tips:['Rise slowly: this is a small movement.'],experimental:true,
+ wcalf:{id:'wcalf',title:'Dumbbell calf raises',template:'camera_wcalf',kcalPerRep:0.14,joints:[[25,27,31],[26,28,32]],rise:true,cues:['Stand tall', 'Rise onto your toes', 'Lower your heels'],required:pick(L.shoulder,L.hip,L.ankle),
+  up:172,down:161,hysteresis:3,minRangeDeg:11,minRepMs:500,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  camera:{view:'side',distance:'1.5–2 m away, laptop at chest height'},tips:['Stand side-on or facing the camera, with your feet in frame.','Rise slowly: this is a small movement.'],experimental:true,
   suitable:(p,s)=>p[L.shoulder[s]].y<p[L.hip[s]].y},
  hipthrust:{id:'hipthrust',title:'Weighted hip thrusts',template:'camera_hipthrust',kcalPerRep:0.3,joints:[[11,23,25],[12,24,26]],span:[[11,25],[12,26]],invert:true,cues:['Weight on your hips', 'Lift your hips', 'Lower your hips'],required:pick(L.shoulder,L.hip,L.knee),
   up:42,down:18,hysteresis:8,minRangeDeg:20,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
@@ -300,7 +302,7 @@ export const EXERCISE_CONFIG={
 for(const [id,form] of Object.entries(EXERCISE_FORMS))EXERCISE_CONFIG[id as ExerciseKind].form=form;
 /** Measured with the same motions filmed from the other angle (tests/pose-both-angles.test.ts). Mostly floor work, where the
  *  legs hide the body head-on, and moves whose travel runs straight towards the camera. */
-export const ONE_ANGLE:ReadonlySet<ExerciseKind>=new Set<ExerciseKind>(['situp','wallpush','raise','bridge','calf','sideleg','donkey','superman','kickback','front','crunch','legraise','sidebend','climber','hipthrust','revfly','seatrow','pullup','birddog','flutter','bicycle','revcrunch','vup','punch','pullover','kbswing','legext','shouldertap','legcurl','nordic','wcalf']);
+export const ONE_ANGLE:ReadonlySet<ExerciseKind>=new Set<ExerciseKind>(['situp','wallpush','raise','bridge','sideleg','donkey','superman','kickback','front','crunch','legraise','sidebend','climber','hipthrust','revfly','seatrow','pullup','birddog','flutter','bicycle','revcrunch','vup','punch','pullover','kbswing','legext','shouldertap','legcurl','nordic']);
 for(const [id,move] of Object.entries(MOVES)){const c=EXERCISE_CONFIG[id as ExerciseKind];if(!c)continue;const base=(EXERCISE_VARIANTS[id as ExerciseKind]??id) as ExerciseKind;c.plane=move.view;c.bothAngles=!ONE_ANGLE.has(base);}
 /** The first camera tip: which way to stand, from what was measured. */
 export function angleTip(c:ExerciseConfig){

@@ -10,7 +10,8 @@ export class JointAnalyzer implements ExerciseAnalyzer{
  constructor(readonly config:ExerciseConfig,private fixedSide?:0|1){this.resetFilters();}
  private resetFilters(){const {minCutoff,beta}=this.config.smoothing;this.filters=Array.from({length:6},()=>new OneEuroFilter(minCutoff,beta));}
  reset(){this.side=null;this.center=null;this.reach=0;this.span=null;this.clearDrop();this.resetFilters();}
- private clearDrop(){this.top=null;this.torso=0;this.shoulders=null;}
+ private clearDrop(){this.top=null;this.torso=0;this.shoulders=null;this.level=null;this.floor=null;this.leg=0;this.lastT=null;this.stillFor=0;this.feet=null;this.jumpUntil=0;}
+ private level:number|null=null;private floor:number|null=null;private leg=0;private lastT:number|null=null;private stillFor=0;private feet:number|null=null;private jumpUntil=0;
  observe(frame:PoseFrame):Observation{
   const c=this.config,p=normalize(frame),bad=(reason:string,quality=0)=>{this.resetFilters();return {angle:0,confidence:quality,valid:false,reason};};
   if(!p)return bad(frame.landmarks.length>1?'Only one person should be in view.':'Step back so your whole body is in frame.');
@@ -30,9 +31,38 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   if(c.suitable&&!c.suitable(p,side))return bad('The movement is not clear from this angle. Adjust the camera.',quality);
   const joint=c.joints[side].map((id,i):Landmark=>({x:this.filters[i*2].filter(p[id].x,frame.timestamp),y:this.filters[i*2+1].filter(p[id].y,frame.timestamp)}));
   const extra=c.optional?.[side],legs=!extra||(confidence(p,extra)>=c.minVisibility&&visible(frame,extra));
-  const degrees=Math.min(legs?angle(joint[0],joint[1],joint[2]):Infinity,legs?this.spanAngle(p,side):Infinity,c.drop?this.dropAngle(p,hipsSeen):Infinity);
+  const degrees=c.rise?this.riseAngle(p,frame.timestamp):Math.min(legs?angle(joint[0],joint[1],joint[2]):Infinity,legs?this.spanAngle(p,side):Infinity,c.drop?this.dropAngle(p,hipsSeen):Infinity);
   const reading=c.invert?180-degrees:degrees;
+  if(c.rise&&Number.isNaN(reading))return bad('That looked like a jump. Rise onto your toes and keep them on the floor.',quality);
   return Number.isFinite(reading)?{angle:reading,confidence:quality,valid:true,reason:''}:bad('The movement was not detected clearly.',quality);
+ }
+ /** Rising onto the toes lifts everything above the ankles by the heel height, from any camera angle. The lift is measured from the
+  *  standing level (the lowest the body has been lately) in leg lengths, so it fits any height and distance, and read in the same
+  *  degrees as a joint: standing is 180, a 6% lift (about 5 cm for most people) is about 144. */
+ private riseAngle(p:Landmark[],t:number){
+  const body=(p[11].y+p[12].y+p[23].y+p[24].y)/4,hips=(p[23].y+p[24].y)/2,ankles=(p[27].y+p[28].y)/2;
+  const before=this.level;this.level=this.level===null?body:this.level*.5+body*.5;
+  const dt=this.lastT===null?0:Math.min(1,Math.max(0,(t-this.lastT)/1000));this.lastT=t;
+  // The standing level follows the body down at once, and drifts up only slowly (0.15% of the frame a second) in case the
+  // camera or the person shifts: far too slowly to swallow a raise held for a few seconds.
+  // Squats and lunges also come back up, but they bend the legs on the way down: hips to ankles gets shorter. The standing level is
+  // only taken with straight legs, and bent legs are never a raise, so coming up out of a lunge isn't one either.
+  const span=ankles-hips;this.leg=Math.max(span,this.leg*.999);
+  if(!(this.leg>.05))return Infinity;
+  const straight=span>=this.leg*.93;
+  // Standing is straight legs held still for half a second: true between raises, never on the way into a squat or lunge.
+  const speed=before===null||!dt?0:Math.abs(this.level-before)/dt/this.leg;
+  this.stillFor=straight&&speed<.08?this.stillFor+dt:0;
+  if(this.floor===null){this.floor=this.level;this.feet=ankles;}
+  else if(this.stillFor>=.5){this.floor=Math.max(this.level,this.floor-.0015*dt);this.feet=Math.max(ankles,this.feet!-.0015*dt);}
+  else this.floor-=.0015*dt;
+  // On the toes the ankles rise only about a centimetre; in a jump they leave the floor with the body. A jump, or a rise far
+  // beyond heel height, isn't a calf raise, nor is anything in the moment after it.
+  const lift=(this.floor-this.level)/this.leg,feetUp=(this.feet!-ankles)/this.leg;
+  if(feetUp>.05||lift>.16)this.jumpUntil=t+1500;
+  if(t<this.jumpUntil)return NaN;
+  if(!straight)return 180;
+  return 180-Math.min(120,Math.max(0,lift*600));
  }
  /** Shoulders drop as a squat goes down, whatever is in frame. Depth is that drop in torso lengths, from the standing height, in the same
   *  degrees as the knee: half a torso is about a thigh-level squat. */

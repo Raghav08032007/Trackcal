@@ -61,8 +61,8 @@ export const MOVES={
  highknee:{view:'side',anchor:'hip',keys:[{},{thigh:[92,0],shin:[5,0]}]},
  buttkick:{view:'side',anchor:'hip',keys:[{},{shin:[-115,0]}]},
  sideleg:{view:'front',anchor:'hip',keys:[{},{thigh:[-46,0],shin:[-46,0]}]},
- calf:{view:'side',anchor:'foot',keys:[{},{heel:.05}]},
- wcalf:{view:'side',anchor:'foot',keys:[{},{heel:.05}]},
+ calf:{view:'side',anchor:'foot',keys:[{},{lift:.025,heel:-.015}]},  // up on the toes: the body rises by the heel height, the ankles only a little
+ wcalf:{view:'side',anchor:'foot',keys:[{},{lift:.025,heel:-.015}]},  // up on the toes: the body rises by the heel height, the ankles only a little
  donkey:{view:'side',anchor:'hip',keys:[{...FOURS},{...FOURS,thigh:[-62,0]}]},
  bridge:{view:'side',anchor:'shoulder',keys:[{...KNEES,thigh:both(150)},{torso:-112,thigh:both(108),shin:both(10),arm:both(95),fore:both(95)}]},
  hipthrust:{view:'side',anchor:'shoulder',keys:[{...KNEES,thigh:both(150)},{torso:-112,thigh:both(108),shin:both(10),arm:both(95),fore:both(95)}]},
