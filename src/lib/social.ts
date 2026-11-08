@@ -1,8 +1,10 @@
 // Social feed client (flag social_feed). The server applies every visibility and safety rule.
 export type Reaction = "like" | "cheer" | "clap" | "hug";
 export type Author = { handle: string; display_name: string; character_id: string };
+/** A shared GPS activity, as its feed card shows it. The outline already has its start, end and privacy zones removed. */
+export type ActivityCard = { id: string; sport: "walk" | "run" | "hike" | "ride"; distance_m: number; moving_s: number; elevation_gain_m: number; records: string[]; preview: [number, number][] };
 export type FeedPost = {
-  id: string; author: Author; body: string; milestone: { type: string; title: string } | null; visibility: "public" | "followers";
+  id: string; author: Author; body: string; milestone: { type: string; title: string; activity?: ActivityCard } | null; visibility: "public" | "followers";
   created_at: string; reactions: Record<Reaction, number>; my_reaction: Reaction | null; comment_count: number; mine: boolean; hidden: boolean;
 };
 export type Profile = {

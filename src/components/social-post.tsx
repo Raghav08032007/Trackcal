@@ -2,7 +2,9 @@
 // block or delete. Every action goes to the server, which decides what's allowed.
 import { useState } from "react";
 import Link from "@/lib/navigation";
-import { ago, avatar, REACTIONS, REPORT_REASONS, social, type Comment, type FeedPost } from "@/lib/social";
+import { ago, avatar, REACTIONS, REPORT_REASONS, social, type ActivityCard, type Comment, type FeedPost } from "@/lib/social";
+import { RouteThumb } from "@/components/route-map";
+import { duration, km, pace, sportTitle } from "@/lib/activities";
 
 export function SocialPost({ post, onChange, onRemove }: { post: FeedPost; onChange: (post: FeedPost) => void; onRemove: (id: string, authorHandle?: string) => void }) {
   const [comments, setComments] = useState<Comment[] | null>(null), [draft, setDraft] = useState(""), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
@@ -23,7 +25,7 @@ export function SocialPost({ post, onChange, onRemove }: { post: FeedPost; onCha
         <button onClick={() => void run(async () => { await social(`block/${post.author.handle}`, "POST", { kind: "block" }); onRemove(post.id, post.author.handle); })}>Block @{post.author.handle}</button>
       </>}
     </div>}
-    {post.milestone && <p className="social-milestone"><span aria-hidden="true">✦</span> {post.milestone.title}</p>}
+    {post.milestone?.activity ? <ActivityCardView title={post.milestone.title} card={post.milestone.activity} /> : post.milestone && <p className="social-milestone"><span aria-hidden="true">✦</span> {post.milestone.title}</p>}
     {post.body && <p className="social-body">{post.body}</p>}
     <div className="social-reactions" role="group" aria-label="Reactions">
       {REACTIONS.map(r => <button key={r.kind} aria-pressed={post.my_reaction === r.kind} disabled={busy} onClick={() => void react(r.kind)} aria-label={`${r.label}, ${post.reactions[r.kind]}`}><span aria-hidden="true">{r.icon}</span> {post.reactions[r.kind]}</button>)}
@@ -44,4 +46,14 @@ export function SocialPost({ post, onChange, onRemove }: { post: FeedPost; onCha
     </section>}
     {message && <p role="status" className="social-note">{message}</p>}
   </article>;
+}
+
+/** A shared walk, run, hike or ride: its outline and numbers, linking to the full activity. */
+function ActivityCardView({ title, card }: { title: string; card: ActivityCard }) {
+  return <Link className="feed-activity" href={`/activities/${card.id}`}>
+    <RouteThumb preview={card.preview} />
+    <div><span className="activity-meta">{sportTitle(card.sport)}</span><strong className="feed-activity-title">{title}</strong>
+      <dl className="activity-numbers"><div><dt>Distance</dt><dd>{km(card.distance_m)} km</dd></div><div><dt>{card.sport === "ride" ? "Speed" : "Pace"}</dt><dd>{pace(card.sport, card.distance_m, card.moving_s)}</dd></div><div><dt>Time</dt><dd>{duration(card.moving_s)}</dd></div>{card.elevation_gain_m >= 5 && <div><dt>Climb</dt><dd>{Math.round(card.elevation_gain_m)} m</dd></div>}</dl>
+      {card.records.length > 0 && <span className="feed-records">🏆 {card.records.length === 1 ? `New record: ${card.records[0]}` : `${card.records.length} new records`}</span>}</div>
+  </Link>;
 }

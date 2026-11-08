@@ -4,6 +4,8 @@ import { useParams } from "react-router";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { ElevationProfile, RouteMap, SplitBars } from "@/components/route-map";
+import { SocialPost } from "@/components/social-post";
+import { avatar } from "@/lib/social";
 import { VISIBILITY, activities, duration, km, pace, paceLabel, sportTitle, when, type Activity, type Visibility } from "@/lib/activities";
 
 export const metadata = { title: "TrackCal — Activity" };
@@ -20,7 +22,8 @@ export default function Page() {
 }
 
 function View({ activity: a, onChange }: { activity: Activity; onChange: (a: Activity) => void }) {
-  const router = useRouter();
+  const router = useRouter(), [post, setPost] = useState(a.post);
+  useEffect(() => { setPost(a.post); }, [a.post]);
   const [editing, setEditing] = useState(false), [name, setName] = useState(a.name), [notes, setNotes] = useState(a.notes ?? ""), [busy, setBusy] = useState(false), [note, setNote] = useState("");
   async function patch(body: { name?: string; notes?: string; visibility?: Visibility }) {
     setBusy(true); setNote("");
@@ -58,6 +61,9 @@ function View({ activity: a, onChange }: { activity: Activity; onChange: (a: Act
     <ElevationProfile route={a.route} />
     {a.splits.length > 0 && <section className="account-card"><h2>Splits</h2><SplitBars splits={a.splits} sport={a.sport} /></section>}
     {best.length > 0 && <section className="account-card"><h2>Best efforts</h2><ul className="best-efforts">{best.map(e => <li key={e.label}><span>{e.label}</span><strong>{duration(e.seconds)}</strong><small>{pace(a.sport, e.distance_m, e.seconds)}</small></li>)}</ul></section>}
+    {a.together.length > 0 && <section className="account-card together"><h2>Together</h2><ul>{a.together.map(t => <li key={t.activity_id}><Link href={`/activities/${t.activity_id}`}><img src={avatar(t.character_id)} alt="" width={36} height={36} /><span><strong>{t.display_name}</strong><small>@{t.handle}</small></span></Link></li>)}</ul></section>}
+    {post ? <section className="account-card activity-social"><h2>Kudos and comments</h2><SocialPost post={post} onChange={setPost} onRemove={() => setPost(null)} /></section>
+      : a.mine && a.visibility !== "private" && <p className="rep-replay-note activity-feed-hint">To show this in the feed with kudos and comments, <Link href="/feed">choose a handle in Feed</Link>, then change who can see it.</p>}
     {a.mine && <section className="account-card activity-owner"><h2>Sharing</h2>
       <fieldset className="visibility-choice"><legend className="sr-only">Who can see it</legend>{VISIBILITY.map(v => <label key={v.id}><input type="radio" name="visibility" disabled={busy} checked={a.visibility === v.id} onChange={() => void patch({ visibility: v.id })} /> <span><strong>{v.title}</strong><small>{v.detail}</small></span></label>)}</fieldset>
       <div className="account-actions">{!editing && <button onClick={() => setEditing(true)}>Edit name and notes</button>}<button className="danger-button" disabled={busy} onClick={() => void remove()}>Delete activity</button></div>

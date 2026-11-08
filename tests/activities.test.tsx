@@ -109,3 +109,18 @@ describe("recording and saving", () => {
     expect(readPending()).not.toBeNull();
   });
 });
+
+describe("activities in the feed", () => {
+  const post = { id: "p1", author: { handle: "asha", display_name: "Asha", character_id: "pip" }, body: "Sunrise loop", visibility: "followers" as const, created_at: new Date().toISOString(),
+    reactions: { like: 2, cheer: 0, clap: 0, hug: 0 }, my_reaction: null, comment_count: 1, mine: false, hidden: false,
+    milestone: { type: "activity", title: "Morning run", activity: { id: "a1", sport: "run" as const, distance_m: 5012, moving_s: 1500, elevation_gain_m: 42, records: ["1 km", "5 km"], preview: [[12.97, 77.59], [12.98, 77.6]] as [number, number][] } } };
+  it("shows the route, the numbers and new records, and links to the activity", async () => {
+    const { SocialPost } = await import("@/components/social-post");
+    render(<SocialPost post={post} onChange={() => {}} onRemove={() => {}} />);
+    const card = screen.getByRole("link", { name: /Morning run/ });
+    expect(card.getAttribute("href")).toBe("/activities/a1");
+    expect(card.textContent).toContain("5.01 km"); expect(card.textContent).toContain("4:59 /km"); expect(card.textContent).toContain("42 m");
+    expect(card.textContent).toContain("2 new records");
+    expect(screen.getByText("Sunrise loop")).toBeTruthy();
+  });
+});

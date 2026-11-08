@@ -9,7 +9,9 @@ export type ActivitySummary = {
   id: string; sport: Sport; name: string; notes: string | null; visibility: Visibility; started_at: string; distance_m: number; moving_s: number;
   elapsed_s: number; elevation_gain_m: number; elevation_loss_m: number; avg_speed_ms: number; max_speed_ms: number; user_id: string; preview?: [number, number][];
 };
-export type Activity = ActivitySummary & { route: RoutePoint[]; splits: Split[]; best_efforts: BestEffort[]; mine: boolean; fixes_used?: number; fixes_dropped?: number };
+export type Together = { handle: string; display_name: string; character_id: string; activity_id: string };
+export type Activity = ActivitySummary & { route: RoutePoint[]; splits: Split[]; best_efforts: BestEffort[]; mine: boolean; fixes_used?: number; fixes_dropped?: number;
+  post: import("./social").FeedPost | null; together: Together[]; records_set: string[] };
 export type NewRecord = { kind: "best_effort" | "longest" | "climb"; label: string; seconds?: number; previous_seconds?: number | null; distance_m?: number; previous_m?: number; elevation_gain_m?: number };
 export type Records = { sport: Sport; best_efforts: BestEffort[]; longest: { distance_m: number; activity_id: string; date: string } | null; biggest_climb: { elevation_gain_m: number; activity_id: string; date: string } | null };
 export type Zone = { id: string; label: string; lat: number; lon: number; radius_m: number };

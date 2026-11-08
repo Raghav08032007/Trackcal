@@ -46,7 +46,9 @@ export function RouteMap({ route, showEnds, label }: { route: RoutePoint[]; show
 
 /** Height along the route, from the server's smoothed altitude. */
 export function ElevationProfile({ route }: { route: RoutePoint[] }) {
-  const points = route.filter(p => p[3] !== null && p[4] !== null) as [number, number, number, number, number][];
+  // Shared routes carry no distances (they could hint where the route starts), so the profile then runs by point order instead.
+  const withHeight = route.filter(p => p[3] !== null), byDistance = withHeight.every(p => p[4] !== null);
+  const points = withHeight.map((p, i) => [p[0], p[1], p[2], p[3], byDistance ? p[4] : i]) as [number, number, number, number, number][];
   if (points.length < 5) return null;
   const w = 600, h = 120, total = points[points.length - 1][4] || 1;
   const alts = points.map(p => p[3]), lo = Math.min(...alts), hi = Math.max(...alts), range = Math.max(hi - lo, 10);
