@@ -13,17 +13,17 @@ const base:PersonalState={preferences:structuredClone(defaultPreferences),step:1
 beforeEach(()=>{window.history.replaceState(null,'','/');});
 it('completes all eight steps without measurements and saves the first plan',async()=>{
  const writes:Record<string,unknown>[]=[];vi.stubGlobal('fetch',vi.fn(async(url,options)=>{if(!options?.body)return Response.json(base);const body=JSON.parse(options.body);writes.push(body);return Response.json(String(url).endsWith('/plans')?{plan:{id:'plan'}}:{revision:body.revision+1,awarded_xp:body.complete?10:0,summary:{initialized:!!body.complete}});}));
- render(<PersonalOnboarding/>);await screen.findByRole('heading',{name:'Welcome'});
+ render(<PersonalOnboarding/>);await screen.findByRole('heading',{name:'Your goal'});
  for(let i=0;i<7;i++)await userEvent.click(screen.getByRole('button',{name:'Next'}));
  expect(screen.getByRole('progressbar').getAttribute('value')).toBe('8');
  await userEvent.click(screen.getByRole('button',{name:'Finish & create my plan'}));
- await screen.findByRole('heading',{name:'Your personal journey is ready.'});
+ await screen.findByRole('heading',{name:'Your plan is ready.'});
  expect(writes.filter(v=>v.complete===true)).toHaveLength(1);expect(writes.at(-1)?.revision).toBe(8);
  expect(writes.some(v=>'height' in v||'weight' in v||'xp' in v)).toBe(false);
 });
 it('resumes a cloud draft, preserves comma-separated preferences and reports save errors without losing input',async()=>{
- const fetcher=vi.fn().mockResolvedValueOnce(Response.json({...base,step:6,revision:4})).mockResolvedValue(Response.json({error:'Connection unavailable'},{status:503}));vi.stubGlobal('fetch',fetcher);
- render(<PersonalOnboarding/>);await screen.findByRole('heading',{name:'Nutrition preferences'});
+ const fetcher=vi.fn().mockResolvedValueOnce(Response.json({...base,step:4,revision:4})).mockResolvedValue(Response.json({error:'Connection unavailable'},{status:503}));vi.stubGlobal('fetch',fetcher);
+ render(<PersonalOnboarding/>);await screen.findByRole('heading',{name:'How you eat'});
  await userEvent.type(screen.getByLabelText('Food allergies (comma separated)'),'milk, egg');
  expect((screen.getByLabelText('Food allergies (comma separated)') as HTMLInputElement).value).toBe('milk, egg');
  await userEvent.click(screen.getByRole('button',{name:'Save & resume later'}));
@@ -52,4 +52,18 @@ it('shows only a bounded in-app reminder and persists snooze without requesting 
 it('requires explicit review before transferring a meal idea and invents no nutrition',async()=>{
  window.history.replaceState(null,'','/?mealIdea=Lentil%20bowl');const choose=vi.fn();render(<MealIdeaTransfer onChoose={choose}/>);expect(choose).not.toHaveBeenCalled();
  await userEvent.click(screen.getByRole('button',{name:'Review this meal idea'}));expect(choose).toHaveBeenCalledWith('Lentil bowl');
+});
+
+it('marks a knee surgery on the body map and sends it with the answers',async()=>{
+ const writes:{preferences:{conditions:unknown[];goal:string;state:string}}[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url,options)=>{if(!options?.body)return Response.json({...base,step:5,revision:2,preferences:{...base.preferences,country:'India'}});const body=JSON.parse(options.body);writes.push(body);return Response.json({revision:body.revision+1,awarded_xp:0});}));
+ render(<PersonalOnboarding/>);await screen.findByRole('heading',{name:'Surgeries and injuries'});
+ await userEvent.click(screen.getByRole('button',{name:'Right knee'}));
+ await userEvent.click(screen.getByRole('button',{name:'Add something about my right knee'}));
+ await userEvent.click(screen.getByRole('button',{name:'Surgery'}));
+ await userEvent.click(screen.getByRole('button',{name:'6 to 12 weeks ago'}));
+ await userEvent.click(screen.getByRole('button',{name:'Not yet'}));
+ await userEvent.click(screen.getByRole('button',{name:'Next'}));
+ await screen.findByRole('heading',{name:'Your week'});
+ expect(writes.at(-1)?.preferences.conditions).toEqual([{part:'knee_r',kind:'surgery',detail:'',when:'6to12w',status:'healing',cleared:false}]);
 });

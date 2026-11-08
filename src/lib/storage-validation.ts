@@ -7,6 +7,7 @@ export function validStoredValue(key: string, value: unknown): boolean {
   if(key==="trackcal:play:motion")return typeof value==="boolean";
   if(key==="trackcal:play:character")return typeof value==="string"&&["pip","nova","milo","luna","rio","sage"].includes(value);
   if(key==="trackcal:play:calm")return typeof value==="boolean";
+  if(key==="trackcal:comfort")return typeof value==="boolean";
   if(key==="trackcal:appearance")return ["system","light","dark"].includes(String(value));
   if(key==="trackcal:reminders")return Array.isArray(value)&&value.length<=500&&value.every(item=>record(item)&&typeof item.id==="string"&&typeof item.title==="string"&&item.title.length>0&&item.title.length<=120&&typeof item.startsAt==="string"&&Number.isFinite(Date.parse(item.startsAt))&&number(item.minutes,120)&&item.minutes>=5&&["once","daily","weekly"].includes(String(item.repeat))&&typeof item.enabled==="boolean");
   if (key === "trackcal:preferences") return record(value) && typeof value.currency === "string" && /^[A-Z]{3}$/.test(value.currency) && number(value.dailyBudget,100000) && typeof value.excludedTags === "string" && value.excludedTags.length <= 500 && ["balanced","vegetarian","vegan","pescatarian"].includes(String(value.diet)) && typeof value.completed === "boolean";
