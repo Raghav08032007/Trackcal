@@ -431,3 +431,46 @@ def test_the_daily_check_in_reaches_the_api_through_the_gateway(inner):
     first = post(c, '/api/adventure/check-in', {})
     assert first.status_code == 200, first.get_data(as_text=True)
     assert first.get_json()['awarded_xp'] == 5 and post(c, '/api/adventure/check-in', {}).get_json()['awarded_xp'] == 0
+
+
+def test_blood_reports_end_to_end(inner, internet):
+    import base64
+    from tests.test_lab_parse import _pdf
+    calls, replies = internet
+    c = browser(); signed_up(c)
+    origin = {'Origin': 'http://localhost', 'Content-Type': 'application/json'}
+    pdf = base64.b64encode(_pdf(['HbA1c 6.8 % 4.0 - 5.6', 'LDL Cholesterol 171 mg/dL < 100', 'Hemoglobin 11.2 g/dL 12.0 - 15.5'])).decode()
+    read = post(c, '/api/health/read', {'kind': 'pdf', 'data': pdf})
+    assert read.status_code == 200, read.get_data(as_text=True)
+    readings = {r['code']: r for r in read.get_json()['readings']}
+    assert readings['hba1c']['value'] == 6.8 and readings['ldl']['value'] == 171 and readings['hemoglobin']['value'] == 11.2
+    assert c.get('/api/health/summary').get_json()['reports'] == []          # reading stores nothing
+    results = [{k: r[k] for k in ('code', 'value', 'ref_low', 'ref_high')} for r in readings.values()]
+    saved = post(c, '/api/health/reports', {'report_date': '2026-11-01', 'lab_name': 'Test Lab', 'source': 'pdf', 'results': results})
+    assert saved.status_code == 201, saved.get_data(as_text=True)
+    body = saved.get_json()
+    assert body['safety'] == 'ok' and body['plan']['exercise']['post_meal_walk'] and body['plan']['retest_on'] == '2027-01-30'
+    summary = c.get('/api/health/summary').get_json()
+    assert summary['latest']['report']['lab_name'] == 'Test Lab' and summary['history']['ldl'] == [{'date': '2026-11-01', 'value': 171.0}]
+    assert post(c, '/api/health/reports', {'report_date': '2026-11-01', 'source': 'manual', 'results': [{'code': 'hemoglobin', 'value': 145}]}).status_code == 422
+    # A photo needs consent; with it, the AI's copy of the printed values goes through the same reader.
+    assert post(c, '/api/health-photo', {'image': 'data:image/png;base64,AAAA'}).status_code == 422
+    replies.append(Fake(200, {'choices': [{'message': {'content': '{"tests":[{"name":"Vitamin D 25-OH","value":"14.2","unit":"ng/mL","range":"30 - 100"},{"name":"TSH","value":"6.1","unit":"uIU/mL","range":"0.4-4.5"}]}'}}]}))
+    from services import photo_prep
+    import pytest as _pytest
+    mp = _pytest.MonkeyPatch(); mp.setattr(photo_prep, 'prepare', lambda image: image)
+    try:
+        photo = post(c, '/api/health-photo', {'image': 'data:image/png;base64,AAAA', 'ai_consent': True})
+    finally:
+        mp.undo()
+    assert photo.status_code == 200, photo.get_data(as_text=True)
+    got = {r['code']: r['value'] for r in photo.get_json()['readings']}
+    assert got == {'vitamin_d': 14.2, 'tsh': 6.1}
+    assert 'Never include patient names' in str(calls[-1]['json'])
+    # Delete belongs to the owner.
+    report_id = summary['reports'][0]['id']
+    other = browser(); signed_up(other)
+    assert other.delete(f'/api/health/reports/{report_id}', headers={'Origin': 'http://localhost'}).status_code == 404
+    assert c.delete(f'/api/health/reports/{report_id}', headers={'Origin': 'http://localhost'}).status_code == 204
+    assert c.get('/api/health/summary').get_json()['latest'] is None
+    assert post(c, '/api/health/read', {'kind': 'pdf', 'data': pdf}, origin='https://evil.example').status_code == 403

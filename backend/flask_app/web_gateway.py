@@ -339,6 +339,64 @@ def activity_routes(path):
         return error('Activities are unavailable right now. Your recording is kept on this device; retry in a moment.', 503)
 
 
+# ── Blood reports ─────────────────────────────────────────────────────────
+
+HEALTH = [('GET', r'tests'), ('GET', r'summary'), ('POST', r'read'), ('POST', r'reports'), ('DELETE', r'reports/[0-9a-f-]{36}')]
+LAB_PROMPT = ('This is a photo of a medical laboratory report. Copy only the test results that are printed on it. Reply with JSON only: '
+              '{"tests":[{"name":"","value":"","unit":"","range":""}]}. name is the test name exactly as printed, value the result exactly as '
+              'printed, unit as printed, range the printed reference interval (for example "70 - 100" or "< 200") or "". Do not interpret, '
+              'correct, convert or add anything, and leave out any test whose value you cannot read clearly. Never include patient names, '
+              'ages, IDs, doctor names or addresses.')
+
+
+@bp.route('/health/<path:path>', methods=['GET', 'POST', 'DELETE'])
+def health_routes(path):
+    method = request.method
+    if not any(m == method and re.fullmatch(p, path) for m, p in HEALTH): return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        body = None
+        if method == 'POST':
+            body, failed = json_object(12_500_000, ('Upload a report under 8 MB.', 413), 'Invalid JSON')
+            if failed: return failed
+        return forward(authenticated(method, '/health/' + path, body))
+    except Exception:
+        return error('Reports are unavailable right now. Nothing was saved; retry in a moment.', 503)
+
+
+@bp.post('/health-photo')
+def health_photo():
+    """A photo of a report, read by the AI only with the person's consent for this photo. The values come back for them to check
+    and are read by the same rules as a PDF; the photo is not stored."""
+    from services import photo_prep
+    if not same_origin(): return error('Origin rejected', 403)
+    body, failed = json_object(15_000_000, ('Photo must be under 10 MB.', 413), 'Invalid JSON')
+    if failed: return failed
+    if body.get('ai_consent') is not True: return error('Allow the AI to read this photo, or type the values instead.', 422)
+    image = body.get('image')
+    if not isinstance(image, str): return error('Provide a JPEG, PNG or WebP photo under 10 MB.', 400)
+    try: image = photo_prep.prepare(image)
+    except photo_prep.PhotoError as failure: return error(str(failure), 400)
+    refused = _ai_allowance()
+    if refused: return refused
+    payload = {**model_fields(), 'temperature': 0, 'max_tokens': 2500, 'response_format': {'type': 'json_object'}, 'messages': [{'role': 'user', 'content': [
+        {'type': 'text', 'text': LAB_PROMPT}, {'type': 'image_url', 'image_url': {'url': image}}]}]}
+    try:
+        response = _external('POST', 'https://openrouter.ai/api/v1/chat/completions', json=payload, timeout=40,
+                             headers={'Authorization': f"Bearer {os.environ['OPENROUTER_API_KEY']}", 'Content-Type': 'application/json', 'X-Title': 'TrackCal'})
+        if response.status_code >= 400: return error('The AI reader is unavailable. Retry, or type the values.', 502)
+        raw = (response.json().get('choices') or [{}])[0].get('message', {}).get('content')
+        parsed = json.loads(re.sub(r'\s*```$', '', re.sub(r'^```(?:json)?\s*', '', raw.strip(), flags=re.I)))
+        rows = parsed.get('tests') if isinstance(parsed, dict) else None
+        if not isinstance(rows, list): raise ValueError
+    except Exception:
+        return error('Could not read that photo. Try a flat, well-lit, straight-on photo of the results page.', 502)
+    clean = lambda v, n: ' '.join(str(v).split())[:n] if isinstance(v, (str, int, float)) else ''
+    text = chr(10).join(f"{clean(r.get('name'), 80)} {clean(r.get('value'), 20)} {clean(r.get('unit'), 20)} {clean(r.get('range'), 40)}" for r in rows[:80] if isinstance(r, dict))
+    try: return forward(authenticated('POST', '/health/read', {'kind': 'text', 'data': text or ' '}))
+    except Exception: return error('Reports are unavailable right now. Nothing was saved; retry in a moment.', 503)
+
+
 # ── Communities (flag communities) ────────────────────────────────────────
 
 SLUG = r'[a-z0-9-]{3,40}'

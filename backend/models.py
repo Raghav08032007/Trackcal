@@ -1289,3 +1289,25 @@ class PrivacyZone(Base):
     lon=Column(Float,nullable=False)
     radius_m=Column(Integer,nullable=False,default=300)
     created_at=Column(DateTime,nullable=False,default=_now)
+
+
+class LabReport(Base):
+    """A blood report the person confirmed. Only the values are kept: the uploaded file is read and discarded."""
+    __tablename__='lab_reports'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    report_date=Column(String(10),nullable=False)  # YYYY-MM-DD, the date the sample was taken
+    lab_name=Column(String(80),nullable=True)
+    source=Column(String(12),nullable=False)       # pdf, photo, manual
+    created_at=Column(DateTime,nullable=False,default=_now)
+
+
+class LabResult(Base):
+    __tablename__='lab_results'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    report_id=Column(CHAR(36),ForeignKey('lab_reports.id',ondelete='CASCADE'),nullable=False,index=True)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    code=Column(String(24),nullable=False)
+    value=Column(Float,nullable=False)
+    ref_low=Column(Float,nullable=True)
+    ref_high=Column(Float,nullable=True)
