@@ -237,3 +237,13 @@ html[data-theme="dark"] .feed-records { background: #2d3a14; }
 .activity-feed-hint { margin-top: 16px; }
 .activity-social .feed-activity { display: none; }  /* the page above already shows the activity */
 .activity-grid { align-items: start; }
+
+/* The top bar sits above the main tabs (so the Ask Pip panel opens over them), and on wide screens the tabs are drawn inside
+   the top bar's row. Its empty space must let clicks through to the tabs; only its own contents take clicks. */
+.app-topbar, .app-topbar-row { pointer-events: none; }
+.app-topbar-row > *, .app-topbar > .app-section-pages { pointer-events: auto; }
+/* Tablets and small laptops: the centred main tabs and a full "Ask Pip" card don't fit side by side, so Pip shows as its picture. */
+@media (min-width: 860px) and (max-width: 1199px) {
+  .tc-studio .companion-help-button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .tc-studio .companion-help-button { padding: 4px; }
+}
