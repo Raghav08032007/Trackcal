@@ -37,7 +37,7 @@ def test_every_key_the_app_saves_can_be_backed_up():
     keys = set()
     for path in [*source.rglob('*.ts'), *source.rglob('*.tsx')]:
         for key in re.findall(r"""useLocalState(?:<[^(]*>)?\(\s*[`'"](trackcal:[^`'"]+)[`'"]""", path.read_text(encoding='utf8', errors='replace')):
-            keys.add(re.sub(r'\$\{[^}]+\}', '2026-11-02', key))
+            keys.add(re.sub(r'\$\{[^}]+\}', 'calories' if key.startswith('trackcal:target:') else '2026-11-02', key))
     keys -= {'trackcal:camera:draft', 'trackcal:training:draft'}  # the browser never sends these
     assert len(keys) > 15
     _, headers = signup()

@@ -73,6 +73,7 @@ class Preferences(Strict):
     target_weight_kg:float|None=Field(default=None,ge=20,le=350,allow_inf_nan=False)
     pace:Literal['gentle','steady','fast']='steady'
     conditions:list[Condition]=Field(default_factory=list,max_length=16)
+    target_override:dict[Literal['calories','protein','carbs','fat'],int]=Field(default_factory=dict)
     @field_validator('timezone')
     @classmethod
     def zone(cls,v):
@@ -84,6 +85,14 @@ class Preferences(Strict):
     def text_lists(cls,v):
         if any(not s.strip() or len(s)>80 for s in v):raise ValueError('Use short, non-empty ingredient names.')
         return list(dict.fromkeys(s.strip().lower() for s in v))
+    @field_validator('target_override')
+    @classmethod
+    def sane_targets(cls,v):
+        limits={'calories':(800,6000),'protein':(20,400),'carbs':(20,900),'fat':(15,300)}
+        for k,n in v.items():
+            lo,hi=limits[k]
+            if not lo<=n<=hi:raise ValueError(f'Choose a {k} target between {lo} and {hi}.')
+        return v
     @field_validator('conditions')
     @classmethod
     def one_per_part(cls,v):

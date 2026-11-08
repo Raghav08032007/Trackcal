@@ -227,19 +227,20 @@ def coaching_write(action):
 
 # ── Personalization ─────────────────────────────────────────────────────────
 
-@bp.route('/personalization/<path:path>', methods=['GET', 'POST', 'DELETE'])
+@bp.route('/personalization/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def personalization(path):
     parts = path.split('/'); resource, item = parts[0], parts[1] if len(parts) > 1 else None
-    if len(parts) > 2 or resource not in ('state', 'onboarding', 'measurements', 'plans', 'activities', 'education', 'reminders') or (item and not UUID.match(item)):
+    if len(parts) > 2 or resource not in ('state', 'targets', 'onboarding', 'measurements', 'plans', 'activities', 'education', 'reminders') or (item and not UUID.match(item)):
         return error('Not found', 404)
     method = request.method
-    allowed = (resource in ('state', 'reminders') and not item) if method == 'GET' else (resource == 'measurements' and bool(item)) if method == 'DELETE' else \
+    allowed = (resource in ('state', 'reminders', 'targets') and not item) if method == 'GET' else (resource == 'measurements' and bool(item)) if method == 'DELETE' else \
+        (resource == 'targets' and not item) if method == 'PUT' else \
         (resource in ('onboarding', 'education', 'measurements', 'plans') and (not item or resource == 'plans')) or (resource in ('activities', 'reminders') and bool(item))
     if not allowed: return error('Not found', 404)
     if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
     try:
         body = None
-        if method == 'POST':
+        if method in ('POST', 'PUT'):
             body, failed = json_object(16000, ('Request too large', 413), 'Invalid input')
             if failed: return failed
         return forward(authenticated(method, '/personalization/' + path, body))

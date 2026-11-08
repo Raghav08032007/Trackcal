@@ -1,5 +1,6 @@
 """Authenticated Phase 2 workflows; all records scoped to the active account."""
 import uuid
+from pydantic import BaseModel
 from datetime import datetime,timezone,date,timedelta
 from zoneinfo import ZoneInfo
 from flask_app.params import Depends, HTTPException
@@ -171,3 +172,38 @@ def reminder_action(identifier:uuid.UUID,data:ReminderAction,user=Depends(get_cu
  if data.action=='dismiss':delivery.status='dismissed'
  else:delivery.snoozed_until=adventure.now().astimezone(timezone.utc).replace(tzinfo=None)+timedelta(minutes=data.minutes)
  db.commit();return {'status':'saved'}
+
+
+class TargetInput(BaseModel):
+    """A manual value for any target; null clears it so the calculated value returns."""
+    calories:int|None=None
+    protein:int|None=None
+    carbs:int|None=None
+    fat:int|None=None
+
+
+def latest_weight(db,user):
+    row=db.query(models.WellnessMeasurement).filter_by(user_id=user.id,kind='weight').order_by(models.WellnessMeasurement.recorded_at.desc()).first()
+    return row.canonical_value if row else None
+
+
+def targets(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    """Daily food targets from the profile, the latest weigh-in and the health report (services/targets.py)."""
+    from services import targets as calc
+    from routers.health import assessment
+    row=db.get(models.PersonalizationProfile,user.id);prefs=prefs_for(row)
+    report=db.query(models.LabReport).filter_by(user_id=user.id).order_by(models.LabReport.report_date.desc(),models.LabReport.created_at.desc()).first()
+    plan=(assessment(db,user,report) or {}).get('plan') if report else None
+    return calc.compute(prefs,latest_weight(db,user),plan,minor=bool(user.is_minor))
+
+
+def set_targets(data:TargetInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    lock(db,user);row=db.get(models.PersonalizationProfile,user.id)
+    if not row:row=models.PersonalizationProfile(user_id=user.id,preferences=Preferences().model_dump(),step=1,revision=0);db.add(row)
+    prefs=prefs_for(row).model_dump()
+    override={**prefs.get('target_override',{}),**{k:v for k,v in data.model_dump(exclude_unset=True).items()}}
+    prefs['target_override']={k:v for k,v in override.items() if v}
+    try:checked=Preferences.model_validate(prefs)
+    except ValueError as failure:raise HTTPException(422,str(failure).split('\n')[-1][:200])
+    row.preferences=checked.model_dump();row.revision+=1;db.commit()
+    return targets(user,db)
