@@ -235,3 +235,32 @@ html[data-theme="dark"] .ds-tag[data-tone="safe"] { color: var(--ds-green); }
 .onb-skip { text-align: center; margin-top: 18px; }
 @media (max-width: 720px) { .onb-body { grid-template-columns: 1fr; } .onb-body .ds-body-stage { aspect-ratio: 1 / 1.05; } .onb-later { margin-left: 0; } }
 .onb-hint { margin: -8px 0 18px; color: var(--ds-muted); font-size: .9rem; }
+
+/* ── My health report ─────────────────────────────────────────────────── */
+.health-option { display: grid; gap: 8px; align-content: start; text-align: left; cursor: pointer; font: inherit; color: var(--ds-ink); }
+.health-option input[type="file"] { max-width: 100%; }
+.health-icon { font-size: 1.8rem; }
+.health-consent { display: flex; gap: 10px; align-items: center; font-weight: 650; }
+.ds-btn.is-disabled { opacity: .5; cursor: not-allowed; }
+.health-busy { padding: 12px 16px; border-radius: 14px; background: var(--ds-indigo-soft); color: var(--ds-indigo-ink); font-weight: 650; }
+.health-table { width: 100%; margin: 8px 0 16px; border-collapse: collapse; }
+.health-table th, .health-table td { padding: 10px 8px; border-bottom: 1px solid var(--ds-line); text-align: left; vertical-align: middle; }
+.health-table thead th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ds-muted); }
+.health-table input { width: 110px; min-height: 44px; padding: 0 10px; border: 1px solid var(--ds-line); border-radius: 12px; background: var(--ds-surface); color: var(--ds-ink); font: inherit; font-variant-numeric: tabular-nums; }
+.health-unit, .health-range { color: var(--ds-muted); font-size: .88rem; white-space: nowrap; }
+.health-x { width: 40px; height: 40px; border: 1px solid var(--ds-line); border-radius: 50%; background: var(--ds-surface); color: var(--ds-ink); font-size: 1.2rem; cursor: pointer; }
+.health-add { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 18px; }
+.health-safety { margin: 0 0 24px; padding: 18px 20px; border-radius: var(--ds-r); border: 1px solid; }
+.health-safety strong { font-size: 1.15rem; }
+.health-safety p { margin: 6px 0 0; }
+.health-safety.is-today { background: var(--ds-red-soft); border-color: var(--ds-red); color: color-mix(in srgb, var(--ds-red) 75%, #000); }
+.health-safety.is-soon { background: var(--ds-amber-soft); border-color: var(--ds-amber); color: color-mix(in srgb, var(--ds-amber) 50%, #000); }
+html[data-theme="dark"] .health-safety.is-today { color: #ffd2d4; }
+html[data-theme="dark"] .health-safety.is-soon { color: #ffe3b0; }
+.health-from { margin: 10px 0 0; font-size: .78rem; color: var(--ds-muted); }
+.health-list { display: grid; gap: 8px; margin: 8px 0 0; padding-left: 20px; }
+.health-retest { margin: 6px 0; }
+.health-disclaimer { max-width: 72ch; color: var(--ds-muted); font-size: .88rem; }
+.health-reports { display: grid; gap: 10px; padding: 0; list-style: none; }
+.health-reports li { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 600px) { .health-table thead { display: none; } .health-table tr { display: grid; grid-template-columns: 1fr auto; } .health-table td.health-range { grid-column: 1; } }
