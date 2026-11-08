@@ -403,3 +403,31 @@ def test_world_foods_keep_complete_records_and_never_break_search(internet):
     assert len(found) == 1 and found[0]['name'] == 'Pierogi — Virtu' and found[0]['cuisine'] == 'Poland' and found[0]['calories'] == 190
     replies.append(httpx.ReadTimeout('slow'))
     assert _world_foods('pierogi', 12) == []
+
+
+def test_activities_go_through_the_gateway_end_to_end(inner):
+    from datetime import datetime, timedelta, timezone
+    from tests.test_activities_helpers import fixes_for
+    c = browser(); signed_up(c)
+    body = {'sport': 'run', 'started_at': (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(), 'fixes': fixes_for([(900, 3)])}
+    saved = post(c, '/api/activities', body)
+    assert saved.status_code == 201, saved.get_data(as_text=True)
+    activity = saved.get_json()['activity']
+    assert activity['distance_m'] > 2500 and saved.get_json()['new_records']
+    assert c.get('/api/activities?sport=run').get_json()['activities'][0]['id'] == activity['id']
+    assert c.get(f"/api/activities/{activity['id']}").get_json()['activity']['splits']
+    assert c.patch(f"/api/activities/{activity['id']}", data=json.dumps({'name': 'Lake loop'}), headers={'Origin': 'http://localhost', 'Content-Type': 'application/json'}).get_json()['activity']['name'] == 'Lake loop'
+    assert c.get('/api/activities/records?sport=run').get_json()['best_efforts']
+    assert post(c, '/api/activities', body, origin='https://evil.example').status_code == 403
+    assert c.get('/api/activities/../users/export').status_code == 404
+    assert c.get('/api/activities/not-an-id').status_code == 404
+    assert c.delete(f"/api/activities/{activity['id']}", headers={'Origin': 'http://localhost'}).status_code == 204
+    assert browser().get('/api/activities').status_code == 401
+
+
+def test_the_daily_check_in_reaches_the_api_through_the_gateway(inner):
+    c = browser(); signed_up(c)
+    assert post(c, '/api/adventure/initialize', {'timezone': 'UTC'}).status_code == 200
+    first = post(c, '/api/adventure/check-in', {})
+    assert first.status_code == 200, first.get_data(as_text=True)
+    assert first.get_json()['awarded_xp'] == 5 and post(c, '/api/adventure/check-in', {}).get_json()['awarded_xp'] == 0

@@ -237,6 +237,8 @@ ACCOUNT_RECORDS = [
     ('event_registrations', models.EventRegistration, ()),
     ('challenges_you_started', models.Challenge, (), 'creator_id'),
     ('challenge_participation', models.ChallengeParticipant, ('flagged',)),  # internal review signal
+    ('activities', models.Activity, ()),
+    ('privacy_zones', models.PrivacyZone, ()),
 ]
 EXPORTED_TABLES = {
     'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',

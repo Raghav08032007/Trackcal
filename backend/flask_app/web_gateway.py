@@ -174,7 +174,7 @@ def account_write(action):
 
 # ── Adventure ───────────────────────────────────────────────────────────────
 
-ADVENTURE_WRITES = {'bond': 'bond', 'workout': 'review-workout', 'rest': 'rest-day', 'settings': 'companion-settings', 'initialize': 'initialize', 'review': 'review-meal', 'start': 'game/start', 'submit': 'game/submit'}
+ADVENTURE_WRITES = {'check-in': 'check-in', 'bond': 'bond', 'workout': 'review-workout', 'rest': 'rest-day', 'settings': 'companion-settings', 'initialize': 'initialize', 'review': 'review-meal', 'start': 'game/start', 'submit': 'game/submit'}
 
 
 @bp.get('/adventure/<action>')
@@ -312,6 +312,31 @@ def social_routes(path):
         return forward(authenticated(method, '/social/' + path + (f'?{urlencode(query)}' if query else ''), body))
     except Exception:
         return error('The feed is unavailable right now. Nothing was changed; retry later.', 503)
+
+
+# ── GPS activities ────────────────────────────────────────────────────────
+
+ACTIVITY_ID = r'[0-9a-f-]{36}'
+ACTIVITIES = [('GET', r''), ('POST', r''), ('GET', r'records'), ('GET', r'privacy-zones'), ('POST', r'privacy-zones'),
+              ('DELETE', r'privacy-zones/' + ACTIVITY_ID), ('GET', ACTIVITY_ID), ('PATCH', ACTIVITY_ID), ('DELETE', ACTIVITY_ID)]
+
+
+@bp.route('/activities', defaults={'path': ''}, methods=['GET', 'POST'])
+@bp.route('/activities/<path:path>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
+def activity_routes(path):
+    method = request.method
+    if not any(m == method and re.fullmatch(p, path) for m, p in ACTIVITIES): return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        body = None
+        if method in ('POST', 'PATCH'):
+            # A long ride sends its raw GPS fixes: about 60 bytes each, up to 20,000 of them.
+            body, failed = json_object(2_000_000, ('This activity is too long to save in one piece.', 413), 'Invalid JSON')
+            if failed: return failed
+        query = {k: request.args[k] for k in ('sport', 'before', 'limit') if k in request.args}
+        return forward(authenticated(method, '/activities' + ('/' + path if path else '') + (f'?{urlencode(query)}' if query else ''), body))
+    except Exception:
+        return error('Activities are unavailable right now. Your recording is kept on this device; retry in a moment.', 503)
 
 
 # ── Communities (flag communities) ────────────────────────────────────────

@@ -1253,3 +1253,38 @@ class WorkoutSession(Base):
     completed_at=Column(DateTime,nullable=True)
     is_deleted=Column(Boolean,nullable=False,default=False)
     __table_args__=(Index('ix_workout_owner_started','user_id','started_at'),)
+
+
+class Activity(Base):
+    """A GPS walk, run, hike or ride. Every number is computed on the server from the raw fixes (services/activity_stats.py);
+    the stored route is the simplified, smoothed path. Private unless the owner shares it, and shared routes hide their ends."""
+    __tablename__='activities'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    session_id=Column(CHAR(36),ForeignKey('workout_sessions.id',ondelete='SET NULL'),nullable=True,unique=True)
+    sport=Column(String(12),nullable=False)
+    name=Column(String(120),nullable=False)
+    notes=Column(Text,nullable=True)
+    visibility=Column(String(12),nullable=False,default='private')  # private, followers, everyone
+    started_at=Column(DateTime,nullable=False)
+    distance_m=Column(Float,nullable=False,default=0)
+    moving_s=Column(Float,nullable=False,default=0)
+    elapsed_s=Column(Float,nullable=False,default=0)
+    elevation_gain_m=Column(Float,nullable=False,default=0)
+    stats=Column(JSON,nullable=False)   # splits, best efforts, speeds, fix counts
+    route=Column(JSON,nullable=False)   # [[lat, lon, seconds, altitude|null, distance_m], ...]
+    created_at=Column(DateTime,nullable=False,default=_now)
+    is_deleted=Column(Boolean,nullable=False,default=False)
+    __table_args__=(Index('ix_activity_owner_started','user_id','started_at'),)
+
+
+class PrivacyZone(Base):
+    """A circle (home, work) that is cut out of every route other people see."""
+    __tablename__='privacy_zones'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    label=Column(String(40),nullable=False)
+    lat=Column(Float,nullable=False)
+    lon=Column(Float,nullable=False)
+    radius_m=Column(Integer,nullable=False,default=300)
+    created_at=Column(DateTime,nullable=False,default=_now)
