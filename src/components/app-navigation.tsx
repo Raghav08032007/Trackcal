@@ -11,7 +11,7 @@ type Section = { id: string; label: string; href: string; icon: LucideIcon; page
 export const SECTIONS: Section[] = [
   { id: "home", label: "Home", href: "/", icon: House, pages: [["/", "Today"], ["/coach", "Coach"]] },
   { id: "food", label: "Food", href: "/nutrition", icon: Utensils, pages: [["/nutrition", "Diary"], ["/scanner", "Scanner"], ["/barcode", "Barcode"], ["/describe", "Describe"], ["/menu", "Menu"], ["/recipes", "Recipes"], ["/food-library", "Library"], ["/fasting", "Fasting"], ["/journal", "On this device"]] },
-  { id: "move", label: "Move", href: "/workouts", icon: Activity, pages: [["/workouts", "Workouts"], ["/workouts/muscles", "By muscle"], ["/workouts/camera", "Camera"], ["/workouts/gps", "Walk & run"], ["/programs", "Programs"], ["/recovery", "Recovery"], ["/plan", "My plan"], ["/progress", "Progress"]] },
+  { id: "move", label: "Move", href: "/workouts", icon: Activity, pages: [["/workouts", "Workouts"], ["/workouts/muscles", "By muscle"], ["/workouts/camera", "Camera"], ["/workouts/gps", "Record"], ["/activities", "Activities"], ["/programs", "Programs"], ["/recovery", "Recovery"], ["/plan", "My plan"], ["/progress", "Progress"]] },
   { id: "play", label: "Play", href: "/play", icon: Sparkles, pages: [["/play", "Quests"], ["/feed", "Feed"], ["/communities", "Communities"], ["/events", "Events"], ["/challenges", "Challenges"]] },
   { id: "me", label: "Me", href: "/account", icon: UserRound, pages: [["/account", "Account"], ["/routine", "Reminders"], ["/tools", "Smart tools"], ["/premium", "Premium"], ["/help", "Help"], ["/onboarding", "Setup"], ["/guide", "Test drive"], ["/privacy", "Privacy"], ["/terms", "Terms"]] },
 ];

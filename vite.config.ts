@@ -15,5 +15,6 @@ export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   server: { host: "127.0.0.1", port: 3000, strictPort: true, proxy: { "/api": { target: api }, "/uploads": { target: api } } },
   preview: { host: "127.0.0.1", port: 3000, strictPort: true, headers: { "Content-Security-Policy": csp, "Cross-Origin-Opener-Policy": "same-origin-allow-popups" }, proxy: { "/api": { target: api }, "/uploads": { target: api } } },
-  build: { outDir: "dist", sourcemap: false },
+  // Fonts stay as files: the security policy allows fonts from this site only, not inline data: URLs.
+  build: { outDir: "dist", sourcemap: false, assetsInlineLimit: (file: string) => (/\.woff2?$/.test(file) ? false : undefined) },
 });

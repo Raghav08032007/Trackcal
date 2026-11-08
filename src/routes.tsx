@@ -51,6 +51,8 @@ const pages: Record<string, () => Promise<PageModule>> = {
   "/workouts/holds": () => import("@/app/workouts/holds/page"),
   "/workouts/muscles": () => import("@/app/workouts/muscles/page"),
   "/workouts/gps": () => import("@/app/workouts/gps/page"),
+  "/activities": () => import("@/app/activities/page"),
+  "/activities/:id": () => import("@/app/activity/page"),
   "/recovery": () => import("@/app/recovery/page"),
   "/coach": () => import("@/app/coach/page"),
   "/menu": () => import("@/app/menu/page"),

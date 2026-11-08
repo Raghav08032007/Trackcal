@@ -44,12 +44,15 @@ describe('allergens (fud-ai approach)',()=>{
 describe('GPS distance',()=>{
  const fix=(lat:number,t:number,accuracy=5)=>({lat,lon:77.59,accuracy,t});
  it('measures a known distance',()=>expect(metresBetween({lat:12.97,lon:77.59},{lat:12.98,lon:77.59})).toBeCloseTo(1112,-1));
- it('adds real steps and ignores rough fixes, wobble and jumps',()=>{
-  const meter=new RouteMeter();meter.add(fix(12.97,0));meter.add(fix(12.9701,60000));expect(meter.metres).toBeCloseTo(11,0);
-  expect(meter.add(fix(12.9705,120000,80))).toBe(false);expect(meter.add(fix(12.97011,125000))).toBe(false);
-  expect(meter.add(fix(13.1,126000))).toBe(false);expect(meter.metres).toBeLessThan(20);expect(MAX_SPEED_MS).toBe(12);
+ // A noisy track like a real phone's: a fix a second, a few metres of wander.
+ let seed=3;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;},gauss=()=>Math.sqrt(-2*Math.log(rnd()+1e-9))*Math.cos(2*Math.PI*rnd());
+ const walk=(seconds:number,speed:number,noise:number,meter=new RouteMeter(),from=0)=>{for(let k=1;k<=seconds;k++)meter.add({lat:12.97+gauss()*noise/111195,lon:77.59+(from+k*speed+gauss()*noise)/108300,accuracy:6,t:k*1000});return meter;};
+ it('stays within 5% on a noisy run and ignores rough fixes',()=>{
+  const meter=walk(600,3,4);expect(meter.metres).toBeGreaterThan(1800*.95);expect(meter.metres).toBeLessThan(1800*1.05);
+  expect(meter.add({lat:12.97,lon:77.6,accuracy:80,t:700000})).toBe(false);expect(MAX_SPEED_MS).toBe(12);
  });
- it('a pause does not count the gap',()=>{const meter=new RouteMeter();meter.add(fix(12.97,0));meter.pause();meter.add(fix(12.98,600000));expect(meter.metres).toBe(0);});
+ it('standing still adds almost nothing',()=>expect(walk(600,0,4).metres).toBeLessThan(25));
+ it('a one-off jump is dropped',()=>{const meter=walk(120,3,2),before=meter.metres;expect(meter.add({lat:13.1,lon:77.59,accuracy:5,t:121000})).toBe(false);expect(meter.metres).toBe(before);});
  it('pace',()=>{expect(paceText(1000,360000)).toBe('6:00 /km');expect(paceText(10,1000)).toBe('–');});
 });
 

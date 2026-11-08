@@ -1,57 +1,138 @@
-import {useEffect,useRef,useState} from 'react';
-import Link from '@/lib/navigation';
-import {useAccount} from './account-session';
-import {Celebration} from './celebration';
-import {CoachLine} from './coach-card';
-import {RouteMeter,paceText} from '@/lib/gps';
-import {wellnessRequest,type Session} from '@/lib/wellness';
+import { useEffect, useRef, useState } from "react";
+import Link from "@/lib/navigation";
+import { useAccount } from "./account-session";
+import { Celebration } from "./celebration";
+import { RouteMeter } from "@/lib/gps";
+import { say, voiceAvailable } from "@/lib/workout-coach";
+import { wellnessRequest, type Session } from "@/lib/wellness";
+import { SPORTS, VISIBILITY, activities, dropPending, duration, keepPending, km, pace, readPending, sportTitle, type Activity, type Fix, type NewRecord, type Pending, type Sport, type Visibility } from "@/lib/activities";
 
-type Status='ready'|'tracking'|'paused'|'review'|'saved';
-const clock=(ms:number)=>{const s=Math.floor(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
+type Status = "ready" | "tracking" | "paused" | "review" | "saved";
 
-export function GpsTracker(){const {ready,user}=useAccount();return !ready?<main className="account-loading">Opening GPS…</main>:user?<Tracker key={user.id}/>:<main className="account-page"><section className="account-card"><h1>Walk or run, tracked.</h1><p>Sign in to track distance and pace with GPS.</p><div className="gate-actions"><Link className="gate-primary" href="/login">Sign in</Link></div></section></main>;}
+export function GpsTracker() {
+  const { ready, user } = useAccount();
+  return !ready ? <main className="account-loading">Opening GPS…</main> : user ? <Tracker key={user.id} /> : <main className="account-page"><section className="account-card"><h1>Walk, run, hike or ride, tracked.</h1><p>Sign in to record your route, splits and personal records.</p><Link className="account-primary" href="/login?next=/workouts/gps">Sign in</Link></section></main>;
+}
 
-/** Distance, time and pace from your phone's GPS. The route stays on this page; only distance and time are saved. */
-function Tracker(){
- const meter=useRef(new RouteMeter()),watch=useRef<number|null>(null),lock=useRef<{release:()=>Promise<void>}|null>(null),started=useRef(0),elapsedBefore=useRef(0);
- const [status,setStatus]=useState<Status>('ready'),[kind,setKind]=useState<'walk'|'run'>('walk'),[metres,setMetres]=useState(0),[elapsed,setElapsed]=useState(0),[accuracy,setAccuracy]=useState<number|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[earned,setEarned]=useState(0);
- useEffect(()=>{if(status!=='tracking')return;const timer=setInterval(()=>setElapsed(elapsedBefore.current+performance.now()-started.current),1000);return()=>clearInterval(timer);},[status]);
- useEffect(()=>()=>{if(watch.current!==null)navigator.geolocation?.clearWatch(watch.current);void lock.current?.release().catch(()=>{});},[]);
- async function begin(){
-  if(!('geolocation' in navigator)){setError('This device has no GPS in the browser.');return;}
-  setError('');started.current=performance.now();
-  watch.current=navigator.geolocation.watchPosition(p=>{setAccuracy(Math.round(p.coords.accuracy));if(meter.current.add({lat:p.coords.latitude,lon:p.coords.longitude,accuracy:p.coords.accuracy,t:p.timestamp}))setMetres(meter.current.metres);},
-   failure=>{setError(failure.code===1?'Location permission is off. Allow it in your browser settings to track distance.':'Waiting for a GPS signal. Step outside for a clearer view of the sky.');},{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
-  try{lock.current=await (navigator as unknown as {wakeLock?:{request:(type:'screen')=>Promise<{release:()=>Promise<void>}>}}).wakeLock?.request('screen')??null;}catch{/* the screen may dim; tracking carries on while the page is open */}
-  setStatus('tracking');
- }
- function stopWatching(){if(watch.current!==null)navigator.geolocation.clearWatch(watch.current);watch.current=null;void lock.current?.release().catch(()=>{});lock.current=null;elapsedBefore.current+=performance.now()-started.current;setElapsed(elapsedBefore.current);meter.current.pause();}
- function pause(){stopWatching();setStatus('paused');}
- function finish(){if(status==='tracking')stopWatching();setStatus('review');}
- async function save(){
-  if(busy)return;setBusy(true);setError('');
-  try{
-   const id=crypto.randomUUID(),minutes=Math.max(1,Math.round(elapsedBefore.current/60000*10)/10),km=Math.round(metres/10)/100;
-   const opened=await wellnessRequest<{session:Session}>('sessions',{id,name:`${kind==='walk'?'Walk':'Run'} · ${km} km`,exercises:[kind]});
-   const done=await wellnessRequest<{awarded_xp:number}>('sessions/'+id,{revision:opened.session.revision,action:'complete',minutes,notes:`${km} km in ${clock(elapsedBefore.current)} (${paceText(metres,elapsedBefore.current)}), measured by GPS.`,exercises:[{exercise_id:kind,sets:[{reps:0,load:0,minutes:Math.min(60,minutes)}]}]},'PUT');
-   setEarned(done.awarded_xp);setStatus('saved');
-  }catch(failure){setError(failure instanceof Error?failure.message:'Could not save. Try again.');}
-  finally{setBusy(false);}
- }
- const reset=()=>{meter.current=new RouteMeter();elapsedBefore.current=0;setMetres(0);setElapsed(0);setAccuracy(null);setStatus('ready');};
- return <main className="wellness-page gps-page"><section className="camera-intro"><span className="eyebrow">OUTDOORS</span><h1>Walk or run</h1><p>Distance, time and pace from your phone&apos;s GPS. Keep this page open while you move. Your route is never saved, only the distance and time.</p></section>
-  {error&&<p role="alert" className="camera-alert">{error}</p>}
-  <section className="account-card gps-card">
-   {status==='ready'&&<div className="camera-equipment" role="group" aria-label="Activity"><button type="button" aria-pressed={kind==='walk'} onClick={()=>setKind('walk')}>Walk</button><button type="button" aria-pressed={kind==='run'} onClick={()=>setKind('run')}>Run</button></div>}
-   <div className="gps-stats" aria-live="polite"><div><strong>{(metres/1000).toFixed(2)}</strong><small>km</small></div><div><strong>{clock(elapsed)}</strong><small>time</small></div><div><strong>{paceText(metres,elapsed)}</strong><small>pace</small></div></div>
-   {accuracy!==null&&status==='tracking'&&<p className="rep-replay-note">GPS accuracy about {accuracy} m{accuracy>35?'. Waiting for a clearer signal before counting distance.':'.'}</p>}
-   <div className="account-actions">
-    {status==='ready'&&<button className="account-primary" onClick={()=>void begin()}>Start {kind}</button>}
-    {status==='tracking'&&<><button onClick={pause}>Pause</button><button className="account-primary" onClick={finish}>Finish</button></>}
-    {status==='paused'&&<><button className="account-primary" onClick={()=>void begin()}>Resume</button><button onClick={finish}>Finish</button></>}
-    {status==='review'&&<>{elapsedBefore.current>=60000?<button className="account-primary" disabled={busy} onClick={()=>void save()}>{busy?'Saving…':`Save ${kind}`}</button>:<p>Activities of a minute or more can be saved.</p>}<button onClick={reset}>Discard</button></>}
-   </div>
-   {status==='saved'&&<div className="celebration-host"><Celebration/><CoachLine text={`${(metres/1000).toFixed(2)} km saved${earned?`, +${earned} points`:''}. Lovely work getting outside!`}/><button onClick={reset}>Start another</button></div>}
-  </section>
- </main>;
+/** Records raw GPS fixes; the server measures them (distance, moving time, splits, climb, records) when the activity is saved.
+ *  The live numbers here are a preview from the same fixes. The recording is kept on this device until it is saved. */
+function Tracker() {
+  const meter = useRef(new RouteMeter()), fixes = useRef<Fix[]>([]), watch = useRef<number | null>(null), lock = useRef<{ release: () => Promise<void> } | null>(null);
+  const started = useRef(0), elapsedBefore = useRef(0), id = useRef(crypto.randomUUID()), startedAt = useRef(""), nextKm = useRef(1), lastKept = useRef(0);
+  const [status, setStatus] = useState<Status>("ready"), [sport, setSport] = useState<Sport>("run"), [metres, setMetres] = useState(0), [elapsed, setElapsed] = useState(0);
+  const [accuracy, setAccuracy] = useState<number | null>(null), [error, setError] = useState(""), [busy, setBusy] = useState(false), [name, setName] = useState(""), [visibility, setVisibility] = useState<Visibility>("private");
+  const [saved, setSaved] = useState<{ activity: Activity; records: NewRecord[]; xp: number } | null>(null), [pending, setPending] = useState<Pending | null>(() => readPending());
+  const [voice, setVoice] = useState(() => { try { return localStorage.getItem("trackcal:gps:voice") !== "off" && voiceAvailable(); } catch { return voiceAvailable(); } });
+
+  useEffect(() => { if (status !== "tracking") return; const timer = setInterval(() => setElapsed(elapsedBefore.current + performance.now() - started.current), 1000); return () => clearInterval(timer); }, [status]);
+  useEffect(() => () => { if (watch.current !== null) navigator.geolocation?.clearWatch(watch.current); void lock.current?.release().catch(() => {}); }, []);
+  // Leaving mid-recording asks first; the recording is on this device either way.
+  useEffect(() => { if (status !== "tracking" && status !== "paused") return; const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [status]);
+
+  const keep = (force = false) => {
+    if (!fixes.current.length || (!force && performance.now() - lastKept.current < 5000)) return;
+    lastKept.current = performance.now();
+    keepPending({ id: id.current, sport, started_at: startedAt.current, fixes: fixes.current, elapsed_ms: elapsedBefore.current + (status === "tracking" ? performance.now() - started.current : 0) });
+  };
+
+  async function begin() {
+    if (!("geolocation" in navigator)) { setError("This device has no GPS in the browser."); return; }
+    setError(""); started.current = performance.now();
+    if (!startedAt.current) startedAt.current = new Date().toISOString();
+    watch.current = navigator.geolocation.watchPosition(p => {
+      const c = p.coords; setAccuracy(Math.round(c.accuracy));
+      fixes.current.push([+c.latitude.toFixed(7), +c.longitude.toFixed(7), p.timestamp, Math.round(c.accuracy * 10) / 10, c.altitude === null ? null : Math.round(c.altitude * 10) / 10]);
+      if (meter.current.add({ lat: c.latitude, lon: c.longitude, accuracy: c.accuracy, t: p.timestamp })) {
+        setMetres(meter.current.metres);
+        if (meter.current.metres >= nextKm.current * 1000) {
+          const k = nextKm.current; nextKm.current++;
+          if (voice) say(`${k} kilometre${k > 1 ? "s" : ""}. ${spokenPace(sport, meter.current.metres, elapsedBefore.current + performance.now() - started.current)}.`);
+          navigator.vibrate?.(200);
+        }
+      }
+      keep();
+    }, failure => { setError(failure.code === 1 ? "Location permission is off. Allow it in your browser settings to record." : "Waiting for a GPS signal. Step outside for a clearer view of the sky."); },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+    try { lock.current = await (navigator as unknown as { wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> } }).wakeLock?.request("screen") ?? null; } catch { /* the screen may dim; recording carries on while the page is open */ }
+    setStatus("tracking");
+  }
+  function stopWatching() {
+    if (watch.current !== null) navigator.geolocation.clearWatch(watch.current);
+    watch.current = null; void lock.current?.release().catch(() => {}); lock.current = null;
+    elapsedBefore.current += performance.now() - started.current; setElapsed(elapsedBefore.current); meter.current.pause();
+  }
+  function pause() { stopWatching(); setStatus("paused"); keep(true); }
+  function finish() { if (status === "tracking") stopWatching(); setStatus("review"); keep(true); }
+
+  async function save(p: Pending, chosenName: string, chosenVisibility: Visibility) {
+    if (busy) return; setBusy(true); setError("");
+    try {
+      const result = await activities<{ activity: Activity; new_records: NewRecord[] }>("", "POST", { id: p.id, sport: p.sport, started_at: p.started_at, fixes: p.fixes, name: chosenName.trim() || undefined, visibility: chosenVisibility });
+      dropPending(); setPending(null);
+      let xp = 0;
+      // Points and the streak come from the workout journal. The activity is already safe, so a failure here only costs the points.
+      try {
+        const a = result.activity, minutes = Math.max(1, Math.round(a.moving_s / 6) / 10);
+        const opened = await wellnessRequest<{ session: Session }>("sessions", { id: a.id, name: `${sportTitle(a.sport)} · ${km(a.distance_m)} km`, exercises: [a.sport === "run" ? "run" : "walk"] });
+        const done = await wellnessRequest<{ awarded_xp: number }>("sessions/" + a.id, { revision: opened.session.revision, action: "complete", minutes, notes: `${km(a.distance_m)} km in ${duration(a.moving_s)} moving, measured by GPS.`, exercises: [{ exercise_id: a.sport === "run" ? "run" : "walk", sets: [{ reps: 0, load: 0, minutes: Math.min(60, minutes) }] }] }, "PUT");
+        xp = done.awarded_xp;
+      } catch { /* already in the journal, or the journal is busy: the activity itself is saved */ }
+      setSaved({ activity: result.activity, records: result.new_records, xp }); setStatus("saved");
+      if (voice && result.new_records.length) say(`New personal record: ${result.new_records[0].label}.`);
+    } catch (failure) {
+      setError(failure instanceof Error ? `${failure.message} Your recording is kept on this device.` : "Could not save. Your recording is kept on this device; try again.");
+    } finally { setBusy(false); }
+  }
+  const current = (): Pending => ({ id: id.current, sport, started_at: startedAt.current, fixes: fixes.current, elapsed_ms: elapsedBefore.current });
+  function reset() {
+    meter.current = new RouteMeter(); fixes.current = []; id.current = crypto.randomUUID(); startedAt.current = ""; nextKm.current = 1; elapsedBefore.current = 0;
+    setMetres(0); setElapsed(0); setAccuracy(null); setName(""); setVisibility("private"); setSaved(null); setStatus("ready"); dropPending(); setPending(null);
+  }
+
+  const signal = accuracy === null ? null : accuracy <= 10 ? "Strong" : accuracy <= 25 ? "Fair" : "Weak";
+  return <main className="wellness-page gps-page">
+    <section className="camera-intro"><span className="eyebrow">OUTDOORS</span><h1>Record an activity</h1><p>Route, splits, climb and personal records from your phone&apos;s GPS. Keep this page open while you move. Activities are private until you share them.</p></section>
+    {error && <p role="alert" className="camera-alert">{error}</p>}
+    {pending && status === "ready" && <section className="account-card gps-recover"><h2>An unsaved {sportTitle(pending.sport).toLowerCase()} is on this device</h2><p>Recorded {new Date(pending.started_at).toLocaleString()} · {pending.fixes.length} GPS points.</p>
+      <div className="account-actions"><button className="account-primary" disabled={busy} onClick={() => void save(pending, "", "private")}>{busy ? "Saving…" : "Save it"}</button><button disabled={busy} onClick={() => { dropPending(); setPending(null); }}>Discard</button></div></section>}
+    <section className="account-card gps-card">
+      {status === "ready" && <div className="camera-equipment" role="group" aria-label="Sport">{SPORTS.map(s => <button key={s.id} type="button" aria-pressed={sport === s.id} onClick={() => setSport(s.id)}>{s.title}</button>)}</div>}
+      {status !== "saved" && <div className="gps-stats" aria-live="polite"><div><strong>{km(metres)}</strong><small>km</small></div><div><strong>{duration(elapsed / 1000)}</strong><small>time</small></div><div><strong>{pace(sport, metres, elapsed / 1000)}</strong><small>{sport === "ride" ? "speed" : "pace"}</small></div></div>}
+      {signal && (status === "tracking" || status === "paused") && <p className="gps-signal" data-signal={signal.toLowerCase()}><span aria-hidden="true" /> GPS {signal.toLowerCase()} · about {accuracy} m{accuracy! > 35 ? ". Points this rough are left out until the signal improves." : ""}</p>}
+      {status === "ready" && voiceAvailable() && <label className="camera-voice"><input type="checkbox" checked={voice} onChange={e => { setVoice(e.target.checked); try { localStorage.setItem("trackcal:gps:voice", e.target.checked ? "on" : "off"); } catch { /* remembered for this visit */ } }} /> Announce each kilometre</label>}
+      {status === "review" && <div className="gps-review">
+        <label>Name <input value={name} maxLength={120} placeholder={`Leave blank for "Morning ${sport}"`} onChange={e => setName(e.target.value)} /></label>
+        <fieldset className="visibility-choice"><legend>Who can see it</legend>{VISIBILITY.map(v => <label key={v.id}><input type="radio" name="visibility" checked={visibility === v.id} onChange={() => setVisibility(v.id)} /> <span><strong>{v.title}</strong><small>{v.detail}</small></span></label>)}</fieldset>
+      </div>}
+      <div className="account-actions">
+        {status === "ready" && <button className="account-primary" onClick={() => void begin()}>Start {sportTitle(sport).toLowerCase()}</button>}
+        {status === "tracking" && <><button onClick={pause}>Pause</button><button className="account-primary" onClick={finish}>Finish</button></>}
+        {status === "paused" && <><button className="account-primary" onClick={() => void begin()}>Resume</button><button onClick={finish}>Finish</button></>}
+        {status === "review" && <>{elapsedBefore.current >= 30000 && fixes.current.length >= 2 ? <button className="account-primary" disabled={busy} onClick={() => void save(current(), name, visibility)}>{busy ? "Measuring your route…" : `Save ${sportTitle(sport).toLowerCase()}`}</button> : <p>Record for at least 30 seconds outdoors to save an activity.</p>}<button disabled={busy} onClick={reset}>Discard</button></>}
+      </div>
+      {status === "saved" && saved && <div className="gps-saved">
+        <Celebration />
+        <h2>{saved.activity.name}</h2>
+        <div className="gps-stats"><div><strong>{km(saved.activity.distance_m)}</strong><small>km</small></div><div><strong>{duration(saved.activity.moving_s)}</strong><small>moving</small></div><div><strong>{pace(saved.activity.sport, saved.activity.distance_m, saved.activity.moving_s)}</strong><small>{saved.activity.sport === "ride" ? "avg speed" : "avg pace"}</small></div></div>
+        {saved.records.length > 0 && <ul className="new-records" aria-label="New personal records">{saved.records.map(r => <li key={r.kind + r.label}><span aria-hidden="true">🏆</span> <strong>{r.label}</strong> {recordText(r, saved.activity.sport)}</li>)}</ul>}
+        {saved.xp > 0 && <p className="gps-xp">+{saved.xp} points</p>}
+        <div className="account-actions"><Link className="account-primary" href={`/activities/${saved.activity.id}`}>See splits and map</Link><button onClick={reset}>Record another</button></div>
+      </div>}
+    </section>
+    <p className="gps-footnote"><Link href="/activities">Your activities, records and privacy zones →</Link></p>
+  </main>;
+}
+
+function spokenPace(sport: Sport, metres: number, ms: number) {
+  if (metres < 50) return "";
+  const s = ms / 1000;
+  if (sport === "ride") return `Average ${Math.round((metres / s) * 3.6)} kilometres an hour`;
+  const per = s / (metres / 1000), m = Math.floor(per / 60), sec = Math.round(per % 60);
+  return `Average pace ${m} minutes ${sec} seconds per kilometre`;
+}
+function recordText(r: NewRecord, sport: Sport) {
+  if (r.kind === "best_effort" && r.seconds) return `in ${duration(r.seconds)}${r.previous_seconds ? `, ${duration(r.previous_seconds - r.seconds)} faster than before` : " (your first)"}`;
+  if (r.kind === "longest" && r.distance_m) return `${km(r.distance_m)} km ${sport === "ride" ? "ridden" : "covered"}`;
+  if (r.kind === "climb" && r.elevation_gain_m) return `${Math.round(r.elevation_gain_m)} m climbed`;
+  return "";
 }
