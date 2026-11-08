@@ -14,6 +14,7 @@ import "@/app/polish.css";
 import "@/app/clay.css";
 import "@/app/refine.css";
 import "@/app/vibe.css";
+import "@/app/ds.css";
 import { createRouter } from "@/routes";
 
 createRoot(document.getElementById("root")!).render(<StrictMode><RouterProvider router={createRouter()} /></StrictMode>);
