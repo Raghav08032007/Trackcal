@@ -1,12 +1,11 @@
+import { useWellness } from "@/lib/days";
 // One tap for the things people log every day: a glass of water, or a favourite they've already reviewed.
 // Every tap can be undone, so a slip costs nothing.
 import { useEffect, useState } from "react";
 import { useAccount } from "@/components/account-session";
-import { useLocalState } from "@/lib/use-local-state";
 import { inputItem, wellnessRequest, type NutritionData } from "@/lib/wellness";
 
 const GLASS_ML = 250, MOST_FAVOURITES = 3;
-const emptyDay = { water: 0, waterGoal: 2000, steps: 0, activity: "", minutes: 0, weight: 0 };
 type Favourite = NutritionData["favorites"][number];
 type Undo = { kind: "water" } | { kind: "meal"; id: string };
 
@@ -14,7 +13,7 @@ export function mealForHour(hour: number) { return hour < 11 ? "breakfast" : hou
 
 export function QuickLog({ date }: { date: string }) {
   const { user } = useAccount(), userId = user?.id;
-  const [wellness, setWellness] = useLocalState(`trackcal:wellness:${date}`, emptyDay);
+  const [wellness, setWellness] = useWellness(date);
   const [favourites, setFavourites] = useState<Favourite[]>([]), [day, setDay] = useState("");
   const [notice, setNotice] = useState(""), [undo, setUndo] = useState<Undo | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
   useEffect(() => {

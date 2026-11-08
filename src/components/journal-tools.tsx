@@ -1,5 +1,6 @@
+import { useWellness } from "@/lib/days";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { useLocalState, useStorageWarning, exportLocalEntries } from "@/lib/use-local-state";
+import { useStorageWarning, exportLocalEntries } from "@/lib/use-local-state";
 import { useWorkspaceScope } from "./account-session";
 
 export interface MealLog { id?: string; time: string; name: string; calories: number; protein: number; carbs: number; fat: number; method: string; }
@@ -13,7 +14,7 @@ export function JournalTools({ date, onDate, meals, setMeals }: {
   const [editing, setEditing] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
   const storageWarning = useStorageWarning();
-  const [wellness, setWellness] = useLocalState(`trackcal:wellness:${date}`, { water: 0, waterGoal: 2000, steps: 0, activity: "", minutes: 0, weight: 0 });
+  const [wellness, setWellness] = useWellness(date);
   function save() {
     if (!form.name.trim() || [form.calories, form.protein, form.carbs, form.fat].some(n => !Number.isFinite(n) || n < 0)) return;
     const entry = { ...form, id: editing === null ? crypto.randomUUID() : meals[editing]?.id || crypto.randomUUID(), name: form.name.trim(), time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), method: editing === null ? "Manual entry" : "User corrected" };

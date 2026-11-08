@@ -1,3 +1,4 @@
+import { useWellness } from "@/lib/days";
 import {useEffect,useState} from "react";
 import Link from "@/lib/navigation";
 import {useAccount} from "./account-session";
@@ -9,7 +10,7 @@ export function DailyProgressHub({date,meals,targets,onJournal,onGoals,compact=f
  const {ready,user}=useAccount();const userId=user?.id;
  const [summary,setSummary]=useState<AdventureSummary|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false);
  const [selected]=useLocalState('trackcal:play:character','pip'),[calm,setCalm]=useLocalState('trackcal:play:calm',false);
- const [wellness]=useLocalState(`trackcal:wellness:${date}`,{water:0,waterGoal:2000,steps:0,activity:'',minutes:0,weight:0});
+ const [wellness]=useWellness(date);
  useEffect(()=>{if(!userId)return;let cancelled=false;const refresh=()=>{adventureRequest<AdventureSummary>('summary').then(v=>{if(!cancelled){setSummary(v);setError('');}}).catch(()=>{if(!cancelled)setError('Quest progress unavailable. Your local nutrition journal is still available.');});};const update=(e:Event)=>{const v=(e as CustomEvent<AdventureSummary>).detail;if(v?.initialized)setSummary(v);};refresh();window.addEventListener('focus',refresh);window.addEventListener('trackcal-gamification',update);return()=>{cancelled=true;window.removeEventListener('focus',refresh);window.removeEventListener('trackcal-gamification',update);};},[userId]);
  const active=!!userId&&!!summary?.initialized,earnedXP=active?summary.xp:0,level=active?summary.level:1;
  const character=companions.find(c=>c.id===(summary?.customization?.character_id||selected)&&(c.unlock===0||active&&(summary.unlocked_companions?summary.unlocked_companions.includes(c.id):earnedXP>=c.unlock)))||companions[0];

@@ -1,3 +1,4 @@
+import { useBurn } from "@/lib/days";
 
 import { FoodCamera } from "@/components/food-camera";
 import { useTarget } from "@/lib/targets";
@@ -457,7 +458,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [deletedMeal, setDeletedMeal] = useState<{ meal: MealLog; index: number } | null>(null);
 
   const totalCaloriesLogged = loggedMeals.reduce((acc, m) => acc + m.calories, 0);
-  const [workoutBurn] = useLocalState(`trackcal:burn:${journalDate}`, 0), workoutBack = earnedBack(workoutBurn), budgetLeft = Math.max(0, dailyTarget + workoutBack - totalCaloriesLogged);
+  const [workoutBurn] = useBurn(journalDate), workoutBack = earnedBack(workoutBurn), budgetLeft = Math.max(0, dailyTarget + workoutBack - totalCaloriesLogged);
   const calPercent = Math.min(100, Math.round((totalCaloriesLogged / ((dailyTarget + workoutBack) || 2000)) * 100));
 
   const addCurrentScanToLog = () => {
