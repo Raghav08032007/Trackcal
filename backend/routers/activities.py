@@ -1,4 +1,5 @@
 """GPS activities: record, list, view, share and personal records. Stats come from services/activity_stats.py, never from the phone."""
+import math
 from datetime import datetime, timedelta, timezone
 from typing import Literal, Optional
 
@@ -9,9 +10,10 @@ import models
 from database import get_db
 from flask_app.params import Depends, HTTPException, Query
 from routers.auth import get_current_active_user
-from routers.social import blocks_between, follows
+from routers.social import blocks_between, can_view as can_view_post, follows, posts_view, profile_of
 from services import activity_stats
 from services.abuse_limits import consume
+from services.feature_flags import is_enabled
 from timeutil import utcnow
 
 Sport = Literal['walk', 'run', 'hike', 'ride']
@@ -138,6 +140,71 @@ def new_records(before, row):
     return out
 
 
+def feed_post(db, row):
+    return db.query(models.Post).filter(models.Post.activity_id == row.id).first()
+
+
+def sync_post(db, user, row):
+    """A shared activity is a card in the feed; a private or deleted one is not. Needs the feed on and a handle chosen."""
+    post = feed_post(db, row)
+    shared = row.visibility in ('followers', 'everyone') and not row.is_deleted
+    if not shared:
+        if post and not post.deleted_at:
+            post.deleted_at = utcnow()
+        return
+    profile = profile_of(db, user.id)
+    if not profile or profile.posting_disabled or not is_enabled(db, 'social_feed'):
+        return
+    route = shared_route(db, row)
+    snapshot = {'type': 'activity', 'title': row.name, 'activity': {
+        'id': row.id, 'sport': row.sport, 'distance_m': row.distance_m, 'moving_s': row.moving_s, 'elevation_gain_m': row.elevation_gain_m,
+        'records': row.stats.get('records_set', []), 'preview': preview(route, 80)}}
+    visibility = 'public' if row.visibility == 'everyone' else 'followers'
+    if post:
+        post.milestone, post.visibility, post.body, post.deleted_at = snapshot, visibility, (row.notes or '')[:500], None
+    else:
+        db.add(models.Post(author_id=user.id, activity_id=row.id, body=(row.notes or '')[:500], visibility=visibility, milestone=snapshot, created_at=row.created_at))
+
+
+def near_share(a, b, metres=60, samples=80):
+    """Share of route a that lies within `metres` of route b's line. Stored routes are simplified (a straight stretch is just its two
+    ends), so a is filled in every 25 m and compared with b's segments, not its points."""
+    if len(a) < 2 or len(b) < 2:
+        return 0.0
+    dense = activity_stats.hide_near(a, [], step=25.0)
+    pts = dense[::max(1, len(dense) // samples)]
+    lat0 = math.radians(a[0][0])
+    xy = lambda p: (p[1] * 111320 * math.cos(lat0), p[0] * 110540)
+    segs = [(xy(p), xy(q)) for p, q in zip(b, b[1:])]
+
+    def gap(p):
+        px, py = xy(p)
+        best = float('inf')
+        for (ax, ay), (bx, by) in segs:
+            dx, dy = bx - ax, by - ay
+            t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy))) if dx or dy else 0.0
+            best = min(best, math.hypot(px - ax - t * dx, py - ay - t * dy))
+        return best
+    return sum(1 for p in pts if gap(p) <= metres) / len(pts)
+
+
+def together(db, viewer, row):
+    """Other people who did this with the owner: started within 15 minutes and followed mostly the same route. Only shown when
+    that person's activity is visible to the viewer."""
+    window = timedelta(minutes=15)
+    others = db.query(models.Activity).filter(models.Activity.user_id != row.user_id, models.Activity.is_deleted.is_(False),
+                                              models.Activity.started_at.between(row.started_at - window, row.started_at + window)).limit(50).all()
+    out = []
+    for other in others:
+        if not (0.6 <= (other.distance_m or 1) / (row.distance_m or 1) <= 1.6) or not can_view(db, viewer, other):
+            continue
+        if near_share(row.route, other.route) >= 0.6 and near_share(other.route, row.route) >= 0.6:
+            p = profile_of(db, other.user_id)
+            if p:
+                out.append({'handle': p.handle, 'display_name': p.display_name, 'character_id': p.character_id, 'activity_id': other.id})
+    return out
+
+
 def detail(db, viewer, row):
     mine = row.user_id == viewer.id
     data = summary(row, row.route if mine else shared_route(db, row))
@@ -147,6 +214,11 @@ def detail(db, viewer, row):
     else:
         # The route's ends are hidden, so its per-point times and distances must not give the start away either.
         data['route'] = [[p[0], p[1], None, p[3], None] for p in data['route']]
+    post = feed_post(db, row)
+    card = posts_view(db, [post], viewer.id) if post and not post.deleted_at and can_view_post(db, viewer.id, post) else []
+    data['post'] = card[0] if card else None  # kudos and comments live on the feed card
+    data['together'] = together(db, viewer, row)
+    data['records_set'] = row.stats.get('records_set', [])
     return data
 
 
@@ -171,10 +243,14 @@ def create(data: ActivityInput, user=Depends(get_current_active_user), db: Sessi
                           name=(data.name or '').strip() or default_name(data.sport, data.started_at), notes=data.notes, visibility=data.visibility,
                           started_at=data.started_at, distance_m=result['distance_m'], moving_s=result['moving_s'], elapsed_s=result['elapsed_s'],
                           elevation_gain_m=result['elevation_gain_m'], stats=result, route=route)
+    records = new_records(before, row)
+    row.stats = {**result, 'records_set': [r['label'] for r in records]}
     db.add(row)
+    db.flush()
+    sync_post(db, user, row)
     db.commit()
     db.refresh(row)
-    return {'activity': detail(db, user, row), 'new_records': new_records(before, row)}
+    return {'activity': detail(db, user, row), 'new_records': records}
 
 
 def list_activities(sport: Optional[Sport] = Query(None), before: Optional[str] = Query(None), limit: int = Query(20, ge=1, le=50),
@@ -212,6 +288,7 @@ def edit(activity_id: str, data: ActivityEdit, user=Depends(get_current_active_u
         value = getattr(data, field)
         if value is not None:
             setattr(row, field, value.strip() if field == 'name' else value)
+    sync_post(db, user, row)
     db.commit()
     return {'activity': detail(db, user, row)}
 
@@ -220,6 +297,7 @@ def delete(activity_id: str, user=Depends(get_current_active_user), db: Session 
     row = owned(db, user, activity_id)
     row.is_deleted = True
     row.route = []
+    sync_post(db, user, row)
     db.commit()
 
 

@@ -1078,6 +1078,7 @@ class Post(Base):
     milestone = Column(JSON, nullable=True)  # server-made snapshot of an achievement, workout or level
     visibility = Column(String(10), nullable=False, default='public')  # public, followers
     community_id = Column(CHAR(36), ForeignKey('communities.id', ondelete='CASCADE'), nullable=True, index=True)  # set: shown only in that community
+    activity_id = Column(CHAR(36), ForeignKey('activities.id', ondelete='CASCADE'), nullable=True, unique=True)  # a shared GPS activity's card
     hidden = Column(Boolean, nullable=False, default=False)  # by reports or a moderator
     deleted_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=utcnow, index=True)

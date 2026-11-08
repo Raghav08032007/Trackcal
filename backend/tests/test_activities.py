@@ -139,3 +139,56 @@ def test_the_export_includes_activities_and_privacy_zones():
     client.post(f'{A}/privacy-zones', headers=h, json={'label': 'Home', 'lat': 12.9, 'lon': 77.5})
     records = client.get('/api/v1/users/export', headers=h).json()['account_records']
     assert len(records['activities']) == 1 and records['privacy_zones'][0]['label'] == 'Home'
+
+
+def feed_ids(h):
+    return {p['id']: p for p in client.get('/api/v1/social/feed?tab=following', headers=h).json()['posts']}
+
+
+def test_a_shared_activity_is_a_feed_card_with_kudos_and_comments():
+    _, owner, owner_handle = member()
+    _, friend, _ = member()
+    client.post(f'/api/v1/social/follow/{owner_handle}', headers=friend)
+    private = record(owner).json()['activity']
+    assert private['post'] is None and not any(p['milestone'] and p['milestone']['type'] == 'activity' for p in feed_ids(friend).values())
+    shared = client.patch(f"{A}/{private['id']}", headers=owner, json={'visibility': 'followers', 'notes': 'Sunrise loop'}).json()['activity']
+    post = shared['post']
+    assert post and post['milestone']['type'] == 'activity' and post['body'] == 'Sunrise loop'
+    card = feed_ids(friend)[post['id']]['milestone']['activity']
+    assert card['id'] == private['id'] and card['distance_m'] == pytest.approx(private['distance_m']) and '1 km' in card['records']
+    assert len(card['preview']) >= 2
+    kudos = client.post(f"/api/v1/social/posts/{post['id']}/reactions", headers=friend, json={'kind': 'like'})
+    assert kudos.status_code == 200 and kudos.json()['post']['reactions']['like'] == 1
+    assert client.post(f"/api/v1/social/posts/{post['id']}/comments", headers=friend, json={'body': 'Great pace!'}).status_code in (200, 201)
+    seen = client.get(f"{A}/{private['id']}", headers=friend).json()['activity']['post']
+    assert seen['reactions']['like'] == 1 and seen['comment_count'] == 1 and seen['my_reaction'] == 'like'
+    # Private again: gone from the feed. Shared again: the same card is back with its kudos.
+    client.patch(f"{A}/{private['id']}", headers=owner, json={'visibility': 'private'})
+    assert post['id'] not in feed_ids(friend)
+    client.patch(f"{A}/{private['id']}", headers=owner, json={'visibility': 'everyone'})
+    assert feed_ids(friend)[post['id']]['reactions']['like'] == 1
+    client.delete(f"{A}/{private['id']}", headers=owner)
+    assert post['id'] not in feed_ids(friend)
+
+
+def test_sharing_without_a_handle_still_works_and_posts_nothing():
+    from tests.test_adventure import account
+    _, h = account()
+    run = record(h, visibility='everyone')
+    assert run.status_code == 201 and run.json()['activity']['post'] is None
+
+
+def test_people_who_did_it_together_are_shown_when_their_activity_is_visible():
+    _, a, a_handle = member()
+    _, b, b_handle = member()
+    _, c, _ = member()
+    run_a = record(a, visibility='everyone').json()['activity']
+    run_b = client.post(A, headers=b, json={'sport': 'run', 'started_at': started(58), 'fixes': fixes_for([(1500, 10 / 3)], seed=2), 'visibility': 'everyone'}).json()['activity']
+    with_a = client.get(f"{A}/{run_a['id']}", headers=a).json()['activity']['together']
+    assert [t['handle'] for t in with_a] == [b_handle] and with_a[0]['activity_id'] == run_b['id']
+    client.patch(f"{A}/{run_b['id']}", headers=b, json={'visibility': 'private'})
+    assert client.get(f"{A}/{run_a['id']}", headers=a).json()['activity']['together'] == []
+    # Someone elsewhere at the same time is not "with" you.
+    far = [[f[0] + 0.05, f[1], f[2], f[3]] for f in fixes_for([(1500, 10 / 3)], seed=3)]
+    client.post(A, headers=c, json={'sport': 'run', 'started_at': started(60), 'fixes': far, 'visibility': 'everyone'})
+    assert client.get(f"{A}/{run_a['id']}", headers=a).json()['activity']['together'] == []
