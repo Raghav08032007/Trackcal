@@ -33,13 +33,18 @@ describe("complete feature flows", () => {
     value("Journal date", "2026-10-02"); expect(screen.queryByRole("heading", { name: "October first meal" })).toBeNull(); expect((screen.getByLabelText("Steps") as HTMLInputElement).value).toBe("0");
     value("Journal date", "2026-10-01"); expect(screen.getByRole("heading", { name: "October first meal" })).toBeTruthy();
   });
-  it("logs a scaled demo photo and cooking adjustment", () => {
-    render(<Home />); fireEvent.click(screen.getByRole("button", { name: /Avocado Egg Toast/ })); fireEvent.change(screen.getByRole("slider"), { target: { value: "420" } }); fireEvent.click(screen.getByRole("button", { name: "Restaurant (Ghee/Butter Heavy)" })); fireEvent.click(screen.getByRole("button", { name: "Log This Meal" })); expect(journal()[0]).toMatchObject({ calories: 850, protein: 32, carbs: 56, fat: 55 });
+  it("scales a sample photo with cooking style, but never logs the sample as a meal", () => {
+    render(<Home />); fireEvent.click(screen.getByRole("button", { name: /Avocado Egg Toast/ })); fireEvent.change(screen.getByRole("slider"), { target: { value: "420" } }); fireEvent.click(screen.getByRole("button", { name: "Restaurant (Ghee/Butter Heavy)" }));
+    expect(document.body.textContent).toContain("850");
+    fireEvent.click(screen.getByRole("button", { name: "Log This Meal" }));
+    expect(journal()).toEqual([]);
+    expect(screen.getByText(/sample data and isn't logged/)).toBeTruthy();
   });
   it.each([
-    ["Steamed / Boiled", 449, 10], ["Home-Cooked Light", 479, 13], ["Standard Recipe", 510, 15], ["Restaurant (Ghee/Butter Heavy)", 638, 22], ["Deep Fried", 755, 28],
-  ])("logs the %s cooking estimate", (name, calories, fat) => {
-    render(<Home />); fireEvent.click(screen.getByRole("button", { name: /Chicken Biryani Plate/ })); fireEvent.click(screen.getByRole("button", { name: String(name) })); fireEvent.click(screen.getByRole("button", { name: "Log This Meal" })); expect(journal()[0]).toMatchObject({ calories, fat });
+    ["Steamed / Boiled", 449], ["Home-Cooked Light", 479], ["Standard Recipe", 510], ["Restaurant (Ghee/Butter Heavy)", 638], ["Deep Fried", 755],
+  ])("shows the %s cooking estimate", (name, calories) => {
+    render(<Home />); fireEvent.click(screen.getByRole("button", { name: /Chicken Biryani Plate/ })); fireEvent.click(screen.getByRole("button", { name: String(name) }));
+    expect(document.body.textContent).toContain(String(calories));
   });
   it("keeps a new photo local until explicit provider consent", async () => {
     const fetcher=vi.fn();vi.stubGlobal("fetch",fetcher);render(<Home/>);

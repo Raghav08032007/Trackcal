@@ -1,5 +1,6 @@
 
 import { FoodCamera } from "@/components/food-camera";
+import { useDiaryMeals } from "@/lib/diary";
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { consistencyWarning, FIELDS as NUTRIENT_FIELDS, rounded, scale, type Nutrients } from "@/lib/nutrition-math";
 import { useAccount } from "@/components/account-session";
@@ -34,7 +35,6 @@ import {
   Clock,
   Utensils,
   Barcode,
-  Mic,
   BookOpen,
   Trash2,
   Upload,
@@ -452,7 +452,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const today = useLocalDate();
   const [selectedDate, setJournalDate] = useState("");
   const journalDate = selectedDate || today;
-  const [loggedMeals, setLoggedMeals] = useLocalState<MealLog[]>(`trackcal:journal:${journalDate}`, []);
+  const [loggedMeals, setLoggedMeals] = useDiaryMeals(journalDate);
   const [deletedMeal, setDeletedMeal] = useState<{ meal: MealLog; index: number } | null>(null);
 
   const totalCaloriesLogged = loggedMeals.reduce((acc, m) => acc + m.calories, 0);
@@ -461,6 +461,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
   const addCurrentScanToLog = () => {
     if (!scanReady || isScanning) return;
+    // The sample shown before any photo is scanned is not a meal: it never goes into the diary.
+    if (!uploadedImageUrl) { setNotice("Scan a photo of your meal first. The example shown here is sample data and isn't logged."); return; }
     setNotice(`Meal added to your journal for ${journalDate}.`);
     setLoggedMeals([
       ...loggedMeals,
@@ -471,7 +473,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         protein: scaledProtein,
         carbs: scaledCarbs,
         fat: scaledFat,
-        method: uploadedImageUrl ? "AI estimate (user reviewed)" : "Demo meal (sample data)"
+        grams: portionGrams > 0 ? portionGrams : undefined,
+        method: "Photo scan (user reviewed)"
       }
     ]);
   };
@@ -1051,6 +1054,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                         protein: portion.protein_g as number,
                         carbs: portion.carbs_g as number,
                         fat: portion.fat_g as number,
+                        grams: barcodeGrams > 0 ? barcodeGrams : undefined,
                         method: `Barcode (${barcodeSource})`
                       }
                     ]);
