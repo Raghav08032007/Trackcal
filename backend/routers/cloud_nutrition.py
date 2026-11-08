@@ -111,7 +111,8 @@ def diary_view(log,zone):
  for item in log.items:
   nutrients={k:None if value is None else round(value/item.quantity_g*100,3) for k,value in {'calories':item.calories,'protein':item.protein_g,'carbs':item.carbs_g,'fat':item.fat_g}.items()}
   items.append({'name':item.display_name,'grams':item.quantity_g,'nutrients':nutrients,'food_id':item.food_id,'manual_override':False,'estimated':bool(item.is_ai_estimated or (item.serving_label or '').startswith('Reviewed estimate')),'source':item.serving_label or (item.data_source.value if item.data_source else 'Source unspecified')})
- return {'id':log.id,'day':log.logged_at.replace(tzinfo=timezone.utc).astimezone(ZoneInfo(zone)).date().isoformat(),'meal_type':log.meal_type.value,'method':log.log_method.value,'notes':log.notes or '', 'items':items,'totals':{key:round(sum(getattr(i,field) for i in log.items),2) if all(getattr(i,field) is not None for i in log.items) else None for key,field in [('calories','calories'),('protein','protein_g'),('carbs','carbs_g'),('fat','fat_g')]}}
+ local=log.logged_at.replace(tzinfo=timezone.utc).astimezone(ZoneInfo(zone))
+ return {'id':log.id,'day':local.date().isoformat(),'time':local.strftime('%H:%M'),'meal_type':log.meal_type.value,'method':log.log_method.value,'notes':log.notes or '', 'items':items,'totals':{key:round(sum(getattr(i,field) for i in log.items),2) if all(getattr(i,field) is not None for i in log.items) else None for key,field in [('calories','calories'),('protein','protein_g'),('carbs','carbs_g'),('fat','fat_g')]}}
 
 def diary(day:str|None=None,offset:int=Query(0,ge=0,le=10000),limit:int=Query(30,ge=1,le=100),user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  from datetime import date,time
