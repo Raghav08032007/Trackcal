@@ -35,6 +35,7 @@ export class PoseDetectionService{
      if(version!==this.generation)return;
      if(data.type==='ready'){clearTimeout(timeout);this.cancelInit=null;this.delegate=data.delegate==='GPU'?'GPU':'CPU';this.stats();resolve();}
      else if(data.type==='error'){clearTimeout(timeout);reject(Error(data.message));this.fail(data.message);}
+     else if(data.type==='skip'){this.busy=false;if(this.watchdog)clearTimeout(this.watchdog);this.watchdog=null;}
      else if(data.type==='pose'){
       this.busy=false;if(this.watchdog)clearTimeout(this.watchdog);this.watchdog=null;
       if(data.delegate&&data.delegate!==this.delegate){this.delegate=data.delegate;this.stats();}
