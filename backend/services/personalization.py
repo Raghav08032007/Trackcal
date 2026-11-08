@@ -112,6 +112,8 @@ EDUCATION={
 
 def eligible_templates(prefs,include_camera=False):
  if prefs.professional_restrictions:return []
+ from services import body_load
+ guard=body_load.protected(prefs.conditions)  # injured or operated parts are protected by their stage
  equipment=set(prefs.equipment)
  result=[]
  for key,t in TEMPLATES.items():
@@ -121,6 +123,7 @@ def eligible_templates(prefs,include_camera=False):
   if 'seated' in prefs.accessibility and not t['seated']:continue
   if 'no_floor' in prefs.accessibility and t['floor']:continue
   if 'low_impact' in prefs.accessibility and key=='run':continue
+  if not body_load.allowed(key,guard):continue
   result.append(key)
  return sorted(result,key=lambda k:(-len(set(TEMPLATES[k]['interests'])&set(prefs.interests)),k))
 
@@ -139,15 +142,17 @@ def generate(prefs,today,previous_feedback):
  minutes=min(prefs.duration,10 if prefs.experience in ('beginner','unspecified') else 20)
  if previous_feedback.get('too_hard'):minutes=max(5,minutes-5)
  if previous_feedback.get('not_enjoyed'):choices=[k for k in choices if k not in previous_feedback['not_enjoyed']] or ['recovery']
- monday=today-timedelta(days=today.weekday());activities=[]
- for i in range(7):
-  day=monday+timedelta(days=i)
-  if day<today:continue
+ activities=[]
+ # The next 7 days from today, so a plan made on a Sunday is a full week, not one day.
+ for offset in range(7):
+  day=today+timedelta(days=offset);i=day.weekday()
   rest=i in prefs.rest_days or i not in prefs.available_days
   template='recovery' if rest else choices[len(activities)%len(choices)] if choices else None
   if template is None:continue
   activities.append({'template_id':template,'scheduled_day':str(day),'minutes':5 if template=='recovery' else minutes})
- return activities,{'priorities':['Professional restrictions and pain feedback block automated exercise','Accessibility, equipment and setting eligibility','Explicit rest and available days','Interests and comfort feedback','Conservative duration; never XP/BMI-based progression'],'preferred_time':prefs.workout_time,'professional_review':bool(prefs.professional_restrictions or previous_feedback.get('pain')),'reason':'Only rest options are offered where professional review is needed.' if not choices else 'Activities fit your selected setting, equipment, interests and available days. No automatic difficulty increase.'}
+ from services import body_load
+ protected=body_load.why_left_out(body_load.protected(prefs.conditions))
+ return activities,{'protected':protected,'priorities':['Professional restrictions and pain feedback block automated exercise','Injured and operated body parts are protected by their stage','Accessibility, equipment and setting eligibility','Explicit rest and available days','Interests and comfort feedback','Conservative duration; never XP/BMI-based progression'],'preferred_time':prefs.workout_time,'professional_review':bool(prefs.professional_restrictions or previous_feedback.get('pain')),'reason':'Only rest options are offered where professional review is needed.' if not choices else 'Activities fit your selected setting, equipment, interests and available days. No automatic difficulty increase.'}
 
 def normalize_measurement(kind,value,unit):
  rules={'height':({'cm':1,'in':2.54},30,275),'weight':({'kg':1,'lb':0.45359237},1,500),'duration':({'minutes':1},0,180),'repetitions':({'reps':1},0,500),'frequency':({'days/week':1},0,7),'hydration':({'ml':1},0,10000),'sleep':({'hours':1},0,24)}
