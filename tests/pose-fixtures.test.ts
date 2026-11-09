@@ -67,7 +67,7 @@ describe('properties',()=>{
 describe('difficulty levels',()=>{
  const reps=(level:keyof typeof EXERCISE_LEVELS,bottom:number)=>{const c=new RepCounter(withLevel(EXERCISE_CONFIG.curl,level));const top=165;let t=0;const see=(a:number)=>{t+=50;c.update({angle:a,confidence:.9,valid:true,reason:''},t);};
   for(let i=0;i<20;i++)see(top);for(let r=0;r<3;r++){for(let i=0;i<=20;i++)see(top-(top-bottom)*i/20);for(let i=0;i<8;i++)see(bottom);for(let i=20;i>=0;i--)see(top-(top-bottom)*i/20);for(let i=0;i<8;i++)see(top);}return c.reps;};
- it('beginner counts a rep that advanced asks to go deeper on',()=>{expect(reps('beginner',65)).toBe(3);expect(reps('advanced',65)).toBe(0);expect(reps('advanced',45)).toBe(3);});
+ it('beginner counts a rep that advanced asks to go deeper on',()=>{expect(reps('beginner',80)).toBe(3);expect(reps('advanced',80)).toBe(0);expect(reps('advanced',60)).toBe(3);});
  it('beginner leaves the base thresholds unchanged and levels only get stricter',()=>{const c=EXERCISE_CONFIG.squat;expect(withLevel(c,'beginner').down).toBe(c.down);expect(withLevel(c,'advanced').down).toBeLessThan(withLevel(c,'intermediate').down);expect(withLevel(c,'advanced').up).toBeGreaterThan(c.up);});
  it('a standing person is not counted as sit-ups',()=>{const f=load('curl','clean');const t=new SessionTracker('situp');let r;for(const fr of frames(f))r=t.frame(fr)??r;expect(t.counter.reps).toBe(0);});
 });

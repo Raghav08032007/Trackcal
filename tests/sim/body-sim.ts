@@ -90,9 +90,9 @@ function norm(a: Vec): Vec { const n = Math.hypot(...a); return [a[0] / n, a[1] 
 export type Noise = { jitter: number; dropRate: number; flicker: number };
 /** What the pose model reports: positions with jitter, a visibility for each joint (lower for the far side and anything out of
  *  frame or hidden behind the body), and now and then no person at all. */
-export function observe(points: Vec[], cam: Camera, noise: Noise, r: ReturnType<typeof rng>): Landmark[] | null {
+export function observe(points: Vec[], cam: Camera, noise: Noise, r: ReturnType<typeof rng>, aim = .9): Landmark[] | null {
   if (r.next() < noise.dropRate) return null;
-  const shot = film(points, cam), yaw = rad(cam.yaw);
+  const shot = film(points, cam, aim), yaw = rad(cam.yaw);
   const towards: Vec = [Math.sin(yaw), 0, Math.cos(yaw)];
   return shot.map((pt, i) => {
     const out = pt.x < 0 || pt.x > 1 || pt.y < 0 || pt.y > 1;

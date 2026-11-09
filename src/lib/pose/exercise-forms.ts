@@ -48,9 +48,9 @@ const squatFeet=(b:Body)=>b.facing<.3?b.stance>1:b.stance>1.7;
 const SQUAT={never:(b:Body)=>b.wristUp>.3,banned:(b:Body)=>b.tilt>55,atBottom:(b:Body)=>shallow(b)||squatFeet(b)||b.footStep>.55,still:{ankles:.5},moves:{shoulders:.2}};
 /** Lying down seen head-on looks upright but very short: a torso this foreshortened is not standing. */
 const lyingHeadOn=(b:Body)=>b.torso<.6;
-const SIDE_ARM={never:either(armBent,notUpright,lyingHeadOn,(b)=>b.wristUp>.5),banned:(b:Body)=>b.elbow<90,atBottom:(b:Body)=>b.wristUp<-.3,reaches:(b:Body)=>!(b.wristUp>-.65),moves:{wrists:.6}};
+const SIDE_ARM={never:either(armBent,notUpright,lyingHeadOn,(b)=>b.wristUp>.5),banned:(b:Body)=>b.elbow<90,atBottom:(b:Body)=>b.wristUp<-.45,reaches:(b:Body)=>!(b.wristUp>-.65),moves:{wrists:.6}};
 const CURL={never:either(notUpright,legsBent,handsAbove),atBottom:handsLow,still:{hips:.35,elbows:.35},moves:{wrists:.4}};
-const PUSH={still:{wrists:.3},moves:{shoulders:.12}};
+const PUSH={still:{wrists:.3},moves:{shoulders:.2}};  // the shoulders really go down; a plank's jitter doesn't move them this far
 const LUNGE={never:notUpright,atBottom:(b:Body)=>b.hipGap<14&&b.facing<.45||b.facing>.5&&b.stance>.8,moves:{shoulders:.15}};
 const HINGE={moves:{shoulders:.3},still:{ankles:.4}};
 const LIFT_HIPS={never:notLying,still:{shoulders:.35},moves:{hips:.15}};
@@ -64,7 +64,7 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  sumo:{...SQUAT,never:either(SQUAT.never,notFacing,(b)=>b.torso<.7,(b)=>b.facing>1.05),atBottom:(b)=>shallow(b)||b.stance<.8||b.kneeGap>25},
  wsquat:{...SQUAT,never:(b)=>b.wristChest>.8},
  ohsquat:{...SQUAT,never:(b)=>b.wristLow<.3},
- squatjump:{...SQUAT,moves:{ankles:.35,shoulders:.2}},
+ squatjump:{...SQUAT,moves:{ankles:.2,shoulders:.2}},  // a small hop is still a jump
  lunge:LUNGE,
  wlunge:{...LUNGE,never:either(notUpright,(b)=>b.wristUp>-.25)},
  sidelunge:{never:either(notUpright,lyingHeadOn),atBottom:(b)=>b.stance<.8||b.kneeGap<20||b.facing<.3},
@@ -126,20 +126,20 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  pistol:{...SQUAT,atBottom:(b)=>shallow(b)||b.kneeGap<35||b.facing>.5},
  shouldertap:{never:either(notLying,handsAbove,feetFromHands),still:{hips:.2,shoulders:.25},moves:{wrists:.3}},
  legcurl:{never:notLying,still:{hips:.25,knees:.3},moves:{ankles:.3}},
- kbswing:{never:either(armBent,(b)=>b.wristUp>.3),atBottom:(b)=>b.wristUp<-.35,reaches:(b)=>b.tilt>30,moves:{wrists:.6,shoulders:.15}},
+ kbswing:{never:either(armBent,(b)=>b.wristUp>.3),atBottom:(b)=>b.wristUp<-.7,reaches:(b)=>b.tilt>30,moves:{wrists:.6,shoulders:.15}},
  hspu:{never:either((b)=>b.headDown<.4,(b)=>b.hip<140),still:{wrists:.3},moves:{shoulders:.2}},
  hangleg:{never:(b)=>b.wristUp<.3,still:{wrists:.3,shoulders:.3},moves:{knees:.35}},
  decline:{...PUSH,never:either(handsAbove,sideOnly(notLying),sideOnly(legsBent),sideOnly((b)=>b.handHeight>-.5))},
  nordic:{never:(b)=>b.hip<140,still:{knees:.3,ankles:.3},moves:{shoulders:.6}},
- jumplunge:{...LUNGE,moves:{ankles:.35,shoulders:.15}},
+ jumplunge:{...LUNGE,moves:{ankles:.2,shoulders:.15}},
  tuckjump:{banned:(b)=>b.tilt>50,never:either(notUpright,armsOverhead),atBottom:(b)=>b.hipGap>20,moves:{ankles:.5,knees:.3}},
  cleanpress:{never:notUpright,atBottom:(b)=>b.wristUp<.4,reaches:(b)=>b.elbow<110,moves:{wrists:.8}},
- snatch:{atBottom:(b)=>b.wristUp<.4,reaches:(b)=>b.tilt>30,moves:{wrists:.8,shoulders:.15}},
+ snatch:{atBottom:(b)=>b.wristUp<0,reaches:(b)=>b.tilt>30,moves:{wrists:.8,shoulders:.15}},
  inclinebench:{never:either((b)=>b.tilt<25,(b)=>b.tilt>62,(b)=>b.wristUp<-.2),moves:{elbows:.2}},
  // Full body
  jack:{banned:(b)=>b.elbow<70||b.tilt>45,never:notUpright,atBottom:(b)=>b.wristUp<.15,reaches:(b)=>!(b.wristUp>-.5),moves:{wrists:.8,ankles:.15}},
  // A burpee must reach the plank at some point in every rep (the crouch on the way down is part of it too).
- burpee:{banned:(b)=>b.kneeUp>.3,reaches:(b)=>!(b.tilt<45),moves:{shoulders:.6,ankles:.4}},
+ burpee:{banned:(b)=>b.kneeUp>.3,reaches:(b)=>!(b.tilt<45),moves:{shoulders:.6,ankles:.25}},
  climber:{never:either(notLying,handsAbove,notFloorHands),still:{wrists:.3}},
- punch:{never:either(notUpright,legsBent,armsOverhead,(b)=>b.wristUp<-.7),still:{shoulders:.25},moves:{wrists:.35}},
+ punch:{never:either(notUpright,legsBent,armsOverhead,(b)=>b.wristUp<-.7),still:{shoulders:.25},moves:{wrists:.25}},
 };

@@ -7,9 +7,11 @@ import {Travel,type Body,type BodyPart} from './body-shape';
  *  sane duration and the body visible throughout. Thresholds use hysteresis and must hold for minDwellMs, so jitter
  *  around a threshold never flips the phase. The count only ever goes up (or back to 0 on reset()). */
 export type Phase='SETUP'|'UP'|'GOING_DOWN'|'DOWN'|'GOING_UP';
-const GAP_MS=750,GRACE_MS=600,TIP_MS=2500,MAX_REPS=100,CROSSING_MARGIN=6,BOBBING=4;
+const GAP_MS=750,GRACE_MS=600,TIP_MS=2500,MAX_REPS=100,CROSSING_MARGIN=6,BOBBING=6;
 /** More of a rep than this in the wrong shape, and it is a different exercise. Brief glitches stay below it. */
 const WRONG_SHARE=.35,BANNED_FRAMES=4;
+/** How far back up from the bottom a rep has to come to count. */
+const RETURN_SHARE=.7;
 /** What the other camera angle can't measure, marked unknown so no check fails on it.
  *  Head-on, a forward-and-back move hides lean and joint angles (a shorter torso still shows the lean).
  *  Side-on, a move out to the sides keeps lean and bends but hides how wide the feet and knees are. */
@@ -85,17 +87,20 @@ export class RepCounter{
     else if(this.hold('up',a>=c.up,t)){
      // Came back up without reaching the bottom: a half rep, or quick bobbing that never settles at the top or the
      // bottom (several mid-angle crossings in one cycle). A wobble under 15 degrees is ignored.
-     if(this.cycle&&this.cycle.top-this.cycle.bottom>=15)this.reject(this.cycle.crossings>BOBBING||t-this.cycle.start<c.minRepMs/3?'too_fast':'too_shallow',t);else this.cycle=null;
+     if(this.cycle&&this.cycle.top-this.cycle.bottom>=15)this.reject(this.cycle.crossings>BOBBING||t-this.cycle.start<c.minRepMs*.75?'too_fast':'too_shallow',t);else this.cycle=null;  // much quicker than a rep takes: say so, rather than 'go deeper'
      this.phase='UP';this.top=a;}
     break;
    case 'DOWN':if(a>c.down+c.hysteresis){this.phase='GOING_UP';this.held=null;}break;
    case 'GOING_UP':
     if(this.hold('down',a<=c.down,t))this.phase='DOWN';
-    else if(this.hold('up',a>=c.up,t)&&this.cycle){
+    // Back most of the way up from this rep's own bottom is back up: people rarely lock out fully between quick reps.
+    // Only after a clear start position, so a movement that never stands tall (a dip seen as a squat) doesn't count.
+    else if(this.cycle&&this.hold('up',a>=(this.cycle.top>=c.up+10?Math.min(c.up,Math.max(c.down+c.hysteresis+6,this.cycle.bottom+RETURN_SHARE*(this.cycle.top-this.cycle.bottom))):c.up),t)){
      const duration=t-this.cycle.start,range=Math.max(this.cycle.top,a)-this.cycle.bottom;
-     const wrong=this.mismatch();if(wrong)this.mismatches.push(wrong);
-     if(wrong)this.reject('wrong_exercise',t);
-     else if(this.cycle.crossings>BOBBING||duration<c.minRepMs)this.reject('too_fast',t);
+     // Far too quick is the first thing to say: a rushed rep often looks like another exercise too.
+     const fast=this.cycle.crossings>BOBBING||duration<c.minRepMs,wrong=fast?'':this.mismatch();if(wrong)this.mismatches.push(wrong);
+     if(fast)this.reject('too_fast',t);
+     else if(wrong)this.reject('wrong_exercise',t);
      else if(range<c.minRangeDeg)this.reject('too_shallow',t);
      else{if(this.reps<MAX_REPS)this.repLog.push({ms:duration,range});this.reps=Math.min(MAX_REPS,this.reps+1);this.rejected=null;this.cycle=null;}
      this.phase='UP';this.top=a;}

@@ -2,7 +2,7 @@ import {angle,confidence,normalize,visible} from './landmarks';
 import {OneEuroFilter} from './one-euro';
 import type {ExerciseConfig} from './exercise-config';
 import type {Landmark,Observation,PoseFrame} from './types';
-const SMOOTH_S=.08,DROP_SCALE=11.2,HIP_SCALE=13.4,DRIFT=.004,RISE_S=.8,MODE_HOLD_MS=600,LEG_DECAY_S=40,SETTLE_MS=1500,DROP_SLACK=30;
+const SMOOTH_S=.08,DROP_SCALE=11.2,HIP_SCALE=13.4,DRIFT=.004,RISE_S=.8,MODE_HOLD_MS=600,LEG_DECAY_S=40,SETTLE_MS=1500,DROP_SLACK=30,STRAIGHT_FROM=125,STRAIGHT_SPAN=35;
 /** How far the hips drop, as a share of the leg, for each degree of knee bend: the shin tilts forward about 38% of the bend and the
  *  thigh back the rest, with thigh and shin about equal. Read backwards to turn a measured drop into a knee bend. */
 const DROP_BY_BEND=Array.from({length:151},(_,b)=>((1-Math.cos(b*.62*Math.PI/180))+(1-Math.cos(b*.38*Math.PI/180)))/2);
@@ -13,6 +13,23 @@ function sideOn(p:Landmark[]){
  return Math.min(1,Math.max(0,(.55-width/torso)/.4));
 }
 function blendByView(knee:number,drop:number,p:Landmark[]){const s=sideOn(p);return s*knee+(1-s)*drop;}
+/** The joint angle and the limb-span estimate each read a bent limb well, and the smaller is right while bending. Near straight
+ *  they only ever err low (jitter can't make a straight limb straighter), so the reading slides towards the larger of the two. */
+function nearStraight(joint:number,span:number){
+ if(!Number.isFinite(joint))return span;if(!Number.isFinite(span))return joint;
+ // Jitter on a straight arm pulls the span estimate low, so only a span below the joint angle is pulled up; a joint angle below
+ // the span is a real bend (the span under-reads a bend seen side-on) and is kept.
+ if(joint<=span)return joint;
+ const lo=span,hi=joint,w=Math.min(1,Math.max(0,(lo-STRAIGHT_FROM)/STRAIGHT_SPAN))*Math.min(1,Math.max(0,(hi-lo-8)/12));
+ return lo+(hi-lo)*w;
+}
+/** Push-ups: the span leads (it reads a bend well from any angle), with jitter near straight pulled up. */
+function straightByView(joint:number,span:number,p:Landmark[]){
+ // The elbow angle can't check the span: with elbows flared out it looks straight side-on, and head-on it hardly seems to bend.
+ // A plank's jitter is told apart by the shoulders, which really go down in a push-up (exercise-forms: moves shoulders).
+ void p;
+ return nearStraight(joint,span);
+}
 function bendFromDrop(share:number){
  let i=0;while(i<150&&DROP_BY_BEND[i+1]<share)i++;
  const lo=DROP_BY_BEND[i],hi=DROP_BY_BEND[i+1]??lo;return i+(hi>lo?Math.min(1,(share-lo)/(hi-lo)):0);
@@ -32,11 +49,12 @@ export class JointAnalyzer implements ExerciseAnalyzer{
  private smooth(value:number,t:number){
   if(!Number.isFinite(value))return value;
   if(!this.reading||t<=this.reading.t){this.reading={value,t};return value;}
-  const k=1-Math.exp(-(t-this.reading.t)/SMOOTH_S/1000);this.reading={value:this.reading.value+(value-this.reading.value)*k,t};return this.reading.value;
+  // Push-ups take over a second each and their forearm span is jumpy, so they are smoothed a little longer.
+  const k=1-Math.exp(-(t-this.reading.t)/(this.config.straightens?SMOOTH_S*1.75:SMOOTH_S)/1000);this.reading={value:this.reading.value+(value-this.reading.value)*k,t};return this.reading.value;
  }
  reset(){this.side=null;this.center=null;this.reach=0;this.span=null; this.clearDrop();this.resetFilters();}
- private clearDrop(){this.dropStart=null;this.legLen=0;this.switchSince=null;this.dropT=null;this.top=null;this.torso=0;this.shoulders=null;this.dropMode=null;this.torsoTop=undefined;this.level=null;this.floor=null;this.leg=0;this.lastT=null;this.stillFor=0;this.feet=null;this.jumpUntil=0;}
- private level:number|null=null;private floor:number|null=null;private leg=0;private lastT:number|null=null;private stillFor=0;private feet:number|null=null;private jumpUntil=0;
+ private clearDrop(){this.dropStart=null;this.legLen=0;this.switchSince=null;this.dropT=null;this.top=null;this.torso=0;this.shoulders=null;this.dropMode=null;this.torsoTop=undefined;this.level=null;this.floor=null;this.leg=0;this.lastT=null;this.stillFor=0;this.slow=null;this.feet=null;this.ankles=null;this.hips=null;this.jumpUntil=0;}
+ private level:number|null=null;private floor:number|null=null;private leg=0;private lastT:number|null=null;private stillFor=0;private slow:number|null=null;private feet:number|null=null;private ankles:number|null=null;private hips:number|null=null;private jumpUntil=0;
  observe(frame:PoseFrame):Observation{
   const c=this.config,p=normalize(frame),bad=(reason:string,quality=0)=>{this.resetFilters();return {angle:0,confidence:quality,valid:false,reason};};
   if(!p)return bad(frame.landmarks.length>1?'Only one person should be in view.':'Step back so your whole body is in frame.');
@@ -65,7 +83,7 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   // A bent knee only counts as depth if the hips really went down too: knees tucked up in a jump, or pulled up to the chest,
   // bend just as far with the hips high. So the reading never goes more than DROP_SLACK degrees deeper than the hip drop says.
   // A move out to the sides (sumo) bends the knees across the body: side-on that bend is hidden, so the hip drop leads.
-  const fused=c.drop&&Number.isFinite(drop)?(Number.isFinite(knee)&&c.plane!=='front'?Math.max(blendByView(knee,drop,p),drop-DROP_SLACK):drop):Math.min(knee,span,drop);
+  const fused=c.drop&&Number.isFinite(drop)?(Number.isFinite(knee)&&c.plane!=='front'?Math.max(blendByView(knee,drop,p),drop-DROP_SLACK):drop):c.straightens?straightByView(knee,span,p):Math.min(knee,span,drop);
   const degrees=c.rise?this.riseAngle(p,frame.timestamp):this.smooth(fused,frame.timestamp);
   const reading=c.invert?180-degrees:degrees;
   if(c.rise&&Number.isNaN(reading))return bad('That looked like a jump. Rise onto your toes and keep them on the floor.',quality);
@@ -76,8 +94,12 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   *  standing level (the lowest the body has been lately) in leg lengths, so it fits any height and distance, and read in the same
   *  degrees as a joint: standing is 180, a 6% lift (about 5 cm for most people) is about 144. */
  private riseAngle(p:Landmark[],t:number){
-  const body=(p[11].y+p[12].y+p[23].y+p[24].y)/4,hips=(p[23].y+p[24].y)/2,ankles=(p[27].y+p[28].y)/2;
-  const before=this.level;this.level=this.level===null?body:this.level*.5+body*.5;
+  const body=(p[11].y+p[12].y+p[23].y+p[24].y)/4;
+  // Hip and ankle points jitter by a few pixels, a lot for someone small in the picture: smoothed, so that jitter is read neither as
+  // the feet leaving the floor nor as bent legs.
+  const ease=(was:number|null,now:number)=>was===null?now:was*.6+now*.4;
+  const hips=this.hips=ease(this.hips,(p[23].y+p[24].y)/2),ankles=this.ankles=ease(this.ankles,(p[27].y+p[28].y)/2);
+  const before=this.level;this.level=this.level===null?body:this.level*.7+body*.3;  // a raise is a few centimetres: smoothed so jitter doesn't drown it
   const dt=this.lastT===null?0:Math.min(1,Math.max(0,(t-this.lastT)/1000));this.lastT=t;
   // The standing level follows the body down at once, and drifts up only slowly (0.15% of the frame a second) in case the
   // camera or the person shifts: far too slowly to swallow a raise held for a few seconds.
@@ -87,15 +109,16 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   if(!(this.leg>.05))return Infinity;
   const straight=span>=this.leg*.93;
   // Standing is straight legs held still for half a second: true between raises, never on the way into a squat or lunge.
-  const speed=before===null||!dt?0:Math.abs(this.level-before)/dt/this.leg;
-  this.stillFor=straight&&speed<.08?this.stillFor+dt:0;
+  // How fast the body moves, judged on a slower average of its height: jitter on someone small in the picture would never look still.
+  const slow=this.slow===null?body:this.slow*.85+body*.15,speed=this.slow===null||!dt?0:Math.abs(slow-this.slow)/dt/this.leg;this.slow=slow;void before;
+  this.stillFor=straight&&speed<.07?this.stillFor+dt:0;
   if(this.floor===null){this.floor=this.level;this.feet=ankles;}
   else if(this.stillFor>=.5){this.floor=Math.max(this.level,this.floor-.0015*dt);this.feet=Math.max(ankles,this.feet!-.0015*dt);}
   else this.floor-=.0015*dt;
   // On the toes the ankles rise only about a centimetre; in a jump they leave the floor with the body. A jump, or a rise far
   // beyond heel height, isn't a calf raise, nor is anything in the moment after it.
   const lift=(this.floor-this.level)/this.leg,feetUp=(this.feet!-ankles)/this.leg;
-  if(feetUp>.05||lift>.16)this.jumpUntil=t+1500;
+  if(feetUp>.09||lift>.16)this.jumpUntil=t+1500;
   if(t<this.jumpUntil)return NaN;
   if(!straight)return 180;
   return 180-Math.min(120,Math.max(0,lift*600));

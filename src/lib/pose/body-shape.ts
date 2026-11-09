@@ -59,7 +59,10 @@ export const torsoLength=(p:Landmark[])=>{const b=readBody(p,0);return Number.is
 export class Travel{
  private box:Partial<Record<string,{px:number;py:number;x0:number;x1:number;y0:number;y1:number}>>={};private scale=0;
  add(b:Body){
-  this.scale=Math.max(this.scale,b.scale);
+  // Head-on the torso points at the camera and looks tiny, so jitter in a planted hand would look like a big move; the shoulders
+  // stay their full width from the front, so the scale is never less than 1.5 shoulder widths.
+  const [l,r]=b.points.shoulders,width=l&&r?Math.hypot(l.x-r.x,l.y-r.y)*1.5:0;
+  this.scale=Math.max(this.scale,b.scale,width);
   for(const name in b.points)b.points[name as BodyPart].forEach((l,i)=>{
    if(!l)return;const key=name+i,r=this.box[key];
    if(!r){this.box[key]={px:l.x,py:l.y,x0:l.x,x1:l.x,y0:l.y,y1:l.y};return;}
