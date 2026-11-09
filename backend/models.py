@@ -1369,3 +1369,14 @@ class WorkspaceEntry(Base):
     value=Column(JSON,nullable=True)                    # null: removed on purpose
     version=Column(Integer,nullable=False,default=1)
     updated_at=Column(DateTime,nullable=False,default=_now,onupdate=_now)
+
+
+class SafetyAcknowledgement(Base):
+    """The person chose to do an exercise the app advised against, after being told why. Kept as their own record."""
+    __tablename__='safety_acknowledgements'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    template=Column(String(40),nullable=False)
+    level=Column(String(10),nullable=False)             # avoid or caution, as advised at the time
+    reasons=Column(JSON,nullable=False)                 # the reasons shown, worked out by the server
+    created_at=Column(DateTime,nullable=False,default=_now)

@@ -262,3 +262,35 @@ def import_days(data:DayImport,user=Depends(get_current_active_user),db:Session=
         except ValueError:continue
         if days_rules.fill_gaps(days_rules.row_for(db,user.id,item.day),item):count+=1
     db.commit();return {'imported':count}
+
+
+# ── Exercise safety: what the app advises against, and the person's own decision to go ahead (services/exercise_safety.py) ──
+from services import exercise_safety
+
+
+class SafetyAck(BaseModel):
+    template: str
+    accepted: bool
+
+
+def safety_state(db, user):
+    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
+    from routers.health import assessment
+    report = db.query(models.LabReport).filter_by(user_id=user.id).order_by(models.LabReport.report_date.desc(), models.LabReport.created_at.desc()).first()
+    plan = (assessment(db, user, report) or {}).get('plan') if report else None
+    return exercise_safety.check(prefs.conditions, ((plan or {}).get('exercise') or {}).get('intensity'))
+
+
+def exercise_safety_view(user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Every exercise the app advises against or asks care with, and why."""
+    return safety_state(db, user)
+
+
+def exercise_ack(data: SafetyAck, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """The person read why and chose to go ahead. The reasons are worked out here, not taken from the request."""
+    if not data.accepted: raise HTTPException(422, 'Confirm that you accept the responsibility to continue.')
+    advice = safety_state(db, user)['exercises'].get(data.template)
+    if not advice: return {'status': 'not_needed'}
+    row = models.SafetyAcknowledgement(user_id=user.id, template=data.template[:40], level=advice['level'], reasons=advice['reasons'])
+    db.add(row); db.commit()
+    return {'status': 'recorded', 'recorded_at': row.created_at.isoformat() + 'Z', 'level': advice['level']}
