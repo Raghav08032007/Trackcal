@@ -2,7 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 // Fonts are bundled with the app (no requests to third-party font services).
-import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/outfit";
 import "@/app/globals.css";
 import "@/app/studio.css";
 import "@/app/focused.css";

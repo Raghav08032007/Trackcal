@@ -67,7 +67,7 @@ function Finder(){
 
   <div className="muscle-layout">
    <section className="account-card muscle-picker"><h2>Or pick muscles</h2>
-    <div className="muscle-bodies"><div><small>Front</small><Model data={data} type="anterior" highlightedColors={['#6d4ae8']} bodyColor="#d9d5e8" onClick={stats=>tap(stats.muscle)}/></div><div><small>Back</small><Model data={data} type="posterior" highlightedColors={['#6d4ae8']} bodyColor="#d9d5e8" onClick={stats=>tap(stats.muscle)}/></div></div>
+    <div className="muscle-bodies"><div><small>Front</small><Model data={data} type="anterior" highlightedColors={['#07807a']} bodyColor="#c5dede" onClick={stats=>tap(stats.muscle)}/></div><div><small>Back</small><Model data={data} type="posterior" highlightedColors={['#07807a']} bodyColor="#c5dede" onClick={stats=>tap(stats.muscle)}/></div></div>
     <div className="camera-equipment muscle-chips" role="group" aria-label="Muscles">{(Object.entries(MUSCLE_LABELS) as [MapMuscle,string][]).map(([id,name])=><button key={id} type="button" aria-pressed={selected.includes(id)} onClick={()=>toggle(id)}>{name}</button>)}</div>
     {selected.length>0&&<button type="button" className="account-secondary" onClick={()=>{setSelected([]);setPicked([]);setCategory(null);}}>Clear</button>}
    </section>

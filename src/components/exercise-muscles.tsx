@@ -6,5 +6,5 @@ export function ExerciseMuscles({muscles,title}:{muscles:string;title:string}){
  const worked=musclesFromText(muscles);
  if(!worked.length)return null;
  const data:IExerciseData[]=[{name:title,muscles:worked as unknown as Muscle[]}];
- return <div className="exercise-muscles" role="img" aria-label={`${title} works: ${muscles}`}><Model data={data} type="anterior" highlightedColors={['#6d4ae8']} bodyColor="#d9d5e8"/><Model data={data} type="posterior" highlightedColors={['#6d4ae8']} bodyColor="#d9d5e8"/></div>;
+ return <div className="exercise-muscles" role="img" aria-label={`${title} works: ${muscles}`}><Model data={data} type="anterior" highlightedColors={['#07807a']} bodyColor="#c5dede"/><Model data={data} type="posterior" highlightedColors={['#07807a']} bodyColor="#c5dede"/></div>;
 }

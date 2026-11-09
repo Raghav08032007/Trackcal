@@ -3,10 +3,10 @@ import { useLocalState } from "@/lib/use-local-state";
 import { adventureRequest,type AdventureSummary } from "@/lib/adventure";
 
 export const companions = [
-  {unlock:0,streak:0,id:"pip",name:"Pip",species:"The growing seed",trait:"Gentle encouragement",color:"#bce87b",mark:"✿",hello:"Small steps grow strong roots.",cheer:"Look at you growing! Every little effort counts."},
-  {unlock:250,streak:3,id:"nova",name:"Nova",species:"The curious star",trait:"Learning & discovery",color:"#c8b7fa",mark:"✦",hello:"Curiosity is your superpower. Let's discover something.",cheer:"A new spark of knowledge! You're lighting the way."},
+  {unlock:0,streak:0,id:"pip",name:"Pip",species:"The growing seed",trait:"Gentle encouragement",color:"#f9d357",mark:"✿",hello:"Small steps grow strong roots.",cheer:"Look at you growing! Every little effort counts."},
+  {unlock:250,streak:3,id:"nova",name:"Nova",species:"The curious star",trait:"Learning & discovery",color:"#71d6d9",mark:"✦",hello:"Curiosity is your superpower. Let's discover something.",cheer:"A new spark of knowledge! You're lighting the way."},
   {unlock:500,streak:7,id:"milo",name:"Milo",species:"The cozy bear",trait:"Kindness & balance",color:"#eebc91",mark:"♥",hello:"There's room for rest and a fresh start here.",cheer:"I'm proud of your effort. Take a moment to enjoy it."},
-  {unlock:750,streak:14,id:"luna",name:"Luna",species:"The thoughtful owl",trait:"Planning & reflection",color:"#b8d8ef",mark:"☾",hello:"One thoughtful choice can make tomorrow easier.",cheer:"That's a thoughtful step. Your next chapter is taking shape."},
+  {unlock:750,streak:14,id:"luna",name:"Luna",species:"The thoughtful owl",trait:"Planning & reflection",color:"#ddcbea",mark:"☾",hello:"One thoughtful choice can make tomorrow easier.",cheer:"That's a thoughtful step. Your next chapter is taking shape."},
   {unlock:1000,streak:21,id:"rio",name:"Rio",species:"The playful fox",trait:"Play & momentum",color:"#ffb07d",mark:"⚡",hello:"Ready for a tiny adventure? Let's make it fun.",cheer:"Adventure complete! A small win deserves a happy dance."},
   {unlock:1250,streak:30,id:"sage",name:"Sage",species:"The steady turtle",trait:"Patience & consistency",color:"#86d5b3",mark:"❋",hello:"Your pace is a good pace. We can begin again today.",cheer:"Steady progress. There's no need to rush the next step."},
 ] as const;

@@ -28,12 +28,12 @@ body button, body input, body select, body textarea { font-size:.9375rem !import
 .photo-carousel { margin: 28px 0; }
 .photo-carousel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .photo-carousel-head h2 { margin: 0; font-size:var(--t-h3); }
-.photo-carousel-head button { min-width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid #dcd8ef; background: var(--card, #fff); font-size:1.25rem; margin-left: 6px; }
+.photo-carousel-head button { min-width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid #c5e2e2; background: var(--card, #fff); font-size:1.25rem; margin-left: 6px; }
 .photo-track { display: grid; grid-auto-flow: column; grid-auto-columns: min(78%, 260px); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px 4px 18px; scrollbar-width: none; cursor: grab; overscroll-behavior-x: contain; }
 .photo-track::-webkit-scrollbar { display: none; }
 .photo-track[data-dragging] { cursor: grabbing; scroll-snap-type: none; }
 .photo-track[data-dragging] .photo-card { pointer-events: none; }
-.photo-card { scroll-snap-align: start; display: grid; grid-template-rows: 170px auto; border-radius: 22px; overflow: hidden; background: var(--card, #fff); border: 1px solid #e3e0f2; color: inherit; text-decoration: none; box-shadow: 0 6px 0 #ebe8f7; transition: transform .25s, box-shadow .25s; }
+.photo-card { scroll-snap-align: start; display: grid; grid-template-rows: 170px auto; border-radius: 22px; overflow: hidden; background: var(--card, #fff); border: 1px solid #d1e8e8; color: inherit; text-decoration: none; box-shadow: 0 6px 0 #dcefef; transition: transform .25s, box-shadow .25s; }
 .photo-card img { transition: transform .6s cubic-bezier(.2,.8,.2,1); }
 .photo-card > span { display: grid; gap: 4px; padding: 12px 14px 16px; }
 .photo-card strong { font-size:.9375rem; } .photo-card small { opacity: .8; }
@@ -42,13 +42,13 @@ body button, body input, body select, body textarea { font-size:.9375rem !import
 .credit-card img { height: 180px; }
 .credit-card figcaption { display: grid; gap: 4px; padding: 14px; font-size:.875rem; }
 @media (hover: hover) and (pointer: fine) {
-  .photo-card:hover { transform: translateY(-6px) rotate(-.6deg); box-shadow: 0 16px 30px #2a1f6a22; }
+  .photo-card:hover { transform: translateY(-6px) rotate(-.6deg); box-shadow: 0 16px 30px #02373222; }
   .photo-card:hover img { transform: scale(1.07); }
 }
 
 /* ── Cards lift and tilt with the pointer (TouchFeedback sets the angles) ── */
 .social-post, .community-card, .premium-plan, .destination-card, .photo-card { transform: perspective(1200px) rotateX(var(--surface-rx, 0deg)) rotateY(var(--surface-ry, 0deg)); transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; }
-[data-depth-active] { box-shadow: 0 18px 36px #2a1f6a1f !important; }
+[data-depth-active] { box-shadow: 0 18px 36px #0237321f !important; }
 
 /* ── Reveal on scroll (MotionLayer marks only cards that start below the fold) ── */
 [data-reveal="pending"] { opacity: 0; transform: translateY(18px) scale(.985); }
@@ -76,63 +76,63 @@ html[data-theme=dark] .photo-card, html[data-theme=dark] .photo-carousel-head bu
 @media (max-width: 550px) { .studio-momentum h2 { font-size:1.75rem !important; } }
 .journey-orb img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
 /* Smaller text needs more contrast headroom: muted grey ≈ 6.4:1 on white (was 5.4:1, which dipped under 4.5:1 mid-transition). */
-html:not([data-theme="dark"]) { --tc-muted: #5a5b70; }
+html:not([data-theme="dark"]) { --tc-muted: #48645f; }
 
 /* Phase 9: events. */
 .event-card { position: relative; padding-right: 86px !important; }
-.event-date { position: absolute; top: 18px; right: 18px; display: grid; place-items: center; width: 58px; height: 62px; border-radius: 16px; background: #4c3bcf; color: #fff; font-size:.75rem; text-transform: uppercase; font-weight: 800; box-shadow: 0 6px 0 #2f2393; }
+.event-date { position: absolute; top: 18px; right: 18px; display: grid; place-items: center; width: 58px; height: 62px; border-radius: 16px; background: #056a5e; color: #fff; font-size:.75rem; text-transform: uppercase; font-weight: 800; box-shadow: 0 6px 0 #00473d; }
 .event-date b { font-size:1.5rem; line-height: 1; }
 .event-cover h1 { margin: 6px 0 10px; }
 .event-qr { text-align: center; }
-.event-qr-code { width: min(320px, 80vw); margin: 12px auto; background: #fff; border-radius: 18px; padding: 8px; box-shadow: 0 10px 30px #2a1f6a22; }
+.event-qr-code { width: min(320px, 80vw); margin: 12px auto; background: #fff; border-radius: 18px; padding: 8px; box-shadow: 0 10px 30px #02373222; }
 .event-qr-code svg { display: block; width: 100%; height: auto; }
 .event-checkin { text-align: center; display: grid; justify-items: center; gap: 8px; }
-.event-checkin-badge { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: #d7ef92; color: #1d3a2a; font-size:2.5rem; font-weight: 900; }
+.event-checkin-badge { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: #ffe08c; color: #1d3a2a; font-size:2.5rem; font-weight: 900; }
 .event-checkin.is-ok .event-checkin-badge { animation: checkin-pop .6s cubic-bezier(.2,1.6,.4,1) both; }
 @keyframes checkin-pop { from { transform: scale(.2) rotate(-25deg); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .event-checkin.is-ok .event-checkin-badge { animation: none; } }
 html[data-theme=dark] .event-qr-code { background: #fff; }
-html:not([data-theme="dark"]) .studio-list-row small { color: var(--tc-muted, #5a5b70) !important; font-size:.75rem; }
+html:not([data-theme="dark"]) .studio-list-row small { color: var(--tc-muted, #48645f) !important; font-size:.75rem; }
 /* The floating companion sits bottom-right; leave room so the footer's last row (Send feedback) can scroll clear of it. */
 body:has(.journey-float) .site-links { padding-bottom: 120px; }
 
 /* Phase 10: challenges. */
-.challenge-bar { display: block; height: 10px; border-radius: 999px; background: #ebe8f7; overflow: hidden; }
-.challenge-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8b78e6, #4c3bcf); transition: width .6s cubic-bezier(.2,.8,.2,1); }
+.challenge-bar { display: block; height: 10px; border-radius: 999px; background: #dcefef; overflow: hidden; }
+.challenge-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #00a19c, #056a5e); transition: width .6s cubic-bezier(.2,.8,.2,1); }
 .challenge-cover { text-align: center; display: grid; justify-items: center; gap: 8px; }
 .challenge-ring { --pct: 0%; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; margin: 8px auto;
-  background: conic-gradient(#4c3bcf var(--pct), #ebe8f7 0); box-shadow: 0 12px 30px #2a1f6a26; }
-.challenge-ring > span { width: 112px; height: 112px; border-radius: 50%; background: var(--card, #fff); display: grid; place-items: center; font-size:1rem; color: #3b3b55; }
-.challenge-ring b { font-size:2rem; color: #24243f; line-height: 1; }
-.challenge-ring.is-done { background: conic-gradient(#5ea24a 100%, #ebe8f7 0); animation: checkin-pop .6s cubic-bezier(.2,1.6,.4,1) both; }
+  background: conic-gradient(#056a5e var(--pct), #dcefef 0); box-shadow: 0 12px 30px #02373226; }
+.challenge-ring > span { width: 112px; height: 112px; border-radius: 50%; background: var(--card, #fff); display: grid; place-items: center; font-size:1rem; color: #1f4642; }
+.challenge-ring b { font-size:2rem; color: #012f2a; line-height: 1; }
+.challenge-ring.is-done { background: conic-gradient(#a78c01 100%, #dcefef 0); animation: checkin-pop .6s cubic-bezier(.2,1.6,.4,1) both; }
 .challenge-cover details { width: 100%; text-align: left; } .challenge-cover summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .challenge-ring.is-done { animation: none; } .challenge-bar span { transition: none; } }
 html[data-theme=dark] .challenge-ring > span { background: #1f2a24; color: var(--ds-ink); } html[data-theme=dark] .challenge-ring b { color: #fff; }
 
 /* ── Version B contrast: WCAG AA text in both themes (the bench's hard gate) ── */
 /* Old light-theme rules set pale tints with !important; dark mode now has its own surfaces and text. */
-html[data-theme="dark"] .trackcal-app :is([class*="bg-emerald-500/"], [class*="bg-sky-500/"], [class*="bg-purple-500/"], [class*="bg-orange-500/"], [class*="bg-amber-500/"], [class*="from-emerald-950"]) { background-color: #262842 !important; }
+html[data-theme="dark"] .trackcal-app :is([class*="bg-emerald-500/"], [class*="bg-sky-500/"], [class*="bg-purple-500/"], [class*="bg-orange-500/"], [class*="bg-amber-500/"], [class*="from-emerald-950"]) { background-color: #06322c !important; }
 html[data-theme="dark"] .trackcal-app :is([class*="text-amber-"], [class*="text-orange-"]) { color: #f0c27a !important; }
 html[data-theme="dark"] .trackcal-app [class*="text-rose-"] { color: #ffa99b !important; }
-html[data-theme="dark"] .trackcal-app :is([class*="text-sky-"], [class*="text-purple-"]) { color: #c3b3ff !important; }
-html[data-theme="dark"] .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #b5e48c !important; }
-html[data-theme="dark"] .feedback-button { background: #262842; color: #f2efff; border-color: #45486b; }
-html[data-theme="dark"] .account-initial { background: #3b3470; color: #f2efff; }
-html[data-theme="dark"] .daily-focus-actions a { background: #262842; color: #c3b3ff; }
-html[data-theme="dark"] summary { color: #d9dcef !important; }
-html[data-theme="dark"] .progress-stats > div { background: #262842; }
-html[data-theme="dark"] .progress-stats strong { color: #f2efff; }
-html[data-theme="dark"] .progress-stats span, html[data-theme="dark"] .report-actions p { color: #c5c7dc; }
-html[data-theme="dark"] .studio-tabs button:not([aria-current="page"]) { color: #d9dcef; }
+html[data-theme="dark"] .trackcal-app :is([class*="text-sky-"], [class*="text-purple-"]) { color: #5ed6d6 !important; }
+html[data-theme="dark"] .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #efd16c !important; }
+html[data-theme="dark"] .feedback-button { background: #06322c; color: #e2f6f6; border-color: #20564e; }
+html[data-theme="dark"] .account-initial { background: #044944; color: #e2f6f6; }
+html[data-theme="dark"] .daily-focus-actions a { background: #06322c; color: #5ed6d6; }
+html[data-theme="dark"] summary { color: #cce3de !important; }
+html[data-theme="dark"] .progress-stats > div { background: #06322c; }
+html[data-theme="dark"] .progress-stats strong { color: #e2f6f6; }
+html[data-theme="dark"] .progress-stats span, html[data-theme="dark"] .report-actions p { color: #b5cfcb; }
+html[data-theme="dark"] .studio-tabs button:not([aria-current="page"]) { color: #cce3de; }
 html[data-theme="dark"] .play-hub .seed-label { color: var(--ds-ink); }
 html[data-theme="dark"] .play-stat-orange small, html[data-theme="dark"] .play-stat-blue small { color: #fff !important; }
 /* Muted text that was just under 4.5:1 in light theme. */
 html:not([data-theme="dark"]) .trackcal-app [class*="text-rose-"] { color: #a13f33 !important; }
-html:not([data-theme="dark"]) .trackcal-app :is([class*="text-sky-"], [class*="text-purple-"]) { color: #40606e !important; }
-html:not([data-theme="dark"]) .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #4322d1 !important; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="text-sky-"], [class*="text-purple-"]) { color: #61556e !important; }
+html:not([data-theme="dark"]) .trackcal-app :is([class*="text-emerald-"], [class*="text-teal-"]) { color: #016054 !important; }
 html:not([data-theme="dark"]) .progress-stats span, html:not([data-theme="dark"]) .studio-tabs button:not([aria-current="page"]), html:not([data-theme="dark"]) .barcode-capture > small { color: var(--ds-muted); }
 .auth-float small { color: var(--ds-muted); }
-html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #e7e5f5 !important; color: #3d3e55 !important; }
+html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #d8eceb !important; color: #274743 !important; }
 
 /* ── Version B stability: every page is at least a screen tall, so the footer can't flash mid-screen and jump while it loads. ── */
 #root > main { min-height: 100vh; min-height: 100svh; }
@@ -146,21 +146,21 @@ html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #e
 }
 
 /* ── Food camera: a full-screen viewfinder ── */
-.food-camera-open { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin-bottom: 14px; border: 0; border-radius: 18px; background: linear-gradient(135deg, var(--tc-violet, #7c5cff), var(--tc-violet-deep, #4b33c9)); color: #fff; font-weight: 700; cursor: pointer; }
-.food-camera { position: fixed; inset: 0; z-index: 90; background: #0b0c16; color: #fff; }
+.food-camera-open { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 56px; margin-bottom: 14px; border: 0; border-radius: 18px; background: linear-gradient(135deg, var(--tc-violet, #01938c), var(--tc-violet-deep, #02655b)); color: #fff; font-weight: 700; cursor: pointer; }
+.food-camera { position: fixed; inset: 0; z-index: 90; background: #03100e; color: #fff; }
 .food-camera-video { width: 100%; height: 100%; object-fit: cover; }
-.food-camera-frame { position: absolute; inset: 14% 8% 30%; border: 2px solid #ffffffd9; border-radius: 28px; box-shadow: 0 0 0 100vmax #0b0c1666; pointer-events: none; }
-.food-camera-close { position: absolute; top: 16px; right: 16px; width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #0b0c16b3; color: #fff; cursor: pointer; }
-.food-camera-controls { position: absolute; inset: auto 0 0; display: grid; justify-items: center; gap: 12px; padding: 18px 20px calc(24px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, #0b0c16f2 40%); text-align: center; }
+.food-camera-frame { position: absolute; inset: 14% 8% 30%; border: 2px solid #ffffffd9; border-radius: 28px; box-shadow: 0 0 0 100vmax #03100e66; pointer-events: none; }
+.food-camera-close { position: absolute; top: 16px; right: 16px; width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #03100eb3; color: #fff; cursor: pointer; }
+.food-camera-controls { position: absolute; inset: auto 0 0; display: grid; justify-items: center; gap: 12px; padding: 18px 20px calc(24px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, #03100ef2 40%); text-align: center; }
 .food-camera-controls p { margin: 0; color: #fff; }
 .food-camera-consent { display: flex; align-items: center; gap: 10px; min-height: 44px; color: #fff; }
-.food-camera-shutter { width: 76px; height: 76px; display: grid; place-items: center; border: 4px solid #fff; border-radius: 50%; background: var(--tc-violet, #7c5cff); color: #fff; cursor: pointer; }
+.food-camera-shutter { width: 76px; height: 76px; display: grid; place-items: center; border: 4px solid #fff; border-radius: 50%; background: var(--tc-violet, #01938c); color: #fff; cursor: pointer; }
 .food-camera-shutter:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ── Body preview ── */
 .body-goals { display: grid; gap: 10px; margin-bottom: 18px; }
-.body-goals button { display: grid; gap: 2px; min-height: 56px; padding: 10px 14px; text-align: left; border: 2px solid var(--tc-edge-soft, #d9d2f3); border-radius: 14px; background: none; color: inherit; cursor: pointer; }
-.body-goals button.selected { border-color: var(--tc-violet, #7c5cff); }
+.body-goals button { display: grid; gap: 2px; min-height: 56px; padding: 10px 14px; text-align: left; border: 2px solid var(--tc-edge-soft, #b5e1e2); border-radius: 14px; background: none; color: inherit; cursor: pointer; }
+.body-goals button.selected { border-color: var(--tc-violet, #01938c); }
 .body-preview h2 { margin-top: 18px; }
 .body-preview-thumb { display: block; max-height: 220px; margin: 12px 0; border-radius: 14px; }
 .body-consent { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 6px 0; }
@@ -170,5 +170,5 @@ html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #e
 .body-compare img { display: block; width: 100%; }
 .body-compare-after { position: absolute; inset: 0; }
 .body-compare-after img { height: 100%; object-fit: cover; }
-.body-compare-label { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 10px; background: #0b0c16d9; color: #fff; }
+.body-compare-label { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 10px; background: #03100ed9; color: #fff; }
 .body-compare-slider { display: grid; gap: 6px; max-width: 420px; margin: 0 auto 12px; }

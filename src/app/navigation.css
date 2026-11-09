@@ -1,7 +1,7 @@
 /* App navigation: bottom tab bar on phones, top bar from 860px; slim header with section pages. */
-:root { --tab-ink: #2b2f4a; --tab-active: #6a4fd0; --tab-bg: #ffffffeb; --tab-line: #e3e1ee; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --tab-ink: #d9dcef; --tab-active: #c3b3ff; --tab-bg: #161a2ceb; --tab-line: #2c3150; } }
-:root[data-theme="dark"] { --tab-ink: #d9dcef; --tab-active: #c3b3ff; --tab-bg: #161a2ceb; --tab-line: #2c3150; }
+:root { --tab-ink: #0e3932; --tab-active: #077b76; --tab-bg: #ffffffeb; --tab-line: #d6e7e6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --tab-ink: #cce3de; --tab-active: #5ed6d6; --tab-bg: #05211beb; --tab-line: #073d34; } }
+:root[data-theme="dark"] { --tab-ink: #cce3de; --tab-active: #5ed6d6; --tab-bg: #05211beb; --tab-line: #073d34; }
 
 .app-topbar { width: 100%; max-width: 1240px; margin: 0 auto; padding: 14px 16px 4px; }
 .app-topbar-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; }

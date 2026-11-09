@@ -3,21 +3,26 @@
    from the design system tokens in ds.css, so light, dark and Comfort mode follow it everywhere.
    A few rules repeat a class (.x.x.x) to outrank older, very specific selectors without !important. */
 
-/* ── One font ──────────────────────────────────────────────────────────────────────────────── */
+/* ── Two fonts: Inter for reading and numbers, Outfit for headings ─────────────────────────────── */
 :root, :root[data-theme] {
-  --ds-font: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --pro-font: var(--ds-font); --tc-display: var(--ds-font); --font-geist-sans: var(--ds-font); --font-sans: var(--ds-font);
+  --ds-font: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ds-display: "Outfit Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --pro-font: var(--ds-font); --tc-display: var(--ds-display); --font-geist-sans: var(--ds-font); --font-sans: var(--ds-font);
 }
 body, button, input, select, textarea, .hero-copy h2 em, .auth-story h1 em { font-family: var(--ds-font); }
+/* Inter's clearer forms: a single-storey 'a' is not used; open digits that line up in tables and totals. */
+body { font-feature-settings: "cv11", "ss01"; font-variant-numeric: tabular-nums; letter-spacing: -.006em; -webkit-font-smoothing: antialiased; }
+html body :is(h1, h2, h3, .page-header h1, .ds-hero h1, .t-display, .t-title) { font-family: var(--ds-display); letter-spacing: -.02em; font-weight: 650; }
+html body h1 { line-height: 1.1; }
 .hero-copy h2 em, .auth-story h1 em { font-style: normal; color: var(--ds-indigo); }
 
 /* ── One palette: older tokens point at the design system ─────────────────────────────────────── */
 :root, :root[data-theme] {
   /* Fills carry white text, so they stay deep in both themes; --ds-indigo is the lighter accent for text on dark. */
-  --ds-fill: #4f34e0; --ds-fill-hover: #4326cf;
+  --ds-fill: #0b7a6c; --ds-fill-hover: #096a5e;
 }
-:root[data-theme="dark"] { --ds-fill: #5b3df0; --ds-fill-hover: #6a4ef5; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ds-fill: #5b3df0; --ds-fill-hover: #6a4ef5; } }
+:root[data-theme="dark"] { --ds-fill: #0b7a6c; --ds-fill-hover: #096a5e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ds-fill: #0b7a6c; --ds-fill-hover: #096a5e; } }
 :root, :root[data-theme] {
   --pro-bg: var(--ds-bg); --pro-surface: var(--ds-surface); --pro-sunken: var(--ds-sunken); --surface-2: var(--ds-sunken);
   --pro-ink: var(--ds-ink); --pro-muted: var(--ds-muted); --pro-line: var(--ds-line); --pro-line-strong: var(--ds-line);

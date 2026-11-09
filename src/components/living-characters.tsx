@@ -8,7 +8,7 @@ import { XP_AWARDED_EVENT } from "@/lib/celebrate";
 
 const CHARACTER = 'img[src*="/characters/"]';
 const CHEERS = ["Nice one!", "Let's go!", "You've got this ✨", "Small wins count!", "Look at you go!", "High five!"];
-const COLORS = ["#c8f56a", "#8b6cff", "#ff7a59", "#6fd3ff", "#ffd166"];
+const COLORS = ["#ffdf83", "#04a09a", "#ff7a59", "#d9b2fe", "#ffd166"];
 
 export function calmMotion() {
   return document.documentElement.dataset.motion === "reduced" || window.matchMedia("(prefers-reduced-motion: reduce)").matches || !!document.querySelector(".play-calm,.daily-focus-calm,.journey-calm");

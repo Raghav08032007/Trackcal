@@ -14,8 +14,8 @@
 /* Signed-out cards: one clear primary action and one alternative, side by side when they fit. */
 .gate-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .gate-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border-radius: 14px; font-size:.9375rem; font-weight: 700; text-decoration: none; }
-.gate-primary { background: var(--tab-active, #6a4fd0); color: #fff; }
-.gate-secondary { border: 1px solid var(--tab-line, #e3e1ee); color: var(--tab-ink, #2b2f4a); background: transparent; }
+.gate-primary { background: var(--tab-active, #077b76); color: #fff; }
+.gate-secondary { border: 1px solid var(--tab-line, #d6e7e6); color: var(--tab-ink, #0e3932); background: transparent; }
 @media (max-width: 600px) { .gate-actions a { flex: 1 1 100%; } }
 
 /* Play page controls (Calm mode) line up with the page content at every width. */

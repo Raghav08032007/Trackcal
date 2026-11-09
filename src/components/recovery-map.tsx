@@ -24,7 +24,7 @@ function Map(){
   {!training&&!error&&<p role="status">Loading your workouts…</p>}
   {training&&<>
    <CoachLine text={moves.length?(steps.length?'You have earned a harder move. Take a look below.':'Here is what your body has been up to.'):'Save a camera workout and I will fill this in for you.'}/>
-   <section className="account-card"><div className="recovery-bodies" aria-hidden="true"><Model data={data} type="anterior" highlightedColors={COLORS} bodyColor="#d9d5e8"/><Model data={data} type="posterior" highlightedColors={COLORS} bodyColor="#d9d5e8"/></div>
+   <section className="account-card"><div className="recovery-bodies" aria-hidden="true"><Model data={data} type="anterior" highlightedColors={COLORS} bodyColor="#c5dede"/><Model data={data} type="posterior" highlightedColors={COLORS} bodyColor="#c5dede"/></div>
     {moves.length===0?<p>Nothing here yet. Save a camera workout and your muscles light up by themselves.</p>:<ul className="recovery-legend">{LEVELS.map(({state,label},index)=>{const list=names(state);return <li key={state}><span style={{background:COLORS[2-index]}}/><strong>{label}</strong> {list.length?list.map(muscle=>MUSCLE_LABELS[muscle as MapMuscle]).join(', '):'None'}</li>;})}</ul>}
    </section>
    {choice&&<section className="account-card"><h2>Good for today</h2><p><strong>{EXERCISES[choice].title}</strong> works {EXERCISES[choice].muscles.toLowerCase()}{states.size?' and leaves your tired muscles alone':''}.</p><Link className="destination-button" href={`/workouts/camera?exercise=${choice}`}>Start {EXERCISES[choice].title}</Link></section>}

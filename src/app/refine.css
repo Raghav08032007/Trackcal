@@ -20,11 +20,11 @@
 .tc-studio main .rep-replay-note { font-size: .82rem; color: color-mix(in srgb, currentColor 72%, transparent); }
 
 /* Camera mode switch: reps or holds, on one page */
-.camera-mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 560px; margin: 0 0 18px; padding: 6px; border-radius: 20px; background: var(--tc-surface, #fff); border: 1px solid var(--tc-line, #e6e1f7); }
+.camera-mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 560px; margin: 0 0 18px; padding: 6px; border-radius: 20px; background: var(--tc-surface, #fff); border: 1px solid var(--tc-line, #cfebec); }
 .camera-mode-switch a { display: grid; gap: 2px; padding: 12px 16px; border-radius: 15px; color: inherit; text-decoration: none; transition: background-color .2s, color .2s; }
 .camera-mode-switch a small { font-size: .78rem; opacity: .75; }
-.camera-mode-switch a[aria-current="page"] { background: #6d4ae8; color: #fff; box-shadow: 0 8px 18px rgba(109, 74, 232, .28); }
-.camera-mode-switch a:focus-visible { outline: 3px solid #6d4ae8; outline-offset: 2px; }
+.camera-mode-switch a[aria-current="page"] { background: #07807a; color: #fff; box-shadow: 0 8px 18px rgba(7, 128, 122, .28); }
+.camera-mode-switch a:focus-visible { outline: 3px solid #07807a; outline-offset: 2px; }
 
 /* Train by muscle: bigger, clearer exercise cards */
 .muscle-layout { grid-template-columns: 1fr; }
@@ -32,9 +32,9 @@
 .muscle-today { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .muscle-count { font-weight: 600; }
 .exercise-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 14px; }
-.exercise-card { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px; border-radius: 20px; border: 1px solid var(--tc-line, #e6e1f7); background: var(--tc-surface, #fff); box-shadow: 0 6px 18px -12px rgba(44, 32, 86, .35); transition: transform .2s ease, box-shadow .2s ease; }
-.exercise-card[data-primary] { border-color: color-mix(in srgb, #6d4ae8 35%, transparent); }
-@media (hover: hover) { .exercise-card:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -16px rgba(44, 32, 86, .45); } }
+.exercise-card { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px; border-radius: 20px; border: 1px solid var(--tc-line, #cfebec); background: var(--tc-surface, #fff); box-shadow: 0 6px 18px -12px rgba(1, 51, 50, .35); transition: transform .2s ease, box-shadow .2s ease; }
+.exercise-card[data-primary] { border-color: color-mix(in srgb, #07807a 35%, transparent); }
+@media (hover: hover) { .exercise-card:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -16px rgba(1, 51, 50, .45); } }
 .exercise-card-picture .move-thumb-box { display: block; width: 100%; }
 .exercise-card-picture .move-thumb-box svg.move-thumb { display: block; width: 100%; height: 170px; max-width: none; border-radius: 14px; }
 .exercise-card-body h3 { margin: 0 0 4px; }
@@ -51,11 +51,11 @@
 /* Daily plan */
 .day-plan-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .day-plan-head h3 { margin: 0; }
-.level-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--tc-surface, #fff); border: 1px solid var(--tc-line, #e6e1f7); }
+.level-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--tc-surface, #fff); border: 1px solid var(--tc-line, #cfebec); }
 .level-switch button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: inherit; cursor: pointer; }
-.tc-studio .level-switch button[aria-pressed="true"], body .level-switch button[aria-pressed="true"] { background: #6d4ae8; color: #fff; }
+.tc-studio .level-switch button[aria-pressed="true"], body .level-switch button[aria-pressed="true"] { background: #07807a; color: #fff; }
 .plan-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 12px; margin: 0 0 14px; padding: 0; list-style: none; }
-.plan-cards li { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: var(--tc-surface, #fff); border: 1px solid var(--tc-line, #e6e1f7); }
+.plan-cards li { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: var(--tc-surface, #fff); border: 1px solid var(--tc-line, #cfebec); }
 .plan-cards li small { display: block; opacity: .8; }
 .plan-cards .move-thumb-box { display: block; width: 100%; }
 .plan-cards .move-thumb-box svg.move-thumb { display: block; width: 100%; height: 130px; max-width: none; border-radius: 12px; }
@@ -78,4 +78,4 @@
   .exercise-card-picture .move-thumb-box svg.move-thumb { height: 150px; }
 }
 @media (max-width: 600px) { .level-switch button { font-size: .76rem; padding: 0 2px; letter-spacing: -0.01em; } }
-.day-plan .account-actions .account-primary, .exercise-card-actions > .account-primary { background: linear-gradient(160deg, #7b5cf0, #5b3fd6); border-color: #5b3fd6; color: #fff; }
+.day-plan .account-actions .account-primary, .exercise-card-actions > .account-primary { background: linear-gradient(160deg, #098f89, #087269); border-color: #087269; color: #fff; }

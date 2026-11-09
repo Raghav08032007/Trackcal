@@ -7,7 +7,7 @@ import {exportLocalEntries} from '@/lib/use-local-state';
 import {wellnessRequest,type TrainingData} from '@/lib/wellness';
 
 /** A small line chart. Values only, so it reads the same in light and dark themes. */
-function Line({values,label,color='#6d4ae8'}:{values:number[];label:string;color?:string}){
+function Line({values,label,color='#07807a'}:{values:number[];label:string;color?:string}){
  if(values.length<2)return null;
  const max=Math.max(...values),min=Math.min(...values),span=max-min||1,points=values.map((v,i)=>`${(i/(values.length-1)*100).toFixed(2)},${(36-(v-min)/span*32).toFixed(2)}`).join(' ');
  return <svg className="insight-line" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label={label}><polyline points={points} fill="none" stroke={color} strokeWidth="1.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round"/></svg>;
