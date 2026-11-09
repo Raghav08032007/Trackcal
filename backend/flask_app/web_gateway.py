@@ -127,8 +127,8 @@ def pick(data, *names):
 
 # ── Account ─────────────────────────────────────────────────────────────────
 
-ACCOUNT_READS = {'session': '/auth/me', 'profile': '/users/profile', 'backup': '/users/workspace', 'export': '/users/export'}
-ACCOUNT_WRITES = ['login', 'signup', 'profile', 'password', 'backup', 'forgot-password', 'reset-password', 'verify-email', 'request-verification', 'close']
+ACCOUNT_READS = {'session': '/auth/me', 'profile': '/users/profile', 'backup': '/users/workspace', 'export': '/users/export', 'sync': '/users/sync'}
+ACCOUNT_WRITES = ['login', 'signup', 'profile', 'password', 'backup', 'sync', 'forgot-password', 'reset-password', 'verify-email', 'request-verification', 'close']
 ACCOUNT_DOWN = 'Account service is unavailable. Please try again shortly.'
 
 
@@ -166,7 +166,7 @@ def account_write(action):
             if not response.ok: return forward(response)
             save_tokens(response.data)
             return reply({'status': 'Signed in' if action == 'login' else 'Account created'})
-        method, path = {'profile': ('PATCH', '/users/profile'), 'password': ('POST', '/auth/password'), 'backup': ('PUT', '/users/workspace')}[action]
+        method, path = {'profile': ('PATCH', '/users/profile'), 'password': ('POST', '/auth/password'), 'backup': ('PUT', '/users/workspace'), 'sync': ('POST', '/users/sync')}[action]
         return forward(authenticated(method, path, body))
     except Exception:
         return error(ACCOUNT_DOWN, 503)

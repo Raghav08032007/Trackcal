@@ -193,7 +193,7 @@ def export_data(user: models.User = Depends(get_current_active_user), db: Sessio
         "custom_foods": [row(food) for food in db.query(models.CustomFood).filter_by(user_id=user.id).all()],
         "web_workspace_backup": row(db.get(models.UserWorkspace, user.id)),
         "phase3":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('food_favorites',models.FoodFavorite),('food_search_history',models.FoodSearchHistory),('workout_blueprints',models.WorkoutBlueprint),('workout_sessions',models.WorkoutSession)]},
-        "personalization":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('preferences',models.PersonalizationProfile),('measurements',models.WellnessMeasurement),('daily_wellness',models.DailyWellness),('workout_entries',models.WorkoutEntry),('training_libraries',models.TrainingLibrary),('plans',models.ActivityPlan),('recommendations',models.RecommendationHistory),('reminder_deliveries',models.ReminderDelivery)]},
+        "personalization":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('preferences',models.PersonalizationProfile),('measurements',models.WellnessMeasurement),('daily_wellness',models.DailyWellness),('workout_entries',models.WorkoutEntry),('training_libraries',models.TrainingLibrary),('workspace_entries',models.WorkspaceEntry),('plans',models.ActivityPlan),('recommendations',models.RecommendationHistory),('reminder_deliveries',models.ReminderDelivery)]},
         "plan_activities":[row(item) for item in db.query(models.PlanActivity).join(models.ActivityPlan).filter(models.ActivityPlan.user_id==user.id).all()],
         "gamification": {name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('activity_events',models.ActivityRewardEvent),('achievements',models.UserAchievement),('character_unlocks',models.CharacterUnlock),('customization',models.CharacterCustomization),('streak_records',models.StreakRecord)]},
         "adventure": {
@@ -245,7 +245,7 @@ ACCOUNT_RECORDS = [
 EXPORTED_TABLES = {
     'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',
     'food_favorites', 'food_search_history', 'workout_blueprints', 'workout_sessions', 'personalization_profiles',
-    'wellness_measurements', 'daily_wellness', 'workout_entries', 'training_libraries', 'activity_plans', 'recommendation_history', 'reminder_deliveries', 'activity_reward_events',
+    'wellness_measurements', 'daily_wellness', 'workout_entries', 'training_libraries', 'workspace_entries', 'activity_plans', 'recommendation_history', 'reminder_deliveries', 'activity_reward_events',
     'user_achievements', 'character_unlocks', 'character_customizations', 'streak_records', 'adventure_profiles',
     'reward_events', 'adventure_meals', 'game_sessions', *(entry[1].__tablename__ for entry in ACCOUNT_RECORDS),
 }
@@ -357,3 +357,22 @@ def calculate_onboarding_plan(
         "pace": pace_label
     }
 
+
+
+# ── Settings and lists that sync between devices (services/workspace_sync.py) ──
+from services.workspace_sync import Changes as SyncChanges
+
+
+def synced(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    from services import workspace_sync
+    db.query(models.User).filter_by(id=user.id).with_for_update().first()
+    if workspace_sync.seed_from_backup(db, user.id): db.commit()
+    return {'entries': workspace_sync.entries(db, user.id)}
+
+
+def sync_changes(changes: SyncChanges, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    from services import workspace_sync
+    db.query(models.User).filter_by(id=user.id).with_for_update().first()
+    workspace_sync.seed_from_backup(db, user.id)
+    result = workspace_sync.apply(db, user.id, changes)
+    db.commit(); return result

@@ -1359,3 +1359,13 @@ class TrainingLibrary(Base):
     program_days=Column(JSON,nullable=False)
     next_targets=Column(JSON,nullable=False)
     updated_at=Column(DateTime,nullable=False,default=_now,onupdate=_now)
+
+
+class WorkspaceEntry(Base):
+    """One synced app setting or list (recipes, pantry, preferences…). The version stops two devices overwriting each other."""
+    __tablename__='workspace_entries'
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),primary_key=True)
+    key=Column(String(80),primary_key=True)
+    value=Column(JSON,nullable=True)                    # null: removed on purpose
+    version=Column(Integer,nullable=False,default=1)
+    updated_at=Column(DateTime,nullable=False,default=_now,onupdate=_now)

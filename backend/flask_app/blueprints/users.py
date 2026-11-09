@@ -7,6 +7,8 @@ from routers import users as handlers
 bp = Blueprint('users', __name__, url_prefix='/api/v1/users')
 route(bp, 'GET', '/workspace', handlers.workspace)
 route(bp, 'PUT', '/workspace', handlers.save_workspace)
+route(bp, 'GET', '/sync', handlers.synced)
+route(bp, 'POST', '/sync', handlers.sync_changes)
 route(bp, 'GET', '/profile', handlers.get_profile)
 route(bp, 'PATCH', '/profile', handlers.update_profile)
 route(bp, 'GET', '/settings', handlers.get_settings)
