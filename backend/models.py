@@ -1332,3 +1332,30 @@ class DailyWellness(Base):
     sore=Column(String(8),nullable=True)                # no, bit, very
     updated_at=Column(DateTime,nullable=False,default=_now,onupdate=_now)
     __table_args__=(UniqueConstraint('user_id','day',name='uq_daily_wellness_user_day'),)
+
+
+class WorkoutEntry(Base):
+    """A workout logged by hand (name, minutes, sets, reps, load). Deleting hides it so it can be undone."""
+    __tablename__='workout_entries'
+    id=Column(CHAR(36),primary_key=True)                # made by the device, so a retried save is the same entry
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False)
+    day=Column(String(10),nullable=False)
+    name=Column(String(120),nullable=False)
+    minutes=Column(Integer,nullable=False,default=0)
+    sets=Column(Integer,nullable=False,default=0)
+    reps=Column(Integer,nullable=False,default=0)
+    load_kg=Column(Float,nullable=False,default=0)
+    source=Column(String(40),nullable=False,default='Manual entry')
+    created_at=Column(DateTime,nullable=False,default=_now)
+    is_deleted=Column(Boolean,nullable=False,default=False)
+    __table_args__=(Index('ix_workout_entries_user_day','user_id','day'),)
+
+
+class TrainingLibrary(Base):
+    """Your circuits, program progress and next rep targets, one per person."""
+    __tablename__='training_libraries'
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),primary_key=True)
+    circuits=Column(JSON,nullable=False)
+    program_days=Column(JSON,nullable=False)
+    next_targets=Column(JSON,nullable=False)
+    updated_at=Column(DateTime,nullable=False,default=_now,onupdate=_now)
