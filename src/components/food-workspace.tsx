@@ -10,7 +10,7 @@ import {confirmAdultForCalculator} from "@/lib/personalization";
 import { MealIdeaTransfer } from "@/components/meal-idea-transfer";
 import { VoiceInput } from "@/components/voice-input";
 import {type AppTab} from "@/components/app-design";
-import {useRouter} from "@/lib/navigation";
+import {useRouter, useSearch} from "@/lib/navigation";
 import {foodRoutes,foodNames} from "@/lib/feature-guide";
 import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
@@ -277,7 +277,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [scanResult, setScanResult] = useState<ScanView>(() => ({ ...SCAN_PRESETS[0], label: "", foodName: "Nothing scanned yet", weight: "0g", confidence: 0, calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, items: [], allergens: [], method: "Snap or upload a meal to see its estimate." } as ScanView));
   const [scanSource, setScanSource] = useState<ScanSource>("none");
   const [portionGrams, setPortionGrams] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
+  const search = useSearch(), [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(search).get("q") ?? "");   // /food-library?q=dal opens with a search
   const [remoteFoods, setRemoteFoods] = useState<LibraryFood[]>([]);
   const [foodSearchLoading, setFoodSearchLoading] = useState(false);
   const [foodSearchError, setFoodSearchError] = useState("");

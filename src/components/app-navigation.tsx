@@ -6,6 +6,7 @@ import { Link, usePathname } from "@/lib/navigation";
 import { pageTitle, sectionFor, SECTIONS } from "@/lib/sections";
 import { PageCompanion } from "./feature-companion";
 import { QuickAdd } from "./quick-add";
+import { CommandSearch } from "./command-search";
 
 export { SECTIONS, sectionFor };
 const BARE = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/offline"];
@@ -29,7 +30,7 @@ export function AppNavigation() {
     {path !== "/" && <header className="app-topbar">
       <div className="app-topbar-row">
         <Link href="/" className="app-brand" aria-label="TrackCal home">trackcal<span>.</span></Link>
-        <PageCompanion />
+        <div className="app-topbar-tools"><CommandSearch compact /><PageCompanion /></div>
       </div>
       {section && section.pages.length > 1 && <SectionPages key={section.id} label={section.label} pages={section.pages} path={path} />}
     </header>}

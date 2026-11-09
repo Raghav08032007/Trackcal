@@ -72,7 +72,8 @@ export function QuickAdd() {
   useEffect(() => { close(); }, [path, close]);                                 // a link inside was followed
   useEffect(() => {
     const key = (e: KeyboardEvent) => { if ((e.key === "n" || e.key === "N") && !typing(e) && !dialog.current?.open) { e.preventDefault(); show(); } };
-    window.addEventListener("keydown", key); return () => window.removeEventListener("keydown", key);
+    window.addEventListener("keydown", key); window.addEventListener("trackcal-quick-add", show);
+    return () => { window.removeEventListener("keydown", key); window.removeEventListener("trackcal-quick-add", show); };
   }, [show]);
   return <>
     <button type="button" className="qa-button" aria-haspopup="dialog" aria-expanded={open} aria-keyshortcuts="N" onClick={show}><Plus size={26} strokeWidth={2.6} aria-hidden /><span>Add</span></button>
