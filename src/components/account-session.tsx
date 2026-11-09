@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import Link, { usePathname } from "@/lib/navigation";
 import { forgetAdventureSummary } from "@/lib/adventure";
+import { startSync } from "@/lib/sync";
+import { SyncDot } from "@/components/sync-status";
 type User = { id: string; email: string; email_verified?: boolean; profile: { display_name?: string } };
 type SessionState = { user: User | null; ready: boolean; unavailable?: boolean };
 const Session = createContext<SessionState & { reload: () => Promise<void> }>({ user: null, ready: true, reload: async () => {} });
@@ -20,6 +22,8 @@ export function AccountSession({ children }: { children: React.ReactNode }) {
   // A different (or no) account must never see the previous account's cached progress.
   const userId = session.user?.id;
   useEffect(() => { forgetAdventureSummary(); }, [userId]);
+  // Settings and lists save to the account as they change (lib/sync.ts).
+  useEffect(() => (userId ? startSync(userId) : undefined), [userId]);
   return <Session.Provider value={{ ...session, reload }}>{children}</Session.Provider>;
 }
 // Pages that work without an account stay open during an outage.
@@ -36,5 +40,5 @@ export const useAccount = () => useContext(Session);
 export const useWorkspaceScope = () => useAccount().user?.id || "guest";
 export function AccountLink() {
   const { user, ready } = useAccount();
-  return <Link className="nav-item account-nav" href={user ? "/account" : "/login"}><span className="account-initial">{user ? (user.profile.display_name || user.email)[0].toUpperCase() : "↗"}</span><span>{!ready ? "Loading account…" : user ? "My account" : "Sign in / Create account"}</span></Link>;
+  return <Link className="nav-item account-nav" href={user ? "/account" : "/login"}><span className="account-initial">{user ? (user.profile.display_name || user.email)[0].toUpperCase() : "↗"}</span><span>{!ready ? "Loading account…" : user ? "My account" : "Sign in / Create account"}</span>{user && <SyncDot />}</Link>;
 }

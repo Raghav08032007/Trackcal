@@ -339,3 +339,14 @@ li[data-kind="route"] .history-icon { color: var(--ds-green); }
 #workout-history button.ds-btn-primary { background: linear-gradient(180deg, #6a4dff, var(--ds-indigo)); border-color: transparent; color: #fff; box-shadow: 0 1px 0 #ffffff40 inset, 0 10px 24px -12px #4f34e0cc; }
 #workout-history button.ds-btn-primary:hover { filter: brightness(1.06); }
 @media (prefers-reduced-motion: reduce) { #workout-history .history-filters button { transition: none; } }
+
+/* Account sync status (sync-status.tsx) */
+.sync-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex: none; margin-left: 6px; background: var(--ds-green); vertical-align: middle; }
+.sync-dot[data-status="saving"] { background: var(--ds-amber); animation: sync-pulse 1.2s var(--ds-ease) infinite; }
+.sync-dot[data-status="offline"] { background: var(--ds-muted); }
+.sync-dot[data-status="error"] { background: var(--ds-red); }
+.sync-panel { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 14px; padding: 10px 14px; border-radius: var(--ds-r); background: var(--ds-sunken); border: 1px solid var(--ds-line); }
+.sync-panel p { margin: 0; flex: 1; min-width: 12em; font-weight: 650; }
+.sync-panel .sync-dot { margin-left: 0; }
+@keyframes sync-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .sync-dot[data-status="saving"] { animation: none; } }

@@ -9,6 +9,18 @@ export function localDate() {
 }
 
 const memory = new Map<string, string>();
+/** Told about every saved change, so account sync (lib/sync.ts) can send it. */
+let writeHook: ((key: string, scope: string) => void) | null = null;
+export function setWriteHook(hook: typeof writeHook) { writeHook = hook; }
+/** Raw read and write of one key for a scope, used by account sync; writing here does not count as a new change. */
+export function readStored(key: string, scope: string) { return read(workspaceKey(key, scope)); }
+export function writeStored(key: string, scope: string, encoded: string | null) {
+  const stored = workspaceKey(key, scope);
+  try { if (encoded === null) localStorage.removeItem(stored); else localStorage.setItem(stored, encoded); memory.delete(stored); }
+  catch { if (encoded === null) memory.delete(stored); else memory.set(stored, encoded); }
+  mirrorDeviceWrite(stored, encoded);
+  window.dispatchEvent(new Event("trackcal-storage"));
+}
 export function forgetWorkspaceMemory(scope: string) {
   const prefix = `trackcal:account:${scope}:`;
   for (const key of memory.keys()) if (key.startsWith(prefix)) memory.delete(key);
@@ -55,6 +67,7 @@ export function useLocalState<T>(key: string, initial: T): [T, Dispatch<SetState
     catch { memory.set(storedKey, encoded); }
     mirrorDeviceWrite(storedKey, encoded);
     window.dispatchEvent(new Event("trackcal-storage"));
+    writeHook?.(key, scope);
   };
   return [value, setValue];
 }
@@ -74,5 +87,6 @@ export function restoreLocalEntries(entries: Record<string, unknown>, scope: str
   for (const key of changed) memory.delete(workspaceKey(key, scope));
   for (const key of changed) mirrorDeviceWrite(workspaceKey(key, scope), key in entries ? JSON.stringify(entries[key]) : null);
   window.dispatchEvent(new Event("trackcal-storage"));
+  for (const key of changed) writeHook?.(key, scope);   // a restored copy is a change like any other: it syncs
 }
 
