@@ -4,7 +4,8 @@ export type Landmark={x:number;y:number;z?:number;visibility?:number;presence?:n
 export type PoseFrame={landmarks:Landmark[][];timestamp:number;width:number;height:number;brightness?:number};
 export type ExerciseKind='squat'|'pushup'|'curl'|'press'|'situp'|'wallpush'|'lunge'|'jack'|'raise'|'knee'|'sumo'|'bridge'|'calf'|'sideleg'|'donkey'|'incline'|'kneepush'|'row'|'superman'|'kickback'|'overhead'|'hammer'|'front'|'uprow'|'crunch'|'legraise'|'sidebend'|'highknee'|'burpee'|'climber'|'wsquat'|'ohsquat'|'wlunge'|'sidelunge'|'squatjump'|'buttkick'|'deadlift'|'rdl'|'goodmorning'|'wcalf'|'hipthrust'|'bench'|'skull'|'revfly'|'seatrow'|'conccurl'|'thruster'|'pikepush'|'dip'|'pullup'|'birddog'|'flutter'|'bicycle'|'revcrunch'|'vup'|'punch'|'latpull'|'pullover'|'kbswing'|'legext'|'bulgarian'|'pistol'|'shouldertap'|'legcurl'|'hspu'|'hangleg'|'decline'|'nordic'|'jumplunge'|'tuckjump'|'cleanpress'|'snatch'|'inclinebench'|'widepush'|'diamondpush'|'revlunge'|'bwgoodmorning'|'toetouch'|'sumojump'|'bandcurl'|'bandrow'|'bandpress'|'bandraise'|'bandfront'|'bandsquat'|'bandpulldown'|'bandkickback'|'bbcurl'|'bbrow'|'bbpress'|'bblunge'|'frontsquat'|'kbsquat'|'kbdeadlift'|'kbpress'|'kbrow'|'kbhighpull';
 export type ExerciseLevel='beginner'|'intermediate'|'advanced';
-export type Observation={angle:number;confidence:number;valid:boolean;reason:string};
+/** restart: the analyzer lost its reference (the view moved), so a rep in progress can't be finished on it. */
+export type Observation={angle:number;confidence:number;valid:boolean;reason:string;restart?:boolean};
 /** paused: tracking is gated (body out of frame, low visibility, …) and nothing can be counted until it returns.
  *  rejection: why the last movement cycle was not counted, for a few seconds after it happened. */
 export type TrackingResult={reps:number;phase:Phase;confidence:number;message:string;accepted:boolean;paused:boolean;rejection:RejectionReason|null;progress:number};

@@ -31,7 +31,7 @@ function useMoveSummary(): Summary {
   return { stats: [
     { label: "Burned today", value: `${Math.round(burned).toLocaleString()} kcal` },
     { label: "Active days", value: `${active} of 7`, detail: "this week" } ],
-    actions: [["/workouts/camera", "Start a camera workout"], ["/workouts/gps", "Record a route"]] };
+    actions: [["/workouts/muscles", "Plan by muscle"], ["/workouts/camera", "Start a camera workout"], ["/workouts/gps", "Record a route"]] };
 }
 
 function useMeSummary(): Summary {

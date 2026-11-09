@@ -56,8 +56,9 @@ export function seeded(seed:string){let a=hash(seed)||1;return ()=>{a|=0;a=a+0x6
 export type PackageStep={kind:ExerciseKind;target:number};
 /** Five camera-tracked exercises for a group: one per movement, main targets first, spread across the group's muscles.
  *  The same day and group give the same "standard" plan for everyone; a different seed gives a shuffle. */
-export function dailyPackage(category:MuscleCategory,filters:FinderFilters,seed:string,size=5,targetFor:(kind:ExerciseKind,level:ExerciseDifficulty)=>number=()=>10):PackageStep[]{
- const random=seeded(seed),pool=exercisesFor(category.muscles,filters).filter(row=>row.kind&&row.primary);
+/** skip: exercises the app advises against for this person (injuries, surgeries, a blood report); the plan fills up without them. */
+export function dailyPackage(category:MuscleCategory,filters:FinderFilters,seed:string,size=5,targetFor:(kind:ExerciseKind,level:ExerciseDifficulty)=>number=()=>10,skip:(kind:ExerciseKind)=>boolean=()=>false):PackageStep[]{
+ const random=seeded(seed),pool=exercisesFor(category.muscles,filters).filter(row=>row.kind&&row.primary&&!skip(row.kind));
  const motion=(kind:ExerciseKind)=>EXERCISE_VARIANTS[kind]??kind,used=new Set<ExerciseKind>(),covered=new Set<MapMuscle>(),out:PackageStep[]=[];
  // Shuffle, then put moves at the chosen level first, so an advanced plan is mostly advanced moves.
  const fit=(row:Found)=>filters.level==='any'?0:Math.abs(ORDER[row.difficulty]-ORDER[filters.level]);

@@ -1,0 +1,74 @@
+ALL 4627/5978 = 77.4%
+sidebend       1% 1/81 {"too_shallow":10,"wrong_exercise":9,"shape:bottom":7,"too_fast":1,"too_slow":1,"shape:shape":2}
+pistol        12% 10/81 {"too_fast":11,"too_shallow":12,"wrong_exercise":2,"shape:bottom":2}
+sideleg       21% 17/80 {"too_shallow":89,"too_fast":21}
+calf          27% 23/85 {"lost_tracking":3,"too_shallow":9}
+wcalf         32% 26/82 {"too_shallow":9,"lost_tracking":6}
+highknee      46% 37/81 {"too_shallow":17,"too_fast":11,"too_slow":2,"wrong_exercise":8,"shape:bottom":8}
+bulgarian     46% 39/85 {"too_slow":2,"too_fast":3}
+overhead      52% 42/81 {"too_shallow":13,"too_fast":2,"too_slow":1,"lost_tracking":2}
+sidelunge     55% 47/85 {"too_slow":5,"too_fast":5,"too_shallow":3}
+thruster      57% 46/81 {"too_shallow":7,"too_fast":1,"too_slow":1,"lost_tracking":1}
+pullup        57% 46/81 {"too_shallow":10,"too_fast":3,"lost_tracking":2,"wrong_exercise":2,"shape:moved wrists":2}
+jumplunge     59% 50/85 {"too_shallow":40,"too_fast":1}
+pushup        62% 50/81 {"lost_tracking":2,"too_shallow":7,"too_fast":3,"wrong_exercise":3,"shape:moved wrists":3}
+shouldertap   63% 55/87 {"too_fast":15,"too_shallow":1,"too_slow":3}
+knee          65% 55/85 {"too_shallow":23,"too_fast":19,"too_slow":1}
+flutter       65% 52/80 {"too_shallow":22,"too_fast":17}
+buttkick      67% 54/81 {"wrong_exercise":21,"shape:moved hips":13,"too_shallow":18,"too_fast":6,"shape:bottom":8}
+kneepush      69% 56/81 {"too_shallow":8,"too_fast":4,"wrong_exercise":1,"shape:moved wrists":1,"lost_tracking":1}
+kickback      72% 58/81 {"too_shallow":24,"too_fast":1}
+press         72% 59/82 {"too_shallow":14,"too_fast":2}
+wlunge        73% 59/81 {"too_shallow":22}
+nordic        73% 59/81 {"too_fast":1,"too_shallow":6}
+raise         73% 60/82 {"wrong_exercise":18,"shape:banned":9,"shape:shape":9,"too_shallow":4,"too_fast":1}
+lunge         74% 61/82 {"too_shallow":21}
+burpee        77% 62/81 {"wrong_exercise":8,"shape:still ankles":8,"too_fast":14}
+pikepush      77% 62/81 {"too_fast":6,"too_shallow":9,"wrong_exercise":4,"shape:moved wrists":4}
+inclinebench  77% 64/83 {"too_shallow":22,"too_fast":5}
+punch         78% 64/82 {"too_fast":12,"wrong_exercise":6,"shape:still wrists":6}
+goodmorning   78% 68/87 {"too_shallow":25,"too_fast":1}
+climber       79% 63/80 {"too_shallow":12,"too_fast":16,"wrong_exercise":1,"shape:moved wrists":1}
+bicycle       79% 63/80 {"too_fast":10}
+decline       80% 64/80 {"too_shallow":9,"lost_tracking":2,"too_fast":1,"wrong_exercise":3,"shape:moved wrists":3}
+superman      81% 66/81 {"too_shallow":15,"wrong_exercise":2,"shape:moved knees":2,"lost_tracking":2}
+bench         82% 67/82 {"too_shallow":16,"lost_tracking":2,"too_fast":3}
+squatjump     82% 70/85 {"wrong_exercise":15,"shape:still ankles":15,"too_shallow":5}
+legext        83% 67/81 {"too_fast":6}
+pullover      84% 68/81 {"too_shallow":6}
+wallpush      85% 69/81 {"too_shallow":14,"too_fast":5,"wrong_exercise":1,"shape:moved wrists":1}
+rdl           85% 69/81 {"too_shallow":16,"too_fast":1}
+conccurl      85% 69/81 {"too_shallow":5,"too_fast":2}
+latpull       86% 69/80 {"too_shallow":14,"too_fast":2,"too_slow":1}
+legraise      86% 70/81 {"too_shallow":2,"wrong_exercise":2,"shape:still knees":2}
+incline       88% 70/80 {"too_shallow":13,"too_fast":5,"wrong_exercise":5,"shape:moved wrists":5}
+bridge        88% 71/81 {"too_shallow":3,"lost_tracking":8}
+dip           88% 71/81 {"too_shallow":13,"too_fast":2,"wrong_exercise":2,"shape:moved wrists":2,"too_slow":1}
+vup           88% 71/81 {"too_shallow":4,"too_fast":1,"lost_tracking":6}
+skull         88% 72/82 {"too_shallow":11,"lost_tracking":2,"too_fast":2}
+hspu          88% 75/85 {"too_fast":6,"too_shallow":4,"too_slow":1}
+birddog       89% 71/80 {"too_fast":9}
+legcurl       89% 71/80 {"too_shallow":5}
+donkey        89% 72/81 {"too_fast":4,"too_shallow":1,"wrong_exercise":4,"shape:moved wrists":4}
+seatrow       90% 72/80 {"too_shallow":14,"too_fast":4}
+curl          91% 77/85 {"too_shallow":10,"too_fast":2,"too_slow":1}
+sumo          91% 77/85 {"wrong_exercise":8,"shape:shape":8}
+tuckjump      91% 74/81 {"too_shallow":6,"too_fast":1}
+uprow         91% 75/82 {"too_shallow":2,"wrong_exercise":6,"shape:shape":6}
+row           93% 75/81 {"too_shallow":16,"too_fast":2,"too_slow":1}
+hammer        94% 76/81 {"too_shallow":8,"too_fast":5}
+crunch        94% 76/81 {"wrong_exercise":4,"shape:shape":4}
+deadlift      94% 76/81 {"too_shallow":9,"wrong_exercise":1,"shape:bottom":1}
+snatch        94% 76/81 {"too_shallow":4,"lost_tracking":1}
+jack          94% 80/85 {"wrong_exercise":1,"shape:banned":1,"lost_tracking":4}
+hipthrust     96% 82/85 {"too_shallow":2}
+hangleg       98% 78/80 {"too_shallow":1,"too_fast":1,"wrong_exercise":1,"shape:moved wrists":1}
+situp         98% 80/82 {}
+cleanpress    98% 84/86 {"too_shallow":2}
+revfly        99% 80/81 {"too_shallow":1}
+revcrunch     99% 84/85 {}
+squat        100% 82/82 {}
+front        100% 82/82 {}
+wsquat       100% 81/81 {}
+ohsquat      100% 80/80 {}
+kbswing      100% 80/80 {}

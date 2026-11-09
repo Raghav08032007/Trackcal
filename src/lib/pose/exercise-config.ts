@@ -54,7 +54,7 @@ export function pushupView(p:Landmark[],s:0|1):'side'|'front'|null{
 const pick=(...parts:number[][])=>[parts.map(p=>p[0]),parts.map(p=>p[1])] as [number[],number[]];
 export const EXERCISE_CONFIG={
  squat:{id:'squat',title:'Squats',template:'camera_squat',kcalPerRep:.4,joints:[[23,25,27],[24,26,28]],span:[[23,27],[24,28]],cues:['Stand tall','Squat down','Stand up'],required:pick(L.shoulder),optional:pick(L.hip,L.knee,L.ankle),drop:true,
-  up:150,down:110,hysteresis:8,minRangeDeg:45,minRepMs:700,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  up:150,down:137,hysteresis:8,minRangeDeg:26,minRepMs:700,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},  // a half squat (knees about 130) counts
   camera:{view:'side',distance:'2–3 m away, phone at hip height'},tips:['Put the laptop at table height and stand back until your head and hips show.','Face the camera or turn side-on, whichever is easier.','Stand still for a moment first, then squat.','Even, bright light helps.'],experimental:true},
  pushup:{id:'pushup',title:'Push-ups',template:'camera_pushup',kcalPerRep:.32,joints:[[11,13,15],[12,14,16]],span:[[11,15],[12,16]],cues:['Arms straight','Lower your chest','Push up'],required:pick(L.shoulder,L.elbow,L.wrist),inFrame:pick(L.hip,L.ankle),
   up:150,down:100,hysteresis:8,minRangeDeg:40,minRepMs:600,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},

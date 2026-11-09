@@ -30,7 +30,11 @@ function run(kind:ExerciseKind,build:(d:number,t:number)=>PoseFrame,reps:number,
 describe('counting while facing the camera',()=>{
  for(const fps of [10,15,24])for(const speed of [1.5,2.5])it(`squats at ${fps} fps, ${speed} s a rep`,()=>expect(run('squat',squatFrame,5,fps,speed).reps).toBe(5));
  it('curls at 10 fps',()=>expect(run('curl',curlFrame,5,10,2).reps).toBe(5));
- it('a small dip is not a rep, and says why',()=>{const c=run('squat',squatFrame,3,10,2,.4);expect(c.reps).toBe(0);expect(c.rejections.too_shallow).toBeGreaterThan(0);});
+ // Counting is medium-strict: a half squat counts, a small dip doesn't. In squatFrame a full rep drops the hips 35% of the leg
+ // (a deep squat); 40% of that is a knee bend of about 60 degrees, 22% about 45 and 15% about 35.
+ it('a small dip is not a rep',()=>expect(run('squat',squatFrame,3,10,2,.15).reps).toBe(0));
+ it('a dip just short of a half squat is not a rep, and says why',()=>{const c=run('squat',squatFrame,3,10,2,.22);expect(c.reps).toBe(0);expect(c.rejections.too_shallow).toBeGreaterThan(0);});
+ it('a half squat counts',()=>expect(run('squat',squatFrame,3,10,2,.4).reps).toBe(3));
  it('standing still is never a rep',()=>expect(run('squat',squatFrame,0,10,2).reps).toBe(0));
  it('reports how far through the movement the person is',()=>{const t=new SessionTracker('squat');let last=null;for(let i=0;i<14;i++)t.frame(squatFrame(0,1000+i*100));for(let i=0;i<8;i++)last=t.frame(squatFrame(1,2400+i*100));expect(last?.progress).toBeGreaterThan(.8);});
 });

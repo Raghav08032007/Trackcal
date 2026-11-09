@@ -1,3 +1,4 @@
+import {useExerciseSafety} from '@/lib/exercise-safety';
 import {useMemo,useState} from 'react';
 import Model,{type IExerciseData,type Muscle} from 'react-body-highlighter';
 import Link from '@/lib/navigation';
@@ -35,9 +36,13 @@ function Finder(){
  const found=exercisesFor(selected,filters),chosen=found.filter(row=>picked.includes(row.id)&&row.kind);
  const steps=chosen.map(row=>({kind:row.kind as ExerciseKind,target:targetFor(row.kind as ExerciseKind,row.difficulty)}));
  const seed=`${shuffle||date}:${category==='mobility'?'mobility':category?.id}:${planLevel}`;
- const plan=useMemo(()=>category&&category!=='mobility'?dailyPackage(category,{equipment:filters.equipment,level:planLevel},seed,PLAN_SIZE[planLevel],targetFor):[],[category,filters.equipment,planLevel,seed]);
+ // Exercises the app advises against for this person are left out of ready-made plans, and the plan says so.
+ const safety=useExerciseSafety(),avoid=(kind:ExerciseKind)=>safety.adviceFor(kind)?.level==='avoid',avoidKey=safety.signedIn?Object.keys(EXERCISES).filter(k=>avoid(k as ExerciseKind)).join():'';
+ const plan=useMemo(()=>category&&category!=='mobility'?dailyPackage(category,{equipment:filters.equipment,level:planLevel},seed,PLAN_SIZE[planLevel],targetFor,avoid):[],[category,filters.equipment,planLevel,seed,avoidKey]);  // eslint-disable-line react-hooks/exhaustive-deps
+ const leftOut=category&&category!=='mobility'?exercisesFor(category.muscles,{equipment:filters.equipment,level:'any'}).filter(row=>row.kind&&row.primary&&avoid(row.kind)):[];
  const holds=useMemo(()=>category==='mobility'?mobilityPlan(planLevel,seed):[],[category,planLevel,seed]);
- const finisher=category&&category!=='mobility'?FINISHER[category.id]:undefined;
+ // A finishing hold the app advises against (a wall sit with a resting knee) is left off the plan.
+ const finisherHold=category&&category!=='mobility'?FINISHER[category.id]:undefined,finisher=finisherHold&&safety.adviceForTemplate(`camera_${finisherHold}`)?.level!=='avoid'?finisherHold:undefined;
  const suggested=MUSCLE_CATEGORIES.find(c=>c.id===today),label=category==='mobility'?'mobility and balance':category?.label.toLowerCase();
  return <main className="wellness-page muscle-page"><section className="camera-intro"><span className="eyebrow">TRAIN BY MUSCLE</span><h1>Which muscles today?</h1><p>Pick a group for a ready-made plan, or tap muscles on the body. Every exercise shows how it is done.</p></section>
 
@@ -55,6 +60,7 @@ function Finder(){
       {finisher&&<li className="plan-finisher"><Thumb row={{kind:null,hold:finisher,title:HOLDS[finisher].title}}/><div><strong>Finish with: {HOLDS[finisher].title}</strong><small>Hold {HOLD_SECONDS[planLevel]} s</small></div><Link className="destination-button" href={`/workouts/camera?mode=hold&hold=${finisher}`}>Start</Link></li>}</ol>
      <div className="account-actions"><Link className="account-primary" href={cameraLink(plan)}>Start {plan.length} exercises with camera</Link><button type="button" onClick={()=>setShuffle(String(Date.now()))}>Shuffle</button>{shuffle&&<button type="button" onClick={()=>setShuffle('')}>Back to today&apos;s plan</button>}</div>
     </>:<p>No exercises fit. Try any equipment below.</p>}
+    {leftOut.length>0&&<p className="safety-left-out" role="note">Left out to protect you: {[...new Set(leftOut.map(row=>EXERCISES[row.kind!].title))].slice(0,6).join(', ')}. You can still pick them below; we'll tell you why first.</p>}
     <p className="rep-replay-note">Beginner plans have {PLAN_SIZE.easy} exercises, intermediate {PLAN_SIZE.medium} and advanced {PLAN_SIZE.hard}. Today&apos;s plan stays the same all day. The camera counts on this device and nothing leaves it.</p>
    </div>}
   </section>
@@ -72,7 +78,7 @@ function Finder(){
      <p role="status" className="muscle-count">{found.length} exercises for {selected.map(m=>MUSCLE_LABELS[m].toLowerCase()).join(', ')}</p>
      <div className="exercise-cards">{found.map(row=><article className="exercise-card" key={row.id} data-primary={row.primary||undefined}>
       <div className="exercise-card-picture"><Thumb row={row}/></div>
-      <div className="exercise-card-body"><h3>{row.title}</h3><div className="exercise-card-tags">{row.primary&&<span className="muscle-badge">Main target</span>}{row.difficulty==='easy'&&<span className="muscle-badge muscle-badge-easy">Beginner</span>}{row.hold&&<span className="muscle-badge muscle-badge-hold">Hold</span>}</div><small>Works {row.muscles.toLowerCase()}</small><small>{EXERCISE_EQUIPMENT[row.equipment]} · {EXERCISE_DIFFICULTY[row.difficulty]}</small></div>
+      <div className="exercise-card-body"><h3>{row.title}</h3><div className="exercise-card-tags">{row.kind&&safety.adviceFor(row.kind)&&<span className={`muscle-badge safety-badge-${safety.adviceFor(row.kind)!.level}`} title={safety.adviceFor(row.kind)!.reasons.join(' ')}>{safety.adviceFor(row.kind)!.level==='avoid'?'Not suitable for you':'Take care'}</span>}{row.primary&&<span className="muscle-badge">Main target</span>}{row.difficulty==='easy'&&<span className="muscle-badge muscle-badge-easy">Beginner</span>}{row.hold&&<span className="muscle-badge muscle-badge-hold">Hold</span>}</div><small>Works {row.muscles.toLowerCase()}</small><small>{EXERCISE_EQUIPMENT[row.equipment]} · {EXERCISE_DIFFICULTY[row.difficulty]}</small></div>
       {watching===row.id&&<div className="exercise-card-3d">{row.kind?<MoveDemo move={MOVES[row.kind]} gear={gearOf(row.kind)} title={row.title} cues={EXERCISE_CONFIG[row.kind].cues}/>:<MoveDemo move={HOLDS[row.hold!].move} gear="body" title={row.title} cues={[HOLDS[row.hold!].cue]}/>}</div>}
       <div className="exercise-card-actions">
        <Link className="account-primary" href={row.kind?`/workouts/camera?exercise=${row.kind}`:`/workouts/camera?mode=hold&hold=${row.hold}`}>Track with camera</Link>

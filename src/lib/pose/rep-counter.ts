@@ -37,7 +37,8 @@ export class RepCounter{
   const y=this.cycle,form=this.config.form;if(!y||!body||!form)return;
   y.frames++;y.travel.add(body);if(this.across(body)){y.across++;body=unseen(body,this.config.plane!);}if(form.never?.(body))y.wrong++;
   if(form.reaches?.(body))y.reached=true;if(form.banned?.(body))y.banned++;
-  if(a<=this.config.down+this.config.hysteresis){y.low++;if(form.atBottom?.(body))y.lowWrong++;}
+  // The bottom check looks only at the true bottom of the rep, not the frames on the way down to it.
+  if(a<=this.config.down){y.low++;if(form.atBottom?.(body))y.lowWrong++;}
  }
  /** Filmed from the other angle than the exercise moves in: side-on for a move out to the sides, head-on for one forward and back. */
  private across(body:Body){const plane=this.config.plane;return plane==='side'?body.facing>.5:plane==='front'?body.facing<.3:false;}
@@ -65,6 +66,8 @@ export class RepCounter{
   if(!Number.isFinite(t)||t<=this.last)return out(false,'Duplicate or stale frame ignored.');
   if(t-this.last>GAP_MS&&this.phase!=='SETUP'){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();}
   this.last=t;
+  // The analyzer started again from a new position: a rep in progress can't be finished against it.
+  if(o.restart){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();this.cycle=null;}
   // A low-confidence frame or two is normal in a dim room: the rep carries on unless tracking stays gone.
   if(!o.valid){this.lost??=t;if(t-this.lost<GRACE_MS)return out(false,o.reason||'Tracking paused.');if(inCycle())this.reject('lost_tracking',t);this.resetMovement();return out(false,o.reason||'Tracking paused.',true);}
   this.lost=null;

@@ -468,3 +468,28 @@ html body .food-page-heading h1 + p { margin: 6px 0 0; max-width: 60ch; color: v
 /* The coach's energy choices sit on one line */
 html body .coach-checkin .account-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 html body .coach-checkin .account-actions button { min-width: 0; }
+
+/* Exercise safety (safety-gate.tsx): the warning, the person's own decision, and badges */
+.safety-notice { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 14px; padding: 12px 14px; border-radius: var(--ds-r); border: 1px solid; }
+.safety-notice ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.safety-notice p { margin: 6px 0 0; font-weight: 650; }
+.safety-avoid { background: var(--ds-red-soft); border-color: color-mix(in srgb, var(--ds-red) 40%, transparent); color: var(--ds-ink); }
+.safety-avoid svg { color: var(--ds-red); flex: none; }
+.safety-caution { background: var(--ds-amber-soft); border-color: color-mix(in srgb, var(--ds-amber) 45%, transparent); color: var(--ds-ink); }
+.safety-caution svg { color: #8a5a00; flex: none; }
+.safety-backdrop { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; padding: 16px; background: #0b0a1aa6; }
+.safety-dialog { box-sizing: border-box; width: min(520px, 100%); max-height: 90dvh; overflow: auto; display: grid; gap: 14px; padding: 24px; border-radius: var(--ds-r-lg); background: var(--ds-surface); color: var(--ds-ink); box-shadow: var(--ds-shadow-lift); }
+.safety-dialog:focus { outline: none; }
+.safety-dialog h2 { margin: 0; font-size: 1.35rem; line-height: 1.25; }
+.safety-dialog ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.safety-dialog p { margin: 0; }
+.safety-icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; }
+.safety-icon.safety-avoid { background: var(--ds-red-soft); color: var(--ds-red); border: 0; }
+.safety-icon.safety-caution { background: var(--ds-amber-soft); color: #8a5a00; border: 0; }
+.safety-sub { font-weight: 700; }
+.safety-choices, .safety-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.safety-agree { display: flex; align-items: center; gap: 10px; min-height: var(--ds-tap); padding: 10px 12px; border-radius: var(--ds-r-sm); background: var(--ds-sunken); font-weight: 700; cursor: pointer; }
+.safety-agree input { width: 22px; height: 22px; flex: none; accent-color: var(--ds-red); }
+.safety-left-out { margin: 10px 0 0; padding: 10px 12px; border-radius: var(--ds-r-sm); background: var(--ds-amber-soft); font-weight: 600; }
+.muscle-badge.safety-badge-avoid { background: var(--ds-red-soft); color: var(--ds-red); }
+.muscle-badge.safety-badge-caution { background: var(--ds-amber-soft); color: #7a4f00; }

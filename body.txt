@@ -1,0 +1,7 @@
+squat#14 {"yaw":21,"camH":1.21,"dist":2.73,"device":"phone","arms":"hips","fps":24,"depthMin":61,"widthHips":1.7,"jitter":0.0058} :: a=93 tilt=25 torso=0.57 knee=102 facing=0.99 stance=1.20 wristUp=-0.60
+squat#31 {"yaw":12,"camH":0.82,"dist":2.45,"device":"phone","arms":"forward","fps":15,"depthMin":64,"widthHips":1.89,"jitter":0.0059} :: a=88 tilt=13 torso=0.74 knee=98 facing=0.99 stance=1.25 wristUp=0.05
+squat#19 {"yaw":85,"camH":0.9,"dist":2.47,"device":"laptop","arms":"down","fps":20,"depthMin":58,"widthHips":1.42,"jitter":0.0077} :: a=73 tilt=39 torso=0.97 knee=79 facing=0.14 stance=NaN wristUp=-1.17
+squat#2 {"yaw":79,"camH":0.74,"dist":3.01,"device":"laptop","arms":"prayer","fps":30,"depthMin":57,"widthHips":1.07,"jitter":0.0075} :: a=77 tilt=38 torso=0.94 knee=80 facing=0.23 stance=0.04 wristUp=-0.31
+bow#1 {"yaw":-23,"device":"laptop"} :: 
+bow#5 {"yaw":-44,"device":"phone"} :: 
+pickup#5 {"yaw":-44,"device":"phone"} :: 

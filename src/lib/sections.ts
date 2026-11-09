@@ -33,13 +33,13 @@ export const SECTIONS: Section[] = [
         { href: "/tools?tab=pantry", title: "Pantry and shopping", text: "What you have, what's expiring, what to buy.", icon: ShoppingBasket },
         { href: "/tools", title: "Recipe import and smart tools", text: "Bring in a recipe from a link, plan within a budget.", icon: Wand2 } ] } ] },
   { id: "move", label: "Move", href: "/move", icon: Activity,
-    pages: [["/move", "Overview"], ["/workouts", "Today's workout"], ["/workouts/camera", "Camera"], ["/workouts/gps", "Record"], ["/activities", "Activities"]],
-    also: ["/workouts/*", "/activities/*", "/programs", "/recovery", "/plan"],
+    pages: [["/move", "Overview"], ["/workouts/muscles", "By muscle"], ["/workouts/camera", "Camera"], ["/workouts/gps", "Record"], ["/workouts", "Workouts"]],
+    also: ["/workouts/*", "/activities", "/activities/*", "/programs", "/recovery", "/plan"],
     groups: [
       { title: "Train", items: [
-        { href: "/workouts", title: "Today's workout", text: "Your sessions, sets and every workout you've done.", icon: Dumbbell },
-        { href: "/workouts/camera", title: "Camera workout", text: "Your phone counts reps and checks your form.", icon: Camera },
-        { href: "/workouts/muscles", title: "Exercises by muscle", text: "Pick a body part and find moves for it.", icon: Search },
+        { href: "/workouts/muscles", title: "Plan by muscle", text: "Pick the muscles to train; get a plan that leaves out anything not suitable for your injuries.", icon: Search },
+        { href: "/workouts/camera", title: "Camera workout and posture check", text: "Counts your reps and tells you, as you move, how to keep good posture.", icon: Camera },
+        { href: "/workouts", title: "Your workouts", text: "Your sessions, sets and every workout you've done.", icon: Dumbbell },
         { href: "/programs", title: "Programs", text: "Step-by-step plans that grow with you.", icon: ListChecks } ] },
       { title: "Outdoors", items: [
         { href: "/workouts/gps", title: "Record a route", text: "Run, walk, hike or ride with GPS.", icon: MapPin },

@@ -36,10 +36,16 @@ const facingAway=(b:Body)=>b.facing<.3;
 const notFacing=(b:Body)=>b.facing<.35;
 const sideOn=(b:Body)=>b.facing>.55;
 /** A bent knee seen head-on still looks straight, so the knee only rules a squat out side-on. From the front, a bow shows as a short torso instead. */
-const shallow=(b:Body)=>b.knee>125&&b.facing<.45||b.torso<.6;
+const shallow=(b:Body)=>b.knee>145&&b.facing<.45||b.torso<.45;
 const kneesDown=(b:Body)=>b.kneeUp<.15;
 /** Real squats lean at most about 40 degrees, even with a weight held in front; bending over to pick something up leans 60 or more. */
-const SQUAT={never:(b:Body)=>b.wristUp>.3,banned:(b:Body)=>b.tilt>55,atBottom:(b:Body)=>shallow(b)||b.stance>1.2,moves:{shoulders:.2}};
+/** Feet apart across the picture. Truly side-on that distance is front to back: past 1.0 is a lunge or a split squat (real squats
+ *  measured side-on stay under 0.45). From any other angle up to 1.7 is a squat with a wide stance. One foot well above the other
+ *  (past 0.55; perspective alone gives real squats up to 0.52) is a pistol or a raised back foot. Measured on simulated squats
+ *  from every camera angle and on the lunge, split-squat and pistol motions. */
+const squatFeet=(b:Body)=>b.facing<.3?b.stance>1:b.stance>1.7;
+/** The feet stay on the floor in a squat; in a jump they travel with the body. */
+const SQUAT={never:(b:Body)=>b.wristUp>.3,banned:(b:Body)=>b.tilt>55,atBottom:(b:Body)=>shallow(b)||squatFeet(b)||b.footStep>.55,still:{ankles:.5},moves:{shoulders:.2}};
 /** Lying down seen head-on looks upright but very short: a torso this foreshortened is not standing. */
 const lyingHeadOn=(b:Body)=>b.torso<.6;
 const SIDE_ARM={never:either(armBent,notUpright,lyingHeadOn,(b)=>b.wristUp>.5),banned:(b:Body)=>b.elbow<90,atBottom:(b:Body)=>b.wristUp<-.3,reaches:(b:Body)=>!(b.wristUp>-.65),moves:{wrists:.6}};
@@ -84,7 +90,8 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  thruster:{never:either(notUpright,handsLow),atBottom:(b)=>b.knee>130,reaches:(b)=>!(b.wristUp<.5),moves:{wrists:.4,shoulders:.2}},
  raise:{...SIDE_ARM,never:either(SIDE_ARM.never,facingAway)},
  front:{...SIDE_ARM,never:either(SIDE_ARM.never,sideOn),still:{shoulders:.25}},
- uprow:{never:either(notUpright,armsOverhead,notFacing),atBottom:(b)=>b.elbow>125,moves:{wrists:.4}},
+ // Upright rows stay upright, and the hands stop at the chest; hands up at shoulder height, or a hinge past 30 degrees, is a swing.
+ uprow:{never:either(notUpright,armsOverhead,notFacing),banned:(b)=>b.tilt>30||b.wristUp>-.1,atBottom:(b)=>b.elbow>125,moves:{wrists:.4}},
  // Back
  deadlift:{...HINGE,banned:(b)=>b.wristUp>0,atBottom:(b)=>notHinged(b)||b.knee<95||b.kneeWide>155||b.wristUp>-.2},
  goodmorning:{...HINGE,never:either((b)=>b.wristChest>.8,legsBent),atBottom:notHinged},
@@ -131,7 +138,8 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  inclinebench:{never:either((b)=>b.tilt<25,(b)=>b.tilt>62,(b)=>b.wristUp<-.2),moves:{elbows:.2}},
  // Full body
  jack:{banned:(b)=>b.elbow<70||b.tilt>45,never:notUpright,atBottom:(b)=>b.wristUp<.15,reaches:(b)=>!(b.wristUp>-.5),moves:{wrists:.8,ankles:.15}},
- burpee:{banned:(b)=>b.kneeUp>.3,atBottom:(b)=>b.tilt<45,moves:{shoulders:.6,ankles:.4}},
+ // A burpee must reach the plank at some point in every rep (the crouch on the way down is part of it too).
+ burpee:{banned:(b)=>b.kneeUp>.3,reaches:(b)=>!(b.tilt<45),moves:{shoulders:.6,ankles:.4}},
  climber:{never:either(notLying,handsAbove,notFloorHands),still:{wrists:.3}},
  punch:{never:either(notUpright,legsBent,armsOverhead,(b)=>b.wristUp<-.7),still:{shoulders:.25},moves:{wrists:.35}},
 };

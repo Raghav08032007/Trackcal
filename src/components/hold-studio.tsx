@@ -1,3 +1,5 @@
+import { useExerciseSafety } from "@/lib/exercise-safety";
+import { SafetyGate, SafetyNotice } from "@/components/safety-gate";
 import {useEffect,useRef,useState} from 'react';
 import Link from '@/lib/navigation';
 import {useAccount} from './account-session';
@@ -24,10 +26,12 @@ export function HoldStudio(){const {ready,user}=useAccount();return !ready?<main
 /** Planks, balance and stretches, timed by the camera. Only time actually in position counts. */
 function Studio(){
  const video=useRef<HTMLVideoElement>(null),service=useRef<PoseDetectionService|null>(null),tracker=useRef(new HoldTracker('plank')),started=useRef(0),stats=useRef({frames:0,low:0,quality:0}),spoken=useRef(0),cheered=useRef(false),form=useRef(new FormChecker(null)),voiceRef=useRef(false);
+ const safety=useExerciseSafety(),[gate,setGate]=useState(false);
  const [kind,setKind]=useState<HoldKind>(()=>{const asked=typeof window==='undefined'?null:new URLSearchParams(window.location.search).get('hold');return asked&&asked in HOLDS?asked as HoldKind:'plank';});
  const [target,setTarget]=useState(30),[status,setStatus]=useState<Status>('setup'),[live,setLive]=useState({inPose:false,visible:false,current:0,best:0,held:0}),[error,setError]=useState(''),[voice,setVoice]=useState(false),[busy,setBusy]=useState(false),[earned,setEarned]=useState(0),[tip,setTip]=useState<{text:string;at:number}|null>(null);
  useEffect(()=>{voiceRef.current=voice;},[voice]);
- const hold=HOLDS[kind];
+ const hold=HOLDS[kind],holdAdvice=safety.adviceForTemplate(`camera_${kind}`);
+ const saferHolds=(Object.keys(HOLDS) as HoldKind[]).filter(k=>k!==kind&&!safety.adviceForTemplate(`camera_${k}`)).slice(0,3).map(k=>({id:k,title:HOLDS[k].title}));
  useEffect(()=>{markWorkoutActive(status==='loading'||status==='holding');return()=>markWorkoutActive(false);},[status]);
  useEffect(()=>{const hide=()=>{if(document.hidden)stop();};document.addEventListener('visibilitychange',hide);return()=>{document.removeEventListener('visibilitychange',hide);service.current?.stop(video.current||undefined);};},[]);// eslint-disable-line react-hooks/exhaustive-deps -- stop reads refs only
  function receive(raw:PoseFrame){
@@ -37,6 +41,8 @@ function Studio(){
   if(voice&&result.inPose&&now>0&&now!==spoken.current&&(now%10===0||target-now<=3&&now<target)){spoken.current=now;say(target-now<=3&&now<target?String(target-now):`${now} seconds`);}
   if(!cheered.current&&result.current>=target*1000){cheered.current=true;try{navigator.vibrate?.([60,40,60]);}catch{/* not supported */}if(voice)say('Target reached. Great hold.');}
  }
+  /** A hold the app advises against for this person: explain first, offer safer holds, and only go ahead on their accepted decision. */
+ function guardedStart(){const a=safety.adviceForTemplate(`camera_${kind}`);if(a&&!safety.acceptedTemplate(`camera_${kind}`)){setGate(true);return;}void start();}
  async function start(){
   setError('');setStatus('loading');tracker.current=new HoldTracker(kind);form.current=new FormChecker(kind==='plank'?'plank':null);stats.current={frames:0,low:0,quality:0};spoken.current=0;cheered.current=false;started.current=performance.now();
   try{const {PoseDetectionService}=await import('@/lib/pose/detection-service');const controller=new PoseDetectionService(receive,message=>{setError(message);stop();});service.current=controller;await controller.start(video.current!,'','user',()=>setStatus('holding'));}
@@ -72,7 +78,7 @@ function Studio(){
     <p role="status" className="hold-status">{status==='holding'&&tip&&Date.now()-tip.at<3000?tip.text:status==='holding'?(!live.visible?'Step back so your whole body is in view.':live.inPose?(done?'Target reached. Hold on if you can, or rest.':`Holding. ${hold.cue}.`):`Get into position: ${hold.cue.toLowerCase()}.`):status==='loading'?'Starting the camera…':'Camera off'}</p>
     {status==='setup'&&<><label>Target<select value={target} onChange={e=>setTarget(Number(e.target.value))}>{TARGETS.map(value=><option key={value} value={value}>{value} seconds</option>)}</select></label>
      <label className="scanner-consent"><input type="checkbox" checked={voice} onChange={e=>setVoice(e.target.checked)}/> Count out loud</label>
-     <button className="account-primary" onClick={()=>void start()}>Start {hold.title}</button></>}
+     {holdAdvice&&<SafetyNotice advice={holdAdvice} accepted={safety.acceptedTemplate(`camera_${kind}`)}/>}{gate&&holdAdvice&&<SafetyGate title={hold.title} template={`camera_${kind}`} advice={holdAdvice} safer={saferHolds} onSafer={k=>{setGate(false);setKind(k as HoldKind);}} onContinue={()=>{setGate(false);void start();}} onClose={()=>setGate(false)}/>}<button className="account-primary" onClick={guardedStart}>Start {hold.title}</button></>}
     {(status==='holding'||status==='loading')&&<button className="account-primary" onClick={stop}>Stop</button>}
     {status==='review'&&<div className="hold-review"><h2>Best hold: {seconds(live.best)} s</h2><p>{seconds(live.held)} s in position altogether.</p>{seconds(live.best)<MIN_SAVE_S&&<p>Holds of {MIN_SAVE_S} seconds or more can be saved. Try again when you are ready.</p>}<div className="account-actions">{seconds(live.best)>=MIN_SAVE_S&&<button className="account-primary" disabled={busy} onClick={()=>void save()}>{busy?'Saving…':'Save hold'}</button>}<button type="button" onClick={()=>{setStatus('setup');setLive({inPose:false,visible:false,current:0,best:0,held:0});}}>Discard</button></div></div>}
     {status==='saved'&&<div className="celebration-host"><Celebration/><CoachLine text={`${seconds(live.best)} seconds of ${hold.title.toLowerCase()} saved${earned?`, +${earned} points`:''}. Nice and steady!`}/><button type="button" onClick={()=>{setStatus('setup');setLive({inPose:false,visible:false,current:0,best:0,held:0});}}>Do another hold</button></div>}
