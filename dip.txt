@@ -1,5 +1,0 @@
-peak 0.15: lowest drop reading 148 reps 0
-peak 0.2: lowest drop reading 142 reps 0
-peak 0.3: lowest drop reading 131 reps 0
-peak 0.4: lowest drop reading 123 reps 3
-peak 1: lowest drop reading 85 reps 3

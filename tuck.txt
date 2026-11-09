@@ -1,9 +1,0 @@
-tuckjump side: kneeUp -0.84 hipGap 0 ankleY 0.90 | kneeUp -0.51 hipGap 0 ankleY 0.74 | kneeUp 0.22 hipGap 0 ankleY 0.48 | kneeUp -0.51 hipGap 0 ankleY 0.74
-tuckjump front: kneeUp -0.84 hipGap 0 ankleY 0.90 | kneeUp -0.51 hipGap 0 ankleY 0.74 | kneeUp 0.22 hipGap 0 ankleY 0.48 | kneeUp -0.51 hipGap 0 ankleY 0.74
-squat side: kneeUp -0.84 hipGap 0 ankleY 0.82 | kneeUp -0.67 hipGap 0 ankleY 0.82 | kneeUp -0.22 hipGap 0 ankleY 0.83 | kneeUp -0.67 hipGap 0 ankleY 0.82
-squat front: kneeUp -0.84 hipGap 0 ankleY 0.82 | kneeUp -0.68 hipGap 0 ankleY 0.82 | kneeUp -0.24 hipGap 0 ankleY 0.83 | kneeUp -0.68 hipGap 0 ankleY 0.82
-squatjump side: kneeUp -0.84 hipGap 0 ankleY 0.88 | kneeUp -0.67 hipGap 0 ankleY 0.88 | kneeUp -0.22 hipGap 0 ankleY 0.87 | kneeUp -0.67 hipGap 0 ankleY 0.82 | kneeUp -0.84 hipGap 0 ankleY 0.78 | kneeUp -0.84 hipGap 0 ankleY 0.82
-squatjump front: kneeUp -0.84 hipGap 0 ankleY 0.88 | kneeUp -0.68 hipGap 0 ankleY 0.88 | kneeUp -0.24 hipGap 0 ankleY 0.87 | kneeUp -0.68 hipGap 0 ankleY 0.82 | kneeUp -0.84 hipGap 0 ankleY 0.78 | kneeUp -0.84 hipGap 0 ankleY 0.82
-pistol side: kneeUp -0.39 hipGap 62 ankleY 0.71 | kneeUp -0.26 hipGap 33 ankleY 0.71 | kneeUp -0.12 hipGap 4 ankleY 0.75 | kneeUp -0.26 hipGap 33 ankleY 0.71
-pistol front: kneeUp -0.39 hipGap 0 ankleY 0.71 | kneeUp -0.27 hipGap 0 ankleY 0.71 | kneeUp -0.13 hipGap 0 ankleY 0.75 | kneeUp -0.27 hipGap 0 ankleY 0.71
-sim squats kneeUp p99 -0.29 max 0.03

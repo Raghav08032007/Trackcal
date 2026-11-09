@@ -1,3 +1,0 @@
-clean: fps 20 reading mins 88,88,88,88,88 | true knee mins 85,85,85,85,85
-half_reps: fps 20 reading mins 88,140,88,140,88,140 | true knee mins 85,139,85,139,85,139
-very_fast: fps 20 reading mins 109 | true knee mins 88

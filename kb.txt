@@ -1,2 +1,0 @@
-kbswing (cam front): tilt 0 elbow 180 wristUp -1.70 facing 1.53 knee 180 | tilt 0 elbow 180 wristUp -1.09 facing 0.84 knee 180 | tilt 0 elbow NaN wristUp 0.04 facing 0.72 knee 180 | tilt 0 elbow 180 wristUp -1.09 facing 0.84 knee 180
-uprow (cam front): tilt 0 elbow 160 wristUp -1.02 facing 0.72 knee 180 | tilt 0 elbow 109 wristUp -0.79 facing 0.72 knee 180 | tilt 0 elbow 58 wristUp -0.38 facing 0.72 knee 180 | tilt 0 elbow 109 wristUp -0.79 facing 0.72 knee 180
