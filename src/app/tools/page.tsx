@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import Link from "@/lib/navigation";
+import { useCallback, useEffect, useState } from "react";
+import Link, { useSearch } from "@/lib/navigation";
 import { Leaf, Sparkles } from "lucide-react";
 import { useAccount, useWorkspaceScope } from "@/components/account-session";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
@@ -11,10 +11,13 @@ import { FitnessTools } from "@/components/fitness-tools";
 import { DeviceTools } from "@/components/device-tools";
 import type { SavedRecipe, PantryEntry, ShoppingEntry } from "@/lib/smart-tools";
 const tabs = ["Recipe import", "Meal planner", "Pantry & prices", "Label & voice", "Workouts", "Device & sync"] as const;
+/** Links can open a tab directly, e.g. /tools?tab=pantry. */
+const TAB_LINKS: Record<string, typeof tabs[number]> = { import: "Recipe import", planner: "Meal planner", pantry: "Pantry & prices", label: "Label & voice", workouts: "Workouts", device: "Device & sync" };
 export default function ToolsPage() { const { user, ready } = useAccount(); return !ready ? <main className="account-loading">Opening smart tools…</main> : <SmartWorkspace key={user?.id || "guest"} />; }
 function SmartWorkspace() {
   const { user } = useAccount(); const scope = useWorkspaceScope(), today = useLocalDate();
-  const [tab, setTab] = useState<typeof tabs[number]>("Recipe import"), [busy, setBusy] = useState(false), [message, setMessage] = useState(""), [error, setError] = useState("");
+  const search = useSearch(), [tab, setTab] = useState<typeof tabs[number]>(() => TAB_LINKS[new URLSearchParams(search).get("tab") ?? ""] ?? "Recipe import"), [busy, setBusy] = useState(false), [message, setMessage] = useState(""), [error, setError] = useState("");
+  useEffect(() => { const linked = TAB_LINKS[new URLSearchParams(search).get("tab") ?? ""]; if (linked) setTab(linked); }, [search]);
   const [recipes, setRecipes] = useLocalState<SavedRecipe[]>("trackcal:studio:recipes", []);
   const [pantry, setPantry] = useLocalState<PantryEntry[]>("trackcal:studio:pantry", []);
   const [shopping, setShopping] = useLocalState<ShoppingEntry[]>("trackcal:studio:shopping", []);

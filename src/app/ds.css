@@ -350,3 +350,28 @@ li[data-kind="route"] .history-icon { color: var(--ds-green); }
 .sync-panel .sync-dot { margin-left: 0; }
 @keyframes sync-pulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .sync-dot[data-status="saving"] { animation: none; } }
+
+/* Section overviews: Food, Move, Me (section-hub.tsx) */
+.hub-page { box-sizing: border-box; width: 100%; max-width: 1080px; margin: 0 auto; padding: 20px 16px 120px; display: grid; gap: 20px; }
+.hub-head { display: flex; align-items: center; gap: 14px; }
+.hub-page .hub-head h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.4rem); letter-spacing: -.03em; }
+.hub-head p { margin: 2px 0 0; color: var(--ds-muted); }
+.hub-icon { display: grid; place-items: center; width: 56px; height: 56px; flex: none; border-radius: 18px; background: var(--ds-indigo-soft); color: var(--ds-indigo-ink); }
+.hub-today { display: grid; gap: 16px; }
+.hub-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0; }
+.hub-stats dt { font-size: .8rem; font-weight: 650; color: var(--ds-muted); }
+.hub-stats dd { margin: 2px 0 0; display: grid; font-size: 1.45rem; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.hub-stats dd small { font-size: .8rem; font-weight: 600; color: var(--ds-muted); letter-spacing: 0; }
+.hub-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.hub-actions .ds-btn { min-height: var(--ds-tap); }
+.hub-page .hub-group h2 { margin: 6px 0 10px; font-size: .85rem; font-weight: 750; color: var(--ds-muted); text-transform: uppercase; letter-spacing: .06em; }
+.hub-group ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.hub-card { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 14px 16px; border-radius: var(--ds-r); background: var(--ds-surface); border: 1px solid var(--ds-line);
+  color: var(--ds-ink); text-decoration: none; box-shadow: var(--ds-shadow); transition: transform var(--ds-fast) var(--ds-ease), box-shadow var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease); }
+.hub-card:hover { transform: translateY(-2px); box-shadow: var(--ds-shadow-lift); border-color: var(--ds-indigo); }
+.hub-card:focus-visible { outline: 3px solid var(--ds-indigo); outline-offset: 2px; }
+.hub-card-icon { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 14px; background: var(--ds-sunken); color: var(--ds-indigo); }
+.hub-card-text { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.hub-card-text small { color: var(--ds-muted); line-height: 1.4; }
+.hub-card-arrow { flex: none; color: var(--ds-muted); }
+@media (prefers-reduced-motion: reduce) { .hub-card { transition: none; } .hub-card:hover { transform: none; } }
