@@ -454,3 +454,17 @@ li[data-kind="route"] .history-icon { color: var(--ds-green); }
 .cs-hint { margin: 0; padding: 8px 16px; border-top: 1px solid var(--ds-line); font-size: .78rem; color: var(--ds-muted); }
 .cs-hint kbd { margin-right: 2px; padding: 0 5px; border-radius: 5px; border: 1px solid var(--ds-line); background: var(--ds-sunken); font: inherit; }
 @media (pointer: coarse) { .cs-hint { display: none; } }
+
+/* One page header (page-header.tsx): title, one line, main actions */
+.page-shell { box-sizing: border-box; width: 100%; max-width: 1080px; margin: 0 auto; }
+html body .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 8px 0 20px; padding: 0; background: none; border: 0; box-shadow: none; color: var(--ds-ink); }
+html body .page-head h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.4rem); letter-spacing: -.03em; line-height: 1.1; color: var(--ds-ink); }
+html body .page-head-text { display: grid; gap: 6px; min-width: min(100%, 18em); flex: 1; }
+html body .page-head-text p { margin: 0; max-width: 60ch; color: var(--ds-muted); font-size: 1rem; }
+html body .page-head-eyebrow { font-size: .8rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-indigo-ink); }
+html body .page-head-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Food tools share the same header */
+html body .food-page-heading h1 + p { margin: 6px 0 0; max-width: 60ch; color: var(--ds-muted); font-size: 1rem; font-weight: 500; }
+/* The coach's energy choices sit on one line */
+html body .coach-checkin .account-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+html body .coach-checkin .account-actions button { min-width: 0; }

@@ -1,5 +1,6 @@
 export const foodRoutes={scanner:'/scanner',barcode:'/barcode',voice_text:'/describe',database:'/food-library',logs:'/journal',recipes:'/recipes'} as const;
-export const foodNames={scanner:'Food scanner',barcode:'Barcode scan',voice_text:'Describe a meal',database:'Food library',logs:'My journal',recipes:'Recipe studio'} as const;
+export const foodNames={scanner:'Snap a photo',barcode:'Scan a barcode',voice_text:'Describe a meal',database:'Search foods',logs:'On this device',recipes:'Recipes'} as const;
+export const foodIntros={scanner:'Take or choose a photo of your plate, then check what was found before saving.',barcode:'Scan a packet and use the values printed on its label.',voice_text:'Type or say what you ate, in your own words.',database:'Find a food by name, including regional names.',logs:'A journal kept only in this browser, no account needed.',recipes:'Add ingredients to see nutrition for the whole dish and for each serving.'} as const;
 export type FeatureGuide={title:string;benefit:string;steps:string[];href:string;action:string};
 export const featureGuides:Record<string,FeatureGuide>={
  '/onboarding':{title:'Make this routine your own',benefit:'Preferences help keep the plan relevant without requiring body measurements or a perfect schedule.',steps:['Choose interests, equipment, accessibility and a realistic schedule.','Skip optional measurements and review rest/reminder choices.','Save your setup, then review the plan. You can return and change it.'],href:'/plan',action:'Review my personal plan'},

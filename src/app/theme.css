@@ -130,7 +130,7 @@ html[data-theme=dark] .camera-experimental, html[data-theme=dark] .camera-paused
 .push-type label { display: flex; align-items: center; gap: 10px; min-height: 44px; }
 .push-time input { width: auto; min-height: 40px; }
 .motivation-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 20px; background: linear-gradient(135deg, #f3f8e6, #e7f0d6); border: 1px solid #cbdcb2; }
-.motivation-card span { font-size:1.5rem; color: #6a8f3f; }
+.motivation-card span { font-size:1.5rem; color: var(--ds-muted); }
 .motivation-card p { margin: 0; font-weight: 600; }
 .install-note { padding: 12px 16px; border-radius: 14px; background: #eef4e2; }
 html[data-theme=dark] .push-card .push-note, html[data-theme=dark] .motivation-card, html[data-theme=dark] .install-note { background: #203b2c; color: #eef5e4; border-color: #557044; }
@@ -152,7 +152,7 @@ html[data-theme=dark] .premium-trial, html[data-theme=dark] .premium-confirm { b
 /* Phase 6 accessibility (axe, WCAG 2.2 AA contrast). Light theme only; dark mode has its own rules. */
 html:not([data-theme="dark"]) .trackcal-app :is([class*="bg-slate-950/"], [class*="bg-slate-900/"]) { background-color: #efedf9 !important; }
 html:not([data-theme="dark"]) .trackcal-app :is([class*="text-amber-"], [class*="text-orange-"], [class*="text-yellow-"]) { color: #7a4f0e !important; }
-.play-stat-orange small, .play-stat-blue small { color: #263020 !important; }
+.play-stat-orange small, .play-stat-blue small { color: var(--ds-ink) !important; }
 a[href="/forgot-password"] { display: inline-flex; align-items: center; min-height: 44px; }
 
 /* Phase 6: beta feedback. */

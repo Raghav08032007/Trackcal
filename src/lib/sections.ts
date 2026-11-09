@@ -15,8 +15,8 @@ export type Section = { id: "today" | "food" | "move" | "play" | "me"; label: st
 export const SECTIONS: Section[] = [
   { id: "today", label: "Today", href: "/", icon: House, pages: [["/", "Today"], ["/coach", "Coach"]], also: [] },
   { id: "food", label: "Food", href: "/food", icon: Utensils,
-    pages: [["/food", "Overview"], ["/nutrition", "Diary"], ["/scanner", "Log food"], ["/menu", "Meal plans"], ["/recipes", "Recipes"]],
-    also: ["/barcode", "/describe", "/food-library", "/fasting", "/journal", "/tools"],
+    pages: [["/food", "Overview"], ["/nutrition", "Diary"], ["/scanner", "Log food"], ["/meal-plans", "Meal plans"], ["/recipes", "Recipes"]],
+    also: ["/barcode", "/describe", "/food-library", "/fasting", "/journal", "/tools", "/menu"],
     groups: [
       { title: "Log food", items: [
         { href: "/scanner", title: "Snap a photo", text: "Take a picture of your plate and check what it found.", icon: Camera },
@@ -27,7 +27,8 @@ export const SECTIONS: Section[] = [
         { href: "/nutrition", title: "Today's diary", text: "Your meals, targets and how the day is going.", icon: BookOpen },
         { href: "/fasting", title: "Fasting timer", text: "Start, pause and see your fasting window.", icon: Timer } ] },
       { title: "Plan and cook", items: [
-        { href: "/menu", title: "Meal plans", text: "Pick meals for the week that fit your targets.", icon: CalendarDays },
+        { href: "/meal-plans", title: "Meal plans", text: "Plan the week's meals within your targets and budget.", icon: CalendarDays },
+        { href: "/menu", title: "Eating out", text: "Photograph a menu and see which dishes fit your day.", icon: Utensils },
         { href: "/recipes", title: "Recipes", text: "Build a recipe and see its nutrition per serving.", icon: ChefHat },
         { href: "/tools?tab=pantry", title: "Pantry and shopping", text: "What you have, what's expiring, what to buy.", icon: ShoppingBasket },
         { href: "/tools", title: "Recipe import and smart tools", text: "Bring in a recipe from a link, plan within a budget.", icon: Wand2 } ] } ] },

@@ -18,16 +18,16 @@ describe("complete feature flows", () => {
     render(<Home />); fireEvent.click(screen.getByRole("button", { name: /Avocado Egg Toast/ }));
     expect(screen.getByText("Sample result, not your meal")).toBeTruthy();
   });
-  it("opens all six tools", () => { render(<Home />); for (const name of ["Barcode scan", "Describe a meal", "Food library", "My journal", "Recipe studio", "Food scanner"]) { navigate(name); expect(screen.getByRole("heading", { level: 1 })).toBeTruthy(); } });
+  it("opens all six tools", () => { render(<Home />); for (const name of ["Scan a barcode", "Describe a meal", "Search foods", "On this device", "Recipes", "Snap a photo"]) { navigate(name); expect(screen.getByRole("heading", { level: 1 })).toBeTruthy(); } });
   it("adds, edits, repeats, deletes and retains a manual meal across reloads", () => {
-    render(<Home />); navigate("My journal"); value("Food name", "Regression meal"); value("calories", "123"); value("protein", "12.3"); fireEvent.click(screen.getByRole("button", { name: "Add meal" })); expect(journal()[0].calories).toBe(123);
+    render(<Home />); navigate("On this device"); value("Food name", "Regression meal"); value("calories", "123"); value("protein", "12.3"); fireEvent.click(screen.getByRole("button", { name: "Add meal" })); expect(journal()[0].calories).toBe(123);
     fireEvent.click(screen.getByRole("button", { name: "Edit" })); value("calories", "200"); fireEvent.click(screen.getByRole("button", { name: "Save correction" })); expect(journal()[0].calories).toBe(200);
     fireEvent.click(screen.getByRole("button", { name: "Repeat" })); expect(journal()).toHaveLength(2);
     fireEvent.click(screen.getAllByRole("button", { name: "Delete" })[0]); expect(journal()).toHaveLength(1);
-    cleanup(); render(<Home />); navigate("My journal"); expect(screen.getByRole("heading", { name: "Regression meal" })).toBeTruthy();
+    cleanup(); render(<Home />); navigate("On this device"); expect(screen.getByRole("heading", { name: "Regression meal" })).toBeTruthy();
   });
   it("keeps journal dates and wellness fields isolated and persisted", () => {
-    render(<Home />); navigate("My journal"); value("Journal date", "2026-10-01"); value("Food name", "October first meal"); value("calories", "250"); fireEvent.click(screen.getByRole("button", { name: "Add meal" })); fireEvent.click(screen.getByRole("button", { name: "+250 ml" })); value("Steps", "1234"); value("Weight (kg)", "74.5"); value("Activity", "Walk"); value("Workout minutes", "30");
+    render(<Home />); navigate("On this device"); value("Journal date", "2026-10-01"); value("Food name", "October first meal"); value("calories", "250"); fireEvent.click(screen.getByRole("button", { name: "Add meal" })); fireEvent.click(screen.getByRole("button", { name: "+250 ml" })); value("Steps", "1234"); value("Weight (kg)", "74.5"); value("Activity", "Walk"); value("Workout minutes", "30");
     expect(JSON.parse(localStorage.getItem("trackcal:wellness:2026-10-01")!)).toMatchObject({ water: 250, steps: 1234, weight: 74.5, activity: "Walk", minutes: 30 });
     fireEvent.click(screen.getByRole("button", { name: "Undo 250 ml" })); expect(JSON.parse(localStorage.getItem("trackcal:wellness:2026-10-01")!).water).toBe(0);
     value("Journal date", "2026-10-02"); expect(screen.queryByRole("heading", { name: "October first meal" })).toBeNull(); expect((screen.getByLabelText("Steps") as HTMLInputElement).value).toBe("0");
@@ -68,11 +68,11 @@ describe("complete feature flows", () => {
   });
   it("looks up a barcode and scales every nutrient consistently", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ source: "Open Food Facts", barcode: "12345678", product_name: "Test yogurt", nova_group: null, serving_size: "100g", nutrients_per_100g: { energy_kcal: 200, protein_g: 12, carbs_g: 20, fat_g: 8 }, allergens: [] })));
-    render(<Home />); navigate("Barcode scan"); value("Barcode number", "12345678"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" })); await screen.findByRole("heading", { name: "Test yogurt" }); value("Barcode amount in grams", "50"); fireEvent.click(screen.getByRole("button", { name: "+ Log to Journal" })); expect(journal()[0]).toMatchObject({ calories: 100, protein: 6, carbs: 10, fat: 4 });
+    render(<Home />); navigate("Scan a barcode"); value("Barcode number", "12345678"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" })); await screen.findByRole("heading", { name: "Test yogurt" }); value("Barcode amount in grams", "50"); fireEvent.click(screen.getByRole("button", { name: "+ Log to Journal" })); expect(journal()[0]).toMatchObject({ calories: 100, protein: 6, carbs: 10, fat: 4 });
   });
   it("shows unknown barcode values as label inputs and logs only once they are filled", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ source: "Open Food Facts", barcode: "12345670", product_name: "Mystery bar", brand: null, nova_group: null, serving_size: null, serving_g: null, complete: false, consistency_warning: false, allergens: [], cached: false, community_data: true, attribution: "Data from Open Food Facts contributors (ODbL).", nutrients_per_100g: { energy_kcal: 400, protein_g: 10, carbs_g: null, fat_g: null, fiber_g: null, sugar_g: null, sodium_mg: null, saturated_fat_g: null } })));
-    render(<Home />); navigate("Barcode scan"); value("Barcode number", "12345670"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" }));
+    render(<Home />); navigate("Scan a barcode"); value("Barcode number", "12345670"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" }));
     await screen.findByRole("heading", { name: "Mystery bar" });
     const log = screen.getByRole("button", { name: "+ Log to Journal" });
     expect(log.hasAttribute("disabled")).toBe(true);
@@ -85,26 +85,26 @@ describe("complete feature flows", () => {
   });
   it("warns when a product's values do not add up", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ source: "Open Food Facts", barcode: "96385074", product_name: "Odd label", brand: "QA", nova_group: null, serving_size: "30 g", serving_g: 30, complete: true, consistency_warning: true, allergens: [], cached: true, community_data: true, attribution: "Data from Open Food Facts contributors (ODbL).", nutrients_per_100g: { energy_kcal: 100, protein_g: 10, carbs_g: 50, fat_g: 20, fiber_g: null, sugar_g: null, sodium_mg: null, saturated_fat_g: null } })));
-    render(<Home />); navigate("Barcode scan"); value("Barcode number", "96385074"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" }));
+    render(<Home />); navigate("Scan a barcode"); value("Barcode number", "96385074"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" }));
     await screen.findByRole("heading", { name: "Odd label" });
     expect(screen.getByText(/These values don.t add up/)).toBeTruthy();
     expect(screen.getByText(/saved copy/)).toBeTruthy();
   });
   it("invalid barcode prevents logging a stale prior product", async () => {
-    render(<Home />); navigate("Barcode scan"); value("Barcode number", "invalid"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" })); await screen.findByRole("alert"); expect(screen.getByRole("button", { name: "+ Log to Journal" }).hasAttribute("disabled")).toBe(true);
+    render(<Home />); navigate("Scan a barcode"); value("Barcode number", "invalid"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" })); await screen.findByRole("alert"); expect(screen.getByRole("button", { name: "+ Log to Journal" }).hasAttribute("disabled")).toBe(true);
   });
   it("filters the food library and logs the chosen food", () => {
-    render(<Home />); navigate("Food library"); fireEvent.change(screen.getByPlaceholderText("Search rice, dosa, banana…"), { target: { value: "Paneer" } }); fireEvent.click(screen.getByRole("button", { name: /^Log / })); expect(journal()[0].name).toContain("Paneer");
+    render(<Home />); navigate("Search foods"); fireEvent.change(screen.getByPlaceholderText("Search rice, dosa, banana…"), { target: { value: "Paneer" } }); fireEvent.click(screen.getByRole("button", { name: /^Log / })); expect(journal()[0].name).toContain("Paneer");
   });
   it("searches allergens and explains empty library results", () => {
-    render(<Home />); navigate("Food library"); const search = screen.getByPlaceholderText("Search rice, dosa, banana…"); fireEvent.change(search, { target: { value: "Gluten" } }); expect(screen.getAllByRole("button", { name: /^Log / })).toHaveLength(3); fireEvent.change(search, { target: { value: "unfindable synthetic query" } }); expect(screen.getByText(/No matching foods/)).toBeTruthy();
+    render(<Home />); navigate("Search foods"); const search = screen.getByPlaceholderText("Search rice, dosa, banana…"); fireEvent.change(search, { target: { value: "Gluten" } }); expect(screen.getAllByRole("button", { name: /^Log / })).toHaveLength(3); fireEvent.change(search, { target: { value: "unfindable synthetic query" } }); expect(screen.getByText(/No matching foods/)).toBeTruthy();
   });
   it("searches the global catalog and logs a returned 100g food", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ results: [{ id: "usda-1", name: "Global test food", cuisine: "USDA", category: "Food", serving_size: "100g", calories: 89, protein: 1.1, carbs: 22.8, fat: .3, fiber: 2.6, source: "USDA FoodData Central", verified: false, allergens: [] }] })));
-    render(<Home />); navigate("Food library"); fireEvent.change(screen.getByPlaceholderText("Search rice, dosa, banana…"), { target: { value: "banana" } }); fireEvent.click(screen.getByRole("button", { name: "Search global foods" })); await screen.findByText("Global test food"); fireEvent.click(screen.getByRole("button", { name: /^Log / })); expect(journal()[0]).toMatchObject({ name: "Global test food (100 g)", calories: 89 });
+    render(<Home />); navigate("Search foods"); fireEvent.change(screen.getByPlaceholderText("Search rice, dosa, banana…"), { target: { value: "banana" } }); fireEvent.click(screen.getByRole("button", { name: "Search global foods" })); await screen.findByText("Global test food"); fireEvent.click(screen.getByRole("button", { name: /^Log / })); expect(journal()[0]).toMatchObject({ name: "Global test food (100 g)", calories: 89 });
   });
   it("adds ingredients, changes yield, removes ingredients and logs a recipe", () => {
-    render(<Home />); navigate("Recipe studio"); for (const name of ["Boneless Chicken Breast", "Olive Oil", "Jasmine Rice (Dry)", "Broccoli Florets"]) fireEvent.click(screen.getByRole("button", { name: `Remove ${name}` }));
+    render(<Home />); navigate("Recipes"); for (const name of ["Boneless Chicken Breast", "Olive Oil", "Jasmine Rice (Dry)", "Broccoli Florets"]) fireEvent.click(screen.getByRole("button", { name: `Remove ${name}` }));
     value("Recipe name", "Test recipe"); value("Ingredient name", "Test oats"); value("Ingredient grams", "100"); value("Ingredient Calories (kcal)", "200"); value("Ingredient Protein (g)", "10"); value("Ingredient Carbs (g)", "30"); value("Ingredient Fat (g)", "4"); fireEvent.click(screen.getByRole("button", { name: "+ Add" }));
     fireEvent.click(screen.getByRole("button", { name: "Decrease recipe servings" })); fireEvent.click(screen.getByRole("button", { name: "Log one serving" })); expect(journal()[0]).toMatchObject({ calories: 200, protein: 10, carbs: 30, fat: 4 });
     fireEvent.click(screen.getByRole("button", { name: "Increase recipe servings" })); expect(JSON.parse(localStorage.getItem("trackcal:recipe:servings")!)).toBe(2);
@@ -112,6 +112,6 @@ describe("complete feature flows", () => {
   it("validates goals and applies muscle gain rather than maintenance", async () => {
     render(<Home />); fireEvent.click(screen.getAllByRole("button", { name: /My goals|My nutrition goals/ })[0]); const dialog = screen.getByRole("dialog"); value("Goal age", "0"); fireEvent.click(within(dialog).getByRole("button", { name: "Calculate & Apply Targets" })); await screen.findByRole("alert"); value("Goal age", "28"); value("Goal weight kg", "75"); value("Goal height cm", "180"); fireEvent.click(screen.getByRole("button", { name: "Muscle Gain (+300)" })); fireEvent.click(screen.getByRole("button", { name: "Calculate & Apply Targets" })); await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull()); expect(JSON.parse(localStorage.getItem("trackcal:target:calories")!)).toBe(2997);
   });
-  it("tolerates corrupted persisted journal data", () => { const now = new Date(); const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`; localStorage.setItem(`trackcal:journal:${date}`, "null"); render(<Home />); navigate("My journal"); expect(screen.getByText("No meals yet. Add one above or log a reviewed scan.")).toBeTruthy(); });
+  it("tolerates corrupted persisted journal data", () => { const now = new Date(); const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`; localStorage.setItem(`trackcal:journal:${date}`, "null"); render(<Home />); navigate("On this device"); expect(screen.getByText("No meals yet. Add one above or log a reviewed scan.")).toBeTruthy(); });
   it("focuses the goal dialog and closes it with Escape", () => { render(<Home />); fireEvent.click(screen.getByRole("button", { name: "My goals" })); const dialog = screen.getByRole("dialog"); expect(dialog.contains(document.activeElement)).toBe(true); fireEvent.keyDown(dialog, { key: "Escape" }); expect(screen.queryByRole("dialog")).toBeNull(); });
 });

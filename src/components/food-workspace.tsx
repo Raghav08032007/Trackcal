@@ -11,7 +11,7 @@ import { MealIdeaTransfer } from "@/components/meal-idea-transfer";
 import { VoiceInput } from "@/components/voice-input";
 import {type AppTab} from "@/components/app-design";
 import {useRouter, useSearch} from "@/lib/navigation";
-import {foodRoutes,foodNames} from "@/lib/feature-guide";
+import {foodRoutes,foodNames,foodIntros} from "@/lib/feature-guide";
 import { BarcodeCamera } from "@/components/barcode-camera";
 import { JournalTools, type MealLog } from "@/components/journal-tools";
 import { FoodRow, type LibraryFood } from "@/components/food-row";
@@ -646,7 +646,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       {/* Main Content */}
       <main className="app-main" data-active-tab={activeTab}>
         {notice && <div role="status" className="app-toast"><CheckCircle2 size={16} /><span>{notice}</span><button aria-label="Dismiss notification" onClick={() => setNotice("")}>×</button></div>}
-        <header className="food-page-heading"><div><h1>{foodNames[activeTab]}</h1></div><button className="destination-button" onClick={()=>setShowOnboarding(true)}>My goals</button><details className="food-tool-picker"><summary>Choose another food tool</summary><div className="destination-mini-grid">{(Object.keys(foodRoutes) as AppTab[]).map(tab=><button key={tab} className="destination-button" aria-current={activeTab===tab?'page':undefined} onClick={()=>navigateTab(tab)}>{foodNames[tab]}</button>)}</div></details></header>
+        <header className="food-page-heading"><div><h1>{foodNames[activeTab]}</h1><p>{foodIntros[activeTab]}</p></div><button className="destination-button" onClick={()=>setShowOnboarding(true)}>My goals</button><details className="food-tool-picker"><summary>Choose another food tool</summary><div className="destination-mini-grid">{(Object.keys(foodRoutes) as AppTab[]).map(tab=><button key={tab} className="destination-button" aria-current={activeTab===tab?'page':undefined} onClick={()=>navigateTab(tab)}>{foodNames[tab]}</button>)}</div></details></header>
         <MealIdeaTransfer onChoose={idea=>{setVoiceTextPrompt(idea);setActiveTab("voice_text");setNotice("Meal idea loaded. Add actual ingredients and quantities, then review the estimate before logging.");}}/>
         <div id="tracking-workspace" className="focused-tool-content"/>
         {/* TAB 1: AI PHOTO SCANNER */}
@@ -666,14 +666,14 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Camera className="w-5 h-5 text-emerald-400" />
-                    <h2 className="font-semibold text-white">AI Vision Scanner</h2>
+                    <h2 className="font-semibold text-white">Photo of your meal</h2>
                   </div>
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-all font-semibold cursor-pointer"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    Upload Meal / Label
+                    Choose a photo
                   </button>
                 </div>
 
@@ -708,7 +708,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       {!uploadedImageUrl && <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-0.5">
                         <Utensils className="w-6 h-6" />
                       </div>}
-                      <h4 className="font-semibold text-white text-base">{scanResult.foodName}</h4>
+                      <h3 className="font-semibold text-white text-base">{scanResult.foodName}</h3>
                       {!uploadedImageUrl && <p className="text-xs text-slate-400 max-w-xs">{scanResult.method}</p>}
                       {scanSource !== "none" && !uploadedImageUrl && <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Estimate — review portions and ingredients
@@ -747,7 +747,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <h4 className="text-sm font-semibold text-white">Explainable AI Breakdown</h4>
+                  <h3 className="text-sm font-semibold text-white">Explainable AI Breakdown</h3>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   Review AI estimates against the food and portion you actually ate. Photos cannot measure food weight or hidden ingredients; correct the saved entry in your journal.
@@ -892,9 +892,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 {/* Sub-item Segmented Breakdown */}
                 <div className="mt-6">
                   {scanSource === "photo" && <AllergenAlert sources={[{ level: "possible", texts: [scanResult.foodName, ...scanResult.items.flatMap(item => [item.name, item.ingredients ?? ""])] }]} />}
-                  <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">
+                  <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">
                     Segmented Food Components ({scanResult.items.length})
-                  </h4>
+                  </h3>
                   <div className="space-y-2">
                     {scanResult.items.map((item, index) => (
                       <div
@@ -931,7 +931,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h5 className="text-xs font-semibold text-amber-300">Allergen Flags Detected</h5>
+                      <h4 className="text-xs font-semibold text-amber-300">Allergen Flags Detected</h4>
                       <p className="text-xs text-slate-300 mt-0.5">
                         {scanResult.allergens.join(", ")}
                       </p>
@@ -951,7 +951,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <Barcode className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Live Barcode Scanner (Open Food Facts)</h2>
+                <h2 className="text-xl font-bold text-white">Scan with your camera</h2>
                 <p className="text-xs text-slate-400">Scan a barcode, confirm the product match, then review its nutrition.</p>
               </div>
             </div>
@@ -1244,7 +1244,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                         {idx + 1}
                       </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-white">{item.name}</h4>
+                        <h3 className="text-sm font-semibold text-white">{item.name}</h3>
                         <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {item.time}
@@ -1409,7 +1409,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <BookOpen className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Custom Recipe Builder & Yield Calculator</h2>
+                <h2 className="text-xl font-bold text-white">Build a recipe</h2>
                 <p className="text-xs text-slate-400">Calculate total dish macros and per-serving yields from raw ingredients</p>
               </div>
             </div>
@@ -1419,7 +1419,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             {/* Servings control */}
             <div className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
               <div>
-                <span className="text-xs font-semibold text-white">Recipe Servings / Batch Portions</span>
+                <span className="text-xs font-semibold text-white">Servings</span>
                 <p className="text-[11px] text-slate-400">Divides total recipe nutrition into single portions</p>
               </div>
               <div className="flex items-center gap-2">

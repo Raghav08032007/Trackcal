@@ -81,7 +81,7 @@ html[data-theme="dark"] .studio-momentum { box-shadow: var(--clay-depth); }
 
 /* Labels on dark hero cards. */
 .tc-studio .wellness-hero .eyebrow { color: #d9d0ff; font-weight: 750; }
-.tc-studio .play-bottom > p { color: #4f5d4b; }
+.tc-studio .play-bottom > p { color: var(--ds-muted); }
 html[data-theme="dark"] .tc-studio .play-bottom > p { color: #c5c7dc; }
 
 /* ── Stage 2: every screen ── */
@@ -258,7 +258,7 @@ html[data-theme="dark"] .tc-studio .companion-checkin button { background: linea
 html:not([data-theme="dark"]) .tc-studio .play-stat-orange { background: linear-gradient(160deg, #ffe0b8, #ffc08f) !important; }
 html:not([data-theme="dark"]) .tc-studio .play-stat-blue { background: linear-gradient(160deg, #d8f1ff, #b4e3ff) !important; }
 html:not([data-theme="dark"]) .tc-studio .play-game-main { background: linear-gradient(160deg, #e5f6ff, #cdeeff) !important; }
-.tc-studio .play-footnote { color: #4f5d4b; }
+.tc-studio .play-footnote { color: var(--ds-muted); }
 html[data-theme="dark"] .tc-studio .play-footnote { color: #c5c7dc; }
 
 /* Phones: the closed companion rests against the screen edge, so it covers less of the page. */

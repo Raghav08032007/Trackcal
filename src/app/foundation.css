@@ -72,3 +72,6 @@ html body .app-tabbar a, html body .qa-button { font-size: .75rem; }
 /* Camera mode switch: the chosen mode uses the deep fill, and its small print stays fully readable on it. */
 html body .camera-mode-switch a[aria-current="page"] { background: var(--ds-fill); color: #fff; }
 html body .camera-mode-switch a[aria-current="page"] small { opacity: 1; }
+
+/* Card headings inside cards start at the left (an older rule pushed them right). */
+html body .account-card > .wellness-heading { justify-content: space-between; }

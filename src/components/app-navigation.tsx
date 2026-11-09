@@ -7,6 +7,7 @@ import { pageTitle, sectionFor, SECTIONS } from "@/lib/sections";
 import { PageCompanion } from "./feature-companion";
 import { QuickAdd } from "./quick-add";
 import { CommandSearch } from "./command-search";
+import { SyncDot } from "./sync-status";
 
 export { SECTIONS, sectionFor };
 const BARE = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/offline"];
@@ -37,7 +38,7 @@ export function AppNavigation() {
     <nav className="app-tabbar" aria-label="Main">
       {SECTIONS.map(({ id, label, href, icon: Icon }, i) => <Fragment key={id}>
         {i === 3 && <QuickAdd />}
-        <Link href={href} aria-current={section?.id === id ? "page" : undefined}><Icon aria-hidden="true" size={22} strokeWidth={2.2} /><span>{label}</span></Link>
+        <Link href={href} aria-current={section?.id === id ? "page" : undefined}><Icon aria-hidden="true" size={22} strokeWidth={2.2} /><span>{label}</span>{id === "me" && <SyncDot />}</Link>
       </Fragment>)}
     </nav>
   </>;

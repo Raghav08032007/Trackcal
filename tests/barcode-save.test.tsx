@@ -11,7 +11,7 @@ it("saves a corrected barcode product to the user's foods only once it is comple
   const fetcher = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async url => Response.json(String(url).includes("/api/barcode") ? product : { favorite: { id: "f1" } }));
   vi.stubGlobal("fetch", fetcher);
   render(<FoodWorkspace />);
-  const picker = screen.getByText("Choose another food tool"); fireEvent.click(picker); fireEvent.click(screen.getByRole("button", { name: "Barcode scan" }));
+  const picker = screen.getByText("Choose another food tool"); fireEvent.click(picker); fireEvent.click(screen.getByRole("button", { name: "Scan a barcode" }));
   value("Barcode number", "12345670"); fireEvent.click(screen.getByRole("button", { name: "Lookup Barcode" }));
   await screen.findByRole("heading", { name: "Mystery bar" });
   expect(screen.queryByRole("button", { name: "Save to my foods" })).toBeNull();

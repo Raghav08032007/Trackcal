@@ -38,7 +38,7 @@ export function JournalTools({ date, onDate, meals, setMeals }: {
     <details open><summary className="font-semibold text-white cursor-pointer">Add a meal or correct nutrition</summary>
       <form onSubmit={e => { e.preventDefault(); save(); }} className="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-3">
         <label className="col-span-2 sm:col-span-5 text-xs text-slate-300">Food name<input required maxLength={200} aria-label="Food name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className={inputClass} /></label>
-        {(["calories", "protein", "carbs", "fat"] as const).map(key => <label key={key} className="text-xs text-slate-300">{key === "calories" ? "Calories (kcal)" : `${key} (g)`}<input aria-label={key} type="number" required min="0" max="20000" step="0.1" value={form[key]} onChange={e => setForm({ ...form, [key]: Number(e.target.value) })} className={inputClass} /></label>)}
+        {(["calories", "protein", "carbs", "fat"] as const).map(key => <label key={key} className="text-xs text-slate-300">{key === "calories" ? "Calories (kcal)" : `${key[0].toUpperCase()}${key.slice(1)} (g)`}<input aria-label={key} type="number" required min="0" max="20000" step="0.1" value={form[key]} onChange={e => setForm({ ...form, [key]: Number(e.target.value) })} className={inputClass} /></label>)}
         <button type="submit" className="rounded-lg bg-emerald-500 text-slate-950 font-semibold text-sm p-2">{editing === null ? "Add meal" : "Save correction"}</button>
         {editing !== null && <button type="button" onClick={() => { setEditing(null); setForm(blank); }}>Cancel edit</button>}
       </form>

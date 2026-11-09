@@ -38,9 +38,10 @@ export function QuickLog({ date }: { date: string }) {
       setNotice("Undone"); setUndo(null);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "That couldn’t be undone. Please try again."); } finally { setBusy(false); }
   };
+  if (userId && !favourites.length && !notice && !error) return null;
   return <section className="quick-log" aria-label="Quick log">
     <div className="quick-log-row">
-      <button className="quick-log-button" onClick={addWater}>+250 ml water</button>
+      {!userId && <button className="quick-log-button" onClick={addWater}>+250 ml water</button>}   {/* signed in, water is on "Your day" and "+" */}
       {favourites.map(favourite => <button key={favourite.id} className="quick-log-button" disabled={busy || !day} onClick={() => void logFavourite(favourite)} aria-label={`Log ${favourite.item.name}`}>{favourite.item.name}</button>)}
     </div>
     {notice && <p role="status" className="quick-log-notice">{notice}{undo && <button disabled={busy} onClick={() => void takeBack()}>Undo</button>}</p>}
