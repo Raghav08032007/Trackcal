@@ -78,7 +78,7 @@ html[data-comfort="on"] .tc-studio p { line-height: 1.7; }
 .ds-buttons { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .ds-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: max(48px, var(--ds-tap)); padding: 0 24px; border: 0; border-radius: 16px; font-weight: 750; font-size: 1rem; cursor: pointer; overflow: hidden; isolation: isolate;
   transition: transform var(--ds-fast) var(--ds-ease), box-shadow var(--ds-med) var(--ds-ease), background-color var(--ds-med); }
-.ds-btn-primary { background: linear-gradient(180deg, #6a4dff, var(--ds-indigo)); color: #fff; box-shadow: 0 1px 0 #ffffff40 inset, 0 10px 24px -12px #4f34e0cc; }
+.ds-btn-primary { background: linear-gradient(180deg, #6a4dff, var(--ds-fill)); color: #fff; box-shadow: 0 1px 0 #ffffff40 inset, 0 10px 24px -12px #4f34e0cc; }
 .ds-btn-energy { background: var(--ds-lime); color: #1d2a00; box-shadow: 0 10px 24px -14px #8fc21acc; }
 .ds-btn-quiet { background: var(--ds-surface); color: var(--ds-ink); border: 1px solid var(--ds-line); }
 .ds-btn-danger { background: var(--ds-red-soft); color: var(--ds-red); }
@@ -336,7 +336,7 @@ li[data-kind="route"] .history-icon { color: var(--ds-green); }
 .history-form-wide { grid-column: 1 / -1; }
 .history-form-actions { display: flex; gap: 8px; }
 /* The workouts page styles every button alike; the card's own buttons keep their meaning. */
-#workout-history button.ds-btn-primary { background: linear-gradient(180deg, #6a4dff, var(--ds-indigo)); border-color: transparent; color: #fff; box-shadow: 0 1px 0 #ffffff40 inset, 0 10px 24px -12px #4f34e0cc; }
+#workout-history button.ds-btn-primary { background: linear-gradient(180deg, #6a4dff, var(--ds-fill)); border-color: transparent; color: #fff; box-shadow: 0 1px 0 #ffffff40 inset, 0 10px 24px -12px #4f34e0cc; }
 #workout-history button.ds-btn-primary:hover { filter: brightness(1.06); }
 @media (prefers-reduced-motion: reduce) { #workout-history .history-filters button { transition: none; } }
 
@@ -378,11 +378,11 @@ li[data-kind="route"] .history-icon { color: var(--ds-green); }
 
 /* "+" quick add (quick-add.tsx): round in the middle of the phone tab bar, a pill in the desktop top bar */
 .qa-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; border: 0; background: transparent; color: var(--tab-ink, var(--ds-ink)); font: inherit; font-size: .6875rem; font-weight: 700; cursor: pointer; }
-.qa-button svg { display: grid; width: 44px; height: 44px; padding: 9px; box-sizing: border-box; border-radius: 50%; color: #fff; background: linear-gradient(180deg, #6a4dff, var(--ds-indigo)); box-shadow: 0 8px 18px -8px #4f34e0cc; margin-top: -14px; }
+.qa-button svg { display: grid; width: 44px; height: 44px; padding: 9px; box-sizing: border-box; border-radius: 50%; color: #fff; background: linear-gradient(180deg, #6a4dff, var(--ds-fill)); box-shadow: 0 8px 18px -8px #4f34e0cc; margin-top: -14px; }
 .qa-button span { opacity: .8; }
 .qa-button:focus-visible { outline: 3px solid var(--tab-active, var(--ds-indigo)); outline-offset: 2px; border-radius: 14px; }
 @media (min-width: 900px) {
-  .qa-button { flex-direction: row; gap: 6px; min-height: 44px; padding: 0 16px 0 8px; border-radius: 999px; font-size: .875rem; color: #fff; background: linear-gradient(180deg, #6a4dff, var(--ds-indigo)); box-shadow: 0 8px 18px -10px #4f34e0cc; }
+  .qa-button { flex-direction: row; gap: 6px; min-height: 44px; padding: 0 16px 0 8px; border-radius: 999px; font-size: .875rem; color: #fff; background: linear-gradient(180deg, #6a4dff, var(--ds-fill)); box-shadow: 0 8px 18px -10px #4f34e0cc; }
   .qa-button svg { width: 26px; height: 26px; padding: 2px; margin: 0; background: none; box-shadow: none; }
   .qa-button span { opacity: 1; }
 }
