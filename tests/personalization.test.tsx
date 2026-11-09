@@ -30,13 +30,14 @@ it('resumes a cloud draft, preserves comma-separated preferences and reports sav
  await screen.findByRole('alert');expect(screen.getByRole('alert').textContent).toContain('Connection unavailable');
  const body=JSON.parse(fetcher.mock.calls[1][1].body);expect(body.preferences.allergies).toEqual(['milk','egg']);expect(body.revision).toBe(4);
 });
-it('completes a planned activity through the server and adds one compatible workout record',async()=>{
+it('completes a planned activity through the server and adds it to the account workout history',async()=>{
  const plan={id:'plan',status:'active',week_start:'2026-10-26',explanation:{reason:'Fits your schedule.',professional_review:false},activities:[{id:'walk-id',template_id:'walk',day:base.today,minutes:10,status:'pending',feedback:null,template}]};
  const workout={id:'walk-id',date:base.today,name:'Comfortable walk',minutes:10,sets:0,reps:0,load:0,source:'Personal activity plan · self-reported'};
  const fetcher=vi.fn(async(url,options)=>Response.json(options?.body?{awarded_xp:20,workout,plan}:{...base,completed:true,revision:1,plan}));vi.stubGlobal('fetch',fetcher);
  render(<PersonalDashboard/>);await screen.findByRole('heading',{name:'Weekly activity calendar'});
  await userEvent.click(screen.getByRole('button',{name:'Mark completed'}));await screen.findByText('Saved · +20 participation XP');
- await waitFor(()=>expect(JSON.parse(localStorage.getItem('trackcal:account:phase2-member:trackcal:studio:workouts')||'[]')).toHaveLength(1));
+ await waitFor(()=>expect(fetcher.mock.calls.filter(([url,options])=>String(url).endsWith('/api/wellness/entries')&&options?.method!=='GET').map(([,options])=>JSON.parse(String(options?.body)))).toEqual([expect.objectContaining({name:'Comfortable walk',day:base.today,minutes:10,source:'Personal activity plan · self-reported'})]));
+ expect(localStorage.getItem('trackcal:account:phase2-member:trackcal:studio:workouts')).toBeNull();
  expect(fetcher.mock.calls.some(([url,options])=>String(url).endsWith('/activities/walk-id')&&JSON.parse(options?.body||'{}').action==='complete')).toBe(true);
 });
 it('saves a unit-aware measurement and never submits client XP',async()=>{

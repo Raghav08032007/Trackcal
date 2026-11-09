@@ -1,3 +1,4 @@
+import {useActiveDays} from "@/lib/workouts";
 import {useCheckins,useRecentDays} from "@/lib/days";
 import {useEffect,useMemo,useState} from 'react';
 import {useWorkspaceScope} from './account-session';
@@ -14,7 +15,7 @@ function Line({values,label,color='#6d4ae8'}:{values:number[];label:string;color
 
 /** Habit strength, training load and progress for each exercise, from one load of your workouts. */
 export function ProgressInsights(){
- const scope=useWorkspaceScope(),[checkins]=useCheckins(),{days:recentDays}=useRecentDays(),[training,setTraining]=useState<TrainingData|null>(null),[now]=useState(()=>Date.now()),[picked,setPicked]=useState('');
+ const scope=useWorkspaceScope(),[checkins]=useCheckins(),activeDays=useActiveDays(),{days:recentDays}=useRecentDays(),[training,setTraining]=useState<TrainingData|null>(null),[now]=useState(()=>Date.now()),[picked,setPicked]=useState('');
  useEffect(()=>{let live=true;wellnessRequest<TrainingData>('training').then(data=>{if(live)setTraining(data);}).catch(()=>{});return()=>{live=false;};},[]);
  const view=useMemo(()=>{
   if(!training)return null;
@@ -22,9 +23,9 @@ export function ProgressInsights(){
   // Signed in, meal days come from the account diary; signed out, from this browser's journal.
   const ate=new Set(recentDays?recentDays.filter(d=>(d.meals??0)>0).map(d=>d.day):saved.flatMap(([key,value])=>{const day=/^trackcal:journal:(\d{4}-\d{2}-\d{2})$/.exec(key)?.[1];return day&&Array.isArray(value)&&value.length?[day]:[];}));
   const checked=new Set(checkins.map(row=>row.date));
-  const habits=[['Move',workoutDays(sessions)],['Log food',ate],['Check in',checked]] as const;
+  const habits=[['Move',new Set([...workoutDays(sessions),...activeDays])],['Log food',ate],['Check in',checked]] as const;
   return {habits:habits.map(([name,days])=>({name,score:habitScore(dayMarks(days as Set<string>,now))})),load:trainingLoad(sessions,now),series:progressSeries(sessions)};
- },[training,scope,now,checkins,recentDays]);
+ },[training,scope,now,checkins,recentDays,activeDays]);
  if(!view)return null;
  const chosen:ProgressSeries|undefined=view.series.find(s=>s.key===picked)??view.series[0],recent=view.load.series.slice(-42);
  return <>

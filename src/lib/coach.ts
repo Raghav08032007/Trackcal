@@ -22,8 +22,9 @@ export function coachCharacter(summary:AdventureSummary|null){
 
 const localDay=(stamp:number)=>{const d=new Date(stamp);return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;};
 /** Days in a row with a saved workout, ending today or yesterday. */
-export function streakDays(moves:MoveRecord[],now:number){
- const days=new Set(moves.map(move=>localDay(Date.parse(move.at))));
+/** Days in a row with movement, ending today (or yesterday). `extraDays` adds days from the account history: logged workouts and routes. */
+export function streakDays(moves:MoveRecord[],now:number,extraDays:Iterable<string>=[]){
+ const days=new Set([...moves.map(move=>localDay(Date.parse(move.at))),...[...extraDays].map(day=>localDay(Date.parse(day+'T12:00:00')))]);
  let at=days.has(localDay(now))?now:now-86400000,count=0;
  while(days.has(localDay(at))){count++;at-=86400000;}
  return count;

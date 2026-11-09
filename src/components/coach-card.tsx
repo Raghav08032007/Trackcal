@@ -1,3 +1,4 @@
+import { useActiveDays, useProgramDays } from "@/lib/workouts";
 import { useBurn, useCheckins } from "@/lib/days";
 import {useEffect,useState} from 'react';
 import { useTarget } from "@/lib/targets";
@@ -11,7 +12,7 @@ import {coachCharacter,foodStep,moveStep,streakDays,type Checkin,type CoachDay} 
 import {nextProgramDay,PROGRAMS} from '@/lib/fitness-plans';
 import {personalRequest,type PersonalState} from '@/lib/personalization';
 import {movesFrom,muscleStates,restedChoice} from '@/lib/training-insights';
-import {useLocalDate,useLocalState} from '@/lib/use-local-state';
+import {useLocalDate} from '@/lib/use-local-state';
 import {wellnessRequest,type TrainingData} from '@/lib/wellness';
 import {earnedBack} from '@/lib/workout-coach';
 
@@ -31,11 +32,11 @@ export function CoachLine({text}:{text:string}){
 
 export function useCoachDay():CoachDay|null{
  const date=useLocalDate(),[training,setTraining]=useState<TrainingData|null>(null),[state,setState]=useState<PersonalState|null>(null),[loaded,setLoaded]=useState(false);
- const [target]=useTarget("calories"),[proteinTarget]=useTarget("protein"),[burned]=useBurn(date),[meals]=useDiaryMeals(date),[done]=useLocalState<string[]>('trackcal:studio:program-days',[]),[checkins]=useCheckins();
+ const activeDays=useActiveDays(),[target]=useTarget("calories"),[proteinTarget]=useTarget("protein"),[burned]=useBurn(date),[meals]=useDiaryMeals(date),[done]=useProgramDays(),[checkins]=useCheckins();
  useEffect(()=>{let live=true;Promise.allSettled([wellnessRequest<TrainingData>('training'),personalRequest<PersonalState>('state')]).then(([work,person])=>{if(!live)return;if(work.status==='fulfilled')setTraining(work.value);if(person.status==='fulfilled')setState(person.value);setLoaded(true);});return()=>{live=false;};},[]);
  if(!loaded)return null;
  const now=Date.now(),moves=movesFrom(training?.sessions??[]),program=PROGRAMS.find(row=>done.some(id=>id.startsWith(row.id+':'))&&nextProgramDay(row,done)!==null);
- return {diet:state?.preferences?.diet,hour:new Date(now).getHours(),minor:state?!!state.minor_account:true,meals:meals.length,caloriesLeft:target+earnedBack(burned)-meals.reduce((total,meal)=>total+meal.calories,0),proteinEaten:meals.reduce((total,meal)=>total+(meal.protein||0),0),proteinTarget,program:program?.name??null,rested:restedChoice(muscleStates(moves,now)),streak:streakDays(moves,now),checkin:checkins.find(row=>row.date===date)??null};
+ return {diet:state?.preferences?.diet,hour:new Date(now).getHours(),minor:state?!!state.minor_account:true,meals:meals.length,caloriesLeft:target+earnedBack(burned)-meals.reduce((total,meal)=>total+meal.calories,0),proteinEaten:meals.reduce((total,meal)=>total+(meal.protein||0),0),proteinTarget,program:program?.name??null,rested:restedChoice(muscleStates(moves,now)),streak:streakDays(moves,now,activeDays),checkin:checkins.find(row=>row.date===date)??null};
 }
 
 function CheckinButtons(){

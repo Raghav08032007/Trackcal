@@ -1,12 +1,12 @@
+import { useProgramDays } from "@/lib/workouts";
 import Link from '@/lib/navigation';
 import {nextProgramDay,PROGRAMS,programDay,programDays,stepsLabel} from '@/lib/fitness-plans';
-import {useLocalState} from '@/lib/use-local-state';
 import {CoachLine} from './coach-card';
 import {Celebration} from './celebration';
 
 /** Multi-week plans. Each day opens in the camera, and finishing it moves the program on. */
 export function ProgramList(){
- const [done,setDone]=useLocalState<string[]>('trackcal:studio:program-days',[]);
+ const [done,setDone]=useProgramDays();
  return <main className="wellness-page programs-page"><section className="camera-intro"><span className="eyebrow">A PLAN FOR THE MONTH</span><h1>Programs</h1><p>Pick one and follow the next day. Targets rise a little each week, and every rep is counted by your camera.</p></section>
   <CoachLine text={done.length?'Nice work so far. The next day is ready when you are.':'Pick one that fits your week. I will keep track of where you are.'}/>
   {PROGRAMS.map(program=>{

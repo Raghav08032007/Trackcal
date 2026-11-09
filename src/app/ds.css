@@ -304,3 +304,38 @@ html[data-theme="dark"] .health-safety.is-soon { color: #ffe3b0; }
 .day-week i[data-empty] { background: var(--ds-line); }
 .day-week b { font-size: .7rem; font-weight: 650; color: var(--ds-muted); }
 @media (prefers-reduced-motion: reduce) { .day-meter span, .day-choice button { transition: none; } }
+
+/* Your workouts: one history (workout-history.tsx) */
+.history-card { margin: 0 0 20px; }
+.history-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.history-head h2 { margin: 0; font-size: 1.2rem; }
+.history-filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 8px; }
+#workout-history .history-filters button { min-height: var(--ds-tap); padding: 0 16px; border-radius: 99px; border: 1px solid var(--ds-line); background: var(--ds-surface); color: var(--ds-ink); font: inherit; font-weight: 650; cursor: pointer; transition: background var(--ds-fast) var(--ds-ease); }
+#workout-history .history-filters button[aria-pressed="true"] { background: var(--ds-indigo-soft); border-color: var(--ds-indigo); color: var(--ds-indigo-ink); }
+.history-day h3 { margin: 18px 0 8px; font-size: .85rem; font-weight: 750; color: var(--ds-muted); text-transform: uppercase; letter-spacing: .05em; }
+.history-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.history-day li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--ds-r); background: var(--ds-sunken); border: 1px solid var(--ds-line); }
+.history-icon { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: var(--ds-surface); }
+li[data-kind="camera"] .history-icon { color: var(--ds-indigo); }
+li[data-kind="gym"] .history-icon { color: var(--ds-move); }
+li[data-kind="manual"] .history-icon { color: var(--ds-amber); }
+li[data-kind="route"] .history-icon { color: var(--ds-green); }
+.history-main { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.history-main strong { overflow-wrap: anywhere; }
+.history-main small { color: var(--ds-muted); }
+.history-actions { display: flex; align-items: center; gap: 4px; }
+#workout-history button.history-icon-btn { display: grid; place-items: center; width: var(--ds-tap); height: var(--ds-tap); border: 0; border-radius: 12px; background: transparent; color: var(--ds-muted); cursor: pointer; }
+#workout-history button.history-icon-btn:hover, #workout-history button.history-icon-btn:focus-visible { background: var(--ds-surface); color: var(--ds-ink); }
+.history-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0; padding: 8px 8px 8px 16px; border-radius: var(--ds-r); background: var(--ds-ink); color: var(--ds-surface); }
+#workout-history .history-undo button.ds-btn { background: transparent; border-color: transparent; color: var(--ds-surface); }
+.history-empty { color: var(--ds-muted); }
+.history-more { margin-top: 14px; width: 100%; }
+.history-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; width: 100%; margin: 14px 0; }
+.history-form label { display: grid; gap: 4px; font-size: .85rem; font-weight: 650; color: var(--ds-muted); }
+#workout-history .history-form input { min-height: var(--ds-tap); padding: 0 10px; border-radius: var(--ds-r-sm); border: 1px solid var(--ds-line); background: var(--ds-surface); color: var(--ds-ink); font: inherit; }
+.history-form-wide { grid-column: 1 / -1; }
+.history-form-actions { display: flex; gap: 8px; }
+/* The workouts page styles every button alike; the card's own buttons keep their meaning. */
+#workout-history button.ds-btn-primary { background: linear-gradient(180deg, #6a4dff, var(--ds-indigo)); border-color: transparent; color: #fff; box-shadow: 0 1px 0 #ffffff40 inset, 0 10px 24px -12px #4f34e0cc; }
+#workout-history button.ds-btn-primary:hover { filter: brightness(1.06); }
+@media (prefers-reduced-motion: reduce) { #workout-history .history-filters button { transition: none; } }

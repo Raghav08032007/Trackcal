@@ -1,9 +1,9 @@
+import { useLoggedWorkouts } from "@/lib/workouts";
 import {useState} from 'react';
 import Link from "@/lib/navigation";
 import {useAccount} from './account-session';
 import {usePersonalState} from '@/lib/use-personal-state';
 import {personalRequest,type Preferences,type Plan} from '@/lib/personalization';
-import {useLocalState} from '@/lib/use-local-state';
 import type {WorkoutEntry} from '@/lib/smart-tools';
 import {MeasurementEntry} from './measurement-entry';
 import {ReminderFields} from './personal-reminder-fields';
@@ -11,7 +11,7 @@ import {ReminderFields} from './personal-reminder-fields';
 export function PersonalDashboard(){const {user,ready}=useAccount();return !ready?<main className="account-loading">Loading your plan…</main>:user?<MemberPlan key={user.id}/>:<main className="account-page"><section className="account-card"><h1>A routine made for your day.</h1><p>Sign in to save a personalized weekly plan. Guest nutrition tracking remains available.</p><div className="gate-actions"><Link className="gate-primary" href="/login">Sign in</Link><Link className="gate-secondary" href="/">Continue tracking</Link></div></section></main>;}
 function MemberPlan(){
  const {data,error}=usePersonalState();const [notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[actionError,setActionError]=useState('');
- const [,setWorkouts]=useLocalState<WorkoutEntry[]>('trackcal:studio:workouts',[]);
+ const [,setWorkouts]=useLoggedWorkouts();
  async function run(task:()=>Promise<void>){if(busy)return;setBusy(true);setActionError('');try{await task();}catch(e){setActionError(e instanceof Error?e.message:'Could not save. Try again.');}finally{setBusy(false);}}
  if(!data)return <main className="account-page"><section className="account-card" aria-busy={!error}><p>{error||'Loading your private plan…'}</p>{error&&<button onClick={()=>window.location.reload()}>Retry</button>}</section></main>;
  if(!data.completed)return <main className="account-page"><section className="account-card"><h1>Let’s make it personal.</h1><p>Your draft is saved at step {data.step}. Measurements are optional.</p><Link className="account-primary" href="/onboarding">Continue personalized setup →</Link></section></main>;
