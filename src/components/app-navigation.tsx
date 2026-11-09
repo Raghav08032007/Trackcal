@@ -1,10 +1,11 @@
 // App navigation: five sections (Today, Food, Move, Play, Me) — a bottom tab bar on phones, a top bar on wide screens —
-// plus a slim header with the brand, the section's main pages and the page companion ("Ask Pip").
+// with a "+" quick add in the middle, plus a slim header with the brand, the section's main pages and the page companion ("Ask Pip").
 // The structure lives in lib/sections.ts. Sign-in screens and the offline journal stay free of navigation.
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { Link, usePathname } from "@/lib/navigation";
 import { pageTitle, sectionFor, SECTIONS } from "@/lib/sections";
 import { PageCompanion } from "./feature-companion";
+import { QuickAdd } from "./quick-add";
 
 export { SECTIONS, sectionFor };
 const BARE = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/offline"];
@@ -33,7 +34,10 @@ export function AppNavigation() {
       {section && section.pages.length > 1 && <SectionPages key={section.id} label={section.label} pages={section.pages} path={path} />}
     </header>}
     <nav className="app-tabbar" aria-label="Main">
-      {SECTIONS.map(({ id, label, href, icon: Icon }) => <Link key={id} href={href} aria-current={section?.id === id ? "page" : undefined}><Icon aria-hidden="true" size={22} strokeWidth={2.2} /><span>{label}</span></Link>)}
+      {SECTIONS.map(({ id, label, href, icon: Icon }, i) => <Fragment key={id}>
+        {i === 3 && <QuickAdd />}
+        <Link href={href} aria-current={section?.id === id ? "page" : undefined}><Icon aria-hidden="true" size={22} strokeWidth={2.2} /><span>{label}</span></Link>
+      </Fragment>)}
     </nav>
   </>;
 }

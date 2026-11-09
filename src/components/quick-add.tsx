@@ -1,0 +1,83 @@
+// "+" quick add: one tap from anywhere for the things people do most. Water, sleep and how you feel save on the spot
+// (to the account when signed in); food, workouts and routes open the right page. Press N on a keyboard to open it.
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { Camera, Droplets, MapPin, MessageSquare, Moon, Plus, ScanBarcode, Search, Smile, Utensils, X } from "lucide-react";
+import Link, { usePathname } from "@/lib/navigation";
+import { useCheckins, useDay, useWellness } from "@/lib/days";
+import { useLocalDate } from "@/lib/use-local-state";
+import type { Checkin } from "@/lib/coach";
+
+const GLASS = 250;
+const FOOD: [string, string, typeof Camera][] = [["/scanner", "Photo", Camera], ["/barcode", "Barcode", ScanBarcode], ["/describe", "Describe", MessageSquare], ["/food-library", "Search", Search]];
+const ENERGY: [Checkin["energy"], string][] = [["low", "Low"], ["ok", "Okay"], ["great", "Great"]];
+const SORE: [Checkin["sore"], string][] = [["no", "Not sore"], ["bit", "A bit sore"], ["very", "Very sore"]];
+
+/** Typing in a field, or holding a modifier, never opens the panel. */
+function typing(e: KeyboardEvent) {
+  const t = e.target as HTMLElement | null;
+  return e.ctrlKey || e.metaKey || e.altKey || !!t?.closest?.("input, textarea, select, [contenteditable=''], [contenteditable='true']");
+}
+
+function Panel({ close }: { close: () => void }) {
+  const date = useLocalDate(), [wellness, setWellness] = useWellness(date), { day, signedIn, update } = useDay(date), [checkins, setCheckins] = useCheckins();
+  const [notice, setNotice] = useState<{ text: string; undo?: () => void } | null>(null), [hours, setHours] = useState(""), [energy, setEnergy] = useState<Checkin["energy"] | null>(null);
+  const today = checkins.find(c => c.date === date);
+  const addWater = () => {
+    const next = wellness.water + GLASS;
+    setWellness(w => ({ ...w, water: w.water + GLASS }));
+    setNotice({ text: `Water: ${(next / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })} L today`, undo: () => { setWellness(w => ({ ...w, water: Math.max(0, w.water - GLASS) })); setNotice({ text: "Water removed." }); } });
+  };
+  const saveSleep = () => {
+    const n = Number(hours);
+    if (!hours.trim() || !Number.isFinite(n) || n < 0 || n > 24) { setNotice({ text: "Enter hours between 0 and 24." }); return; }
+    update({ set: { sleep_hours: Math.round(n * 2) / 2 } }); setHours(""); setNotice({ text: `Sleep saved: ${Math.round(n * 2) / 2} h` });
+  };
+  const saveFeel = (sore: Checkin["sore"]) => {
+    if (!energy) return;
+    setCheckins(all => [...all.filter(c => c.date !== date), { date, energy, sore }]);
+    setEnergy(null); setNotice({ text: "Thanks. Your coach will use this today." });
+  };
+  return <div className="qa-body">
+    <div className="qa-head"><h2 id="qa-title">Quick add</h2><button type="button" className="qa-close" onClick={close} aria-label="Close"><X size={20} /></button></div>
+
+    <section className="qa-row" aria-labelledby="qa-food"><h3 id="qa-food"><Utensils size={18} aria-hidden /> Log food</h3>
+      <div className="qa-choices">{FOOD.map(([href, label, Icon]) => <Link key={href} href={href} className="qa-choice" onClick={close}><Icon size={20} aria-hidden />{label}</Link>)}</div></section>
+
+    <section className="qa-row" aria-labelledby="qa-water"><h3 id="qa-water"><Droplets size={18} aria-hidden /> Water</h3>
+      <div className="qa-inline"><button type="button" className="ds-btn ds-btn-primary" onClick={addWater}>+ 250 ml</button>
+        <span className="qa-meta">{(wellness.water / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })} of {(wellness.waterGoal / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 })} L</span></div></section>
+
+    <section className="qa-row" aria-labelledby="qa-move"><h3 id="qa-move">Move</h3>
+      <div className="qa-choices qa-two"><Link href="/workouts/camera" className="qa-choice" onClick={close}><Camera size={20} aria-hidden />Start a workout</Link>
+        <Link href="/workouts/gps" className="qa-choice" onClick={close}><MapPin size={20} aria-hidden />Record a route</Link></div></section>
+
+    {signedIn && <section className="qa-row" aria-labelledby="qa-sleep"><h3 id="qa-sleep"><Moon size={18} aria-hidden /> Sleep last night</h3>
+      <div className="qa-inline">
+        <label className="qa-hours"><input aria-label="Hours slept" type="number" inputMode="decimal" min={0} max={24} step={0.5} placeholder={day?.sleep_hours != null ? String(day.sleep_hours) : "7.5"} value={hours} onChange={e => setHours(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); saveSleep(); } }} /> <span aria-hidden>h</span></label>
+        <button type="button" className="ds-btn ds-btn-quiet" onClick={saveSleep}>Save</button></div></section>}
+
+    <section className="qa-row" aria-labelledby="qa-feel"><h3 id="qa-feel"><Smile size={18} aria-hidden /> How do you feel?</h3>
+      {!energy ? <div className="qa-pills" role="group" aria-labelledby="qa-feel">{ENERGY.map(([k, label]) => <button key={k} type="button" aria-pressed={today?.energy === k} onClick={() => setEnergy(k)}>{label}</button>)}</div>
+        : <div className="qa-pills" role="group" aria-label="Any soreness?">{SORE.map(([k, label]) => <button key={k} type="button" onClick={() => saveFeel(k)}>{label}</button>)}</div>}</section>
+
+    <p className="qa-notice" role="status">{notice && <>{notice.text}{notice.undo && <button type="button" className="ds-btn ds-btn-quiet" onClick={notice.undo}>Undo</button>}</>}</p>
+  </div>;
+}
+
+export function QuickAdd() {
+  const dialog = useRef<HTMLDialogElement>(null), [open, setOpen] = useState(false), path = usePathname();
+  const show = useCallback(() => { const d = dialog.current; if (d && !d.open) { if (d.showModal) d.showModal(); else d.setAttribute("open", ""); setOpen(true); } }, []);
+  const close = useCallback(() => { const d = dialog.current; if (d?.close) d.close(); else d?.removeAttribute("open"); setOpen(false); }, []);
+  useEffect(() => { close(); }, [path, close]);                                 // a link inside was followed
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => { if ((e.key === "n" || e.key === "N") && !typing(e) && !dialog.current?.open) { e.preventDefault(); show(); } };
+    window.addEventListener("keydown", key); return () => window.removeEventListener("keydown", key);
+  }, [show]);
+  return <>
+    <button type="button" className="qa-button" aria-haspopup="dialog" aria-expanded={open} aria-keyshortcuts="N" onClick={show}><Plus size={26} strokeWidth={2.6} aria-hidden /><span>Add</span></button>
+    {/* Rendered at the top of the page, so the tab bar's own styles never reach the panel. */}
+    {createPortal(<dialog ref={dialog} className="qa-dialog" aria-labelledby="qa-title" onClose={() => setOpen(false)}
+      onClick={e => { if (e.target === dialog.current) close(); }}>{open && <Panel close={close} />}</dialog>, document.body)}
+  </>;
+}
