@@ -4,13 +4,13 @@ import { useRef, type PointerEvent as ReactPointerEvent } from "react";
 import Link from "@/lib/navigation";
 
 export const PHOTOS = {
-  idli: "Idli with sambar and chutneys on a banana leaf",
-  dosa: "Masala dosa with a vada, sambar and chutney",
-  thali: "An Indian thali with rice, dals, curries and roti",
+  toast: "Avocado toast topped with tomatoes and poached eggs",
+  bowl: "A grain bowl with rice, tofu, avocado, radish and greens",
+  plate: "Grilled chicken on mashed potato with fresh vegetables",
   fruit: "Two bowls of mixed fresh fruit",
   salad: "A bowl of avocado and tomato salad",
   smoothie: "A green kiwi smoothie with fresh kiwi halves",
-  jogging: "A runner jogging down a quiet street",
+  track: "Running track lanes at the start line, numbered 1, 2 and 3",
   yoga: "A woman stretching on a yoga mat in a sunny park",
   pushup: "Friends doing incline push-ups on a park bench",
 } as const;
@@ -23,10 +23,10 @@ export function Photo({ id, className = "", eager = false, sizes = "(max-width: 
 
 type Idea = { id: PhotoId; title: string; text: string; href: string };
 const IDEAS: Idea[] = [
-  { id: "idli", title: "A light South Indian breakfast", text: "Search idli or dosa: values come from IFCT.", href: "/nutrition#food-search" },
+  { id: "toast", title: "A good breakfast", text: "Search any food by name, in your own language.", href: "/nutrition#food-search" },
   { id: "yoga", title: "Ten calm minutes", text: "A gentle stretch counts. Rest days count too.", href: "/workouts" },
-  { id: "thali", title: "Log a full thali", text: "Add each dish or snap a photo for an estimate.", href: "/scanner" },
-  { id: "jogging", title: "A short run or walk", text: "Track it manually or with the camera.", href: "/workouts" },
+  { id: "bowl", title: "Log a full plate", text: "Add each part or snap a photo for an estimate.", href: "/scanner" },
+  { id: "track", title: "A short run or walk", text: "Track it manually or with the camera.", href: "/workouts" },
   { id: "smoothie", title: "Something fresh", text: "Smoothies, fruit, salads: whatever you enjoy.", href: "/nutrition#food-search" },
   { id: "pushup", title: "Move with friends", text: "Find a community for your kind of movement.", href: "/communities" },
 ];

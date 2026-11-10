@@ -1,0 +1,144 @@
+/* Vivid: type and colour on top of the foundation. Loaded last.
+   Poppins for headings, buttons and labels; DM Sans for reading. Every section has its own colour, used for its tabs, buttons,
+   accents and the faint wash behind the page: Today teal, Food orange, Move violet, Play pink, Me blue.
+   Every text/background pair here meets WCAG AA (4.5:1) in light and dark. */
+
+/* ── Type ───────────────────────────────────────────────────────────────────────────────── */
+:root, :root[data-theme] {
+  --ds-font: "DM Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ds-display: "Poppins", "DM Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --tc-display: var(--ds-display);
+}
+body { font-feature-settings: normal; letter-spacing: 0; font-weight: 450; }
+html body :is(h1, h2, h3, h4, .page-header h1, .ds-hero h1, .t-display, .t-title, legend) { font-family: var(--ds-display); font-weight: 600; letter-spacing: -.015em; }
+html body h1 { font-weight: 700; letter-spacing: -.025em; }
+html body :is(button, summary, .account-primary, .account-secondary, .ds-btn, .destination-button, .app-section-pages a, .app-tabbar a, label, .eyebrow, .page-head-eyebrow, th) { font-family: var(--ds-display); }
+html body :is(.account-primary, .account-secondary, .ds-btn, .destination-button, .gate-primary, .gate-secondary) { font-weight: 600; }
+html body summary { font-weight: 600; }
+
+/* ── Section colours ─────────────────────────────────────────────────────────────────────── */
+/* fill / fill-2: a gradient that carries white text. ink: accent text. soft: tinted backgrounds. bright: icons and washes. */
+:root, :root[data-section="today"], :root[data-section="none"] { --sec-fill: #0b7a6c; --sec-fill-2: #0e7490; --sec-ink: #0b7a6c; --sec-soft: #dff7f2; --sec-bright: #14b8a6; }
+:root[data-section="food"] { --sec-fill: #c2410c; --sec-fill-2: #be123c; --sec-ink: #c2410c; --sec-soft: #ffedd5; --sec-bright: #f97316; }
+:root[data-section="move"] { --sec-fill: #6d28d9; --sec-fill-2: #4338ca; --sec-ink: #6d28d9; --sec-soft: #ede9fe; --sec-bright: #8b5cf6; }
+:root[data-section="play"] { --sec-fill: #be185d; --sec-fill-2: #7e22ce; --sec-ink: #be185d; --sec-soft: #fce7f3; --sec-bright: #ec4899; }
+:root[data-section="me"] { --sec-fill: #1d4ed8; --sec-fill-2: #0e7490; --sec-ink: #1d4ed8; --sec-soft: #dbeafe; --sec-bright: #3b82f6; }
+html[data-theme="dark"] { --sec-ink: #2dd4bf; --sec-soft: #0f2d2a; --sec-bright: #2dd4bf; }
+html[data-theme="dark"][data-section="food"] { --sec-ink: #fdba74; --sec-soft: #3a1d0c; --sec-bright: #fb923c; }
+html[data-theme="dark"][data-section="move"] { --sec-ink: #c4b5fd; --sec-soft: #251a45; --sec-bright: #a78bfa; }
+html[data-theme="dark"][data-section="play"] { --sec-ink: #f9a8d4; --sec-soft: #3d1029; --sec-bright: #f472b6; }
+html[data-theme="dark"][data-section="me"] { --sec-ink: #93c5fd; --sec-soft: #142449; --sec-bright: #60a5fa; }
+/* The brand accent, fills and focus rings follow the section you're in. */
+:root, :root[data-theme] {
+  --ds-fill: var(--sec-fill); --ds-fill-hover: var(--sec-fill-2); --ds-indigo: var(--sec-ink); --ds-indigo-soft: var(--sec-soft);
+  --sec-gradient: linear-gradient(135deg, var(--sec-fill), var(--sec-fill-2));
+}
+
+/* A faint wash of colour behind every page, so it never looks flat grey. */
+html body, html body.tc-studio {
+  background:
+    radial-gradient(900px 520px at 100% -10%, color-mix(in srgb, var(--sec-bright) 13%, transparent), transparent 70%),
+    radial-gradient(700px 480px at -10% 30%, color-mix(in srgb, #8b5cf6 7%, transparent), transparent 70%),
+    radial-gradient(800px 500px at 50% 110%, color-mix(in srgb, #f97316 6%, transparent), transparent 70%),
+    var(--ds-bg);
+  background-attachment: fixed;
+}
+
+/* ── Buttons and tabs in the section's colour ───────────────────────────────────────────── */
+html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button:not(.play-button-white)):is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button) {
+  background: var(--sec-gradient); box-shadow: 0 1px 0 #ffffff33 inset, 0 10px 22px -12px var(--sec-fill);
+}
+@media (hover: hover) {
+  html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary):not(:disabled):hover { background: linear-gradient(135deg, var(--sec-fill-2), var(--sec-fill)); }
+}
+html body .app-section-pages a[aria-current="page"] { background: var(--sec-gradient); border-color: transparent; color: #fff; }
+html body :is(.eyebrow, .page-head-eyebrow) { color: var(--sec-ink); }
+
+/* Bottom bar (phones) and top bar (laptops): every tab wears its section's colour; the one you're on is filled with it. */
+.app-tabbar a[data-sec="today"] { --tab: #0b7a6c; --tab-2: #0e7490; --tab-icon: #0d9488; }
+.app-tabbar a[data-sec="food"] { --tab: #c2410c; --tab-2: #be123c; --tab-icon: #ea580c; }
+.app-tabbar a[data-sec="move"] { --tab: #6d28d9; --tab-2: #4338ca; --tab-icon: #7c3aed; }
+.app-tabbar a[data-sec="play"] { --tab: #be185d; --tab-2: #7e22ce; --tab-icon: #db2777; }
+.app-tabbar a[data-sec="me"] { --tab: #1d4ed8; --tab-2: #0e7490; --tab-icon: #2563eb; }
+html[data-theme="dark"] .app-tabbar a[data-sec="today"] { --tab-icon: #2dd4bf; }
+html[data-theme="dark"] .app-tabbar a[data-sec="food"] { --tab-icon: #fb923c; }
+html[data-theme="dark"] .app-tabbar a[data-sec="move"] { --tab-icon: #a78bfa; }
+html[data-theme="dark"] .app-tabbar a[data-sec="play"] { --tab-icon: #f472b6; }
+html[data-theme="dark"] .app-tabbar a[data-sec="me"] { --tab-icon: #60a5fa; }
+html body .app-tabbar a[data-sec] svg { color: var(--tab-icon); }
+html body .app-tabbar a[data-sec][aria-current="page"] { background: linear-gradient(135deg, var(--tab), var(--tab-2)); color: #fff; box-shadow: 0 8px 18px -10px var(--tab); }
+html body .app-tabbar a[data-sec][aria-current="page"] svg { color: #fff; }
+/* "+" quick add: a round button on phones, a pill on laptops, in a teal-violet-pink gradient (white text passes AA on every stop). */
+html body .app-tabbar .qa-button svg { background: linear-gradient(135deg, #0b7a6c, #6d28d9 55%, #be185d); box-shadow: 0 8px 18px -8px #6d28d9aa; }
+@media (min-width: 860px) {
+  html body .app-tabbar .qa-button.qa-button { background: linear-gradient(135deg, #0b7a6c, #6d28d9 55%, #be185d); color: #fff; box-shadow: 0 8px 18px -10px #6d28d9; }
+  html body .app-tabbar .qa-button svg { background: none; box-shadow: none; }
+}
+
+/* ── Icon tiles cycle through the palette, so a page of cards reads at a glance ─────────────────── */
+html body .hub-card { --tile: #0d9488; --tile-soft: #ccfbf1; }
+html body .hub-group li:nth-child(5n+2) > .hub-card { --tile: #ea580c; --tile-soft: #ffedd5; }
+html body .hub-group li:nth-child(5n+3) > .hub-card { --tile: #7c3aed; --tile-soft: #ede9fe; }
+html body .hub-group li:nth-child(5n+4) > .hub-card { --tile: #db2777; --tile-soft: #fce7f3; }
+html body .hub-group li:nth-child(5n+5) > .hub-card { --tile: #2563eb; --tile-soft: #dbeafe; }
+html[data-theme="dark"] body .hub-card-icon.hub-card-icon { background: color-mix(in srgb, var(--tile) 24%, var(--ds-surface)); }
+html body .hub-card-icon { background: var(--tile-soft); color: var(--tile); border-radius: 14px; }
+html[data-theme="dark"] body .hub-card-icon { color: color-mix(in srgb, var(--tile) 55%, #fff); }
+html body .hub-card-arrow { color: var(--tile); }
+html body .hub-icon { background: var(--sec-gradient); color: #fff; border-radius: 16px; }
+
+/* ── Numbers that mean something carry its colour: water cyan, energy burned orange, sleep violet ──────── */
+html body .day-water .day-big { color: #0e7490; }
+html body .day-burn .day-big { color: #c2410c; }
+html body .day-sleep .day-big { color: #6d28d9; }
+html[data-theme="dark"] body .day-water .day-big { color: #67e8f9; }
+html[data-theme="dark"] body .day-burn .day-big { color: #fdba74; }
+html[data-theme="dark"] body .day-sleep .day-big { color: #c4b5fd; }
+
+/* ── Footer: one tidy panel. Preferences, then links; every control the same height. Stacks on phones. ─────── */
+html body .site-links.site-links {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-start; box-sizing: border-box;
+  width: min(1180px, calc(100% - 32px)); margin: 40px auto 32px; padding: 16px clamp(16px, 3vw, 24px);
+  border: 1px solid var(--ds-line); border-radius: 20px; background: color-mix(in srgb, var(--ds-surface) 90%, transparent); color: var(--ds-ink);
+  font-size: .9375rem;
+}
+html body .site-links .theme-control { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; flex: 1 1 100%; padding-bottom: 12px; margin-bottom: 2px;
+  border-bottom: 1px solid var(--ds-line); font: 500 .9375rem/1.2 var(--ds-display); color: var(--ds-ink); }
+html body .site-links .theme-control select { min-height: 40px; padding: 0 12px; border: 1px solid var(--ds-line); border-radius: 12px; background: var(--ds-surface); color: var(--ds-ink); font: 500 .9375rem var(--ds-display); }
+html body .site-links .theme-control label { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; }
+html body .site-links .theme-control input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--sec-fill); }
+html body .site-links > a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--ds-sunken); color: var(--ds-ink);
+  font: 500 .9375rem/1 var(--ds-display); text-decoration: none; }
+@media (hover: hover) { html body .site-links > a:hover { background: var(--sec-soft); color: var(--sec-ink); } }
+html body .site-links .feedback-button { min-height: 40px; margin-left: auto; padding: 0 18px; border: 0; border-radius: 999px; background: var(--sec-gradient); color: #fff;
+  font: 600 .9375rem/1 var(--ds-display); cursor: pointer; }
+@media (max-width: 600px) { html body .site-links .feedback-button { margin-left: 0; flex: 1 1 100%; } }
+
+/* ── Phones and laptops: readable small print and comfortable taps ──────────────────────────────── */
+/* Nothing smaller than about 12 px: labels under numbers, quest meters, the companion's caption, older 11 px utility text. */
+html body :is(.companion-help-button small, .companion-plan-summary :is(span, strong), .daily-quest-meter :is(span, strong), .daily-focus .eyebrow,
+  .progress-stats span, .play-hero .play-sticker, .text-\[9px\], .text-\[10px\], .text-\[11px\]) { font-size: max(12.5px, .75rem); }
+/* Standalone links ("Log your first meal", "Your privacy →") are a full finger's height on touch screens. */
+@media (pointer: coarse), (max-width: 1024px) {
+  html body main :is(div, section, header, footer, article, aside, nav) > a:not([class]), html body .camera-holds-link {
+    display: inline-flex; align-items: center; min-height: 44px; }
+}
+
+/* Laptop widths: the centred tab bar and the header's tools (search, Ask Pip) must never meet. Tabs get tighter and Pip shows just
+   his picture (his name stays for screen readers) until the screen is wide enough for both. */
+@media (min-width: 860px) and (max-width: 1799px) {
+  html body .app-tabbar a { padding: 0 12px; gap: 6px; }
+  html body .companion-help-button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  html body .companion-help-button { padding: 4px; min-width: 52px; justify-content: center; }
+}
+@media (min-width: 860px) and (max-width: 1099px) {
+  html body .app-tabbar a { padding: 0 9px; font-size: .8125rem; }
+  html body .app-tabbar a svg { width: 18px; height: 18px; }
+}
+/* Small print stays readable even where older rules shrink it. */
+html body :is(.companion-help-button small, .daily-quest-meter :is(span, strong), .daily-focus .eyebrow, .play-hero .play-sticker, .daily-focus span) { font-size: max(12.5px, .75rem) !important; }
+@media (pointer: coarse), (max-width: 1024px) { html body main li > a:not([class]) { display: inline-flex; align-items: center; min-height: 44px; } }
+/* Setup checklist rows: the whole row is the tap target. */
+html body .first-steps li a { display: inline-flex; align-items: center; min-height: 44px; }
+/* Eyebrow labels never drop below 12.5 px (older rules made them .72rem, about 11.5 px on phones). */
+html body.tc-studio main .eyebrow, html body main .eyebrow { font-size: max(12.5px, .75rem); }

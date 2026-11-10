@@ -25,8 +25,10 @@ function SectionPages({ label, pages, path }: { label: string; pages: [string, s
 
 export function AppNavigation() {
   const path = usePathname();
-  if (BARE.includes(path)) return null;
   const section = sectionFor(path);
+  // Each section has its own colour: the page root says which one this is, for the stylesheet.
+  useEffect(() => { document.documentElement.dataset.section = section?.id ?? "none"; }, [section?.id]);
+  if (BARE.includes(path)) return null;
   return <>
     {path !== "/" && <header className="app-topbar">
       <div className="app-topbar-row">
@@ -38,7 +40,7 @@ export function AppNavigation() {
     <nav className="app-tabbar" aria-label="Main">
       {SECTIONS.map(({ id, label, href, icon: Icon }, i) => <Fragment key={id}>
         {i === 3 && <QuickAdd />}
-        <Link href={href} aria-current={section?.id === id ? "page" : undefined}><Icon aria-hidden="true" size={22} strokeWidth={2.2} /><span>{label}</span>{id === "me" && <SyncDot />}</Link>
+        <Link href={href} data-sec={id} aria-current={section?.id === id ? "page" : undefined}><Icon aria-hidden="true" size={22} strokeWidth={2.2} /><span>{label}</span>{id === "me" && <SyncDot />}</Link>
       </Fragment>)}
     </nav>
   </>;
