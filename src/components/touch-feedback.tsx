@@ -5,7 +5,7 @@ export function TouchFeedback(){
     const pending=new Map<HTMLElement,ReturnType<typeof setTimeout>>();
     let surface:HTMLElement|null=null,frame=0;
     let pointer={x:0,y:0};
-    const selector='.studio-character-stage,.daily-target-panel,.daily-companion-panel,.companion-stage,.play-card,.play-game-main,.wellness-card-grid>article,.social-post,.community-card,.premium-plan,.destination-card,.photo-card';
+    const selector='.studio-character-stage,.daily-target-panel,.daily-companion-panel,.companion-stage,.play-card,.play-game-main,.wellness-card-grid>article,.social-post,.community-card,.premium-plan,.destination-card,.photo-card,.hub-card,.day-tile';
     const calm=()=>document.documentElement.dataset.motion==='reduced'||window.matchMedia('(prefers-reduced-motion: reduce)').matches||!!document.querySelector('.play-calm,.daily-focus-calm,.journey-calm');
     function reset(){if(surface){surface.style.removeProperty('--surface-rx');surface.style.removeProperty('--surface-ry');surface.style.removeProperty('--surface-light-x');surface.style.removeProperty('--surface-light-y');delete surface.dataset.depthActive;surface=null;}}
     function move(event:PointerEvent){

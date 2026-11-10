@@ -95,25 +95,6 @@ html[data-theme="dark"] body .day-water .day-big { color: #67e8f9; }
 html[data-theme="dark"] body .day-burn .day-big { color: #fdba74; }
 html[data-theme="dark"] body .day-sleep .day-big { color: #c4b5fd; }
 
-/* ── Footer: one tidy panel. Preferences, then links; every control the same height. Stacks on phones. ─────── */
-html body .site-links.site-links {
-  display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-start; box-sizing: border-box;
-  width: min(1180px, calc(100% - 32px)); margin: 40px auto 32px; padding: 16px clamp(16px, 3vw, 24px);
-  border: 1px solid var(--ds-line); border-radius: 20px; background: color-mix(in srgb, var(--ds-surface) 90%, transparent); color: var(--ds-ink);
-  font-size: .9375rem;
-}
-html body .site-links .theme-control { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; flex: 1 1 100%; padding-bottom: 12px; margin-bottom: 2px;
-  border-bottom: 1px solid var(--ds-line); font: 500 .9375rem/1.2 var(--ds-display); color: var(--ds-ink); }
-html body .site-links .theme-control select { min-height: 40px; padding: 0 12px; border: 1px solid var(--ds-line); border-radius: 12px; background: var(--ds-surface); color: var(--ds-ink); font: 500 .9375rem var(--ds-display); }
-html body .site-links .theme-control label { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; }
-html body .site-links .theme-control input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--sec-fill); }
-html body .site-links > a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--ds-sunken); color: var(--ds-ink);
-  font: 500 .9375rem/1 var(--ds-display); text-decoration: none; }
-@media (hover: hover) { html body .site-links > a:hover { background: var(--sec-soft); color: var(--sec-ink); } }
-html body .site-links .feedback-button { min-height: 40px; margin-left: auto; padding: 0 18px; border: 0; border-radius: 999px; background: var(--sec-gradient); color: #fff;
-  font: 600 .9375rem/1 var(--ds-display); cursor: pointer; }
-@media (max-width: 600px) { html body .site-links .feedback-button { margin-left: 0; flex: 1 1 100%; } }
-
 /* ── Phones and laptops: readable small print and comfortable taps ──────────────────────────────── */
 /* Nothing smaller than about 12 px: labels under numbers, quest meters, the companion's caption, older 11 px utility text. */
 html body :is(.companion-help-button small, .companion-plan-summary :is(span, strong), .daily-quest-meter :is(span, strong), .daily-focus .eyebrow,
@@ -215,9 +196,3 @@ html[data-theme="dark"] body .destination-icon { background: color-mix(in srgb, 
 html body .destination-card > svg:last-child { color: var(--tile); }
 html body .destination-card-copy strong { font-family: var(--ds-display); font-weight: 600; }
 
-/* Footer, take two: Appearance, Reduce motion and Comfort mode share the first row; links and feedback go on the second. */
-html body .site-links .theme-control.theme-control { flex: 0 0 auto; padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
-html body .site-links .studio-motion-control { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font: 500 .9375rem/1.2 var(--ds-display); }
-html body .site-links .studio-motion-control input { width: 20px; height: 20px; accent-color: var(--sec-fill); }
-html body .site-links::before { content: ""; order: 1; flex: 1 1 100%; height: 1px; margin: 4px 0; background: var(--ds-line); }
-html body .site-links > a, html body .site-links .feedback-button, html body .site-links > :has(.feedback-button) { order: 2; }

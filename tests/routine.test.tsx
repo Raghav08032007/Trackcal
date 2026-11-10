@@ -17,7 +17,7 @@ it("exports private recurring reminders with an alarm and stable event identity"
   expect(()=>calendarFile([])).toThrow();
 });
 it("persists dark mode and applies it to the actual document",async()=>{
-  render(<ThemeControl/>);await userEvent.selectOptions(screen.getByLabelText('Appearance'),'dark');expect(document.documentElement.dataset.theme).toBe('dark');expect(JSON.parse(localStorage.getItem('trackcal:appearance')!)).toBe('dark');
+  render(<ThemeControl/>);await userEvent.click(screen.getByRole('radio',{name:'Dark'}));expect(document.documentElement.dataset.theme).toBe('dark');expect(JSON.parse(localStorage.getItem('trackcal:appearance')!)).toBe('dark');
 });
 it("keeps the original reminder until an edit is saved",async()=>{
   render(<Reminders/>);fireEvent.change(screen.getByLabelText('First reminder'),{target:{value:'2099-01-01T12:00'}});await userEvent.click(screen.getByRole('button',{name:'Save reminder'}));const before=localStorage.getItem('trackcal:reminders');await userEvent.click(screen.getByRole('button',{name:'Edit Meal check-in'}));await userEvent.click(screen.getByRole('button',{name:'Cancel edit'}));expect(localStorage.getItem('trackcal:reminders')).toBe(before);

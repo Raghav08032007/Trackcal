@@ -18,7 +18,8 @@ import "@/app/refine.css";
 import "@/app/vibe.css";
 import "@/app/ds.css";
 import "@/app/foundation.css";   // one font, palette and button look for every page
-import "@/app/vivid.css";        // last: section colours, the type pair and the footer panel
+import "@/app/vivid.css";        // section colours and the type pair
+import "@/app/motion.css";       // last: colour transitions, presses, depth and the footer
 import { createRouter } from "@/routes";
 
 createRoot(document.getElementById("root")!).render(<StrictMode><RouterProvider router={createRouter()} /></StrictMode>);
