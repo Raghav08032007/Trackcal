@@ -176,3 +176,48 @@ html[data-theme="dark"] .camera-follow span { color: #0f1c1b; }
 .move-thumb [class*="-weight"] { fill: #2a4240; }
 .move-thumb .demo-hair { fill: #2a1d16; }
 .move-thumb .demo-eyes { fill: #1f2937; }
+
+/* ══ Today ══════════════════════════════════════════════════════════════════════════════════ */
+/* Coach card: a soft wash of the section colour, the mood check as compact chips rather than full-width slabs. */
+html body .coach-card.coach-card { padding: 18px; border: 1px solid color-mix(in srgb, var(--sec-bright) 30%, var(--ds-line)); border-radius: 22px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sec-bright) 14%, var(--ds-surface)), var(--ds-surface) 65%); box-shadow: 0 12px 28px -24px var(--sec-fill); }
+html body .coach-checkin.coach-checkin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+html body .coach-checkin > :is(p, span, strong):first-child { flex: 1 1 100%; margin: 0 0 2px; }
+html body .coach-checkin button.coach-checkin-button, html body .coach-checkin button { flex: 0 0 auto; width: auto; min-height: 42px; padding: 0 18px; border: 1px solid var(--ds-line); border-radius: 999px;
+  background: var(--ds-surface); color: var(--ds-ink); font: 600 .9375rem/1 var(--ds-display); box-shadow: none; }
+html body .coach-checkin button:is([aria-pressed="true"], [data-active]) { background: var(--sec-gradient); border-color: transparent; color: #fff; }
+@media (hover: hover) { html body .coach-checkin button:not([aria-pressed="true"]):hover { border-color: var(--sec-bright); background: var(--sec-soft); } }
+html body .coach-card .account-actions :is(a, button) { flex: 0 1 auto; }
+
+/* Your day: each tile carries its own colour as a soft tint and a top edge. */
+html body .day-tile.day-tile { position: relative; overflow: hidden; border: 1px solid color-mix(in srgb, var(--tile-c) 22%, var(--ds-line)); background: color-mix(in srgb, var(--tile-c) 7%, var(--ds-surface)); }
+html body .day-tile::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, var(--tile-c), color-mix(in srgb, var(--tile-c) 40%, #fff)); }
+html body .day-water { --tile-c: #0891b2; } html body .day-sleep { --tile-c: #7c3aed; } html body .day-burn { --tile-c: #ea580c; }
+html[data-theme="dark"] body .day-tile.day-tile { background: color-mix(in srgb, var(--tile-c) 12%, var(--ds-surface)); }
+html body .day-meter { background: color-mix(in srgb, #0891b2 16%, transparent); border-radius: 999px; }
+html body .day-meter > * { background: linear-gradient(90deg, #06b6d4, #0e7490); border-radius: inherit; }
+html body .day-choice[aria-pressed="true"] { background: linear-gradient(135deg, #7c3aed, #4338ca); border-color: transparent; color: #fff; }
+
+/* First steps: a clean card, a gradient meter and coloured step rings. */
+html body .first-steps.first-steps { padding: 18px; border: 1px solid var(--ds-line); border-radius: 22px; background: var(--ds-surface); box-shadow: 0 12px 28px -24px #0f1c1b55; }
+html body .first-steps > :is(h2, h3, p, strong):first-child { font-family: var(--ds-display); font-weight: 600; }
+html body .first-steps-meter { background: color-mix(in srgb, var(--sec-bright) 18%, transparent); }
+html body .first-steps-meter span { background: linear-gradient(90deg, #0d9488, #7c3aed, #db2777); }
+html body .first-steps li:nth-child(1)::before { border-color: #ea580c; } html body .first-steps li:nth-child(2)::before { border-color: #7c3aed; } html body .first-steps li:nth-child(3)::before { border-color: #db2777; }
+html body .first-steps li[data-done]::before { background: var(--sec-gradient); border-color: transparent; }
+/* Home destinations: natural height, icon tiles cycling through the palette, a lift on hover. */
+html body .destination-grid .destination-card.destination-card { min-height: 0; padding: 20px; border-radius: 20px; }
+html body .destination-card { --tile: #0d9488; }
+html body .destination-grid > :nth-child(5n+2) { --tile: #ea580c; } html body .destination-grid > :nth-child(5n+3) { --tile: #7c3aed; }
+html body .destination-grid > :nth-child(5n+4) { --tile: #db2777; } html body .destination-grid > :nth-child(5n+5) { --tile: #2563eb; }
+html body .destination-icon { display: grid; place-items: center; flex: none; width: 46px; height: 46px; border-radius: 14px; background: color-mix(in srgb, var(--tile) 14%, var(--ds-surface)); color: var(--tile); }
+html[data-theme="dark"] body .destination-icon { background: color-mix(in srgb, var(--tile) 24%, var(--ds-surface)); color: color-mix(in srgb, var(--tile) 55%, #fff); }
+html body .destination-card > svg:last-child { color: var(--tile); }
+html body .destination-card-copy strong { font-family: var(--ds-display); font-weight: 600; }
+
+/* Footer, take two: Appearance, Reduce motion and Comfort mode share the first row; links and feedback go on the second. */
+html body .site-links .theme-control.theme-control { flex: 0 0 auto; padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
+html body .site-links .studio-motion-control { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font: 500 .9375rem/1.2 var(--ds-display); }
+html body .site-links .studio-motion-control input { width: 20px; height: 20px; accent-color: var(--sec-fill); }
+html body .site-links::before { content: ""; order: 1; flex: 1 1 100%; height: 1px; margin: 4px 0; background: var(--ds-line); }
+html body .site-links > a, html body .site-links .feedback-button, html body .site-links > :has(.feedback-button) { order: 2; }
