@@ -3,6 +3,7 @@ import {lazy,Suspense,useCallback,useEffect,useMemo,useRef,useState} from 'react
 import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
 import {MOVES,blend,full,layout,placement,type Move} from '@/lib/pose/exercise-motions';
 import {EXERCISES,gearOf,type ExerciseGear,type ExerciseKind} from '@/lib/pose/types';
+import {formPoints} from '@/lib/pose/posture-match';
 
 const LEG_MS=1300,HEAD=.058;
 const Athlete3D=lazy(()=>import('./athlete-3d').then(module=>({default:module.Athlete3D})));
@@ -51,25 +52,34 @@ function draw(svg:SVGSVGElement,m:Move,weights:boolean,progress:number,floor:num
 function floorOf(m:Move){const at=placement(m);let low=0;for(const key of m.keys){const p=layout(m,full(key),at);for(const id of [15,16,23,24,25,26,27,28,31,32])low=Math.max(low,p[id][1]);}return low+.035;}
 /** The example for each exercise: an illustrated athlete on a loop, stopped at any time, and still for people who ask for less motion. */
 /** The 3D athlete where the device can draw it, and the flat drawing otherwise. */
-export function ExerciseDemo({kind}:{kind:ExerciseKind}){return <MoveDemo move={MOVES[kind]} gear={gearOf(kind)} title={EXERCISES[kind].title} cues={EXERCISE_CONFIG[kind].cues}/>;}
+/** The sample for a camera exercise: the example on a loop (slow motion on request) and the form points the camera watches for. */
+export function ExerciseDemo({kind}:{kind:ExerciseKind}){
+ const points=formPoints(kind);
+ return <section className="exercise-sample" aria-label={`How to do ${EXERCISES[kind].title.toLowerCase()}`}>
+  <h3>How to do it</h3>
+  <MoveDemo move={MOVES[kind]} gear={gearOf(kind)} title={EXERCISES[kind].title} cues={EXERCISE_CONFIG[kind].cues}/>
+  {points.length>0&&<><p className="exercise-sample-lead">The camera watches for:</p><ul className="exercise-points">{points.map(point=><li key={point}>{point}</li>)}</ul></>}
+ </section>;
+}
 export function MoveDemo({move,gear,title,cues}:{move:Move;gear:ExerciseGear;title:string;cues:readonly string[]}){
  const still=useMemo(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,[]);
- const [mode,setMode]=useState<'3d'|'flat'>(()=>typeof window!=='undefined'&&canDraw3d()?'3d':'flat'),[playing,setPlaying]=useState(!still),failed=useCallback(()=>setMode('flat'),[]);
- if(mode==='flat')return <FlatDemo move={move} weights={['dumbbell','barbell','kettlebell'].includes(gear)} title={title} cues={cues} playing={playing} setPlaying={setPlaying}/>;
- return <figure className="exercise-demo exercise-demo-3d"><Suspense fallback={<div className="athlete-3d" aria-busy="true"/>}><Athlete3D move={move} gear={gear} title={title} playing={playing} onFail={failed}/></Suspense><figcaption><span>Example: {cues.join(' · ')}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?'Pause':'Play'}</button><button type="button" onClick={()=>setMode('flat')}>Simple view</button></figcaption></figure>;
+ const [mode,setMode]=useState<'3d'|'flat'>(()=>typeof window!=='undefined'&&canDraw3d()?'3d':'flat'),[playing,setPlaying]=useState(!still),[slow,setSlow]=useState(false),failed=useCallback(()=>setMode('flat'),[]);
+ const speed=slow?.5:1,slowButton=<button type="button" aria-pressed={slow} onClick={()=>setSlow(v=>!v)}>{slow?'Normal speed':'Slow motion'}</button>;
+ if(mode==='flat')return <FlatDemo move={move} weights={['dumbbell','barbell','kettlebell'].includes(gear)} title={title} cues={cues} playing={playing} setPlaying={setPlaying} speed={speed} extra={slowButton}/>;
+ return <figure className="exercise-demo exercise-demo-3d"><Suspense fallback={<div className="athlete-3d" aria-busy="true"/>}><Athlete3D move={move} gear={gear} title={title} playing={playing} onFail={failed} speed={speed}/></Suspense><figcaption><span>Example: {cues.join(' · ')}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?'Pause':'Play'}</button>{slowButton}<button type="button" onClick={()=>setMode('flat')}>Simple view</button></figcaption></figure>;
 }
-function FlatDemo({move,weights,title,cues,playing,setPlaying}:{move:Move;weights:boolean;title:string;cues:readonly string[];playing:boolean;setPlaying:(update:(value:boolean)=>boolean)=>void}){
- const svg=useRef<SVGSVGElement>(null);
+function FlatDemo({move,weights,title,cues,playing,setPlaying,speed=1,extra}:{move:Move;weights:boolean;title:string;cues:readonly string[];playing:boolean;setPlaying:(update:(value:boolean)=>boolean)=>void;speed?:number;extra?:React.ReactNode}){
+ const svg=useRef<SVGSVGElement>(null),pace=useRef(speed);pace.current=speed;
  const clock=useRef(0);
  useEffect(()=>{
   const figure=svg.current;if(!figure)return;
   const floor=floorOf(move);clock.current=playing?clock.current:Math.max(clock.current,1);draw(figure,move,weights,clock.current,floor);
   if(!playing||typeof requestAnimationFrame==='undefined')return;
   let frame=0,last=performance.now();
-  const tick=(now:number)=>{clock.current+=(now-last)/LEG_MS;last=now;draw(figure,move,weights,clock.current,floor);frame=requestAnimationFrame(tick);};
+  const tick=(now:number)=>{clock.current+=(now-last)/LEG_MS*pace.current;last=now;draw(figure,move,weights,clock.current,floor);frame=requestAnimationFrame(tick);};
   frame=requestAnimationFrame(tick);return ()=>cancelAnimationFrame(frame);
  },[move,weights,playing]);
- return <figure className="exercise-demo"><svg ref={svg} viewBox="-.04 -.06 1.08 1.14" role="img" aria-label={`Animated example of ${title}: ${cues.join(', ')}`}><ellipse className="demo-shadow" rx=".24" ry=".022"/>{PARTS.map(part=>part==='head'?<circle key={part} className="demo-head" r={HEAD}/>:<path key={part} className={`demo-${part}`}/>)}</svg><figcaption><span>Example: {cues.join(' · ')}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?'Pause':'Play'}</button></figcaption></figure>;
+ return <figure className="exercise-demo"><svg ref={svg} viewBox="-.04 -.06 1.08 1.14" role="img" aria-label={`Animated example of ${title}: ${cues.join(', ')}`}><ellipse className="demo-shadow" rx=".24" ry=".022"/>{PARTS.map(part=>part==='head'?<circle key={part} className="demo-head" r={HEAD}/>:<path key={part} className={`demo-${part}`}/>)}</svg><figcaption><span>Example: {cues.join(' · ')}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?'Pause':'Play'}</button>{extra}</figcaption></figure>;
 }
 /** A small moving picture of a move for lists. It animates only while on screen, and stands still for people who ask for less motion. */
 export function MoveThumb({move,weights,title}:{move:Move;weights:boolean;title:string}){

@@ -23,7 +23,8 @@ export function pose3dOf(m:Move,progress:number){
 }
 
 /** A shaded 3D athlete doing the exercise. Built lazily, so the 3D library only loads on this page. */
-export function Athlete3D({move,gear,title,playing,onFail}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void}){
+export function Athlete3D({move,gear,title,playing,onFail,speed=1}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void;speed?:number}){
+ const pace=useRef(speed);pace.current=speed;  // slow motion changes the pace without rebuilding the scene
  const host=useRef<HTMLDivElement>(null),clock=useRef(0),drag=useRef({turn:0,down:false,x:0}),[ready,setReady]=useState(false);
  useEffect(()=>{
   const el=host.current;if(!el)return;
@@ -95,7 +96,7 @@ export function Athlete3D({move,gear,title,playing,onFail}:{move:Move;gear:Exerc
    };
    clock.current=playing?clock.current:Math.max(clock.current,1);render(clock.current,0);setReady(true);
    let last=performance.now();
-   const tick=(now:number)=>{if(playing)clock.current+=(now-last)/LEG_MS;last=now;render(clock.current,now);frame=requestAnimationFrame(tick);};
+   const tick=(now:number)=>{if(playing)clock.current+=(now-last)/LEG_MS*pace.current;last=now;render(clock.current,now);frame=requestAnimationFrame(tick);};
    if(typeof requestAnimationFrame!=='undefined')frame=requestAnimationFrame(tick);
    cleanup=()=>{cancelAnimationFrame(frame);watcher?.disconnect();renderer.dispose();scene.traverse(o=>{const mesh=o as Three.Mesh;mesh.geometry?.dispose?.();const m=mesh.material as Three.Material|undefined;m?.dispose?.();});renderer.domElement.remove();};
    if(disposed)cleanup();

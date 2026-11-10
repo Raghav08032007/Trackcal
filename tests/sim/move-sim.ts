@@ -28,8 +28,8 @@ export type Run = { kind: ExerciseKind; seed: number; reps: number; counted: num
 /** One set of an exercise, filmed from near the angle the app recommends for it. */
 /** labels: for each frame, -1 while holding the start position, otherwise the rep it belongs to. Each rep goes to its own depth
  *  (65-100% of the full movement), as real people do. */
-export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: number; spread?: number; depth?: [number, number] } = {}): { frames: PoseFrame[]; reps: number; labels: number[]; meta: Run["meta"] } {
-  const r = rng(seed * 7919 + kind.length * 104729), m = MOVES[kind], keys = m.keys.map(full), start = placement(m), size = r.range(.88, 1.1);
+export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: number; spread?: number; depth?: [number, number]; distort?: (p: ReturnType<typeof full>, key: number) => ReturnType<typeof full> } = {}): { frames: PoseFrame[]; reps: number; labels: number[]; meta: Run["meta"] } {
+  const r = rng(seed * 7919 + kind.length * 104729), m = MOVES[kind], keys = m.keys.map(full).map((k, i) => opts.distort ? opts.distort(k, i) : k), start = placement(m), size = r.range(.88, 1.1);
   // Stand the body on the floor: its lowest point in the starting pose goes to just above it.
   const lowest = Math.min(...pose3d(m, keys[0], start, size, 0).map(v => v[1])), floor = .03 - lowest;
   // People set the camera so all of them is in view: centre the starting pose where the camera points.

@@ -142,3 +142,37 @@ html body :is(.companion-help-button small, .daily-quest-meter :is(span, strong)
 html body .first-steps li a { display: inline-flex; align-items: center; min-height: 44px; }
 /* Eyebrow labels never drop below 12.5 px (older rules made them .72rem, about 11.5 px on phones). */
 html body.tc-studio main .eyebrow, html body main .eyebrow { font-size: max(12.5px, .75rem); }
+
+/* ── Exercise sample: the example on a loop, its controls, and what the camera watches for ───────────── */
+html body .exercise-sample { display: grid; gap: 10px; margin: 12px 0; padding: 14px; border: 1px solid var(--ds-line); border-radius: 18px; background: var(--ds-surface); }
+html body .exercise-sample > h3 { margin: 0; font-size: 1.0625rem; color: var(--sec-ink); }
+html body .exercise-sample .exercise-demo { margin: 0; border-radius: 14px; background: linear-gradient(180deg, var(--sec-soft), color-mix(in srgb, var(--sec-soft) 30%, var(--ds-surface))); overflow: hidden; }
+html body .exercise-sample figcaption { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px; }
+html body .exercise-sample figcaption span { flex: 1 1 100%; font-size: .875rem; color: var(--ds-muted); }
+html body .exercise-sample figcaption button { min-height: 40px; padding: 0 14px; border: 1px solid var(--ds-line); border-radius: 999px; background: var(--ds-surface); color: var(--ds-ink); font: 600 .875rem/1 var(--ds-display); cursor: pointer; }
+html body .exercise-sample figcaption button[aria-pressed="true"] { background: var(--sec-gradient); border-color: transparent; color: #fff; }
+html body .exercise-sample-lead { margin: 2px 0 0; font: 600 .875rem/1.3 var(--ds-display); color: var(--ds-ink); }
+html body .exercise-points { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+html body .exercise-points li { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--sec-soft); color: var(--ds-ink); font-size: .9375rem; }
+html body .exercise-points li::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--sec-gradient); }
+
+/* Follow along: a small looping example in the corner of the live camera view. */
+.camera-follow { position: absolute; right: 12px; bottom: 12px; z-index: 2; display: grid; justify-items: center; gap: 2px; width: clamp(88px, 22%, 140px); padding: 6px 6px 8px;
+  border-radius: 16px; background: color-mix(in srgb, #ffffff 88%, transparent); box-shadow: 0 8px 24px -12px #00000080; backdrop-filter: blur(6px); }
+/* The figure is drawn for a light background, so the card stays light in both themes. */
+html[data-theme="dark"] .camera-follow span { color: #0f1c1b; }
+.camera-follow .move-thumb { width: 100%; height: auto; aspect-ratio: 1; }
+.camera-follow span { font: 600 .75rem/1.2 var(--ds-display); color: var(--ds-ink); }
+/* The small moving figure (follow along, exercise lists) wears the same colours as the main example; the shirt takes the section colour. */
+.move-thumb .demo-shadow { fill: #023432; }
+.move-thumb :is([class*="-leg"], [class*="-arm"], .demo-neck, .demo-head) { fill: #c98b63; }
+.move-thumb :is(.demo-far-leg, .demo-far-arm) { fill: #a9704c; }
+.move-thumb :is(.demo-torso, [class*="-sleeve"]) { fill: var(--sec-fill); }
+.move-thumb .demo-far-sleeve { fill: var(--sec-fill-2); }
+.move-thumb :is(.demo-hips, [class*="-short"]) { fill: #1f2937; }
+.move-thumb .demo-far-short { fill: #111827; }
+.move-thumb [class*="-shoe"] { fill: #f26b4e; }
+.move-thumb .demo-far-shoe { fill: #c9523a; }
+.move-thumb [class*="-weight"] { fill: #2a4240; }
+.move-thumb .demo-hair { fill: #2a1d16; }
+.move-thumb .demo-eyes { fill: #1f2937; }

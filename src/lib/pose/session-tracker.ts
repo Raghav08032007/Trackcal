@@ -1,13 +1,15 @@
 import {EitherSideAnalyzer,JointAnalyzer,type ExerciseAnalyzer} from './analyzers';import {RepCounter} from './rep-counter';import {EXERCISE_CONFIG,withLevel} from './exercise-config';
-import {readBody} from './body-shape';import {normalize} from './landmarks';
+import {readBody,type Body} from './body-shape';import {normalize} from './landmarks';
 import type {ExerciseKind,ExerciseLevel,PoseFrame,TrackingResult} from './types';
 /** The body joints an outline needs, and how often to sample them. */
 export const REPLAY_JOINTS=[11,12,13,14,15,16,23,24,25,26,27,28],REPLAY_GAP_MS=66;
 export type RepReplay={ms:number;range:number;frames:number[][]};
 export class SessionTracker{
  readonly config;readonly analyzer:ExerciseAnalyzer;readonly counter;private quality=0;private samples=0;private low=0;private last=-Infinity;private first=-Infinity;private longest=0;private trail:{t:number;pose:number[]}[]=[];private best:RepReplay|null=null;private worst:RepReplay|null=null;paused=false;
+ /** The whole body in the latest frame, for posture tips. Kept for one frame only. */
+ lastBody:Body|undefined;
  constructor(readonly exercise:ExerciseKind,level:ExerciseLevel='beginner'){this.config=withLevel(EXERCISE_CONFIG[exercise],level);this.analyzer=this.config.either?new EitherSideAnalyzer(this.config):new JointAnalyzer(this.config);this.counter=new RepCounter(this.config);}
- frame(frame:PoseFrame):TrackingResult|null{if(this.paused||frame.timestamp<=this.last)return null;this.last=frame.timestamp;if(this.first===-Infinity)this.first=frame.timestamp;const before=this.counter.reps,observation=this.analyzer.observe(frame),r=this.counter.update(observation,frame.timestamp,this.body(frame));this.remember(frame,before);this.samples++;this.quality+=observation.confidence;if(!r.accepted)this.low++;return r;}
+ frame(frame:PoseFrame):TrackingResult|null{if(this.paused||frame.timestamp<=this.last)return null;this.last=frame.timestamp;if(this.first===-Infinity)this.first=frame.timestamp;const before=this.counter.reps,observation=this.analyzer.observe(frame);this.lastBody=this.body(frame);const r=this.counter.update(observation,frame.timestamp,this.lastBody);this.remember(frame,before);this.samples++;this.quality+=observation.confidence;if(!r.accepted)this.low++;return r;}
  /** The outline of the rep just counted. Held in memory for this set: never saved or sent. */
  private remember(frame:PoseFrame,before:number){
   const joints=frame.landmarks[0],at=frame.timestamp,last=this.trail[this.trail.length-1];
