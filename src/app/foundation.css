@@ -80,3 +80,64 @@ html body .camera-mode-switch a[aria-current="page"] small { opacity: 1; }
 
 /* Card headings inside cards start at the left (an older rule pushed them right). */
 html body .account-card > .wellness-heading { justify-content: space-between; }
+
+/* ══ Shared components: one look for buttons, cards, fields, tabs, dialogs and numbers on every page ══════════════════ */
+:root, :root[data-theme] {
+  --ds-r-sm: 10px; --ds-r: 14px; --ds-r-lg: 20px;                 /* crisper corners than before */
+  --ds-ring: 0 0 0 3px color-mix(in srgb, var(--ds-indigo) 28%, transparent);
+  --ds-btn-h: max(46px, var(--ds-tap));
+}
+
+/* Buttons. Primary: the deep brand fill. Secondary: a quiet outline. Same height, corners and type everywhere. */
+html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button:not(.play-button-white)):is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button) {
+  min-height: var(--ds-btn-h); padding: 0 22px; border-radius: 12px; border: 0;
+  background: var(--ds-fill); color: #fff; font: 650 1rem/1.2 var(--ds-font); letter-spacing: -.005em;
+  box-shadow: 0 1px 0 #ffffff26 inset, 0 1px 2px #0f1c1b29, 0 8px 18px -10px color-mix(in srgb, var(--ds-fill) 70%, transparent);
+}
+html body :is(.account-secondary, .ds-btn-quiet, .gate-secondary, .hero-secondary, .destination-button):is(.account-secondary, .ds-btn-quiet, .gate-secondary, .hero-secondary, .destination-button) {
+  min-height: var(--ds-btn-h); padding: 0 20px; border-radius: 12px; border: 1px solid var(--ds-line);
+  background: var(--ds-surface); color: var(--ds-ink); font: 650 1rem/1.2 var(--ds-font); box-shadow: 0 1px 2px #0f1c1b0f;
+}
+html body .ds-btn-danger.ds-btn-danger { min-height: var(--ds-btn-h); border-radius: 12px; font: 650 1rem/1.2 var(--ds-font); }
+@media (hover: hover) {
+  html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary):not(:disabled):hover { background: var(--ds-fill-hover); }
+  html body :is(.account-secondary, .ds-btn-quiet, .gate-secondary, .hero-secondary, .destination-button):not(:disabled):hover { border-color: color-mix(in srgb, var(--ds-indigo) 55%, var(--ds-line)); background: var(--ds-raised); }
+}
+html body :is(.account-primary, .account-secondary, .ds-btn, .gate-primary, .gate-secondary, .hero-primary, .hero-secondary, .destination-button, .play-button):focus-visible { outline: 0; box-shadow: var(--ds-ring); }
+
+/* Cards: one surface, one border, one soft shadow. */
+html body :is(.account-card, .ds-card, .hub-card):is(.account-card, .ds-card, .hub-card) {
+  border: 1px solid var(--ds-line); border-radius: var(--ds-r-lg); background: var(--ds-surface);
+  box-shadow: 0 1px 2px #0f1c1b0a, 0 12px 28px -22px #0f1c1b40;
+}
+html[data-theme="dark"] body :is(.account-card, .ds-card, .hub-card) { box-shadow: 0 1px 0 #ffffff08 inset, 0 16px 32px -24px #000000c0; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body a.hub-card:hover { border-color: color-mix(in srgb, var(--ds-indigo) 45%, var(--ds-line)); transform: translateY(-2px); transition: transform var(--ds-med) var(--ds-ease), border-color var(--ds-med); }
+}
+
+/* Fields: tall enough to tap, a clear hover, and a soft brand ring on focus instead of a heavy outline. */
+html body .tc-studio :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]) {
+  min-height: 46px; border: 1px solid var(--ds-line); border-radius: var(--ds-r-sm); background: var(--ds-surface); color: var(--ds-ink); font-family: var(--ds-font);
+}
+html body .tc-studio :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=range]):hover { border-color: color-mix(in srgb, var(--ds-ink) 28%, var(--ds-line)); }
+html body .tc-studio :is(input, select, textarea):focus-visible { outline: 0; border-color: var(--ds-indigo); box-shadow: var(--ds-ring); }
+html body .tc-studio :is(input[type=checkbox], input[type=radio], input[type=range]) { accent-color: var(--ds-fill); }
+html body .tc-studio label { font-weight: 600; }
+
+/* Section tabs and filter chips: one pill. The page you're on is filled. */
+html body .app-section-pages a:is(a) { min-height: 40px; padding: 0 16px; border: 1px solid var(--ds-line); border-radius: 999px; background: var(--ds-surface); color: var(--ds-ink); font: 600 .9375rem/1 var(--ds-font); display: inline-flex; align-items: center; }
+html body .app-section-pages a[aria-current="page"] { background: var(--ds-fill); border-color: var(--ds-fill); color: #fff; }
+@media (hover: hover) { html body .app-section-pages a:not([aria-current="page"]):hover { border-color: color-mix(in srgb, var(--ds-indigo) 50%, var(--ds-line)); } }
+
+/* Small labels above headings. */
+html body :is(.eyebrow, .page-head-eyebrow) { font: 650 .75rem/1.3 var(--ds-font); letter-spacing: .09em; text-transform: uppercase; color: var(--ds-indigo); }
+
+/* Dialogs (quick add, search, safety): one sheet with a soft backdrop. */
+html body :is(.qa-dialog, .cs-dialog, .safety-dialog):is(.qa-dialog, .cs-dialog, .safety-dialog) {
+  border: 1px solid var(--ds-line); border-radius: 22px; background: var(--ds-surface); color: var(--ds-ink);
+  box-shadow: 0 24px 64px -24px #0f1c1b66, 0 2px 8px #0f1c1b14;
+}
+html body :is(.qa-dialog, .cs-dialog)::backdrop, html body .safety-backdrop { background: color-mix(in srgb, #0b1314 52%, transparent); backdrop-filter: blur(3px); }
+
+/* Big numbers (kcal, water, reps): the heading font, digits that line up. */
+html body :is(.day-big, .hub-stats strong, .t-num, .stat-value) { font-family: var(--ds-display); font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
