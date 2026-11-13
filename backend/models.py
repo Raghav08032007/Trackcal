@@ -1396,3 +1396,16 @@ class PainCheckin(Base):
     created_at=Column(DateTime,nullable=False,default=_now)
     __table_args__=(UniqueConstraint('user_id','part','day',name='uq_pain_checkin_day'),)
 
+
+
+class DailyTaskMark(Base):
+    """One of today's tasks done: ticked by the person (a walk) or seen in their data (water reached). Days with a mark build the
+    streak (services/daily_tasks.py)."""
+    __tablename__='daily_task_marks'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    day=Column(String(10),nullable=False)
+    task=Column(String(16),nullable=False)
+    ticked=Column(Boolean,nullable=False,default=False)   # True when the person ticked it, False when the data showed it
+    created_at=Column(DateTime,nullable=False,default=_now)
+    __table_args__=(UniqueConstraint('user_id','day','task',name='uq_daily_task_mark'),)

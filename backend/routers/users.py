@@ -193,7 +193,7 @@ def export_data(user: models.User = Depends(get_current_active_user), db: Sessio
         "custom_foods": [row(food) for food in db.query(models.CustomFood).filter_by(user_id=user.id).all()],
         "web_workspace_backup": row(db.get(models.UserWorkspace, user.id)),
         "phase3":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('food_favorites',models.FoodFavorite),('food_search_history',models.FoodSearchHistory),('workout_blueprints',models.WorkoutBlueprint),('workout_sessions',models.WorkoutSession)]},
-        "personalization":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('preferences',models.PersonalizationProfile),('measurements',models.WellnessMeasurement),('daily_wellness',models.DailyWellness),('workout_entries',models.WorkoutEntry),('training_libraries',models.TrainingLibrary),('workspace_entries',models.WorkspaceEntry),('safety_acknowledgements',models.SafetyAcknowledgement),('pain_checkins',models.PainCheckin),('plans',models.ActivityPlan),('recommendations',models.RecommendationHistory),('reminder_deliveries',models.ReminderDelivery)]},
+        "personalization":{name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('preferences',models.PersonalizationProfile),('measurements',models.WellnessMeasurement),('daily_wellness',models.DailyWellness),('workout_entries',models.WorkoutEntry),('training_libraries',models.TrainingLibrary),('workspace_entries',models.WorkspaceEntry),('safety_acknowledgements',models.SafetyAcknowledgement),('pain_checkins',models.PainCheckin),('daily_task_marks',models.DailyTaskMark),('plans',models.ActivityPlan),('recommendations',models.RecommendationHistory),('reminder_deliveries',models.ReminderDelivery)]},
         "plan_activities":[row(item) for item in db.query(models.PlanActivity).join(models.ActivityPlan).filter(models.ActivityPlan.user_id==user.id).all()],
         "gamification": {name:[row(item) for item in db.query(model).filter_by(user_id=user.id).all()] for name,model in [('activity_events',models.ActivityRewardEvent),('achievements',models.UserAchievement),('character_unlocks',models.CharacterUnlock),('customization',models.CharacterCustomization),('streak_records',models.StreakRecord)]},
         "adventure": {
@@ -245,7 +245,7 @@ ACCOUNT_RECORDS = [
 EXPORTED_TABLES = {
     'users', 'meal_logs', 'recipes', 'user_profiles', 'user_settings', 'water_entries', 'custom_foods', 'user_workspaces',
     'food_favorites', 'food_search_history', 'workout_blueprints', 'workout_sessions', 'personalization_profiles',
-    'wellness_measurements', 'daily_wellness', 'workout_entries', 'training_libraries', 'workspace_entries', 'safety_acknowledgements', 'pain_checkins', 'activity_plans', 'recommendation_history', 'reminder_deliveries', 'activity_reward_events',
+    'wellness_measurements', 'daily_wellness', 'workout_entries', 'training_libraries', 'workspace_entries', 'safety_acknowledgements', 'pain_checkins', 'daily_task_marks', 'activity_plans', 'recommendation_history', 'reminder_deliveries', 'activity_reward_events',
     'user_achievements', 'character_unlocks', 'character_customizations', 'streak_records', 'adventure_profiles',
     'reward_events', 'adventure_meals', 'game_sessions', *(entry[1].__tablename__ for entry in ACCOUNT_RECORDS),
 }

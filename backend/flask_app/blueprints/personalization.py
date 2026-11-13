@@ -3,6 +3,7 @@ from flask import Blueprint
 
 from flask_app import before_each, retry_deadlocks, route
 from routers import personalization as handlers
+from routers import today
 
 bp = Blueprint('personalization', __name__, url_prefix='/api/v1/personalization')
 retry_deadlocks(bp)  # XP awards; handlers make no external calls before committing
@@ -14,6 +15,8 @@ route(bp, 'GET', '/exercise-safety', handlers.exercise_safety_view)
 route(bp, 'POST', '/exercise-ack', handlers.exercise_ack)
 route(bp, 'GET', '/recovery', handlers.recovery_view)
 route(bp, 'POST', '/pain-checkin', handlers.pain_checkin)
+route(bp, 'GET', '/today', today.today_view)
+route(bp, 'POST', '/task-done', today.task_done)
 route(bp, 'POST', '/days/import', handlers.import_days)
 route(bp, 'GET', '/days/<day>', handlers.get_day)
 route(bp, 'POST', '/days/<day>', handlers.update_day)
