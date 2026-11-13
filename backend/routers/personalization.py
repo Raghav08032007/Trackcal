@@ -1,6 +1,7 @@
 """Authenticated Phase 2 workflows; all records scoped to the active account."""
 import uuid
-from pydantic import BaseModel
+from typing import Literal
+from pydantic import BaseModel, Field
 from datetime import datetime,timezone,date,timedelta
 from zoneinfo import ZoneInfo
 from flask_app.params import Depends, HTTPException
@@ -83,7 +84,7 @@ def remove_measurement(identifier:uuid.UUID,user=Depends(get_current_active_user
 def generate_plan(data:GeneratePlan,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'plan-generate',str(user.id),20,3600);lock(db,user);row=profile(db,user,True)
  if row.revision!=data.revision:raise HTTPException(409,'Reload your updated preferences before generating.')
- prefs=prefs_for(row);today=local_now(prefs).date()
+ prefs=effective(db,user,prefs_for(row));today=local_now(prefs).date()
  previous=db.query(models.PlanActivity).join(models.ActivityPlan).filter(models.ActivityPlan.user_id==user.id,models.PlanActivity.feedback.isnot(None)).all()
  feedback={'pain':any(a.feedback=='pain' for a in previous),'too_hard':any(a.feedback=='too_hard' for a in previous),'not_enjoyed':[a.template_id for a in previous if a.feedback=='not_enjoyed']}
  from routers.health import latest_assessment
@@ -274,8 +275,24 @@ class SafetyAck(BaseModel):
     accepted: bool
 
 
+def checkins_by_part(db, user, days=35):
+    """The person's pain check-ins of the last few weeks, per body part, oldest first."""
+    since = (date.today() - timedelta(days=days)).isoformat()
+    out = {}
+    for row in db.query(models.PainCheckin).filter(models.PainCheckin.user_id == user.id, models.PainCheckin.day >= since).order_by(models.PainCheckin.day).all():
+        out.setdefault(row.part, []).append({'day': row.day, 'pain': row.pain, 'trend': row.trend, 'red_flags': row.red_flags or []})
+    return out
+
+
+def effective(db, user, prefs):
+    """The preferences with each injury at the stage its check-ins have moved it to: what every exercise decision uses."""
+    from services.recovery import effective_conditions
+    if not prefs.conditions: return prefs
+    return prefs.model_copy(update={'conditions': effective_conditions(prefs.conditions, checkins_by_part(db, user), local_now(prefs).date())})
+
+
 def safety_state(db, user):
-    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
+    prefs = effective(db, user, prefs_for(db.get(models.PersonalizationProfile, user.id)))
     from routers.health import assessment
     report = db.query(models.LabReport).filter_by(user_id=user.id).order_by(models.LabReport.report_date.desc(), models.LabReport.created_at.desc()).first()
     plan = (assessment(db, user, report) or {}).get('plan') if report else None
@@ -295,3 +312,36 @@ def exercise_ack(data: SafetyAck, user=Depends(get_current_active_user), db: Ses
     row = models.SafetyAcknowledgement(user_id=user.id, template=data.template[:40], level=advice['level'], reasons=advice['reasons'])
     db.add(row); db.commit()
     return {'status': 'recorded', 'recorded_at': row.created_at.isoformat() + 'Z', 'level': advice['level']}
+
+
+class PainCheckinInput(BaseModel):
+    part: str = Field(max_length=24)
+    pain: int = Field(ge=0, le=10)
+    trend: Literal['better', 'same', 'worse']
+    red_flags: list[str] = Field(default_factory=list, max_length=6)
+
+
+def recovery_view(user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Each injured or operated part: its stage now, why, what to do next, and the last four weeks of check-ins."""
+    from services.recovery import RED_FLAGS, SOURCE, evaluate
+    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id)); today = local_now(prefs).date(); by_part = checkins_by_part(db, user)
+    return {'today': today.isoformat(), 'parts': [evaluate(c, by_part.get(c.part, []), today) for c in prefs.conditions],
+            'red_flags': RED_FLAGS, 'source': SOURCE}
+
+
+def pain_checkin(data: PainCheckinInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Today's pain for one part the person has told us about. One check-in a day per part; a second one replaces the first."""
+    from services.recovery import RED_FLAGS
+    consume(db, 'pain-checkin', str(user.id), 60, 3600)
+    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
+    if data.part not in {c.part for c in prefs.conditions}: raise HTTPException(422, 'Add this part to your injuries first.')
+    if set(data.red_flags) - set(RED_FLAGS): raise HTTPException(422, 'Unknown warning sign.')
+    day = local_now(prefs).date().isoformat()
+    row = db.query(models.PainCheckin).filter_by(user_id=user.id, part=data.part, day=day).with_for_update().first()
+    if row is None:
+        row = models.PainCheckin(user_id=user.id, part=data.part, day=day, pain=data.pain, trend=data.trend, red_flags=list(data.red_flags)); db.add(row)
+    else:
+        row.pain, row.trend, row.red_flags = data.pain, data.trend, list(data.red_flags)
+    db.commit()
+    return recovery_view(user, db)
+

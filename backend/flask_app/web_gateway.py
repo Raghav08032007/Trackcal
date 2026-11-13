@@ -233,12 +233,13 @@ DAY_ITEM = re.compile(r'^(\d{4}-\d{2}-\d{2}|import)$')
 @bp.route('/personalization/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def personalization(path):
     parts = path.split('/'); resource, item = parts[0], parts[1] if len(parts) > 1 else None
-    if len(parts) > 2 or resource not in ('state', 'targets', 'days', 'exercise-safety', 'exercise-ack', 'onboarding', 'measurements', 'plans', 'activities', 'education', 'reminders') or \
+    if len(parts) > 2 or resource not in ('state', 'targets', 'days', 'exercise-safety', 'exercise-ack', 'recovery', 'pain-checkin', 'onboarding', 'measurements', 'plans', 'activities', 'education', 'reminders') or \
             (item and not (UUID.match(item) if resource != 'days' else DAY_ITEM.match(item))):
         return error('Not found', 404)
     method = request.method
     if resource == 'days': allowed = method == 'POST' and bool(item) or method == 'GET' and item != 'import'
     elif resource in ('exercise-safety', 'exercise-ack'): allowed = not item and method == ('GET' if resource == 'exercise-safety' else 'POST')
+    elif resource in ('recovery', 'pain-checkin'): allowed = not item and method == ('GET' if resource == 'recovery' else 'POST')
     else: allowed = (resource in ('state', 'reminders', 'targets') and not item) if method == 'GET' else (resource == 'measurements' and bool(item)) if method == 'DELETE' else \
         (resource == 'targets' and not item) if method == 'PUT' else \
         (resource in ('onboarding', 'education', 'measurements', 'plans') and (not item or resource == 'plans')) or (resource in ('activities', 'reminders') and bool(item))

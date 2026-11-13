@@ -1380,3 +1380,19 @@ class SafetyAcknowledgement(Base):
     level=Column(String(10),nullable=False)             # avoid or caution, as advised at the time
     reasons=Column(JSON,nullable=False)                 # the reasons shown, worked out by the server
     created_at=Column(DateTime,nullable=False,default=_now)
+
+
+class PainCheckin(Base):
+    """One day's pain for one injured or operated part: 0-10, better, same or worse, and any warning signs. Kept as the person's own
+    record; it moves that part's recovery stage (services/recovery.py)."""
+    __tablename__='pain_checkins'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    part=Column(String(24),nullable=False)               # the body map part, e.g. knee_r
+    day=Column(String(10),nullable=False)                # the person's local date
+    pain=Column(Integer,nullable=False)                  # 0 none ... 10 worst imaginable
+    trend=Column(String(8),nullable=False)               # better, same or worse than yesterday
+    red_flags=Column(JSON,nullable=False,default=list)
+    created_at=Column(DateTime,nullable=False,default=_now)
+    __table_args__=(UniqueConstraint('user_id','part','day',name='uq_pain_checkin_day'),)
+
