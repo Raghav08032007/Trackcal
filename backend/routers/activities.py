@@ -91,6 +91,14 @@ def shared_route(db, row):
     return activity_stats.hide_near(route, circles)
 
 
+def _window_start(db, user):
+    """The first moment shown in detail, in naive UTC; None when the person sees everything."""
+    from routers.personalization import local_now, prefs_for
+    from services.history_access import access, utc_start
+    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
+    return utc_start(access(db, user, local_now(prefs).date()), prefs.timezone)
+
+
 def can_view(db, viewer, row):
     if row.is_deleted:
         return False
@@ -256,6 +264,9 @@ def create(data: ActivityInput, user=Depends(get_current_active_user), db: Sessi
 def list_activities(sport: Optional[Sport] = Query(None), before: Optional[str] = Query(None), limit: int = Query(20, ge=1, le=50),
                     user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     rows = db.query(models.Activity).filter(models.Activity.user_id == user.id, models.Activity.is_deleted.is_(False))
+    start = _window_start(db, user)
+    if start is not None:
+        rows = rows.filter(models.Activity.started_at >= start)   # older detail is Premium (services/history_access.py)
     if sport:
         rows = rows.filter(models.Activity.sport == sport)
     if before:
@@ -279,6 +290,11 @@ def get_activity(activity_id: str, user=Depends(get_current_active_user), db: Se
     row = db.get(models.Activity, activity_id)
     if not row or not can_view(db, user, row):
         raise HTTPException(status_code=404, detail='Activity not found.')
+    if row.user_id == user.id:
+        start = _window_start(db, user)
+        if start is not None and row.started_at < start:
+            from services.history_access import OLDER
+            raise HTTPException(status_code=402, detail=OLDER)
     return {'activity': detail(db, user, row)}
 
 

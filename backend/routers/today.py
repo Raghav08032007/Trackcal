@@ -118,3 +118,31 @@ def task_done(data: TaskDone, user=Depends(get_current_active_user), db: Session
         db.delete(row)
     db.commit()
     return today_view(user, db)
+
+
+def history_summary(user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Monthly summaries of everything the person has logged (up to a year), free for everyone, plus how far detail goes back."""
+    from services.history_access import access, monthly
+    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
+    today = local_now(prefs).date()
+    start = date(today.year - 1, today.month, 1)
+    tz = ZoneInfo(prefs.timezone)
+    days = {}
+    def day_of(key):
+        return days.setdefault(key, {'day': key, 'meals': 0, 'kcal': 0.0, 'water_ml': 0, 'sleep_hours': None, 'active_min': 0, 'logged_min': 0, 'workouts': 0, 'weight_kg': None})
+    for r in db.query(models.DailyWellness).filter(models.DailyWellness.user_id == user.id, models.DailyWellness.day >= str(start)).all():
+        d = day_of(r.day); d['water_ml'] = r.water_ml or 0; d['sleep_hours'] = r.sleep_hours; d['active_min'] = max(d['active_min'], r.active_minutes or 0)
+        if r.weight_kg: d['weight_kg'] = r.weight_kg
+    since = datetime.combine(start, datetime.min.time())
+    for m in db.query(models.MealLog).filter(models.MealLog.user_id == user.id, models.MealLog.is_deleted.is_(False), models.MealLog.logged_at >= since).all():
+        d = day_of(str(m.logged_at.replace(tzinfo=timezone.utc).astimezone(tz).date())); d['meals'] += 1; d['kcal'] += m.total_calories or 0
+    for w in db.query(models.WorkoutEntry).filter(models.WorkoutEntry.user_id == user.id, models.WorkoutEntry.is_deleted.is_(False), models.WorkoutEntry.day >= str(start)).all():
+        d = day_of(w.day); d['workouts'] += 1; d['logged_min'] += w.minutes or 0
+    for a in db.query(models.Activity).filter(models.Activity.user_id == user.id, models.Activity.is_deleted.is_(False), models.Activity.started_at >= since).all():
+        d = day_of(str(a.started_at.replace(tzinfo=timezone.utc).astimezone(tz).date())); d['workouts'] += 1; d['logged_min'] += round((a.moving_s or 0) / 60)
+    for w in db.query(models.WellnessMeasurement).filter(models.WellnessMeasurement.user_id == user.id, models.WellnessMeasurement.kind == 'weight',
+                                                         models.WellnessMeasurement.recorded_at >= since).order_by(models.WellnessMeasurement.recorded_at).all():
+        day_of(str(w.recorded_at.replace(tzinfo=timezone.utc).astimezone(tz).date()))['weight_kg'] = w.canonical_value
+    for d in days.values():
+        d['active_min'] = max(d['active_min'], d.pop('logged_min'))   # the same walk is often in both: count it once, as the Health Score does
+    return {'history': access(db, user, today), 'months': monthly(list(days.values()))}

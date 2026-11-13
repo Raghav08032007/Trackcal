@@ -99,6 +99,14 @@ def create_meal_log(
     return {"id": log.id, "logged_at": log.logged_at.isoformat(), "totals": totals, "item_count": len(data.items)}
 
 
+def _window_start(db, user):
+    """The first moment shown in detail, in naive UTC; None when the person sees everything."""
+    from routers.personalization import local_now, prefs_for
+    from services.history_access import access, utc_start
+    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
+    return utc_start(access(db, user, local_now(prefs).date()), prefs.timezone)
+
+
 def list_meal_logs(
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
@@ -112,6 +120,9 @@ def list_meal_logs(
         models.MealLog.user_id == user.id,
         models.MealLog.is_deleted == False,
     )
+    start = _window_start(db, user)
+    if start is not None:
+        q = q.filter(models.MealLog.logged_at >= start)   # older detail is Premium (services/history_access.py)
     if date_from:
         q = q.filter(models.MealLog.logged_at >= datetime.combine(date_from, datetime.min.time()))
     if date_to:
@@ -150,6 +161,10 @@ def get_meal_log(log_id: str, user: models.User = Depends(get_current_active_use
     ).first()
     if not log:
         raise HTTPException(404, "Meal log not found")
+    start = _window_start(db, user)
+    if start is not None and log.logged_at < start:
+        from services.history_access import OLDER
+        raise HTTPException(402, OLDER)
     return {
         "id": log.id,
         "logged_at": log.logged_at.isoformat(),

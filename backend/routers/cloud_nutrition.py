@@ -119,14 +119,17 @@ def diary(day:str|None=None,offset:int=Query(0,ge=0,le=10000),limit:int=Query(30
  settings=prefs(db,user)
  try:selected=date.fromisoformat(day) if day else today(db,user)
  except ValueError:raise HTTPException(422,'Choose a valid diary date.')
+ from services.history_access import access,too_old,utc_start,OLDER
+ acc=access(db,user,today(db,user))
+ if too_old(acc,str(selected)):raise HTTPException(402,OLDER)
  start=datetime.combine(selected,time.min,ZoneInfo(settings.timezone)).astimezone(timezone.utc).replace(tzinfo=None);end=datetime.combine(selected+timedelta(days=1),time.min,ZoneInfo(settings.timezone)).astimezone(timezone.utc).replace(tzinfo=None)
  base=db.query(models.MealLog).filter_by(user_id=user.id,is_deleted=False).filter(models.MealLog.logged_at>=start,models.MealLog.logged_at<end)
  rows=base.options(selectinload(models.MealLog.items)).order_by(models.MealLog.logged_at.desc(),models.MealLog.id).offset(offset).limit(limit+1).all()
  favorites=db.query(models.FoodFavorite).filter_by(user_id=user.id).order_by(models.FoodFavorite.created_at.desc()).limit(50).all()
  saved=db.query(models.SavedMeal).filter_by(user_id=user.id).order_by(models.SavedMeal.created_at.desc()).limit(50).all()
- recent=db.query(models.MealLog).filter_by(user_id=user.id,is_deleted=False).order_by(models.MealLog.logged_at.desc()).limit(10).all()
+ recent=db.query(models.MealLog).filter_by(user_id=user.id,is_deleted=False).filter(models.MealLog.logged_at>=(utc_start(acc,settings.timezone) or datetime(1970,1,1))).order_by(models.MealLog.logged_at.desc()).limit(10).all()
  history=db.query(models.FoodSearchHistory).filter_by(user_id=user.id).order_by(models.FoodSearchHistory.updated_at.desc()).limit(8).all()
- return {'today':str(today(db,user)),'day':str(selected),'timezone':settings.timezone,'entries':[diary_view(r,settings.timezone) for r in rows[:limit]],'has_more':len(rows)>limit,'favorites':[{'id':r.id,'food_key':r.food_key,'item':r.snapshot} for r in favorites],'saved_meals':[saved_view(s) for s in saved],'recent':[diary_view(r,settings.timezone) for r in recent],'recent_searches':[r.query for r in history],'suggestions':personal.recommendations(settings)}
+ return {'history':acc,'today':str(today(db,user)),'day':str(selected),'timezone':settings.timezone,'entries':[diary_view(r,settings.timezone) for r in rows[:limit]],'has_more':len(rows)>limit,'favorites':[{'id':r.id,'food_key':r.food_key,'item':r.snapshot} for r in favorites],'saved_meals':[saved_view(s) for s in saved],'recent':[diary_view(r,settings.timezone) for r in recent],'recent_searches':[r.query for r in history],'suggestions':personal.recommendations(settings)}
 
 def save_diary(data:DiaryInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'cloud-diary',str(user.id),90,3600);lock(db,user)

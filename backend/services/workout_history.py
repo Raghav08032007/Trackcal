@@ -160,7 +160,7 @@ def route_item(row, zone):
             'status': 'completed', 'removable': False, 'editable': False, 'link': f'/activity?id={row.id}'}
 
 
-def history(db, user_id, tz, kind='all', offset=0, limit=20, names=None):
+def history(db, user_id, tz, kind='all', offset=0, limit=20, names=None, since=None):
     zone, take = ZoneInfo(tz), offset + limit + 1
     items = []
     if kind in ('all', 'camera', 'gym'):
@@ -174,6 +174,8 @@ def history(db, user_id, tz, kind='all', offset=0, limit=20, names=None):
         rows = db.query(models.Activity).filter_by(user_id=user_id, is_deleted=False).filter(models.Activity.session_id.is_(None)) \
             .order_by(models.Activity.started_at.desc()).limit(take).all()
         items += [route_item(r, zone) for r in rows]
+    if since:
+        items = [i for i in items if i['day'] >= since]   # older detail is Premium (services/history_access.py)
     items.sort(key=lambda i: (i['at'], i['id']), reverse=True)
     return {'items': items[offset:offset + limit], 'has_more': len(items) > offset + limit, 'kind': kind, 'offset': offset}
 

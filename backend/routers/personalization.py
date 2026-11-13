@@ -234,19 +234,25 @@ def day_view(db,user,day,row=None,missing=False):
 def recent_days(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     """The last 35 days, newest first, with blanks for days nothing was logged."""
     tz,weight=day_context(db,user);today=local_now(prefs_for(db.get(models.PersonalizationProfile,user.id))).date()
+    from services.history_access import access
+    acc=access(db,user,today)
     keys=[(today-timedelta(days=n)).isoformat() for n in range(days_rules.HISTORY_DAYS)]
+    if acc['limited']:keys=[k for k in keys if k>=acc['from']]   # older detail is Premium
     rows={r.day:r for r in db.query(models.DailyWellness).filter(models.DailyWellness.user_id==user.id,models.DailyWellness.day>=keys[-1],models.DailyWellness.day<=keys[0])}
     routes=days_rules.routes_by_day(db,user.id,tz,keys[-1],keys[0],weight)
     zone=ZoneInfo(tz);start=datetime.combine(date.fromisoformat(keys[-1]),datetime.min.time(),zone).astimezone(timezone.utc).replace(tzinfo=None)
     meals={}
     for (at,) in db.query(models.MealLog.logged_at).filter(models.MealLog.user_id==user.id,models.MealLog.is_deleted.is_(False),models.MealLog.logged_at>=start):
         key=at.replace(tzinfo=timezone.utc).astimezone(zone).date().isoformat();meals[key]=meals.get(key,0)+1
-    return {'today':keys[0],'days':[{**days_rules.view(k,rows.get(k),weight,routes.get(k,0)),'meals':meals.get(k,0)} for k in keys]}
+    return {'today':keys[0],'history':acc,'days':[{**days_rules.view(k,rows.get(k),weight,routes.get(k,0)),'meals':meals.get(k,0)} for k in keys]}
 
 
 def get_day(day:str,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     if day=='import':raise HTTPException(404,'Not found')
-    tz,_=day_context(db,user);return day_view(db,user,checked_day(day,tz))
+    tz,_=day_context(db,user);day=checked_day(day,tz)
+    from services.history_access import access,too_old,OLDER
+    if too_old(access(db,user,local_now(prefs_for(db.get(models.PersonalizationProfile,user.id))).date()),day):raise HTTPException(402,OLDER)
+    return day_view(db,user,day)
 
 
 def update_day(day:str,data:DayUpdate,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
@@ -325,8 +331,11 @@ def recovery_view(user=Depends(get_current_active_user), db: Session = Depends(g
     """Each injured or operated part: its stage now, why, what to do next, and the last four weeks of check-ins."""
     from services.recovery import RED_FLAGS, SOURCE, evaluate
     prefs = prefs_for(db.get(models.PersonalizationProfile, user.id)); today = local_now(prefs).date(); by_part = checkins_by_part(db, user)
-    return {'today': today.isoformat(), 'parts': [evaluate(c, by_part.get(c.part, []), today) for c in prefs.conditions],
-            'red_flags': RED_FLAGS, 'source': SOURCE}
+    from services.history_access import access
+    acc = access(db, user, today); parts = [evaluate(c, by_part.get(c.part, []), today) for c in prefs.conditions]
+    if acc['limited']:
+        for p in parts: p['history'] = [h for h in p['history'] if h['day'] >= acc['from']]   # the stage still uses all four weeks
+    return {'today': today.isoformat(), 'parts': parts, 'history': acc, 'red_flags': RED_FLAGS, 'source': SOURCE}
 
 
 def pain_checkin(data: PainCheckinInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):

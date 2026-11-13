@@ -21,7 +21,7 @@ def daily_ai_limit():
 PLANS = {
     "free": {"name": "Free", "price_usd": 0, "features": ["manual_logging", "basic_history", "saved_meals"]},
 }
-ALWAYS_FREE = ["Food logging, barcode lookup and the food catalog", "Camera rep counting", "Reminders and notifications", "XP, characters and achievements"]
+ALWAYS_FREE = ["Your blood reports, and monthly summaries of all your history", "Your data export, with everything", "Food logging, barcode lookup and the food catalog", "Camera rep counting", "Reminders and notifications", "XP, characters and achievements"]
 
 
 def iso(value):

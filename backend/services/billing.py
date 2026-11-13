@@ -26,7 +26,7 @@ PLANS = {
     'premium_annual': {'label': '₹799 a year', 'amount_paise': 79900, 'period': 'yearly', 'days': 365, 'total_count': 10, 'env': 'RAZORPAY_PLAN_ANNUAL'},
 }
 PREMIUM_ACCESSORIES = ('star', 'heart', 'sparkle')
-FEATURES = ['More AI estimates (100 a day instead of 15)', 'Book new coach slots 24 hours before everyone else', 'Premium companion accessories']
+FEATURES = ['Your full history in detail, however old (free keeps the last 7 days in detail plus monthly summaries)', 'More AI estimates (100 a day instead of 15)', 'Book new coach slots 24 hours before everyone else', 'Premium companion accessories']
 
 
 def utcnow():
