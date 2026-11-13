@@ -159,3 +159,43 @@ html body .recovery-part h3 small { color: var(--ds-muted); font-weight: 500; }
 html:not([data-theme="dark"]) body .recovery-alert { color: #b91c1c; }
 @media (max-width: 520px) { html body .pain-scale { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; } html body .pain-dot { min-height: 44px; } }
 html body .recovery-part h3::first-letter { text-transform: uppercase; }
+
+/* ── Today's 3 tasks, streak and Health Score ─────────────────────────────────────────────────────── */
+html body .today-tasks.today-tasks { margin: 12px 0; padding: 20px; background: linear-gradient(160deg, color-mix(in srgb, #0d9488 9%, var(--ds-surface)), var(--ds-surface) 55%); }
+html body .today-tasks-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+html body .today-tasks h2 { margin: 0; font-size: 1.25rem; }
+html body .streak-pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; color: #fff; font-family: var(--ds-display);
+  background: linear-gradient(135deg, #c2410c, #be185d); box-shadow: 0 8px 18px -10px #be185d; }
+html body .streak-pill strong { font-size: 1.125rem; }
+html body .task-list { display: grid; gap: 8px; margin: 14px 0 6px; padding: 0; list-style: none; }
+html body .task-row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--ds-line); border-radius: 16px; background: var(--ds-surface); }
+html body .task-row[data-done] { background: color-mix(in srgb, #0d9488 8%, var(--ds-surface)); border-color: color-mix(in srgb, #0d9488 30%, var(--ds-line)); }
+html body .task-check { display: grid; place-items: center; flex: none; width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; border: 2px solid var(--ds-line);
+  background: var(--ds-surface); color: transparent; }
+html body button.task-check { width: 44px; height: 44px; cursor: pointer; }
+html body .task-row[data-done] .task-check { background: linear-gradient(135deg, #0b7a6c, #0e7490); border-color: transparent; color: #fff; }
+html body .task-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+html body .task-text strong { font-family: var(--ds-display); font-weight: 600; }
+html body .task-row[data-done] .task-text strong { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--ds-ink) 40%, transparent); }
+html body .task-text small { color: var(--ds-muted); font-size: .8125rem; }
+html body .task-go { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--sec-soft); color: var(--sec-ink); font: 600 .875rem/1 var(--ds-display); text-decoration: none; }
+html body .streak-rule { margin: 0 0 14px; font-size: .8125rem; }
+html body .health-score { padding-top: 14px; border-top: 1px solid var(--ds-line); }
+html body .health-score-main { display: flex; gap: 14px; align-items: center; }
+html body .health-score-main h3 { margin: 0 0 2px; }
+html body .health-ring { flex: none; width: 88px; height: 88px; }
+html body .health-ring-track { fill: none; stroke: var(--ds-sunken); stroke-width: 9; }
+html body .health-ring-value { fill: none; stroke-width: 9; stroke-linecap: round; }
+html body .health-ring-text { font: 700 22px var(--ds-display); fill: var(--ds-ink); }
+html body .health-focus { margin: 6px 0 0; font-size: .875rem; }
+html body .health-parts { display: grid; gap: 8px; margin: 14px 0 8px; padding: 0; list-style: none; }
+html body .health-parts li { display: grid; grid-template-columns: 96px 1fr 34px; align-items: center; gap: 4px 10px; }
+html body .health-parts small { grid-column: 1 / -1; color: var(--ds-muted); font-size: .8125rem; }
+html body .health-part-name { font: 600 .875rem/1.2 var(--ds-display); }
+html body .health-part-bar { height: 8px; border-radius: 999px; background: var(--ds-sunken); overflow: hidden; }
+html body .health-part-bar i { display: block; height: 100%; border-radius: inherit; background: var(--part); }
+html body .health-part-score { text-align: right; font: 600 .875rem/1 var(--ds-display); font-variant-numeric: tabular-nums; }
+html body .health-sources summary { cursor: pointer; font: 600 .875rem/1.3 var(--ds-display); min-height: 32px; }
+html body .health-sources ul { padding-left: 18px; font-size: .8125rem; }
+@media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) body .health-ring-value { transition: stroke-dasharray .8s cubic-bezier(.2, .8, .2, 1); }
+  html:not([data-motion="reduced"]) body .health-part-bar i { transition: width .8s cubic-bezier(.2, .8, .2, 1); } }
