@@ -1,7 +1,7 @@
 // Blood reports: read (nothing stored), confirm and save values, and the plan they lead to.
 export type Reading = { code: string; name: string; value: number; unit: string; ref_low: number | null; ref_high: number | null; source?: string };
-export type Finding = { code: string; name: string; value: number; unit: string; low: number | null; high: number | null; range_from: string; status: "normal" | "high" | "low"; severity: "ok" | "watch" | "soon" | "today"; rule: string | null; explanation: string };
-export type HealthPlanView = { rules: string[]; targets: Record<string, number>; exercise: Record<string, number | boolean | string>; diet: string[]; move: string[]; retest_days: number; retest_on?: string };
+export type Finding = { code: string; name: string; value: number; unit: string; low: number | null; high: number | null; range_from: string; status: "normal" | "high" | "low"; severity: "ok" | "watch" | "soon" | "today"; rule: string | null; explanation: string; source?: string };
+export type HealthPlanView = { rules: string[]; targets: Record<string, number>; exercise: Record<string, number | boolean | string>; diet: string[]; move: string[]; retest_days: number; retest_on?: string; why?: { rule: string; about: string; source: string; retest_days: number }[]; activity_source?: string };
 export type Assessment = { findings: Finding[]; safety: "ok" | "soon" | "today"; safety_message: string; plan: HealthPlanView | null; plan_note?: string; disclaimer: string };
 export type ReportView = { id: string; report_date: string; lab_name: string | null; source: string; tests?: number };
 export type Summary = { reports: ReportView[]; latest: ({ report: ReportView } & Assessment) | null; history: Record<string, { date: string; value: number }[]> };

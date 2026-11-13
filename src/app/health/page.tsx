@@ -107,7 +107,7 @@ function Results({ data, history, onAdd }: { data: { report: { report_date: stri
     <section className="ds-section" aria-labelledby="h-res"><h2 id="h-res">Your report of {new Date(data.report.report_date).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}</h2>
       <p className="ds-lead">{out.length ? `${out.length} of ${data.findings.length} results need attention.` : "Every result is in the normal range."}</p>
       <div className="ds-grid">{[...out, ...fine].map(f => { const s = scale(f), past = history[f.code] ?? [], prev = past.length > 1 ? past[past.length - 2].value : undefined;
-        return <div key={f.code} className="ds-card"><LabRangeBar lab={{ name: f.name, value: f.value, unit: f.unit, low: f.low ?? s.min, high: f.high ?? s.max, min: s.min, max: s.max, previous: prev, note: f.explanation }} /><p className="health-from">Normal range from {f.range_from}.</p></div>; })}</div>
+        return <div key={f.code} className="ds-card"><LabRangeBar lab={{ name: f.name, value: f.value, unit: f.unit, low: f.low ?? s.min, high: f.high ?? s.max, min: s.min, max: s.max, previous: prev, note: f.explanation }} /><p className="health-from">Normal range from {f.range_from}.{f.source && <> Guideline: {f.source}.</>}</p></div>; })}</div>
     </section>
     {data.plan && <section className="ds-section" aria-labelledby="h-plan"><h2 id="h-plan">Your plan from this report</h2>
       <div className="ds-grid">
@@ -117,6 +117,10 @@ function Results({ data, history, onAdd }: { data: { report: { report_date: stri
       </div>
       {data.plan.diet.length > 0 && <div className="ds-card" style={{ marginTop: 16 }}><h3>What to eat</h3><ul className="health-list">{data.plan.diet.map(t => <li key={t}>{t}</li>)}</ul></div>}
       {data.plan.move.length > 0 && <div className="ds-card" style={{ marginTop: 16 }}><h3>How to move</h3><ul className="health-list">{data.plan.move.map(t => <li key={t}>{t}</li>)}</ul></div>}
+      {(data.plan.why?.length ?? 0) > 0 && <div className="ds-card health-why" style={{ marginTop: 16 }}><h3>Why these changes</h3>
+        <ul className="health-list">{data.plan.why!.map(w => <li key={w.rule}><strong>{w.about}</strong> — follows {w.source}. Retest in about {Math.round(w.retest_days / 30)} months.</li>)}</ul>
+        {data.plan.activity_source && <p className="ds-sub">Activity amounts: {data.plan.activity_source}.</p>}
+        <p className="ds-sub">These are lifestyle changes for this report, checked against the guidelines named. They are not a diagnosis and never replace your doctor.</p></div>}
     </section>}
     {data.plan_note && <p className="onb-note">{data.plan_note}</p>}
     <p className="health-disclaimer">{data.disclaimer}</p>

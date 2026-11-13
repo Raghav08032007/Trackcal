@@ -107,3 +107,16 @@ html body .pref-switch input[type="checkbox"][role="switch"]:focus-visible { out
 html[data-theme="dark"] body .site-footer-logo { background-image: linear-gradient(120deg, #2dd4bf, #a78bfa 55%, #f472b6); }
 html[data-theme="dark"] body .site-footer-logo span { color: #fdba74; -webkit-text-fill-color: #fdba74; }
 html body .pref-switch input[type="checkbox"][role="switch"] { min-width: 44px; min-height: 26px; max-height: 26px; border: 0; }
+
+/* Retest reminder on Today, and the report's reasons in the weekly plan. */
+html body .retest-reminder.retest-reminder { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; padding: 18px; border-color: color-mix(in srgb, #7c3aed 30%, var(--ds-line));
+  background: linear-gradient(135deg, color-mix(in srgb, #7c3aed 10%, var(--ds-surface)), var(--ds-surface) 70%); }
+html body .retest-reminder h2 { margin: 0 0 4px; font-size: 1.0625rem; }
+html body .retest-reminder p { margin: 0 0 8px; }
+html body .retest-icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; }
+html body .personal-report-why { margin: 12px 0; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--sec-bright) 35%, var(--ds-line)); border-radius: 16px; background: var(--sec-soft); }
+html body .personal-report-why h3 { margin: 0 0 8px; font-size: 1rem; }
+html body .personal-report-why ul { display: grid; gap: 8px; margin: 0; padding-left: 18px; }
+html body .personal-report-why small { display: block; color: var(--ds-muted); font-size: .8125rem; }
+html body .health-why strong { font-family: var(--ds-display); }
+html body .retest-reminder .account-secondary { color: var(--ds-ink); }
