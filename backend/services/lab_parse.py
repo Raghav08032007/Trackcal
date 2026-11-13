@@ -11,7 +11,7 @@ import re
 
 from services.lab_reference import TESTS, Test, to_canonical
 
-UNITS = r'(%|mg/dl|g/dl|g/l|ng/ml|pg/ml|ug/l|µg/l|miu/l|miu/ml|uiu/ml|µiu/ml|u/l|iu/l|mmol/l|umol/l|µmol/l|nmol/l|pmol/l|meq/l)'
+UNITS = r'(ml/min/1\.73\s*m(?:2|²)?|ml/min|%|mg/dl|g/dl|g/l|ng/ml|pg/ml|ug/l|µg/l|miu/l|miu/ml|uiu/ml|µiu/ml|u/l|iu/l|mmol/l|umol/l|µmol/l|nmol/l|pmol/l|meq/l)'
 NUMBER = r'(\d+(?:\.\d+)?)'
 # Text inside a test's name that contains digits but is not the result.
 NOISE = (r'25[\s-]*\(?\s*(oh|hydroxy)\s*\)?\s*(d3?|vitamin\s*d)?', r'\bd3\b', r'\bd2\b', r'\b2\s*h(ou)?rs?\b', r'\(\s*hplc\s*\)', r'method\s*:?\s*[a-z /-]*')
@@ -44,27 +44,36 @@ def _find(test: Test, low: str):
     return None
 
 
+RANGE = NUMBER + r'\s*(?:-|to)\s*' + NUMBER
+LIMIT = r'(?:<=?|>=?|≤|≥|less\s+than|more\s+than|greater\s+than|upto|up\s+to)\s*' + NUMBER
+FLAG = r'(?:\s*(?:\*|\(?[hl]\)?|high|low)(?![a-z]))?'
+
+
 def _reading(rest: str):
-    """(value, unit, ref_low, ref_high) from the text after a test's name, or None."""
+    """(value, unit, ref_low, ref_high) from the text after a test's name, or None.
+    The result is the first number that is not part of a reference range (a-b, a to b) or a limit (<a, >a, up to a): labs print
+    the range before or after the result, so neither end of a range may ever be read as the result."""
     for noise in NOISE:
         rest = re.sub(noise, ' ', rest)
-    value_match = re.search(r'(?<![\w.])' + NUMBER + r'(?![\d.]*\s*-\s*\d)', rest)  # the first number that does not start a range
+    taken = [m.span() for m in re.finditer(RANGE, rest)] + [m.span() for m in re.finditer(LIMIT, rest)]
+    value_match = next((m for m in re.finditer(r'(?<![\w.])' + NUMBER + r'(?![\w.])', rest)
+                        if not any(a <= m.start() < b for a, b in taken)), None)
     if not value_match:
         return None
     value = float(value_match.group(1))
     after = rest[value_match.end():]
-    unit_match = re.match(r'\s*' + UNITS, after)
+    unit_match = re.match(FLAG + r'\s*' + UNITS, after)   # a high/low flag may sit between the value and its unit
     unit = unit_match.group(1) if unit_match else None
     if not unit:  # some reports print the unit before the value
         before = re.search(UNITS + r'\s*$', rest[:value_match.start()].strip())
         unit = before.group(1) if before else None
     low = high = None
-    span = re.search(NUMBER + r'\s*(?:-|to)\s*' + NUMBER, after)
+    span = re.search(RANGE, rest)
     if span:
         low, high = float(span.group(1)), float(span.group(2))
     else:
-        below = re.search(r'(?:<|≤|less\s+than|upto|up\s+to)\s*' + NUMBER, after)
-        above = re.search(r'(?:>|≥|more\s+than|greater\s+than)\s*' + NUMBER, after)
+        below = re.search(r'(?:<=?|≤|less\s+than|upto|up\s+to)\s*' + NUMBER, rest)
+        above = re.search(r'(?:>=?|≥|more\s+than|greater\s+than)\s*' + NUMBER, rest)
         high = float(below.group(1)) if below else None
         low = float(above.group(1)) if above else None
     return value, unit, low, high
@@ -83,7 +92,10 @@ def parse_text(text: str) -> list[dict]:
             m = _find(test, low)
             if not m:
                 continue
-            reading = _reading(low[m.end():])
+            rest = low[m.end():]
+            if re.match(r'[23](?![\d.])', rest) and re.search(r'[a-z]$', low[:m.end()]):
+                rest = rest[1:]  # "Vitamin D3", "D2": the digit names the form, it is not the result
+            reading = _reading(rest)
             if reading is None and i + 1 < len(lines) and re.match(r'\s*[<>]?\s*\d', lines[i + 1]):  # tables put the value on the next line
                 reading = _reading(lines[i + 1].lower())
             if reading is None:

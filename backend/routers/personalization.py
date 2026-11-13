@@ -86,7 +86,8 @@ def generate_plan(data:GeneratePlan,user=Depends(get_current_active_user),db:Ses
  prefs=prefs_for(row);today=local_now(prefs).date()
  previous=db.query(models.PlanActivity).join(models.ActivityPlan).filter(models.ActivityPlan.user_id==user.id,models.PlanActivity.feedback.isnot(None)).all()
  feedback={'pain':any(a.feedback=='pain' for a in previous),'too_hard':any(a.feedback=='too_hard' for a in previous),'not_enjoyed':[a.template_id for a in previous if a.feedback=='not_enjoyed']}
- activities,explanation=rules.generate(prefs,today,feedback)
+ from routers.health import latest_assessment
+ activities,explanation=rules.generate(prefs,today,feedback,report=latest_assessment(db,user))
  if not activities and feedback['pain']:activities=[{'template_id':'recovery','scheduled_day':str(today),'minutes':5}]  # pain on the week's last open day: rest, not an error
  if not activities:raise HTTPException(409,'No eligible activity or rest days remain. Review your schedule, restrictions and rest options before creating a plan.')
  for old in db.query(models.ActivityPlan).filter_by(user_id=user.id).filter(models.ActivityPlan.status!='archived').all():old.status='archived'

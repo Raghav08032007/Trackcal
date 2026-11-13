@@ -59,6 +59,21 @@ RULES = {
     'glucose_low': {'targets': {}, 'exercise': {'intensity': 'light'}, 'retest_days': 30,
                     'diet': ['Do not skip meals; carry a snack.'], 'move': ['Avoid fasted workouts until a doctor has reviewed your low sugar.']},
 }
+# What each rule is about and the guideline behind it, shown with the plan so every change can be checked.
+WHY = {'sugar': ('Blood sugar', 'ADA Standards of Care in Diabetes 2025; WHO physical activity guidelines 2020'),
+       'cholesterol': ('Cholesterol', 'ACC/AHA 2018 cholesterol guideline; ACC/AHA 2019 primary prevention guideline'),
+       'triglycerides': ('Triglycerides', 'AHA scientific statement on triglycerides (2011); Endocrine Society 2012'),
+       'hdl_low': ('HDL ("good") cholesterol', 'ACC/AHA 2019 primary prevention guideline'),
+       'iron': ('Iron and haemoglobin', 'WHO guideline on anaemia; ICMR-NIN dietary guidelines for Indians (2024)'),
+       'vitamin_d': ('Vitamin D', 'Endocrine Society clinical practice guideline (2011)'),
+       'b12': ('Vitamin B12', 'NIH Office of Dietary Supplements; ICMR-NIN 2020'),
+       'thyroid_low': ('Thyroid (underactive)', 'American Thyroid Association'),
+       'thyroid_high': ('Thyroid (overactive)', 'American Thyroid Association'),
+       'kidney': ('Kidneys', 'KDIGO 2024 chronic kidney disease guideline'),
+       'uric_acid': ('Uric acid', 'ACR 2020 gout guideline'),
+       'liver': ('Liver', 'AASLD 2023 practice guidance on fatty liver disease'),
+       'glucose_low': ('Low blood sugar', 'ADA Standards of Care in Diabetes 2025')}
+ACTIVITY_SOURCE = 'WHO physical activity guidelines 2020: 150-300 minutes of moderate activity and 2 strength days a week'
 INTENSITY = ['light', 'moderate', 'vigorous']
 
 
@@ -91,7 +106,7 @@ def judge(result, sex):
     rule = test.high_rule if status == 'high' else test.low_rule if status == 'low' else None
     explanation = test.explain_high if status == 'high' else test.explain_low if status == 'low' else f'Your {test.name} is in the normal range.'
     return {'code': test.code, 'name': test.name, 'value': v, 'unit': test.unit, 'low': low, 'high': high, 'range_from': 'your lab' if lab else 'standard adult range',
-            'status': status, 'severity': severity, 'rule': rule, 'explanation': explanation}
+            'status': status, 'severity': severity, 'rule': rule, 'explanation': explanation, 'source': test.source}
 
 
 def assess(results, sex='unspecified', age_group='unspecified', diet='balanced'):
@@ -131,5 +146,7 @@ def assess(results, sex='unspecified', age_group='unspecified', diet='balanced')
     if exercise.get('intensity') in ('light', 'moderate'):
         exercise.pop('intervals_per_week', None)  # intervals wait until the reason for the limit is resolved
         move_lines = [l for l in move_lines if 'interval' not in l.lower()]
-    out['plan'] = {'rules': rules, 'targets': targets, 'exercise': exercise, 'diet': list(dict.fromkeys(diet_lines)), 'move': list(dict.fromkeys(move_lines)), 'retest_days': retest}
+    why = [{'rule': key, 'about': WHY[key][0], 'source': WHY[key][1], 'retest_days': RULES[key]['retest_days']} for key in rules]
+    out['plan'] = {'rules': rules, 'targets': targets, 'exercise': exercise, 'diet': list(dict.fromkeys(diet_lines)), 'move': list(dict.fromkeys(move_lines)), 'retest_days': retest,
+                   'why': why, 'activity_source': ACTIVITY_SOURCE}
     return out

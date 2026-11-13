@@ -111,6 +111,12 @@ def assessment(db, user, report):
     return out
 
 
+def latest_assessment(db, user):
+    """The latest report's assessment, for the weekly plan and today's tasks; None without a report."""
+    report = db.query(models.LabReport).filter_by(user_id=user.id).order_by(models.LabReport.report_date.desc(), models.LabReport.created_at.desc()).first()
+    return assessment(db, user, report) if report else None
+
+
 def report_view(report, count=None):
     return {'id': report.id, 'report_date': report.report_date, 'lab_name': report.lab_name, 'source': report.source, **({'tests': count} if count is not None else {})}
 

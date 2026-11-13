@@ -136,23 +136,72 @@ def recommendations(prefs):
  meals=sorted(meals,key=lambda m:(m['cuisine']!=prefs.cuisine,m['id'] not in preferred,-len(set(m['ingredients'])&set(prefs.ingredients)),m['id']))
  return {'meals':[{**m,'reason':f"Matches your {prefs.diet} preference; known declared allergens excluded. Cuisine/available ingredients determine ordering."} for m in meals[:4]],'nutrition_note':'Check every ingredient and cross-contact information. These ideas do not certify allergen safety. No calorie or water target is generated.','needs_review':unknown or bool(prefs.professional_restrictions),'community_categories':[{'category':v,'operational':False} for v in prefs.interests],'event_categories':[{'category':v,'operational':False} for v in prefs.interests],'message':'Choose one small activity at your own pace.' if prefs.motivation else '', 'budget_note':'Budget is a planning preference; these ideas have no invented prices. Use the existing reviewed recipe cost planner.'}
 
-def generate(prefs,today,previous_feedback):
+CARDIO=('walk','cycle','run')
+def _strength(key):return key in ('strength','gym') or key.startswith('camera_')
+def apply_report(choices,report,prefs,minutes):
+ """What a confirmed blood report changes in the week, each change with the guideline behind it. Returns (choices, plan of
+ strength days and active minutes, explanation lines). Nothing changes without a report; a report that needs a doctor today
+ leaves only rest."""
+ from services.exercise_safety import INTENSE
+ from services.health_plan import ACTIVITY_SOURCE, RULES
+ lines=[]
+ if not report:return choices,None,lines
+ if report.get('safety')=='today':
+  return [],None,[{'text':'Your blood report needs a doctor today, so no exercise is planned until a doctor has seen it. Rest days only.','source':'TrackCal safety rule'}]
+ plan=report.get('plan') or {};ex=plan.get('exercise') or {};why={w['rule']:w for w in plan.get('why',[])}
+ def source_of(field):  # the guidelines of just the findings that set this part of the plan
+  return '; '.join(dict.fromkeys(why[r]['source'] for r in why if field in RULES.get(r,{}).get('exercise',{}))) or ACTIVITY_SOURCE
+ if ex.get('intensity') in ('light','moderate'):
+  dropped=[k for k in choices if k in INTENSE or k=='run']
+  choices=[k for k in choices if k not in dropped]
+  if dropped:lines.append({'text':f"Your report suggests {ex['intensity']} exercise for now, so jumping and running sessions are left out.",'source':source_of('intensity')})
+ strength=int(ex.get('strength_days') or 0);cardio=int(ex.get('cardio_min') or 0)
+ if strength:lines.append({'text':f'{strength} strength days this week, as your report suggests.','source':ACTIVITY_SOURCE})
+ if ex.get('post_meal_walk'):lines.append({'text':'A 10-15 minute walk after lunch and dinner lowers the sugar rise from that meal.','source':source_of('post_meal_walk')})
+ if ex.get('no_high_protein'):lines.append({'text':'No high-protein shakes or bulking sessions while your kidney result is being reviewed.','source':source_of('no_high_protein')})
+ return choices,{'strength_days':strength,'cardio_min':cardio},lines
+
+def generate(prefs,today,previous_feedback,report=None):
  choices=eligible_templates(prefs)
+ minutes0=min(prefs.duration,10 if prefs.experience in ('beginner','unspecified') else 20)
+ choices,target,report_lines=apply_report(choices,report,prefs,minutes0)
+ if report and report.get('safety')=='today':
+  activities=[{'template_id':'recovery','scheduled_day':str(today+timedelta(days=d)),'minutes':5} for d in range(7)]
+  return activities,{'protected':[],'report':report_lines,'priorities':['A blood report that needs a doctor today stops automated exercise']}
  if previous_feedback.get('pain'):choices=[]
  minutes=min(prefs.duration,10 if prefs.experience in ('beginner','unspecified') else 20)
  if previous_feedback.get('too_hard'):minutes=max(5,minutes-5)
  if previous_feedback.get('not_enjoyed'):choices=[k for k in choices if k not in previous_feedback['not_enjoyed']] or ['recovery']
  activities=[]
+ open_days=[today+timedelta(days=o) for o in range(7) if not((today+timedelta(days=o)).weekday() in prefs.rest_days or (today+timedelta(days=o)).weekday() not in prefs.available_days)]
+ strong=[k for k in choices if _strength(k)];cardio=[k for k in choices if k in CARDIO]
+ want_strength=min(len(open_days),(target or {}).get('strength_days',0)) if strong else 0
+ cardio_days=len(open_days)-want_strength
+ per_cardio=minutes
+ if target and target.get('cardio_min') and cardio_days and cardio:
+  # Start where the person is and add about a tenth a week (ACSM); never more than their chosen session length.
+  per_cardio=max(minutes,min(prefs.duration,-(-target['cardio_min']//cardio_days)))
+  if prefs.experience in ('beginner','unspecified'):per_cardio=min(per_cardio,20)  # new to exercise: build up over the weeks, not all at once
+ n_strength=n_cardio=0
  # The next 7 days from today, so a plan made on a Sunday is a full week, not one day.
  for offset in range(7):
   day=today+timedelta(days=offset);i=day.weekday()
   rest=i in prefs.rest_days or i not in prefs.available_days
-  template='recovery' if rest else choices[len(activities)%len(choices)] if choices else None
+  if rest:template='recovery'
+  elif target and n_strength<want_strength and strong:template=strong[n_strength%len(strong)];n_strength+=1
+  elif target and cardio:template=cardio[n_cardio%len(cardio)];n_cardio+=1
+  else:template=choices[len(activities)%len(choices)] if choices else None
   if template is None:continue
-  activities.append({'template_id':template,'scheduled_day':str(day),'minutes':5 if template=='recovery' else minutes})
+  activities.append({'template_id':template,'scheduled_day':str(day),'minutes':5 if template=='recovery' else per_cardio if template in CARDIO and target else minutes})
  from services import body_load
  protected=body_load.why_left_out(body_load.protected(prefs.conditions))
- return activities,{'protected':protected,'priorities':['Professional restrictions and pain feedback block automated exercise','Injured and operated body parts are protected by their stage','Accessibility, equipment and setting eligibility','Explicit rest and available days','Interests and comfort feedback','Conservative duration; never XP/BMI-based progression'],'preferred_time':prefs.workout_time,'professional_review':bool(prefs.professional_restrictions or previous_feedback.get('pain')),'reason':'Only rest options are offered where professional review is needed.' if not choices else 'Activities fit your selected setting, equipment, interests and available days. No automatic difficulty increase.'}
+ if target and target.get('cardio_min'):
+  week=sum(a['minutes'] for a in activities if a['template_id'] in CARDIO)
+  from services.health_plan import ACTIVITY_SOURCE
+  text=f"This week: {week} active minutes towards the {target['cardio_min']} a week your report suggests." if week<target['cardio_min'] else f"This week reaches the {target['cardio_min']} active minutes a week your report suggests."
+  if week<target['cardio_min']:text+=' Add a few minutes each week as it gets easier; going up gradually is safest.'
+  report_lines.append({'text':text,'source':ACTIVITY_SOURCE+'; ACSM guidelines on gradual progression'})
+ return activities,{'report':report_lines,'protected':protected,'priorities':['Professional restrictions and pain feedback block automated exercise','Injured and operated body parts are protected by their stage','Accessibility, equipment and setting eligibility','Explicit rest and available days','Interests and comfort feedback','Conservative duration; never XP/BMI-based progression'],'preferred_time':prefs.workout_time,'professional_review':bool(prefs.professional_restrictions or previous_feedback.get('pain')),'reason':'Only rest options are offered where professional review is needed.' if not choices else 'Activities fit your selected setting, equipment, interests and available days. No automatic difficulty increase.'}
 
 def normalize_measurement(kind,value,unit):
  rules={'height':({'cm':1,'in':2.54},30,275),'weight':({'kg':1,'lb':0.45359237},1,500),'duration':({'minutes':1},0,180),'repetitions':({'reps':1},0,500),'frequency':({'days/week':1},0,7),'hydration':({'ml':1},0,10000),'sleep':({'hours':1},0,24)}
