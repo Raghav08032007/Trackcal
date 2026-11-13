@@ -1,3 +1,4 @@
+import {RecoveryOverview} from '@/components/recovery-checkin';
 import {useEffect,useMemo,useState} from 'react';
 import Model,{type IExerciseData,type Muscle} from 'react-body-highlighter';
 import Link from '@/lib/navigation';
@@ -19,7 +20,7 @@ function Map(){
  const names=(state:MuscleState)=>[...states].filter(([,value])=>value===state).map(([muscle])=>muscle);
  const data:IExerciseData[]=LEVELS.map(({state,frequency})=>({name:state,frequency,muscles:names(state) as unknown as Muscle[]})).filter(row=>row.muscles.length);
  const choice=restedChoice(states),steps=readyToProgress(moves);
- return <main className="wellness-page recovery-page"><section className="camera-intro"><span className="eyebrow">FILLED IN BY YOUR REPS</span><h1>Recovery map</h1><p>Muscles you worked with the camera, fading over three days. This is a common rule of thumb, not a reading of your body, so go by how you feel.</p></section>
+ return <main className="wellness-page recovery-page"><section className="camera-intro"><span className="eyebrow">FILLED IN BY YOUR REPS</span><h1>Recovery map</h1><p>Muscles you worked with the camera, fading over three days. This is a common rule of thumb, not a reading of your body, so go by how you feel.</p></section><RecoveryOverview/>
   {error&&<p role="alert" className="camera-alert">{error}</p>}
   {!training&&!error&&<p role="status">Loading your workouts…</p>}
   {training&&<>
