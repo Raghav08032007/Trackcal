@@ -20,15 +20,7 @@ def _view(food):
 
 
 def search(db, query, limit=30):
-    """Every word must match. Names that start with the first word and shorter, plainer names come first."""
-    term = query.strip().lower()
-    words = [word for word in re.findall(r'\w+', term, flags=re.UNICODE) if len(word) >= 3]
-    aliases = db.query(models.FoodTranslation.food_id).filter(models.FoodTranslation.name.like(f'%{term}%'))
-    matches = [models.Food.id.in_(aliases), models.Food.name_normalized.like(f'{term}%')]
-    if words: matches.append(text('MATCH (foods.name) AGAINST (:terms IN BOOLEAN MODE)').bindparams(terms=' '.join(f'+{word}*' for word in words)))
-    first = (words or [term])[0]
-    word = re.escape(first)  # whole words first, so roti finds roti before rotisserie chicken
-    rank = case((models.Food.name_normalized == term, 0), (models.Food.name_normalized.op('REGEXP')(f'^{word}\\b'), 1), (models.Food.name_normalized.op('REGEXP')(f'\\b{word}\\b'), 2), else_=3)
-    rows = db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def), selectinload(models.Food.portions)) \
-        .filter(or_(*matches)).order_by(rank, func.char_length(models.Food.name), models.Food.id).limit(limit).all()
-    return [view for view in map(_view, rows) if view]
+    """The food library: the same ranking as the diary search (services/food_rank.py), with full nutrition and portions."""
+    from services.food_rank import find
+    rows, _, _ = find(db, query, limit=limit)
+    return [view for view in map(_view, rows[:limit]) if view]

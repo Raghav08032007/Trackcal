@@ -142,6 +142,9 @@ def test_barcode_lookup_endpoint(monkeypatch):
         status_code = 200
         def json(self): return {"status": 1, "product": {"product_name": "Hazelnut spread", "nutriments": {"energy-kcal_100g": 539, "proteins_100g": 6.3, "carbohydrates_100g": 57.5, "fat_100g": 30.9}}}
     monkeypatch.setattr(barcode_lookup, "_http_get", lambda url: Reply()); monkeypatch.setattr(barcode_lookup, "breaker", barcode_lookup._Breaker())
+    import database
+    with database.SessionLocal() as db:  # a real lookup cached in this database must not stand in for the stub (rolled back afterwards)
+        db.query(models.BarcodeCache).delete(); db.commit()
     from routers.auth import get_current_active_user
     mock_user = models.User(
         id="test-user-id",

@@ -45,30 +45,13 @@ def food_view(food):
  return {'id':food.id,'food_id':food.id,'name':food.name,'grams':food.serving_size_g or 100,'nutrients':{'calories':nutrients.get('energy_kcal'),'protein':nutrients.get('protein'),'carbs':nutrients.get('carbohydrates'),'fat':nutrients.get('fat')},'estimated':not food.is_verified or any(n.is_estimated for n in food.nutrients),'source':food.data_source.value if food.data_source else 'Catalog source unspecified','source_label':SOURCE_LABELS.get(food.data_source.value if food.data_source else '','Catalog'),'category':food.category,'cuisine':food.cuisine_region}
 
 def search(q:str=Query('',max_length=100),category:str=Query('',max_length=100),offset:int=Query(0,ge=0,le=10000),limit:int=Query(12,ge=1,le=50),user=Depends(get_current_active_user),db:Session=Depends(get_db)):
- query=q.strip().lower();term=canonical_term(db,query)
- base=db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def))
- # Search the typed word and its canonical form: catalogs name foods differently (IFCT says "Ragi", the synonym says "finger millet").
- terms=[t for t in dict.fromkeys((query,term)) if t]
- if terms:
-  conditions=[]
-  for i,t in enumerate(terms):
-   aliases=db.query(models.FoodAlias.food_id).filter(models.FoodAlias.alias.like(f'{t}%'))
-   translations=db.query(models.FoodTranslation.food_id).filter(models.FoodTranslation.name.like(f'{t}%'))
-   conditions+=[models.Food.name_normalized.like(f'{t}%'),models.Food.name.like(f'{t}%'),models.Food.id.in_(aliases),models.Food.id.in_(translations)]
-   ft=fulltext_terms(t)
-   if ft:conditions.append(text(f'MATCH (foods.name) AGAINST (:ft{i} IN BOOLEAN MODE)').bindparams(**{f'ft{i}':ft}))
-  base=base.filter(or_(*conditions))
- if category:base=base.filter(models.Food.category==category)
- # Ranking: the user's favourites, then foods they logged recently, then verified catalog foods, then the rest.
+ query=q.strip().lower()
+ # Ranked by how well each food matches, after the person's favourites and recent foods (services/food_rank.py).
+ from services.food_rank import find
  favorites=[k for (k,) in db.query(models.FoodFavorite.food_key).filter_by(user_id=user.id).limit(200)]
  recent=[f for (f,) in db.query(models.MealItem.food_id).join(models.MealLog,models.MealItem.meal_log_id==models.MealLog.id).filter(models.MealLog.user_id==user.id,models.MealItem.food_id.isnot(None)).order_by(models.MealLog.logged_at.desc()).limit(50)]
- rank=case((models.Food.id.in_(favorites or ['']),0),(models.Food.id.in_(recent or ['']),1),(models.Food.is_verified.is_(True),2),else_=3)
- rows=base.order_by(rank,models.Food.name_normalized,models.Food.id).offset(offset).limit(limit+1).all()
- mode='indexed prefix / aliases'
- if not rows and len(term)>=3 and offset==0:
-  fallback=db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def)).filter(or_(*[models.Food.name_normalized.like(f'%{t}%') for t in terms]))
-  if category:fallback=fallback.filter(models.Food.category==category)
-  rows=fallback.order_by(models.Food.name_normalized,models.Food.id).limit(limit+1).all();mode='bounded substring fallback'
+ rows,term,mode=find(db,query,category,favorites,recent,limit,offset)
+ terms=[t for t in dict.fromkeys((query,term)) if t]
  result=[food_view(f) for f in rows[:limit]]
  if terms and result:  # say which local name matched, e.g. "Arisi (Tamil)"
   hits={}

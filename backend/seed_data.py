@@ -79,6 +79,16 @@ def _get_nutrient(slug):
     return db.query(models.NutrientDefinition).filter(models.NutrientDefinition.slug == slug).first()
 
 
+# These entries were written with the values for one serving, not for 100 g. They are converted when added, so the catalog stays
+# per 100 g throughout (checked against typical values per 100 g; alembic 0023 corrects databases seeded before this fix).
+PER_SERVING = frozenset({
+    "Miso Soup", "Tonkotsu Ramen (bowl)", "Bibimbap (bowl)", "Japchae", "Fried Rice", "Sweet and Sour Pork", "Chicken Taco (1 piece)",
+    "Guacamole (2 tbsp)", "Black Bean Burrito", "Hummus (2 tbsp)", "Greek Salad", "Caesar Salad", "Blueberry Smoothie",
+    "Oatmeal with Berries", "Pad Thai (plate)", "Nasi Goreng (plate)", "Pho Bo (bowl)", "Jollof Rice (serving)", "Ceviche (serving)",
+    "Whole Milk (cup)", "Brown Bread (slice)",
+})
+
+
 def _add_food(name, category, cuisine, serving_g, nutrients_per_100g, source="usda"):
     existing = db.query(models.Food).filter(models.Food.name == name).first()
     if existing:
@@ -97,10 +107,11 @@ def _add_food(name, category, cuisine, serving_g, nutrients_per_100g, source="us
     )
     db.add(food)
     db.flush()
+    scale = 100 / serving_g if name in PER_SERVING else 1
     for slug, value in nutrients_per_100g.items():
         nd = _get_nutrient(slug)
         if nd and value is not None:
-            db.add(models.FoodNutrient(food_id=food.id, nutrient_def_id=nd.id, amount_per_100g=value))
+            db.add(models.FoodNutrient(food_id=food.id, nutrient_def_id=nd.id, amount_per_100g=round(value * scale, 3)))
     db.flush()
     return food
 

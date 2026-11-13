@@ -25,6 +25,17 @@ class Reply:
         return self._body
 
 
+@pytest.fixture(autouse=True)
+def empty_cache(request):
+    """Start from an empty cache: a real lookup cached in this database must not change what these tests see.
+    The deletion happens inside the test's own transaction, which is rolled back afterwards. The concurrency test uses its own
+    connections (and cleans up itself): holding locks here would only make it wait."""
+    if 'concurrent' in request.node.name:
+        return
+    with database.SessionLocal() as db:
+        db.query(models.BarcodeCache).delete(); db.commit()
+
+
 @pytest.fixture
 def provider(monkeypatch):
     """Scripted Open Food Facts: each call pops the next reply (a Reply or an exception)."""
