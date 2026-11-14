@@ -122,7 +122,7 @@ def update(identifier:UUID,data:SessionUpdate,user=Depends(get_current_active_us
    if row.status=='completed' and tracking and (any(getattr(data.tracking,k)!=tracking[k] for k in ('exercise_type','engine','version','confidence_mean','sampled_frames','low_confidence_frames')) or [s.estimated_reps for s in data.tracking.sets]!=[s['estimated_reps'] for s in tracking['sets']]):raise HTTPException(409,'Original camera estimates and confidence cannot be rewritten.')
    if 'camera_'+data.tracking.exercise_type!=keys[0]:raise HTTPException(422,'Tracking exercise does not match this session.')
    tracking=data.tracking.model_dump()
-   tracking['sets']=[{k:v for k,v in s.items() if not (k=='duration_s' and v is None)} for s in tracking['sets']]
+   tracking['sets']=[{k:v for k,v in s.items() if not (k in ('duration_s','reach_deg') and v is None)} for s in tracking['sets']]
   if data.action in ('complete','amend'):
    if not tracking:raise HTTPException(422,'Review camera estimates before confirming this session.')
    sets=data.exercises[0].sets

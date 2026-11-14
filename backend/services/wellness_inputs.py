@@ -46,6 +46,9 @@ class CameraSet(Strict):
     estimated_reps:int=Field(ge=0,le=100)
     corrected_reps:int|None=Field(default=None,ge=0,le=100)
     duration_s:float|None=Field(default=None,ge=0,le=3600,allow_inf_nan=False)
+    # Phase F3: the usual bottom of the set's honest attempts, in the counter's degrees, so the next sets can count to the person's
+    # own range. One number: nothing about the body is kept.
+    reach_deg:float|None=Field(default=None,ge=0,le=180,allow_inf_nan=False)
 class CameraTracking(Strict):
     exercise_type:Literal['squat','pushup','curl','press','situp','wallpush','lunge','jack','raise','knee','sumo','bridge','calf','sideleg','donkey','incline','kneepush','row','superman','kickback','overhead','hammer','front','uprow','crunch','legraise','sidebend','highknee','burpee','climber','wsquat','ohsquat','wlunge','sidelunge','squatjump','buttkick','deadlift','rdl','goodmorning','wcalf','hipthrust','bench','skull','revfly','seatrow','conccurl','thruster','pikepush','dip','pullup','birddog','flutter','bicycle','revcrunch','vup','punch','latpull','pullover','kbswing','legext','bulgarian','pistol','shouldertap','legcurl','hspu','hangleg','decline','nordic','jumplunge','tuckjump','cleanpress','snatch','inclinebench','widepush','diamondpush','revlunge','bwgoodmorning','toetouch','sumojump','bandcurl','bandrow','bandpress','bandraise','bandfront','bandsquat','bandpulldown','bandkickback','bbcurl','bbrow','bbpress','bblunge','frontsquat','kbsquat','kbdeadlift','kbpress','kbrow','kbhighpull','plank','wallsit','bridgehold','tree','legbalance','warrior','downdog','forwardfold']
     engine:Literal['mediapipe-pose-lite']='mediapipe-pose-lite'

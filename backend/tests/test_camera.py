@@ -137,3 +137,16 @@ def test_holds_are_camera_exercises_saved_as_time():
     tracking = CameraTracking(exercise_type='plank', engine='mediapipe-pose-lite', version=2, confidence_mean=.9, sampled_frames=10, low_confidence_frames=0,
                               sets=[{'estimated_reps': 0, 'corrected_reps': None, 'duration_s': 42.5}])
     assert tracking.sets[0].duration_s == 42.5
+
+
+def test_a_set_keeps_its_usual_bottom_for_learning_the_persons_range():
+ _,h=account();init(h);s=session(h,['camera_squat'],tracking_method='camera')
+ r=update(h,s,tracking=tracking(version=2,sets=[{'estimated_reps':3,'corrected_reps':None,'reach_deg':128.5},{'estimated_reps':4,'corrected_reps':None}]),exercises=[{'exercise_id':'camera_squat','sets':[{'reps':3,'load':0,'minutes':0},{'reps':4,'load':0,'minutes':0}]}])
+ assert r.status_code==200,r.text
+ assert r.json()['session']['details']['tracking']['sets']==[{'estimated_reps':3,'corrected_reps':None,'reach_deg':128.5},{'estimated_reps':4,'corrected_reps':None}]
+
+
+@pytest.mark.parametrize('reach',[-1,181,'deep'])
+def test_a_usual_bottom_must_be_an_angle(reach):
+ _,h=account();init(h);s=session(h,['camera_squat'],tracking_method='camera')
+ assert update(h,s,tracking=tracking(sets=[{'estimated_reps':3,'corrected_reps':4,'reach_deg':reach}]),exercises=records()).status_code==422
