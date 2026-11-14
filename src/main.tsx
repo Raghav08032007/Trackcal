@@ -20,6 +20,7 @@ import "@/app/ds.css";
 import "@/app/foundation.css";   // one font, palette and button look for every page
 import "@/app/vivid.css";        // section colours and the type pair
 import "@/app/motion.css";       // last: colour transitions, presses, depth and the footer
+import "@/app/joy.css";          // after motion: a colour for every tab and card, rewarding feedback
 import { createRouter } from "@/routes";
 
 createRoot(document.getElementById("root")!).render(<StrictMode><RouterProvider router={createRouter()} /></StrictMode>);

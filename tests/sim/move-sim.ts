@@ -10,7 +10,7 @@ const HALF: Record<number, number> = { 11: .19, 12: .19, 13: .22, 14: .22, 15: .
 const SCALE = 2.1;                                             // the motions' units to metres (their torso .25 is a 52 cm torso)
 
 /** The motion's flat key pose placed in 3D: side moves run forward and back, front moves out to the sides. */
-function pose3d(m: Move, p: ReturnType<typeof full>, start: [number, number], size: number, floor: number): Vec[] {
+export function pose3d(m: Move, p: ReturnType<typeof full>, start: [number, number], size: number, floor: number): Vec[] {
   const flat = layout({ ...m, camera: m.view }, p, start);
   const out: Vec[] = [];
   for (let id = 0; id < 33; id++) {
@@ -28,8 +28,8 @@ export type Run = { kind: ExerciseKind; seed: number; reps: number; counted: num
 /** One set of an exercise, filmed from near the angle the app recommends for it. */
 /** labels: for each frame, -1 while holding the start position, otherwise the rep it belongs to. Each rep goes to its own depth
  *  (65-100% of the full movement), as real people do. */
-export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: number; spread?: number; depth?: [number, number]; distort?: (p: ReturnType<typeof full>, key: number) => ReturnType<typeof full> } = {}): { frames: PoseFrame[]; reps: number; labels: number[]; meta: Run["meta"] } {
-  const r = rng(seed * 7919 + kind.length * 104729), m = MOVES[kind], keys = m.keys.map(full).map((k, i) => opts.distort ? opts.distort(k, i) : k), start = placement(m), size = r.range(.88, 1.1);
+export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: number; spread?: number; depth?: [number, number]; distort?: (p: ReturnType<typeof full>, key: number) => ReturnType<typeof full>; move?: Move; timing?: number[]; per?: [number, number]; rest?: [number, number] } = {}): { frames: PoseFrame[]; reps: number; labels: number[]; meta: Run["meta"] } {
+  const r = rng(seed * 7919 + kind.length * 104729), m = opts.move ?? MOVES[kind], keys = m.keys.map(full).map((k, i) => opts.distort ? opts.distort(k, i) : k), start = placement(m), size = r.range(.88, 1.1);
   // Stand the body on the floor: its lowest point in the starting pose goes to just above it.
   const lowest = Math.min(...pose3d(m, keys[0], start, size, 0).map(v => v[1])), floor = .03 - lowest;
   // People set the camera so all of them is in view: centre the starting pose where the camera points.
@@ -56,17 +56,17 @@ export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: num
     frames.push({ landmarks: pts ? [pts] : [], timestamp: Math.round(t), width: cam.width, height: cam.height_px, brightness: 120 });
     t += 1000 / fps * r.range(.85, 1.15);
   };
-  const per = r.range(1.6, 2.6);
+  const per = r.range(...(opts.per ?? [1.6, 2.6]));
   for (let end = t + 1200; t < end;) shot(keys[0]);
   for (let rep = 0; rep < reps; rep++) {
     const legs = keys.length, depth = r.range(...(opts.depth ?? [.65, 1])), scaled = keys.map((k, i) => i ? blend(keys[0], k, depth) : k);
     label = rep;
     for (let leg = 0; leg < legs; leg++) {
-      const a = scaled[leg], b = scaled[(leg + 1) % legs], start2 = t, end = t + per * 1000 / legs * r.range(.85, 1.15);
+      const a = scaled[leg], b = scaled[(leg + 1) % legs], start2 = t, end = t + per * 1000 * (opts.timing?.[leg] ?? 1 / legs) * r.range(.85, 1.15);
       while (t < end) shot(blend(a, b, .5 - .5 * Math.cos(Math.PI * (t - start2) / (end - start2))));
     }
     label = -1;
-    for (let end = t + r.range(200, 900); t < end;) shot(keys[0]);
+    for (let end = t + r.range(...(opts.rest ?? [200, 900])); t < end;) shot(keys[0]);
   }
   for (let end = t + 800; t < end;) shot(keys[0]);
   return { frames, reps, labels, meta: { yaw: Math.round(yaw), device: laptop ? "laptop" : "phone", fps, camH: +cam.height.toFixed(2) } };

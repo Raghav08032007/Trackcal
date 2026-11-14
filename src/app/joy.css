@@ -1,0 +1,79 @@
+/* Joy: more colour, and feedback that rewards what people do. Loaded after motion.css.
+   Every tab, card and bar carries a colour of its own; wins pop, progress shimmers, the brand band drifts through the
+   section colours. Colour sits on decoration, borders and filled controls with white text (all 4.5:1 or better);
+   body text keeps its colours. All motion stops under reduced motion or Reduce motion in settings. */
+
+:root {
+  --joy-teal: #0b7a6c; --joy-orange: #c2410c; --joy-violet: #6d28d9; --joy-pink: #be185d; --joy-blue: #1d4ed8; --joy-amber: #b45309;
+  --joy-band: linear-gradient(90deg, #14b8a6, #f97316, #ec4899, #8b5cf6, #3b82f6, #14b8a6);
+}
+
+/* ── The brand band: a thin ribbon of every section colour under the top bar, drifting slowly ─────────────── */
+html body .app-topbar { position: relative; }
+html body .app-topbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--joy-band); background-size: 200% 100%; pointer-events: none; }
+html body .app-brand span { background: var(--joy-band); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* ── Tabs: each one in its own section colour ─────────────────────────────── */
+html body .app-tabbar a[data-sec="today"] { --tab: var(--joy-teal); --tab-2: #0e7490; }
+html body .app-tabbar a[data-sec="food"] { --tab: var(--joy-orange); --tab-2: #be123c; }
+html body .app-tabbar a[data-sec="move"] { --tab: var(--joy-violet); --tab-2: #4338ca; }
+html body .app-tabbar a[data-sec="play"] { --tab: var(--joy-pink); --tab-2: #7e22ce; }
+html body .app-tabbar a[data-sec="me"] { --tab: var(--joy-blue); --tab-2: #0e7490; }
+html body .app-tabbar a[data-sec]:not([aria-current="page"]) svg { color: var(--tab); }
+html[data-theme="dark"] body .app-tabbar a[data-sec]:not([aria-current="page"]) svg { color: color-mix(in srgb, var(--tab) 55%, #fff); }
+html body .app-tabbar a[data-sec][aria-current="page"] { background: linear-gradient(160deg, var(--tab), var(--tab-2)); color: #fff; box-shadow: inset 0 2px 0 #ffffff4d, 0 8px 18px -8px var(--tab); }
+html body .app-tabbar a[data-sec][aria-current="page"] svg { color: #fff; }
+@media (hover: hover) { html body .app-tabbar a[data-sec]:not([aria-current="page"]):hover { background: color-mix(in srgb, var(--tab) 12%, transparent); } }
+
+/* ── Cards: a colour stripe along the top, a different colour for each card in a grid ─────────────── */
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .health-tasks) > :is(article, a, li, div) { --stripe: var(--sec-bright); }
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .health-tasks) > :nth-child(6n+2) { --stripe: #f97316; }
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .health-tasks) > :nth-child(6n+3) { --stripe: #8b5cf6; }
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .health-tasks) > :nth-child(6n+4) { --stripe: #ec4899; }
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .health-tasks) > :nth-child(6n+5) { --stripe: #3b82f6; }
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .health-tasks) > :nth-child(6n) { --stripe: #f59e0b; }
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid) > :is(article, a, div) { position: relative; overflow: hidden; }
+html body :is(.wellness-card-grid, .hub-grid, .destination-grid) > :is(article, a, div)::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, var(--stripe), color-mix(in srgb, var(--stripe) 40%, #fff)); pointer-events: none;
+}
+html body :is(.ds-card, .account-card):is(.ds-card, .account-card):is(.ds-card, .account-card) { border-top-color: color-mix(in srgb, var(--sec-bright) 55%, var(--ds-line, #e5e7eb)); }
+
+/* ── Progress: gradient fills that shimmer while they grow ─────────────── */
+html body progress:not(.sport-progress) { accent-color: var(--sec-fill); }
+html body progress:not(.sport-progress)::-webkit-progress-value { background-image: linear-gradient(90deg, var(--sec-fill), var(--sec-bright), #fbbf24); background-size: 200% 100%; border-radius: 999px; }
+html body progress:not(.sport-progress)::-moz-progress-bar { background-image: linear-gradient(90deg, var(--sec-fill), var(--sec-bright), #fbbf24); border-radius: 999px; }
+
+/* ── Headlines: the emphasised words in the section's gradient ─────────────── */
+html body main h1 em { font-style: normal; background: linear-gradient(100deg, var(--sec-fill), var(--sec-fill-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@media (forced-colors: active) { html body main h1 em, html body .app-brand span { color: CanvasText; background: none; } }
+
+/* ── Wins: status messages arrive with colour ─────────────── */
+html body :is(.play-celebration, .wellness-notice, .ds-toast, .account-notice)[role="status"] {
+  border-left: 5px solid var(--sec-bright); box-shadow: 0 14px 30px -18px var(--sec-fill);
+}
+
+/* ── Focus and selection in colour ─────────────── */
+html body :is(button, a[href], input, select, textarea, summary):focus-visible { outline: 3px solid var(--sec-bright); outline-offset: 2px; }
+html body ::selection { background: color-mix(in srgb, var(--sec-bright) 35%, transparent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body .app-topbar::after { animation: joy-drift 14s linear infinite; }
+  html:not([data-motion="reduced"]) body .app-brand span { animation: joy-drift 9s linear infinite; }
+  html:not([data-motion="reduced"]) body progress:not(.sport-progress)::-webkit-progress-value { animation: joy-drift 3.5s linear infinite; transition: width .6s cubic-bezier(.2, .8, .2, 1); }
+  html:not([data-motion="reduced"]) body :is(.play-celebration, .wellness-notice, .ds-toast, .account-notice)[role="status"] { animation: joy-win .55s cubic-bezier(.3, 1.5, .5, 1) both; }
+  html:not([data-motion="reduced"]) body .app-tabbar a[data-sec][aria-current="page"] { transition: background .35s ease, box-shadow .35s ease; }
+  /* Cards in a grid arrive one after another. */
+  html:not([data-motion="reduced"]) body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .sport-grid) > * { animation: joy-up .5s cubic-bezier(.2, .8, .2, 1) both; }
+  html:not([data-motion="reduced"]) body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .sport-grid) > :nth-child(2) { animation-delay: 60ms; }
+  html:not([data-motion="reduced"]) body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .sport-grid) > :nth-child(3) { animation-delay: 120ms; }
+  html:not([data-motion="reduced"]) body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .sport-grid) > :nth-child(4) { animation-delay: 180ms; }
+  html:not([data-motion="reduced"]) body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .sport-grid) > :nth-child(n+5) { animation-delay: 240ms; }
+}
+@keyframes joy-drift { to { background-position: -200% 0; } }
+@keyframes joy-win { 0% { opacity: 0; transform: translateY(8px) scale(.96); } 60% { transform: translateY(-2px) scale(1.02); } 100% { opacity: 1; transform: none; } }
+@keyframes joy-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ── Hub cards (Today, Food, Move, Play, Me): each card washed in its own tile colour, with a coloured edge and arrow ─────────────── */
+html body .hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 9%, var(--ds-surface, #fff)) 0%, var(--ds-surface, #fff) 70%); border-color: color-mix(in srgb, var(--tile) 28%, var(--ds-line, #e5e7eb)); border-left: 4px solid var(--tile); }
+html[data-theme="dark"] body .hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 16%, var(--ds-surface, #111)) 0%, var(--ds-surface, #111) 75%); }
+@media (hover: hover) { html body .hub-card.hub-card.hub-card:hover { border-color: var(--tile); } }
