@@ -13,6 +13,17 @@ function sideOn(p:Landmark[]){
  return Math.min(1,Math.max(0,(.55-width/torso)/.4));
 }
 function blendByView(knee:number,drop:number,p:Landmark[]){const s=sideOn(p);return s*knee+(1-s)*drop;}
+/** The limb-span estimate is for people facing the camera, where the joint angle is hidden. Side-on the joint angle is reliable and the
+ *  span only adds perspective jitter, so the span pulls the reading down only as far as the person faces the camera. */
+function spanByView(joint:number,span:number,p:Landmark[],shown=1){
+ if(!Number.isFinite(joint))return span;if(!Number.isFinite(span)||span>=joint)return joint;
+ // A limb pointing at the camera looks short (its bones shrink on screen) and its joint angle means nothing; a bend keeps the bones
+ // their full length. So the joint is trusted only while the limb shows nearly its whole length.
+ if(shown<.75)return span;
+ // Only a joint that reads clearly straight (165 or more) is trusted over the span: a limb pointing at the camera foreshortens the
+ // joint angle too, and then the span is the better guide, as before.
+ const s=sideOn(p)*Math.min(1,Math.max(0,(joint-155)/10))*Math.min(1,(shown-.75)/.1);return s*joint+(1-s)*span;
+}
 /** The joint angle and the limb-span estimate each read a bent limb well, and the smaller is right while bending. Near straight
  *  they only ever err low (jitter can't make a straight limb straighter), so the reading slides towards the larger of the two. */
 function nearStraight(joint:number,span:number){
@@ -38,7 +49,7 @@ export interface ExerciseAnalyzer{observe(frame:PoseFrame):Observation;reset():v
 /** Measures one joint angle per frame from the config's triplet on the more visible body side. Landmarks are
  *  aspect-corrected before the angle is taken (normalize), and the three joint points are smoothed. */
 export class JointAnalyzer implements ExerciseAnalyzer{
- side:0|1|null=null;private center:{x:number;y:number}|null=null;private filters:OneEuroFilter[]=[];private reach=0;private span:number|null=null;private top:number|null=null;private anchor=0;private torso=0;private shoulders:number|null=null;private dropMode:'hips'|'shoulders'|null=null;private restarted=false;private dropStart:number|null=null;private switchSince:number|null=null;private legLen=0;private torsoTop:number|undefined=undefined;
+ side:0|1|null=null;private center:{x:number;y:number}|null=null;private filters:OneEuroFilter[]=[];private reach=0;private bones=0;private span:number|null=null;private top:number|null=null;private anchor=0;private torso=0;private shoulders:number|null=null;private dropMode:'hips'|'shoulders'|null=null;private restarted=false;private dropStart:number|null=null;private switchSince:number|null=null;private legLen=0;private torsoTop:number|undefined=undefined;
  /** The separate estimates behind the last reading, for diagnostics. */
  parts={knee:NaN,span:NaN,drop:NaN};
  constructor(readonly config:ExerciseConfig,private fixedSide?:0|1){this.resetFilters();}
@@ -52,7 +63,7 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   // Push-ups take over a second each and their forearm span is jumpy, so they are smoothed a little longer.
   const k=1-Math.exp(-(t-this.reading.t)/(this.config.straightens?SMOOTH_S*1.75:SMOOTH_S)/1000);this.reading={value:this.reading.value+(value-this.reading.value)*k,t};return this.reading.value;
  }
- reset(){this.side=null;this.center=null;this.reach=0;this.span=null; this.clearDrop();this.resetFilters();}
+ reset(){this.side=null;this.center=null;this.reach=0;this.bones=0;this.span=null; this.clearDrop();this.resetFilters();}
  private clearDrop(){this.dropStart=null;this.legLen=0;this.switchSince=null;this.dropT=null;this.top=null;this.torso=0;this.shoulders=null;this.dropMode=null;this.torsoTop=undefined;this.level=null;this.floor=null;this.leg=0;this.lastT=null;this.stillFor=0;this.slow=null;this.feet=null;this.ankles=null;this.hips=null;this.jumpUntil=0;}
  private level:number|null=null;private floor:number|null=null;private leg=0;private lastT:number|null=null;private stillFor=0;private slow:number|null=null;private feet:number|null=null;private ankles:number|null=null;private hips:number|null=null;private jumpUntil=0;
  observe(frame:PoseFrame):Observation{
@@ -70,7 +81,7 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   const anchor=hipsSeen||!c.drop?[23,24]:[11,12],center={x:(p[anchor[0]].x+p[anchor[1]].x)/2,y:(p[anchor[0]].y+p[anchor[1]].y)/2};
   // Switching between hips and shoulders is not the camera moving.
   const moved=this.center&&this.anchor===anchor[0]&&Math.hypot(center.x-this.center.x,center.y-this.center.y)>.18;this.center=center;this.anchor=anchor[0];
-  if(moved){this.reach=0;this.span=null;this.clearDrop();return {...bad('The view moved. Hold the camera steady and return to your starting position.',quality),restart:true};}
+  if(moved){this.reach=0;this.bones=0;this.span=null;this.clearDrop();return {...bad('The view moved. Hold the camera steady and return to your starting position.',quality),restart:true};}
   if(c.suitable&&!c.suitable(p,side))return bad('The movement is not clear from this angle. Adjust the camera.',quality);
   const joint=c.joints[side].map((id,i):Landmark=>({x:this.filters[i*2].filter(p[id].x,frame.timestamp),y:this.filters[i*2+1].filter(p[id].y,frame.timestamp)}));
   const extra=c.optional?.[side],legs=!extra||(confidence(p,extra)>=c.minVisibility&&visible(frame,extra));
@@ -83,7 +94,7 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   // A bent knee only counts as depth if the hips really went down too: knees tucked up in a jump, or pulled up to the chest,
   // bend just as far with the hips high. So the reading never goes more than DROP_SLACK degrees deeper than the hip drop says.
   // A move out to the sides (sumo) bends the knees across the body: side-on that bend is hidden, so the hip drop leads.
-  const fused=c.drop&&Number.isFinite(drop)?(Number.isFinite(knee)&&c.plane!=='front'?Math.max(blendByView(knee,drop,p),drop-DROP_SLACK):drop):c.straightens?straightByView(knee,span,p):Math.min(knee,span,drop);
+  const fused=c.drop&&Number.isFinite(drop)?(Number.isFinite(knee)&&c.plane!=='front'?Math.max(blendByView(knee,drop,p),drop-DROP_SLACK):drop):c.straightens?straightByView(knee,span,p):Math.min(c.plane==='side'?spanByView(knee,span,p,this.shown(joint)):Math.min(knee,span),drop);
   const degrees=c.rise?this.riseAngle(p,frame.timestamp):this.smooth(fused,frame.timestamp);
   const reading=c.invert?180-degrees:degrees;
   if(c.rise&&Number.isNaN(reading))return bad('That looked like a jump. Rise onto your toes and keep them on the floor.',quality);
@@ -115,6 +126,10 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   if(this.floor===null){this.floor=this.level;this.feet=ankles;}
   else if(this.stillFor>=.5){this.floor=Math.max(this.level,this.floor-.0015*dt);this.feet=Math.max(ankles,this.feet!-.0015*dt);}
   else this.floor-=.0015*dt;
+  // Standing still is hard to see on someone small in a phone picture (jitter looks like movement), so with straight legs the
+  // standing level still follows the body down, at up to 3% of a leg length a second: enough for a camera or person slowly
+  // shifting, too slow for the last moment of a squat or lunge (legs straight, body still low) to move it.
+  if(span>=this.leg*.97&&speed<.2&&this.level>this.floor){const step=.03*this.leg*dt;this.floor=Math.min(this.level,this.floor+step);this.feet=Math.min(Math.max(ankles,this.feet!),this.feet!+step);}
   // On the toes the ankles rise only about a centimetre; in a jump they leave the floor with the body. A jump, or a rise far
   // beyond heel height, isn't a calf raise, nor is anything in the moment after it.
   const lift=(this.floor-this.level)/this.leg,feetUp=(this.feet!-ankles)/this.leg;
@@ -165,6 +180,11 @@ export class JointAnalyzer implements ExerciseAnalyzer{
  }
  /** A bent joint seen head-on still looks straight, but its limb ends get closer. Two equal segments span 2·L·sin(θ/2),
   *  and L comes from the longest span seen recently, so this reads like the joint angle from any view. */
+ /** How much of the limb's longest seen on-screen length (both bones) shows now, 0 to 1. */
+ private shown(j:Landmark[]){
+  const len=Math.hypot(j[0].x-j[1].x,j[0].y-j[1].y)+Math.hypot(j[2].x-j[1].x,j[2].y-j[1].y);
+  this.bones=Math.max(len,this.bones*.999);return this.bones>0?len/this.bones:1;
+ }
  private spanAngle(p:Landmark[],side:0|1){
   const ends=this.config.span?.[side];if(!ends)return Infinity;
   const raw=Math.hypot(p[ends[0]].x-p[ends[1]].x,p[ends[0]].y-p[ends[1]].y);
