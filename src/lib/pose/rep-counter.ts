@@ -61,7 +61,7 @@ export class RepCounter{
  }
  private travelled(form:ExerciseForm,share=1){
   const y=this.cycle!;
-  for(const [part,most] of Object.entries(form.still??{}))if(y.travel.of(part as BodyPart)>most)return 'moved '+part;
+  for(const [part,most] of Object.entries(form.still??{}))if((form.planted&&part==='wrists'?y.travel.least(part as BodyPart):y.travel.of(part as BodyPart))>most)return 'moved '+part;
   for(const [part,least] of Object.entries(form.moves??{}))if(y.travel.of(part as BodyPart)<least*share)return 'still '+part;
   return '';
  }

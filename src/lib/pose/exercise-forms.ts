@@ -14,6 +14,9 @@ export type ExerciseForm={
  reaches?:(b:Body)=>boolean;
  /** Parts that must stay put during a rep, with how far they may drift in torso lengths. */
  still?:Partial<Record<BodyPart,number>>;
+ /** Both hands bear weight and stay planted (push-ups, pull-ups, climbers): their stillness is judged on the steadier side, since
+  *  side-on the far hand is half hidden and its jitter alone looked like moving. Moves that lift one hand keep the strict check. */
+ planted?:boolean;
  /** Parts that must really move during a rep, with the least they must travel in torso lengths. */
  moves?:Partial<Record<BodyPart,number>>;
 };
@@ -53,7 +56,7 @@ const SQUAT={never:(b:Body)=>b.wristUp>.3,banned:(b:Body)=>b.tilt>55,atBottom:(b
 const lyingHeadOn=(b:Body)=>b.torso<.6;
 const SIDE_ARM={never:either(armBent,notUpright,lyingHeadOn,(b)=>b.wristUp>.5),banned:(b:Body)=>b.elbow<90,atBottom:(b:Body)=>b.wristUp<-.45,reaches:(b:Body)=>!(b.wristUp>-.65),moves:{wrists:.6}};
 const CURL={never:either(notUpright,legsBent,handsAbove),atBottom:handsLow,still:{hips:.35,elbows:.35},moves:{wrists:.4}};
-const PUSH={still:{wrists:.3},moves:{shoulders:.2}};  // the shoulders really go down; a plank's jitter doesn't move them this far
+const PUSH={still:{wrists:.3},planted:true,moves:{shoulders:.2}};  // the shoulders really go down; a plank's jitter doesn't move them this far
 const LUNGE={never:notUpright,atBottom:(b:Body)=>b.hipGap<14&&b.facing<.45||b.facing>.5&&b.stance>.8,moves:{shoulders:.15}};
 const HINGE={moves:{shoulders:.3},still:{ankles:.4}};
 const LIFT_HIPS={never:notLying,still:{shoulders:.35},moves:{hips:.15}};
@@ -102,7 +105,7 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  revfly:{never:either(notHinged,armBent,(b)=>b.handHeight<.4),still:{hips:.35},moves:{wrists:.4}},
  seatrow:{never:either(legsStraight,(b)=>b.tilt>30,(b)=>b.wristUp>.15,(b)=>b.wristUp<-.75,sideOn),atBottom:(b)=>b.wristUp>-.3,still:{hips:.25},moves:{wrists:.3}},
  superman:{never:either(notLying,legsBent),still:{hips:.25,knees:.3}},
- pullup:{never:(b)=>b.wristUp<.1,still:{wrists:.3},moves:{shoulders:.25}},
+ pullup:{never:(b)=>b.wristUp<.1,still:{wrists:.3},planted:true,moves:{shoulders:.25}},
  birddog:{...FOURS,moves:{wrists:.4}},
  // Arms
  curl:CURL,
@@ -143,6 +146,6 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  jack:{banned:(b)=>b.elbow<70||b.tilt>45,never:notUpright,atBottom:(b)=>b.wristUp<.15,reaches:(b)=>!(b.wristUp>-.5),moves:{wrists:.8,ankles:.15}},
  // A burpee must reach the plank at some point in every rep (the crouch on the way down is part of it too).
  burpee:{banned:(b)=>b.kneeUp>.3,reaches:(b)=>!(b.tilt<45),moves:{shoulders:.6,ankles:.25}},
- climber:{never:either(notLying,handsAbove,notFloorHands),still:{wrists:.3}},
+ climber:{never:either(notLying,handsAbove,notFloorHands),still:{wrists:.3},planted:true},
  punch:{never:either(notUpright,legsBent,armsOverhead,(b)=>b.wristUp<-.7),still:{shoulders:.25},moves:{wrists:.25}},
 };
