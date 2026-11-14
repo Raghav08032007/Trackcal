@@ -11,8 +11,8 @@ function frameFor(m:Move,p:Required<Pose>,t:number,start:[number,number]):PoseFr
  const points:Landmark[]=Array.from({length:33},(_,id)=>{const at=s[id]??s[id%2?11:12];return {x:at[0]+noise(),y:at[1]+noise()-(s[id]?0:.08),visibility:.95,presence:1};});
  return {landmarks:[points],timestamp:t,width:480,height:480};
 }
-function watch(kind:ExerciseKind,m:Move,reps:number,report?:string[]){
- const t=new SessionTracker(kind),keys=m.keys.map(full),ms=1000/15,start=placement(m);let now=1000;
+function watch(kind:ExerciseKind,m:Move,reps:number,report?:string[],eased=false){
+ const t=new SessionTracker(kind,'beginner',eased?1e3:undefined),keys=m.keys.map(full),ms=1000/15,start=placement(m);let now=1000;
  for(let i=0;i<18;i++,now+=ms)t.frame(frameFor(m,keys[0],now,start));
  for(let r=0;r<reps;r++)for(let leg=0;leg<keys.length;leg++){const a=keys[leg],b=keys[(leg+1)%keys.length],steps=Math.round(1500/keys.length/ms)*2;for(let i=0;i<steps;i++,now+=ms)t.frame(frameFor(m,blend(a,b,(1-Math.cos(Math.PI*i/steps))/2),now,start));for(let i=0;i<4;i++,now+=ms)t.frame(frameFor(m,b,now,start));}
  for(let i=0;i<14;i++,now+=ms)t.frame(frameFor(m,keys[0],now,start));
@@ -36,6 +36,12 @@ describe('each exercise counts only itself',()=>{
   const wrong:string[]=[];
   // Filmed from the angle the picked exercise is best seen from. From the other angle some moves look alike (a side lunge and a squat, side-on).
   for(const tracker of OWN)for(const done of OWN){if(tracker===done||same(tracker,done))continue;const n=watch(tracker,seenFrom(MOVES[done],EXERCISE_CONFIG[tracker].plane??MOVES[done].view),REPS);if(n>0)wrong.push(`${tracker} counted ${n} of ${done}`);}
+  expect(wrong).toEqual([]);
+ },240000);
+ // A learned range eases the bottom target (personal-range.ts). Eased as far as it can go, every tracker still counts only its own move.
+ it('with a learned range eased as far as allowed, no exercise counts any other exercise',()=>{
+  const wrong:string[]=[];
+  for(const tracker of OWN)for(const done of OWN){if(tracker===done||same(tracker,done))continue;const n=watch(tracker,seenFrom(MOVES[done],EXERCISE_CONFIG[tracker].plane??MOVES[done].view),REPS,undefined,true);if(n>0)wrong.push(`${tracker} counted ${n} of ${done}`);}
   expect(wrong).toEqual([]);
  },240000);
 });

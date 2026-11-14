@@ -22,6 +22,8 @@ export type Body={
  headDown:number;
  /** Highest knee above the hips, and how far the hands are above the feet. */
  kneeUp:number;handHeight:number;
+ /** Hips above the lower ankle, in torso lengths: about 0 lying down, about 0.8 on all fours, 1.5 or more standing or hinged. */
+ hipsUp:number;
  points:Record<BodyPart,[Landmark|null,Landmark|null]>;
  scale:number;
 };
@@ -49,7 +51,7 @@ export function readBody(p:Landmark[],longest:number):Body{
   knee:low(knees[0],knees[1]),kneeWide:high(knees[0],knees[1]),kneeGap:Math.abs(knees[0]-knees[1]),hip:low(hips[0],hips[1]),hipWide:high(hips[0],hips[1]),hipGap:Math.abs(hips[0]-hips[1]),elbow:low(elbows[0],elbows[1]),elbowWide:high(elbows[0],elbows[1]),
   wristUp:high(lift(0),lift(1)),wristLow:low(lift(0),lift(1)),wristChest:low(chest(0),chest(1)),
   stance:ankleA&&ankleB?Math.abs(ankleA.x-ankleB.x)/scale:NaN,footStep:ankleA&&ankleB?Math.abs(ankleA.y-ankleB.y)/scale:NaN,
-  facing:shoulderWidth/scale,headDown:s&&h?(s.y-h.y)/scale:NaN,kneeUp:h?high(raised(0),raised(1)):NaN,handHeight:high(above(0),above(1)),points,scale};
+  facing:shoulderWidth/scale,headDown:s&&h?(s.y-h.y)/scale:NaN,kneeUp:h?high(raised(0),raised(1)):NaN,handHeight:high(above(0),above(1)),hipsUp:h&&(ankleA||ankleB)?(Math.max(ankleA?.y??-1,ankleB?.y??-1)-h.y)/scale:NaN,points,scale};
 }
 /** The longest torso in this picture, for tracking how far apart frames are. */
 export const torsoLength=(p:Landmark[])=>{const b=readBody(p,0);return Number.isNaN(b.tilt)?0:b.scale;};

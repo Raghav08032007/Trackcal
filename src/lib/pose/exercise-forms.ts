@@ -21,6 +21,9 @@ const either=(...checks:((b:Body)=>boolean)[])=>(b:Body)=>checks.some(check=>che
 // Whole-body positions.
 const notUpright=(b:Body)=>b.tilt>40;
 const notLying=(b:Body)=>b.tilt<50;
+/** A hinge or all fours tilts the torso like lying down, but the hips stay high above the feet. Side-on only: head-on, the feet
+ *  nearer the camera sit lower in the picture. */
+const hipsHigh=(b:Body)=>b.hipsUp>.5&&!(b.facing>.5);
 /** Shoulders look wide only when facing the camera; side-on they nearly overlap. */
 const sideOnly=(check:(b:Body)=>boolean)=>(b:Body)=>b.facing<=.5&&check(b);  // unknown facing (filmed head-on) skips it too
 const notHinged=(b:Body)=>b.tilt<30&&!(b.torso<.75);
@@ -111,9 +114,9 @@ export const EXERCISE_FORMS:Partial<Record<ExerciseKind,ExerciseForm>>={
  dip:{never:either((b)=>b.tilt>40,(b)=>b.wristUp>-.2),atBottom:legsStraight,still:{wrists:.3},moves:{shoulders:.2}},
  // Core
  situp:{still:{ankles:.45},moves:{shoulders:.4}},
- crunch:{never:notLying,still:{hips:.25},moves:{shoulders:.1}},
+ crunch:{never:either(notLying,hipsHigh),still:{hips:.25},moves:{shoulders:.1}},
  legraise:{never:either(notLying,legsBent,(b)=>b.hipGap>25),still:{shoulders:.35},moves:{knees:.35}},
- revcrunch:{never:notLying,atBottom:(b)=>b.kneeWide>125,still:{shoulders:.35},moves:{knees:.2}},
+ revcrunch:{never:either(notLying,hipsHigh),atBottom:(b)=>b.kneeWide>125,still:{shoulders:.35},moves:{knees:.2}},
  vup:{banned:(b)=>b.tilt<20,atBottom:kneesDown,moves:{shoulders:.35,knees:.35}},
  flutter:{never:either(notLying,legsBent,(b)=>b.wristLow<-.5),atBottom:(b)=>b.hipGap<6,still:{shoulders:.3}},
  bicycle:{never:either(notLying,(b)=>b.wristLow<-.5),atBottom:(b)=>b.hipGap<20||b.kneeWide>165&&b.knee>130},

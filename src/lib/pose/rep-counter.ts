@@ -20,14 +20,16 @@ function unseen(b:Body,plane:'side'|'front'):Body{
   :{...b,facing:NaN,stance:NaN,kneeGap:NaN,hipGap:NaN};
 }
 export class RepCounter{
- reps=0;phase:Phase='SETUP';mismatches:string[]=[];repLog:{ms:number;range:number}[]=[];rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0,wrong_exercise:0};
+ reps=0;phase:Phase='SETUP';mismatches:string[]=[];repLog:{ms:number;range:number}[]=[];
+ /** The bottom of each honest attempt this set (counted, or not deep enough), for learning the person's own range. */
+ attempts:number[]=[];rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0,wrong_exercise:0};
  private last=-Infinity;private held:{key:string;since:number;frames:number}|null=null;
  private cycle:{start:number;top:number;bottom:number;crossings:number;below:boolean;frames:number;wrong:number;low:number;lowWrong:number;banned:number;reached:boolean;travel:Travel;across:number}|null=null;private top=0;private rejected:{reason:RejectionReason;at:number}|null=null;private lost:number|null=null;
  constructor(private config:ExerciseConfig){}
  /** Forget the movement in progress (pause, camera switch, rotation); the count stays. */
  resetMovement(){this.phase='SETUP';this.held=null;this.cycle=null;}
- reset(){this.reps=0;this.mismatches=[];this.repLog=[];this.last=-Infinity;this.rejected=null;for(const k in this.rejections)this.rejections[k as RejectionReason]=0;this.resetMovement();}
- private reject(reason:RejectionReason,t:number){this.rejections[reason]++;this.rejected={reason,at:t};this.cycle=null;}
+ reset(){this.reps=0;this.mismatches=[];this.repLog=[];this.attempts=[];this.last=-Infinity;this.rejected=null;for(const k in this.rejections)this.rejections[k as RejectionReason]=0;this.resetMovement();}
+ private reject(reason:RejectionReason,t:number){if(reason==='too_shallow'&&this.cycle&&this.attempts.length<MAX_REPS)this.attempts.push(this.cycle.bottom);this.rejections[reason]++;this.rejected={reason,at:t};this.cycle=null;}
  /** True once `key` has held for the dwell time (at least two frames). */
  private hold(key:string,on:boolean,t:number){
   if(!on){if(this.held?.key===key)this.held=null;return false;}
@@ -40,6 +42,7 @@ export class RepCounter{
   y.frames++;y.travel.add(body);if(this.across(body)){y.across++;body=unseen(body,this.config.plane!);}if(form.never?.(body))y.wrong++;
   if(form.reaches?.(body))y.reached=true;if(form.banned?.(body))y.banned++;
   // The bottom check looks only at the true bottom of the rep, not the frames on the way down to it.
+  // Someone counted to their own range never reaches the full bottom shape, so it is checked only as deep as the standard target.
   if(a<=this.config.down){y.low++;if(form.atBottom?.(body))y.lowWrong++;}
  }
  /** Filmed from the other angle than the exercise moves in: side-on for a move out to the sides, head-on for one forward and back. */
@@ -102,7 +105,7 @@ export class RepCounter{
      if(fast)this.reject('too_fast',t);
      else if(wrong)this.reject('wrong_exercise',t);
      else if(range<c.minRangeDeg)this.reject('too_shallow',t);
-     else{if(this.reps<MAX_REPS)this.repLog.push({ms:duration,range});this.reps=Math.min(MAX_REPS,this.reps+1);this.rejected=null;this.cycle=null;}
+     else{if(this.reps<MAX_REPS){this.repLog.push({ms:duration,range});this.attempts.push(this.cycle.bottom);}this.reps=Math.min(MAX_REPS,this.reps+1);this.rejected=null;this.cycle=null;}
      this.phase='UP';this.top=a;}
     break;
   }
