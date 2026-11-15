@@ -7,7 +7,7 @@
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "no-referrer"
 		X-Frame-Options "DENY"
-		Permissions-Policy "camera=(self), microphone=(self), geolocation=()"
+		Permissions-Policy "camera=(self), microphone=(self), geolocation=(self)"
 	}
 
 	# The Flask API serves the browser routes (/api/*) and the versioned API (/api/v1/*). Caddy appends the
