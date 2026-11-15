@@ -4,13 +4,13 @@
 import { describe, it, expect, afterEach } from "vitest";
 import fs from "node:fs";
 import { keysOf } from "@/lib/i18n/keys";
-import { TRANSLATED_FILES, WAVE_1 } from "@/lib/i18n/coverage";
+import { RUNTIME_KEYS, TRANSLATED_FILES, WAVE_1 } from "@/lib/i18n/coverage";
 import { LOCALES } from "@/lib/i18n/locales";
 import { detectLocale, locale, number, setCatalogForTests, setLocale, t } from "@/lib/i18n";
 
 const catalog = (code: string) => JSON.parse(fs.readFileSync(`src/lib/i18n/messages/${code}.json`, "utf8")) as Record<string, string | Record<string, string>>;
 const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort();
-const keys = [...new Set(TRANSLATED_FILES.flatMap(f => keysOf(f, fs.readFileSync(f, "utf8"))))];
+const keys = [...new Set([...TRANSLATED_FILES.flatMap(f => keysOf(f, fs.readFileSync(f, "utf8"))), ...RUNTIME_KEYS])];
 
 afterEach(() => { setCatalogForTests("en", {}); try { localStorage.clear(); } catch { /* none */ } });
 

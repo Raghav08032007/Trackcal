@@ -1,5 +1,6 @@
 // Today: when the latest blood report's retest date is close (three weeks or less) or has passed, a short reminder of which
 // results to recheck and why. Nothing shows without a report, or for a guest.
+import { t } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { FlaskConical } from "lucide-react";
 import { Link } from "@/lib/navigation";
@@ -32,10 +33,10 @@ export function RetestReminder() {
   return <section className="ds-card retest-reminder" aria-labelledby="retest-title">
     <span className="retest-icon" aria-hidden="true"><FlaskConical size={22} /></span>
     <div>
-      <h2 id="retest-title">Blood test recheck {when}</h2>
-      <p>{due.tests.length ? `Recheck ${due.tests.slice(0, 4).join(", ")} around ${date}` : `Your next check is around ${date}`}, to see how far your changes have moved them.</p>
-      {due.why[0] && <p className="ds-sub">Timing follows {due.why[0].source}.</p>}
-      <Link href="/health" className="account-secondary">Open my report</Link>
+      <h2 id="retest-title">{t("Blood test recheck")}{" "}{when}</h2>
+      <p>{due.tests.length ? t("Recheck {tests} around {date}, to see how far your changes have moved them.", { tests: due.tests.slice(0, 4).join(", "), date }) : t("Your next check is around {date}, to see how far your changes have moved them.", { date })}</p>
+      {due.why[0] && <p className="ds-sub">{t("Timing follows {source}.", { source: due.why[0].source })}</p>}
+      <Link href="/health" className="account-secondary">{t("Open my report")}</Link>
     </div>
   </section>;
 }

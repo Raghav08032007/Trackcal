@@ -17,7 +17,7 @@ import { ThemeControl } from "@/components/theme-control";
 
 export function RootLayout() {
   return (
-    <AccountSession><DevicePersistence /><UpdatePrompt /><MotionLayer /><TouchFeedback /><LivingCharacters /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><AccountUnavailable><Outlet /></AccountUnavailable><footer className="site-links site-footer" aria-label="Product links">
+    <AccountSession><DevicePersistence /><UpdatePrompt /><MotionLayer /><TouchFeedback /><LivingCharacters /><JourneyCompanion /><PersonalReminderInbox /><AppNavigation /><AccountUnavailable><Outlet /></AccountUnavailable><footer className="site-links site-footer" aria-label={t("Product links")}>
       <div className="site-footer-brand"><Link href="/" className="site-footer-logo">trackcal<span>.</span></Link><p>{t("Eat well, move well, at your own pace.")}</p><BetaFeedback /></div>
       <nav className="site-footer-links" aria-label={t("Help and legal")}>
         <div><h2>{t("Get started")}</h2><Link href="/guide">{t("Guided test drive")}</Link><Link href="/help">{t("Help")}</Link></div>

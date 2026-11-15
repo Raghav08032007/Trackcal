@@ -47,7 +47,7 @@ function Panel({ close }: { close: () => void }) {
       <div className="qa-choices">{FOOD.map(([href, label, Icon]) => <Link key={href} href={href} className="qa-choice" onClick={close}><Icon size={20} aria-hidden />{t(label)}</Link>)}</div></section>
 
     <section className="qa-row" aria-labelledby="qa-water"><h3 id="qa-water"><Droplets size={18} aria-hidden /> {t("Water")}</h3>
-      <div className="qa-inline"><button type="button" className="ds-btn ds-btn-primary" onClick={addWater}>+ 250 ml</button>
+      <div className="qa-inline"><button type="button" className="ds-btn ds-btn-primary" onClick={addWater}>{t("+ 250 ml")}</button>
         <span className="qa-meta">{t("{done} of {goal} L", { done: litres(wellness.water), goal: litres(wellness.waterGoal) })}</span></div></section>
 
     <section className="qa-row" aria-labelledby="qa-move"><h3 id="qa-move">{t("Move")}</h3>

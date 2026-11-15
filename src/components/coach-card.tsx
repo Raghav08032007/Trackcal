@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useActiveDays, useProgramDays } from "@/lib/workouts";
 import { useBurn, useCheckins } from "@/lib/days";
 import {useEffect,useState} from 'react';
@@ -42,7 +43,7 @@ export function useCoachDay():CoachDay|null{
 function CheckinButtons(){
  const date=useLocalDate(),[,setCheckins]=useCheckins(),[energy,setEnergy]=useState<Checkin['energy']|null>(null);
  const save=(sore:Checkin['sore'])=>{try{navigator.vibrate?.(30);}catch{/* not supported */}setCheckins(all=>[...all.filter(row=>row.date!==date),{date,energy:energy!,sore}].slice(-30));};
- return <div className="coach-checkin">{!energy?<><span id="coach-energy">How is your energy today?</span><div className="account-actions" role="group" aria-labelledby="coach-energy"><button type="button" onClick={()=>setEnergy('low')}>Low</button><button type="button" onClick={()=>setEnergy('ok')}>Okay</button><button type="button" onClick={()=>setEnergy('great')}>Great</button></div></>:<><span id="coach-sore">Any soreness?</span><div className="account-actions" role="group" aria-labelledby="coach-sore"><button type="button" onClick={()=>save('no')}>None</button><button type="button" onClick={()=>save('bit')}>A bit</button><button type="button" onClick={()=>save('very')}>Very sore</button></div></>}</div>;
+ return <div className="coach-checkin">{!energy?<><span id="coach-energy">{t("How is your energy today?")}</span><div className="account-actions" role="group" aria-labelledby="coach-energy"><button type="button" onClick={()=>setEnergy('low')}>{t("Low")}</button><button type="button" onClick={()=>setEnergy('ok')}>{t("Okay")}</button><button type="button" onClick={()=>setEnergy('great')}>{t("Great")}</button></div></>:<><span id="coach-sore">{t("Any soreness?")}</span><div className="account-actions" role="group" aria-labelledby="coach-sore"><button type="button" onClick={()=>save('no')}>{t("None")}</button><button type="button" onClick={()=>save('bit')}>{t("A bit")}</button><button type="button" onClick={()=>save('very')}>{t("Very sore")}</button></div></>}</div>;
 }
 
 /** The daily plan from your character. It runs on the device, with no AI and no data sent anywhere. */
@@ -50,20 +51,20 @@ export function CoachCard({compact=false}:{compact?:boolean}){
  const coach=useCoachCharacter(),day=useCoachDay(),date=useLocalDate(),[checkins]=useCheckins();
  // While the plan loads, hold its place with the same shape (check-ins live on this device, so whether the buttons show is
  // known at once): nothing below jumps when it arrives (Phase I: layout shift).
- if(!day)return <section className="coach-card coach-card-loading" aria-busy="true" aria-label="Loading your plan for today">
+ if(!day)return <section className="coach-card coach-card-loading" aria-busy="true" aria-label={t("Loading your plan for today")}>
   {coach&&<img className="coach-avatar" src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72} fetchPriority="high"/>}
-  <div className="coach-bubble"><span className="eyebrow">{coach?`${coach.name.toUpperCase()}, YOUR COACH`:'YOUR PLAN TODAY'}</span>
+  <div className="coach-bubble"><span className="eyebrow">{coach?t("{name}, YOUR COACH", { name: coach.name.toUpperCase() }):t("YOUR PLAN TODAY")}</span>
    {!checkins.some(row=>row.date===date)&&<div className="coach-checkin" aria-hidden="true"><span>&nbsp;</span><div className="account-actions"><span className="skeleton-pill"/><span className="skeleton-pill"/><span className="skeleton-pill"/></div></div>}
    <p className="skeleton-text" aria-hidden="true">&nbsp;<br/>&nbsp;</p><p className="skeleton-text" aria-hidden="true">&nbsp;<br/>&nbsp;</p>
    <div className="account-actions" aria-hidden="true"><span className="skeleton-pill wide"/>{compact&&<span className="skeleton-pill wide"/>}</div></div>
  </section>;
  const move=moveStep(day);
- return <section className="coach-card" data-coach-mood={day.checkin?.energy??"ok"} aria-label={`${coach?.name??'Coach'}: your plan for today`}>
+ return <section className="coach-card" data-coach-mood={day.checkin?.energy??"ok"} aria-label={t("{name}: your plan for today", { name: coach?.name ?? t("Coach") })}>
   {coach&&<img className="coach-avatar" src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72} fetchPriority="high"/>}
-  <div className="coach-bubble"><span className="eyebrow">{coach?`${coach.name.toUpperCase()}, YOUR COACH`:'YOUR PLAN TODAY'}</span>
+  <div className="coach-bubble"><span className="eyebrow">{coach?t("{name}, YOUR COACH", { name: coach.name.toUpperCase() }):t("YOUR PLAN TODAY")}</span>
    {!day.checkin&&<CheckinButtons/>}
    <p>{move.text}</p><p>{foodStep(day)}</p>
-   <div className="account-actions"><Link className="destination-button" href={move.href}>{move.label}</Link>{compact&&<Link className="destination-button" href="/coach">Talk to {coach?.name??'your coach'}</Link>}</div>
+   <div className="account-actions"><Link className="destination-button" href={move.href}>{move.label}</Link>{compact&&<Link className="destination-button" href="/coach">{coach?.name ? t("Talk to {name}", { name: coach.name }) : t("Talk to your coach")}</Link>}</div>
   </div>
  </section>;
 }
