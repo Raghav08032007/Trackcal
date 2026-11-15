@@ -51,6 +51,15 @@ privacy texts. Keep the glossary consistent.
 
 ## Progress
 
-Wave 1, done: navigation, section pages (Food, Move, Me), quick add, footer, appearance, sync status, feedback, the language picker
-(186 texts in each language). Next, in order: sign-in and sign-up, Today, food logging, Move and the camera (including spoken cues),
-Play, Me and settings, then every other screen, then server messages, emails and notifications.
+Wave 1, done (1,108 texts in each language):
+- the app frame: navigation, section pages, quick add, footer, appearance, sync status, feedback, the language picker;
+- sign-in, sign-up and account recovery;
+- Today: plan, tasks, Health Score, coach lines, recovery check-in, your day, daily progress and companions;
+- food logging: diary, photo scanner, barcode, describe a meal, food search, on-device journal, recipes, menu picker, meal planner,
+  smart tools, targets, fasting.
+
+Next, in order: Move and the camera (including spoken cues), Play, Me and settings, then every other screen, then server
+messages (task titles, Health Score notes, meal ideas, advice), emails and notifications.
+
+Counted texts: each language's catalog holds its own plural forms; English singulars live in `src/lib/i18n/en-plurals.ts`.
+A test fails if a text with plural forms is shown without a `count`.
