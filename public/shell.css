@@ -2,7 +2,7 @@
    No inline styles or scripts (the CSP forbids them), so it lives here. Dark mode follows the system setting. */
 .boot { min-height: 100vh; background: #f4f7f6; color: #10201d; font-family: "DM Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 .boot-bar { display: flex; align-items: center; height: 60px; padding: 0 16px; max-width: 1200px; margin: 0 auto; }
-.boot-brand { font-weight: 700; font-size: 1.35rem; letter-spacing: -.02em; }
+.boot-brand { direction: ltr; unicode-bidi: isolate; font-weight: 700; font-size: 1.35rem; letter-spacing: -.02em; }
 .boot-brand i { font-style: normal; color: #ec4899; }
 .boot-band { height: 3px; background: linear-gradient(90deg, #14b8a6, #f97316, #ec4899, #8b5cf6, #3b82f6); }
 .boot-main { max-width: 1200px; margin: 0 auto; padding: 16px; display: grid; gap: 14px; }

@@ -74,9 +74,14 @@ html body ::selection { background: color-mix(in srgb, var(--sec-bright) 35%, tr
 @keyframes joy-up { from { transform: translateY(14px); } to { transform: none; } }
 
 /* ── Hub cards (Today, Food, Move, Play, Me): each card washed in its own tile colour, with a coloured edge and arrow ─────────────── */
-html body .hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 9%, var(--ds-surface, #fff)) 0%, var(--ds-surface, #fff) 70%); border-color: color-mix(in srgb, var(--tile) 28%, var(--ds-line, #e5e7eb)); border-left: 4px solid var(--tile); }
+html body .hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 9%, var(--ds-surface, #fff)) 0%, var(--ds-surface, #fff) 70%); border-color: color-mix(in srgb, var(--tile) 28%, var(--ds-line, #e5e7eb)); border-inline-start: 4px solid var(--tile); }
 html[data-theme="dark"] body .hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 16%, var(--ds-surface, #111)) 0%, var(--ds-surface, #111) 75%); }
 @media (hover: hover) { html body .hub-card.hub-card.hub-card:hover { border-color: var(--tile); } }
 
 /* Phase I: the footer is below the first screen; skip its layout and paint until it's near the view. */
 html body .site-footer { content-visibility: auto; contain-intrinsic-size: auto 520px; }
+
+/* Right-to-left languages (Arabic): arrows that mean "go forward" point the way the text reads. */
+html[dir="rtl"] body :is(.hub-card-arrow, .seg-row svg.lucide-arrow-right, .destination-card .lucide-arrow-right, .lucide-arrow-up-right, .lucide-chevron-right) { transform: scaleX(-1); }
+/* The brand name always reads left to right, even inside Arabic or Urdu text ("trackcal.", never ".trackcal"). */
+html body :is(.app-brand, .site-footer-logo, .home-page-header .brand) { direction: ltr; unicode-bidi: isolate; }

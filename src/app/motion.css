@@ -239,3 +239,9 @@ html body .coach-card-loading .skeleton-text { border-radius: 8px; background: c
 html body .coach-card-loading .skeleton-pill { display: inline-block; min-height: 44px; min-width: 72px; border-radius: 12px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); }
 html body .coach-card-loading .skeleton-pill.wide { min-width: 100%; }
 html body .quick-log-placeholder { min-width: 140px; color: transparent; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); }
+
+/* Language picker in the footer's Preferences. */
+html body .language-picker { display: grid; gap: 4px; margin-bottom: 12px; }
+html body .language-picker label { display: flex; align-items: center; gap: 8px; font-weight: 600; flex-wrap: wrap; }
+html body .language-picker select { min-height: 44px; border-radius: 12px; padding: 0 10px; font: inherit; }
+html body .language-picker small { color: var(--ds-muted, #57534e); }
