@@ -50,3 +50,30 @@ def test_favourites_still_come_first():
         add_food(db, 'Qzrice, raw'); favourite = add_food(db, 'Qzrice, cooked, with salt')
         db.add(models.FoodFavorite(user_id=user_id, food_key=favourite, snapshot={'name': 'Qzrice, cooked, with salt'})); db.commit()
     assert names(h, 'qzrice')[0] == 'Qzrice, cooked, with salt'
+
+
+def test_the_shared_order_is_cached_but_each_persons_favourites_still_come_first(monkeypatch):
+    """Phase I: a search is ranked once and kept for a while; favourites and recent foods are applied per person on top."""
+    from services import food_rank
+    monkeypatch.setenv('FOOD_SEARCH_CACHE_SECONDS', '60'); food_rank.clear_cache()
+    first_id, h1 = account(); second_id, h2 = account()
+    with database.SessionLocal() as db:
+        add_food(db, 'Qzlentil, raw'); cooked = add_food(db, 'Qzlentil, cooked, boiled'); db.commit()
+    assert names(h1, 'qzlentil')[0] == 'Qzlentil, raw'
+    with database.SessionLocal() as db:
+        db.add(models.FoodFavorite(user_id=second_id, food_key=cooked, snapshot={'name': 'Qzlentil, cooked, boiled'}))
+        add_food(db, 'Qzlentil'); db.commit()                                       # a new catalog food, after the order was cached
+    assert names(h2, 'qzlentil')[0] == 'Qzlentil, cooked, boiled'                  # cached order, this person's favourite on top
+    assert names(h1, 'qzlentil')[0] == 'Qzlentil, raw'                              # the other person's order is unchanged
+    assert 'Qzlentil' not in names(h1, 'qzlentil')                                  # the new food appears when the entry expires...
+    food_rank.clear_cache()
+    assert 'Qzlentil' in names(h1, 'qzlentil')                                      # ...or is cleared
+    food_rank.clear_cache()
+
+
+def test_the_cache_is_off_in_tests_unless_asked_for(monkeypatch):
+    from services import food_rank
+    monkeypatch.delenv('FOOD_SEARCH_CACHE_SECONDS', raising=False)
+    assert food_rank.cache_seconds() == 0
+    monkeypatch.setenv('APP_ENV', 'production')
+    assert food_rank.cache_seconds() == 600

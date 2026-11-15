@@ -12,10 +12,13 @@ spelling-variant form (search_synonyms: idly -> idli, ragi -> finger millet). Th
 """
 from __future__ import annotations
 
+import os
 import re
+import threading
+import time
 
 from sqlalchemy import case, func, or_, text
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import load_only, selectinload
 
 import models
 
@@ -26,6 +29,11 @@ VARIANT = {'dried', 'dehydrated', 'powder', 'powdered', 'oil', 'flour', 'juice',
            'light', 'ready', 'heat', 'ns', 'sliced', 'butter', 'margarine', 'made', 'duck', 'goose', 'quail', 'emu', 'ostrich', 'deli', 'luncheon', 'nonfat', 'lowfat', 'reduced', 'lite', 'turkey'}
 COOKING = {'cooked', 'boiled', 'baked', 'roasted', 'fried', 'steamed', 'grilled', 'raw', 'fresh', 'roast', 'boil'}
 POOL = 400
+
+
+def rank_columns():
+    """Only what ranking reads: id, name, normalised name and whether the values are verified."""
+    return load_only(models.Food.id, models.Food.name, models.Food.name_normalized, models.Food.is_verified)
 
 
 def canonical_term(db, query):
@@ -61,7 +69,9 @@ def _fulltext(term, all_words):
 
 
 def candidates(db, terms, category='', all_words=True):
-    q = db.query(models.Food)   # nutrition is loaded later, only for the foods returned
+    # Ranking needs four columns; full rows and nutrition are loaded later, only for the foods returned (Phase I: the pure-Python
+    # driver spent most of each search reading 400 whole rows).
+    q = db.query(models.Food).options(rank_columns())
     conditions = []
     for i, t in enumerate(terms):
         aliases = db.query(models.FoodAlias.food_id).filter(models.FoodAlias.alias.like(f'{t}%'))
@@ -122,21 +132,45 @@ def relevance(food, phrase, words, alias_names, favourite=False, recent=False):
     return s
 
 
-def find(db, query, category='', favourites=(), recent=(), limit=12, offset=0):
-    """(foods ranked best first, the canonical term searched, how they were found)."""
+# The catalog's order for a search is the same for everyone; only favourites and recent foods differ, and they are added on top.
+# So the ranked order is kept for a while per (search, category): a popular search ("rice") is ranked once, not for every person.
+# Off under APP_ENV=testing unless set, so tests that add catalog rows never see an old order.
+CACHE_SIZE = 512
+_cache, _cache_lock = {}, threading.Lock()
+
+
+def cache_seconds():
+    default = '0' if os.getenv('APP_ENV') == 'testing' else '600'
+    try:
+        return max(0, int(os.getenv('FOOD_SEARCH_CACHE_SECONDS', default)))
+    except ValueError:
+        return 0
+
+
+def clear_cache():
+    with _cache_lock:
+        _cache.clear()
+
+
+def ranked(db, query, category=''):
+    """([(food id, relevance without personal boosts, normalised name)], canonical term, mode), best first; None to browse."""
     query = (query or '').strip().lower()
+    ttl, key = cache_seconds(), (query, category)
+    if ttl:
+        with _cache_lock:
+            hit = _cache.get(key)
+        if hit and hit[0] > time.monotonic():
+            return hit[1]
     term = canonical_term(db, query)
     terms = [t for t in dict.fromkeys((query, term)) if t]
     if not terms:
-        rows = db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def), selectinload(models.Food.portions)) \
-            .filter(models.Food.category == category if category else True).order_by(models.Food.name_normalized, models.Food.id).offset(offset).limit(limit + 1).all()
-        return rows, term, 'browse'
+        return None, term, 'browse'
     pool, mode = candidates(db, terms, category, all_words=True), 'ranked match'
-    if len(pool) < limit:
+    if len(pool) < 50:   # the largest page any caller asks for, so every caller gets at least the matches it did before
         seen = {f.id for f in pool}
         pool += [f for f in candidates(db, terms, category, all_words=False) if f.id not in seen]
     if not pool and len(term) >= 3:
-        pool = db.query(models.Food) \
+        pool = db.query(models.Food).options(rank_columns()) \
             .filter(or_(*[models.Food.name_normalized.like(f'%{t}%') for t in terms])).filter(models.Food.category == category if category else True).limit(POOL).all()
         mode = 'bounded substring fallback'
     ids = [f.id for f in pool]
@@ -146,15 +180,32 @@ def find(db, query, category='', favourites=(), recent=(), limit=12, offset=0):
             names.setdefault(food_id, []).append(alias)
         for food_id, local in db.query(models.FoodTranslation.food_id, models.FoodTranslation.name).filter(models.FoodTranslation.food_id.in_(ids)):
             names.setdefault(food_id, []).extend(n.strip() for n in local.split(' / '))
-    favourites, recent = set(favourites), set(recent)
     best = {}
     for t in terms:
         words = _words(t)
         for f in pool:
-            r = relevance(f, t, words, names.get(f.id, []), f.id in favourites, f.id in recent)
-            best[f.id] = max(best.get(f.id, -1e9), r)
-    pool.sort(key=lambda f: (-best[f.id], f.name_normalized or '', f.id))
-    page = [f.id for f in pool[offset:offset + limit + 1]]
+            best[f.id] = max(best.get(f.id, -1e9), relevance(f, t, words, names.get(f.id, [])))
+    order = sorted(((f.id, best[f.id], f.name_normalized or '') for f in pool), key=lambda r: (-r[1], r[2], r[0]))
+    result = (order, term, mode)
+    if ttl:
+        with _cache_lock:
+            if len(_cache) >= CACHE_SIZE:
+                _cache.pop(next(iter(_cache)))
+            _cache[key] = (time.monotonic() + ttl, result)
+    return result
+
+
+def find(db, query, category='', favourites=(), recent=(), limit=12, offset=0):
+    """(foods ranked best first, the canonical term searched, how they were found)."""
+    order, term, mode = ranked(db, query, category)
+    if order is None:
+        rows = db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def), selectinload(models.Food.portions)) \
+            .filter(models.Food.category == category if category else True).order_by(models.Food.name_normalized, models.Food.id).offset(offset).limit(limit + 1).all()
+        return rows, term, 'browse'
+    # Personal boosts on top of the shared order: favourites first, then foods logged recently (as relevance() would add them).
+    favourites, recent = set(favourites), set(recent)
+    boosted = sorted(order, key=lambda r: (-(r[1] + (1000 if r[0] in favourites else 500 if r[0] in recent else 0)), r[2], r[0]))
+    page = [r[0] for r in boosted[offset:offset + limit + 1]]
     loaded = {f.id: f for f in db.query(models.Food).options(selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def),
-                                                            selectinload(models.Food.portions)).filter(models.Food.id.in_(page or ['']))}
+                                                            selectinload(models.Food.portions)).filter(models.Food.id.in_(page or [''])).populate_existing()}
     return [loaded[i] for i in page if i in loaded], term, mode
