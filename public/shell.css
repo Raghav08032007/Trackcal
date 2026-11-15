@@ -1,0 +1,19 @@
+/* The first screen, drawn from the HTML before any script runs (Phase I, page speed). React replaces it on its first render.
+   No inline styles or scripts (the CSP forbids them), so it lives here. Dark mode follows the system setting. */
+.boot { min-height: 100vh; background: #f4f7f6; color: #10201d; font-family: "DM Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.boot-bar { display: flex; align-items: center; height: 60px; padding: 0 16px; max-width: 1200px; margin: 0 auto; }
+.boot-brand { font-weight: 700; font-size: 1.35rem; letter-spacing: -.02em; }
+.boot-brand i { font-style: normal; color: #ec4899; }
+.boot-band { height: 3px; background: linear-gradient(90deg, #14b8a6, #f97316, #ec4899, #8b5cf6, #3b82f6); }
+.boot-main { max-width: 1200px; margin: 0 auto; padding: 16px; display: grid; gap: 14px; }
+.boot-card { height: 120px; border-radius: 22px; background: #ffffff; border: 1px solid #e3e9e7; }
+.boot-hero { height: 170px; background: linear-gradient(135deg, #0b7a6c, #6d28d9 60%, #be185d); border: 0; }
+.boot-tabs { position: fixed; left: 12px; right: 12px; bottom: 10px; height: 64px; border-radius: 26px; background: #ffffff; border: 1px solid #e3e9e7; }
+.boot-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (min-width: 860px) { .boot-tabs { display: none; } .boot-main { grid-template-columns: 1fr 1fr; } .boot-hero { grid-column: 1 / -1; } }
+@media (prefers-color-scheme: dark) {
+  .boot { background: #0b1314; color: #edf4f3; }
+  .boot-card, .boot-tabs { background: #121c1d; border-color: #24302f; }
+}
+@media (prefers-reduced-motion: no-preference) { .boot-card:not(.boot-hero) { animation: boot-pulse 1.4s ease-in-out infinite alternate; } }
+@keyframes boot-pulse { to { opacity: .55; } }

@@ -23,4 +23,14 @@ import "@/app/motion.css";       // last: colour transitions, presses, depth and
 import "@/app/joy.css";          // after motion: a colour for every tab and card, rewarding feedback
 import { createRouter } from "@/routes";
 
-createRoot(document.getElementById("root")!).render(<StrictMode><RouterProvider router={createRouter()} /></StrictMode>);
+/** In a production build the app stylesheet is only preloaded (vite.config.ts), so the static first screen paints at once.
+ *  Attach it and wait for it, then draw: nothing is shown unstyled. In development the styles come with the scripts. */
+function appStyles(): Promise<void> {
+  const preload = document.querySelector<HTMLLinkElement>("link[data-app-css]");
+  if (!preload) return Promise.resolve();
+  const sheet = document.createElement("link");
+  sheet.rel = "stylesheet"; sheet.href = preload.href; sheet.crossOrigin = preload.crossOrigin;
+  return new Promise(resolve => { sheet.onload = sheet.onerror = () => resolve(); document.head.appendChild(sheet); });
+}
+
+void appStyles().then(() => createRoot(document.getElementById("root")!).render(<StrictMode><RouterProvider router={createRouter()} /></StrictMode>));
