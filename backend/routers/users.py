@@ -24,7 +24,7 @@ class WorkspaceBackup(BaseModel):
         if len(json.dumps(entries)) > 900000 or len(entries) > 1500:
             raise HTTPException(413, "Backup exceeds the size limit")
         for key, value in entries.items():
-            if not re.fullmatch(r"trackcal:(play:(calm|character|theme|motion)|appearance|comfort|reminders|preferences|journal:\d{4}-\d{2}-\d{2}|wellness:\d{4}-\d{2}-\d{2}|target:[a-zA-Z_]+|burn:\d{4}-\d{2}-\d{2}|recipe:(name|servings|ingredients)|guide:done|companion-offset|studio:(recipes|pantry|shopping|workouts|plans|circuits|circuit-run|fast|next-targets|program-days|checkins))", key):
+            if not re.fullmatch(r"trackcal:(play:(calm|character|theme|motion|sport-seconds|sport-sound)|appearance|comfort|reminders|preferences|journal:\d{4}-\d{2}-\d{2}|wellness:\d{4}-\d{2}-\d{2}|target:[a-zA-Z_]+|burn:\d{4}-\d{2}-\d{2}|recipe:(name|servings|ingredients)|guide:done|companion-offset|studio:(recipes|pantry|shopping|workouts|plans|circuits|circuit-run|fast|next-targets|program-days|checkins))", key):
                 raise HTTPException(422, "Unsupported workspace key")
             def check(node, depth=0):
                 if depth > 8:
@@ -239,6 +239,9 @@ ACCOUNT_RECORDS = [
     ('challenge_participation', models.ChallengeParticipant, ('flagged',)),  # internal review signal
     ('activities', models.Activity, ()),
     ('privacy_zones', models.PrivacyZone, ()),
+    ('segments_you_made', models.Segment, (), 'creator_id'),
+    ('segment_times', models.SegmentEffort, ()),
+    ('segment_ranking_setting', models.SegmentSetting, ()),
     ('lab_reports', models.LabReport, ()),
     ('lab_results', models.LabResult, ()),
 ]

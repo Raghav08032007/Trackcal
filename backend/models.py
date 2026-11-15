@@ -1291,6 +1291,46 @@ class PrivacyZone(Base):
     created_at=Column(DateTime,nullable=False,default=_now)
 
 
+class Segment(Base):
+    """A named stretch of road or path (Phase G). Made from a stretch of the creator's own activity; every later activity that runs
+    along it is timed on it (services/segments.py). Public segments never touch the creator's privacy zones or a route's hidden ends."""
+    __tablename__='segments'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    creator_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    name=Column(String(60),nullable=False)
+    kind=Column(String(6),nullable=False)  # foot (walk, run, hike) or ride
+    visibility=Column(String(8),nullable=False,default='public')  # public, private (only the creator)
+    points=Column(JSON,nullable=False)  # [[lat, lon], ...] every ~10 m
+    distance_m=Column(Float,nullable=False)
+    min_lat=Column(Float,nullable=False)
+    max_lat=Column(Float,nullable=False)
+    min_lon=Column(Float,nullable=False)
+    max_lon=Column(Float,nullable=False)
+    created_at=Column(DateTime,nullable=False,default=_now)
+    is_deleted=Column(Boolean,nullable=False,default=False)
+    __table_args__=(Index('ix_segment_box','min_lat','max_lat','min_lon','max_lon'),)
+
+
+class SegmentEffort(Base):
+    """One pass along a segment within an activity, timed from the route. Computed on the server, never sent by a phone."""
+    __tablename__='segment_efforts'
+    id=Column(CHAR(36),primary_key=True,default=_uuid)
+    segment_id=Column(CHAR(36),ForeignKey('segments.id',ondelete='CASCADE'),nullable=False,index=True)
+    activity_id=Column(CHAR(36),ForeignKey('activities.id',ondelete='CASCADE'),nullable=False,index=True)
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False,index=True)
+    elapsed_s=Column(Float,nullable=False)
+    started_at=Column(DateTime,nullable=False)
+    __table_args__=(UniqueConstraint('activity_id','segment_id','started_at',name='uq_effort_pass'),Index('ix_effort_segment_user','segment_id','user_id'))
+
+
+class SegmentSetting(Base):
+    """Opt-in to the friends ranking on segments: shown only among people who opted in and follow each other."""
+    __tablename__='segment_settings'
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),primary_key=True)
+    ranking=Column(Boolean,nullable=False,default=False)
+    updated_at=Column(DateTime,nullable=False,default=_now)
+
+
 class LabReport(Base):
     """A blood report the person confirmed. Only the values are kept: the uploaded file is read and discarded."""
     __tablename__='lab_reports'

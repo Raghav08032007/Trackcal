@@ -227,6 +227,8 @@ def detail(db, viewer, row):
     data['post'] = card[0] if card else None  # kudos and comments live on the feed card
     data['together'] = together(db, viewer, row)
     data['records_set'] = row.stats.get('records_set', [])
+    from routers.segments import for_activity
+    data['segments'] = for_activity(db, viewer, row)
     return data
 
 
@@ -256,6 +258,8 @@ def create(data: ActivityInput, user=Depends(get_current_active_user), db: Sessi
     db.add(row)
     db.flush()
     sync_post(db, user, row)
+    from routers.segments import match_activity
+    match_activity(db, row)   # time it on every segment along its route
     db.commit()
     db.refresh(row)
     return {'activity': detail(db, user, row), 'new_records': records}

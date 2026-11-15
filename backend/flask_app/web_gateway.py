@@ -331,7 +331,9 @@ def social_routes(path):
 
 ACTIVITY_ID = r'[0-9a-f-]{36}'
 ACTIVITIES = [('GET', r''), ('POST', r''), ('GET', r'records'), ('GET', r'privacy-zones'), ('POST', r'privacy-zones'),
-              ('DELETE', r'privacy-zones/' + ACTIVITY_ID), ('GET', ACTIVITY_ID), ('PATCH', ACTIVITY_ID), ('DELETE', ACTIVITY_ID)]
+              ('DELETE', r'privacy-zones/' + ACTIVITY_ID), ('GET', ACTIVITY_ID), ('PATCH', ACTIVITY_ID), ('DELETE', ACTIVITY_ID),
+              ('GET', r'segments'), ('POST', r'segments'), ('GET', r'segments/settings'), ('PATCH', r'segments/settings'),
+              ('GET', r'segments/' + ACTIVITY_ID), ('DELETE', r'segments/' + ACTIVITY_ID)]
 
 
 @bp.route('/activities', defaults={'path': ''}, methods=['GET', 'POST'])
