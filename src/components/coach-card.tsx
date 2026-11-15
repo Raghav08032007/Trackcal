@@ -47,11 +47,19 @@ function CheckinButtons(){
 
 /** The daily plan from your character. It runs on the device, with no AI and no data sent anywhere. */
 export function CoachCard({compact=false}:{compact?:boolean}){
- const coach=useCoachCharacter(),day=useCoachDay();
- if(!day)return null;
+ const coach=useCoachCharacter(),day=useCoachDay(),date=useLocalDate(),[checkins]=useCheckins();
+ // While the plan loads, hold its place with the same shape (check-ins live on this device, so whether the buttons show is
+ // known at once): nothing below jumps when it arrives (Phase I: layout shift).
+ if(!day)return <section className="coach-card coach-card-loading" aria-busy="true" aria-label="Loading your plan for today">
+  {coach&&<img className="coach-avatar" src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72} fetchPriority="high"/>}
+  <div className="coach-bubble"><span className="eyebrow">{coach?`${coach.name.toUpperCase()}, YOUR COACH`:'YOUR PLAN TODAY'}</span>
+   {!checkins.some(row=>row.date===date)&&<div className="coach-checkin" aria-hidden="true"><span>&nbsp;</span><div className="account-actions"><span className="skeleton-pill"/><span className="skeleton-pill"/><span className="skeleton-pill"/></div></div>}
+   <p className="skeleton-text" aria-hidden="true">&nbsp;<br/>&nbsp;</p><p className="skeleton-text" aria-hidden="true">&nbsp;<br/>&nbsp;</p>
+   <div className="account-actions" aria-hidden="true"><span className="skeleton-pill wide"/>{compact&&<span className="skeleton-pill wide"/>}</div></div>
+ </section>;
  const move=moveStep(day);
  return <section className="coach-card" data-coach-mood={day.checkin?.energy??"ok"} aria-label={`${coach?.name??'Coach'}: your plan for today`}>
-  {coach&&<img className="coach-avatar" src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72}/>}
+  {coach&&<img className="coach-avatar" src={`/characters/${coach.id}-256.webp`} alt="" width={72} height={72} fetchPriority="high"/>}
   <div className="coach-bubble"><span className="eyebrow">{coach?`${coach.name.toUpperCase()}, YOUR COACH`:'YOUR PLAN TODAY'}</span>
    {!day.checkin&&<CheckinButtons/>}
    <p>{move.text}</p><p>{foodStep(day)}</p>

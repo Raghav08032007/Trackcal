@@ -241,7 +241,7 @@ html[data-theme="dark"] .tc-studio .wellness-meal-sections > * { background: #01
 .tc-studio .site-links { background: transparent !important; border-top: 0; }
 
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-motion="reduced"]) .tc-studio :is(.wellness-hero, .studio-momentum) { animation: clay-drift 16s ease-in-out infinite alternate; }
+  /* (Phase I) the hero background no longer drifts: animating background-position repainted it every frame. */
   html:not([data-motion="reduced"]) .tc-studio :is(.progress-stats > div, .wellness-metrics > *, .quick-log-button, .companion-choice) { transition: translate .32s var(--clay-spring), scale .32s var(--clay-spring), box-shadow .2s ease; }
   html:not([data-motion="reduced"]) .tc-studio :is(.progress-stats > div, .wellness-metrics > *, .companion-choice):hover { translate: 0 -4px; scale: 1.02; }
   html:not([data-motion="reduced"]) .tc-studio .quick-log-button:hover { translate: 0 -3px; }

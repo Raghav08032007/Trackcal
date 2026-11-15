@@ -41,7 +41,13 @@ export function TodayTasks() {
     EVENTS.forEach(e => window.addEventListener(e, soon)); window.addEventListener("focus", soon);
     return () => { EVENTS.forEach(e => window.removeEventListener(e, soon)); window.removeEventListener("focus", soon); window.clearTimeout(timer); };
   }, [load, scope]);
-  if (!signedIn || (!data && !error)) return null;
+  if (!signedIn) return null;
+  // While loading, hold the card's place with the same rows, so nothing below jumps when it arrives (Phase I: layout shift).
+  if (!data && !error) return <section className="ds-card today-tasks today-tasks-loading" aria-busy="true" aria-label="Loading today's tasks">
+    <div className="today-tasks-head"><div><h2>Today's 3 tasks</h2><p className="ds-sub">&nbsp;</p></div></div>
+    <ol className="task-list" aria-hidden="true">{[0, 1, 2].map(i => <li key={i} className="task-row"><span className="task-check" /><div className="task-text"><strong className="skeleton-line">&nbsp;</strong><small className="skeleton-line short">&nbsp;</small></div></li>)}</ol>
+    <p className="ds-sub streak-rule">&nbsp;</p><div className="health-score skeleton-block" aria-hidden="true" />
+  </section>;
   if (!data) return <p className="account-error" role="alert">{error}</p>;
   const tick = async (t: Task) => { setBusy(t.id); try { setData(await call<Today>("task-done", { task: t.id, done: !t.done })); } catch (e) { setError(e instanceof Error ? e.message : "Could not save."); } finally { setBusy(""); } };
   const h = data.health;

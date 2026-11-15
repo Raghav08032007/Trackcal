@@ -51,7 +51,7 @@
   html:not([data-motion="reduced"]) body main > :is(section, .account-card) { animation: tc-rise .45s cubic-bezier(.2, .8, .2, 1) both; }
 }
 @keyframes tc-ripple { from { transform: scale(0); opacity: .9; } to { transform: scale(46); opacity: 0; } }
-@keyframes tc-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes tc-rise { from { transform: translateY(10px); } to { transform: none; } }   /* moves only: visible from the first frame */
 html body :is(.hub-card, .destination-card, .photo-card) { position: relative; transform-style: preserve-3d; }
 
 /* ── Depth: a top highlight and layered, colour-tinted shadows instead of flat grey ─────────────────── */
@@ -230,3 +230,12 @@ html body .own-range .own-range-gain { font-weight: 600; color: #15803d; }
 html body .camera-page .own-range label.own-range-switch { flex-direction: row; justify-content: flex-start; margin: 0; }
 html body .camera-page .own-range input.own-range-input[role="switch"] { width: 44px; height: 26px; padding: 0; background: var(--ds-line) !important; border: 0 !important; }
 html body .camera-page .own-range input.own-range-input[role="switch"]:checked { background: linear-gradient(120deg, var(--sec-fill, #0d9488), var(--sec-fill-2, #6366f1)) !important; }
+
+/* Phase I: Today's tasks placeholder, the same shape as the card, so the page doesn't jump when it loads. */
+html body .today-tasks-loading .skeleton-line { display: block; border-radius: 6px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 70%, transparent); width: 70%; }
+html body .today-tasks-loading .skeleton-line.short { width: 45%; margin-top: 6px; }
+html body .today-tasks-loading .skeleton-block { min-height: 64px; border-radius: 14px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 45%, transparent); }
+html body .coach-card-loading .skeleton-text { border-radius: 8px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); color: transparent; }
+html body .coach-card-loading .skeleton-pill { display: inline-block; min-height: 44px; min-width: 72px; border-radius: 12px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); }
+html body .coach-card-loading .skeleton-pill.wide { min-width: 100%; }
+html body .quick-log-placeholder { min-width: 140px; color: transparent; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); }

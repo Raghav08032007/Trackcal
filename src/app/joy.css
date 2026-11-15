@@ -57,9 +57,8 @@ html body :is(button, a[href], input, select, textarea, summary):focus-visible {
 html body ::selection { background: color-mix(in srgb, var(--sec-bright) 35%, transparent); }
 
 @media (prefers-reduced-motion: no-preference) {
-  html:not([data-motion="reduced"]) body .app-topbar::after { animation: joy-drift 14s linear infinite; }
-  html:not([data-motion="reduced"]) body .app-brand span { animation: joy-drift 9s linear infinite; }
-  html:not([data-motion="reduced"]) body progress:not(.sport-progress)::-webkit-progress-value { animation: joy-drift 3.5s linear infinite; transition: width .6s cubic-bezier(.2, .8, .2, 1); }
+  /* The band, brand and progress colours stay still: a moving background repaints the page every frame (Phase I). */
+  html:not([data-motion="reduced"]) body progress:not(.sport-progress)::-webkit-progress-value { transition: width .6s cubic-bezier(.2, .8, .2, 1); }
   html:not([data-motion="reduced"]) body :is(.play-celebration, .wellness-notice, .ds-toast, .account-notice)[role="status"] { animation: joy-win .55s cubic-bezier(.3, 1.5, .5, 1) both; }
   html:not([data-motion="reduced"]) body .app-tabbar a[data-sec][aria-current="page"] { transition: background .35s ease, box-shadow .35s ease; }
   /* Cards in a grid arrive one after another. */
@@ -70,10 +69,14 @@ html body ::selection { background: color-mix(in srgb, var(--sec-bright) 35%, tr
   html:not([data-motion="reduced"]) body :is(.wellness-card-grid, .hub-grid, .destination-grid, .play-quest-grid, .sport-grid) > :nth-child(n+5) { animation-delay: 240ms; }
 }
 @keyframes joy-drift { to { background-position: -200% 0; } }
-@keyframes joy-win { 0% { opacity: 0; transform: translateY(8px) scale(.96); } 60% { transform: translateY(-2px) scale(1.02); } 100% { opacity: 1; transform: none; } }
-@keyframes joy-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes joy-win { 0% { transform: translateY(8px) scale(.96); } 60% { transform: translateY(-2px) scale(1.02); } 100% { transform: none; } }
+/* Entrances only move: content is visible from its first frame, so it counts as shown at once (Phase I, LCP). */
+@keyframes joy-up { from { transform: translateY(14px); } to { transform: none; } }
 
 /* ── Hub cards (Today, Food, Move, Play, Me): each card washed in its own tile colour, with a coloured edge and arrow ─────────────── */
 html body .hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 9%, var(--ds-surface, #fff)) 0%, var(--ds-surface, #fff) 70%); border-color: color-mix(in srgb, var(--tile) 28%, var(--ds-line, #e5e7eb)); border-left: 4px solid var(--tile); }
 html[data-theme="dark"] body .hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 16%, var(--ds-surface, #111)) 0%, var(--ds-surface, #111) 75%); }
 @media (hover: hover) { html body .hub-card.hub-card.hub-card:hover { border-color: var(--tile); } }
+
+/* Phase I: the footer is below the first screen; skip its layout and paint until it's near the view. */
+html body .site-footer { content-visibility: auto; contain-intrinsic-size: auto 520px; }

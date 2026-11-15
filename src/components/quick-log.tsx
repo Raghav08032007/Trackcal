@@ -18,7 +18,7 @@ export function QuickLog({ date }: { date: string }) {
   const [notice, setNotice] = useState(""), [undo, setUndo] = useState<Undo | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
   useEffect(() => {
     if (!userId) return; let cancelled = false;
-    wellnessRequest<NutritionData>("diary").then(data => { if (!cancelled) { setFavourites((data.favorites || []).slice(0, MOST_FAVOURITES)); setDay(data.today); } }, () => { /* water still works without the diary */ });
+    wellnessRequest<NutritionData>("diary").then(data => { if (!cancelled) { setFavourites((data.favorites || []).slice(0, MOST_FAVOURITES)); setDay(data.today); rememberFavourites((data.favorites || []).length > 0); } }, () => { /* water still works without the diary */ });
     return () => { cancelled = true; };
   }, [userId]);
   const addWater = () => { setError(""); setWellness({ ...wellness, water: wellness.water + GLASS_ML }); setNotice(`Water: ${wellness.water + GLASS_ML} ml today`); setUndo({ kind: "water" }); };
@@ -38,7 +38,8 @@ export function QuickLog({ date }: { date: string }) {
       setNotice("Undone"); setUndo(null);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "That couldn’t be undone. Please try again."); } finally { setBusy(false); }
   };
-  if (userId && !favourites.length && !notice && !error) return null;
+  // Holding the row's place while favourites load, when this device saw some last time, keeps the page from jumping (Phase I).
+  if (userId && !favourites.length && !notice && !error) return !day && hadFavourites() ? <section className="quick-log" aria-hidden="true"><div className="quick-log-row"><span className="quick-log-button quick-log-placeholder">&nbsp;</span></div></section> : null;
   return <section className="quick-log" aria-label="Quick log">
     <div className="quick-log-row">
       {!userId && <button className="quick-log-button" onClick={addWater}>+250 ml water</button>}   {/* signed in, water is on "Your day" and "+" */}
@@ -48,3 +49,8 @@ export function QuickLog({ date }: { date: string }) {
     {error && <p role="alert">{error}</p>}
   </section>;
 }
+
+/** Whether this device saw saved favourites last time: a layout hint only, safe to lose (private windows, cleared storage). */
+const SEEN = "trackcal:quick-log:had-favourites";
+function hadFavourites() { try { return localStorage.getItem(SEEN) === "1"; } catch { return false; } }
+function rememberFavourites(had: boolean) { try { if (had) localStorage.setItem(SEEN, "1"); else localStorage.removeItem(SEEN); } catch { /* storage unavailable */ } }
