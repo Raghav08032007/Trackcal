@@ -259,7 +259,7 @@ def personalization(path):
 
 # ── Wellness ────────────────────────────────────────────────────────────────
 
-WELLNESS = {'GET': ('foods', 'diary', 'exercises', 'sessions', 'training', 'history', 'library'),
+WELLNESS = {'GET': ('foods', 'diary', 'exercises', 'sessions', 'training', 'history', 'library', 'trend'),
             'POST': ('diary', 'saved-meals', 'favorites', 'templates', 'sessions', 'entries', 'library'),
             'PUT': ('diary', 'sessions', 'entries'), 'DELETE': ('diary', 'saved-meals', 'favorites', 'templates', 'sessions', 'entries')}
 
@@ -267,7 +267,7 @@ WELLNESS = {'GET': ('foods', 'diary', 'exercises', 'sessions', 'training', 'hist
 @bp.route('/wellness/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def wellness(path):
     parts = path.split('/'); resource, item = parts[0], parts[1] if len(parts) > 1 else None
-    known = ('foods', 'diary', 'saved-meals', 'favorites', 'exercises', 'templates', 'sessions', 'training', 'history', 'entries', 'library')
+    known = ('foods', 'diary', 'saved-meals', 'favorites', 'exercises', 'templates', 'sessions', 'training', 'history', 'entries', 'library', 'trend')
     restore = len(parts) == 3 and resource in ('diary', 'sessions', 'entries') and parts[2] == 'restore' and request.method == 'POST'  # undo a delete
     if resource == 'history' and item: return error('Not found', 404)
     if resource == 'library' and item and (item != 'import' or request.method != 'POST'): return error('Not found', 404)
@@ -281,7 +281,7 @@ def wellness(path):
         if method in ('POST', 'PUT'):
             body, failed = json_object(64000, ('Request too large', 413), 'Invalid JSON')
             if failed: return failed
-        search = {key: request.args[key] for key in ('q', 'category', 'equipment', 'offset', 'limit', 'day', 'kind') if key in request.args}
+        search = {key: request.args[key] for key in ('q', 'category', 'equipment', 'offset', 'limit', 'day', 'kind', 'weeks') if key in request.args}
         return forward(authenticated(method, '/wellness/' + path + (f'?{urlencode(search)}' if search else ''), body))
     except Exception:
         return error('Your saved records are safe. The service is unavailable; keep this draft open and retry.', 503)
