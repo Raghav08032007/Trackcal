@@ -1,3 +1,4 @@
+import { msg } from "./i18n";
 import {EXERCISES,type ExerciseKind} from './pose/types';
 import type {Circuit,CircuitStep} from './workout-coach';
 import type {Session} from './wellness';
@@ -26,10 +27,10 @@ export const stepsLabel=(circuit:Circuit)=>circuit.steps.map(step=>`${EXERCISES[
 /* Fasting customs. Practice differs by family and community, so these are starting points. */
 export type FastMode={id:string;label:string;hours:number;eat:string;skip:string};
 export const FAST_MODES:FastMode[]=[
- {id:'time',label:'Time-based',hours:14,eat:'Your usual balanced meals in your eating window.',skip:'Nothing in particular.'},
- {id:'navratri',label:'Navratri',hours:14,eat:'Sabudana, kuttu, singhara and rajgira flours, potato, fruit, curd, milk, rock salt.',skip:'Onion, garlic, wheat, rice and regular salt.'},
- {id:'ekadashi',label:'Ekadashi',hours:12,eat:'Fruit, milk, nuts, potato, sabudana.',skip:'Rice, other grains and beans.'},
- {id:'ramadan',label:'Ramadan',hours:14,eat:'Sehri: oats, eggs, curd, roti and water. Iftar: water and dates, then a balanced meal.',skip:'Very salty or fried food, which makes the next day harder.'},
+ {id:'time',label:msg("Time-based"),hours:14,eat:msg("Your usual balanced meals in your eating window."),skip:msg("Nothing in particular.")},
+ {id:'navratri',label:msg("Navratri"),hours:14,eat:msg("Sabudana, kuttu, singhara and rajgira flours, potato, fruit, curd, milk, rock salt."),skip:msg("Onion, garlic, wheat, rice and regular salt.")},
+ {id:'ekadashi',label:msg("Ekadashi"),hours:12,eat:msg("Fruit, milk, nuts, potato, sabudana."),skip:msg("Rice, other grains and beans.")},
+ {id:'ramadan',label:msg("Ramadan"),hours:14,eat:msg("Sehri: oats, eggs, curd, roti and water. Iftar: water and dates, then a balanced meal."),skip:msg("Very salty or fried food, which makes the next day harder.")},
 ];
 
 /* Weekly review */

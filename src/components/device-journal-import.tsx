@@ -1,12 +1,13 @@
 // Copy meals from this device's journal into the account diary. Nothing moves until the person reviews a preview and
 // confirms; the device copy stays. Each meal gets an id derived from its content, so copying twice never duplicates.
+import { t, msg } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { useWorkspaceScope } from "./account-session";
 import { exportLocalEntries } from "@/lib/use-local-state";
 import { wellnessRequest } from "@/lib/wellness";
 import type { MealLog } from "./journal-tools";
 
-export const DEVICE_SOURCE = "Device journal · totals as logged";
+export const DEVICE_SOURCE = msg("Device journal · totals as logged");
 const DAYS = 30;
 
 type DeviceMeal = { key: string; day: string; meal: MealLog };
@@ -50,22 +51,22 @@ export function DeviceJournalImport({ today, onDone }: { today: string; onDone: 
             food_id: null, manual_override: true, estimated: false, source: DEVICE_SOURCE }] });
         copied++;
       }
-      setMessage(`Copied ${copied} ${copied === 1 ? "meal" : "meals"} to your diary. Copying again won't duplicate them; your device journal is unchanged.`);
+      setMessage(t("Copied {count} meals to your diary. Copying again won’t duplicate them; your device journal is unchanged.", { count: copied }));
       setOpen(false); await onDone();
     } catch (error) {
-      setMessage(`${copied} copied, then: ${error instanceof Error ? error.message : "copy failed"}. Try again; meals already copied won't be duplicated.`);
+      setMessage(t("{count} copied, then: {error}. Try again; meals already copied won’t be duplicated.", { count: copied, error: error instanceof Error ? error.message : t("copy failed") }));
     } finally { setBusy(false); }
   }
   return <section className="account-card" id="device-journal">
-    <h2>Meals saved on this device</h2>
-    <p>{meals.length} {meals.length === 1 ? "meal" : "meals"} from the last {DAYS} days are in this device&apos;s journal. Review them before copying anything to your account diary.</p>
+    <h2>{t("Meals saved on this device")}</h2>
+    <p>{t("{count} meals from the last {days} days are in this device’s journal. Review them before copying anything to your account diary.", { count: meals.length, days: DAYS })}</p>
     {message && <p role="status">{message}</p>}
-    {!open ? <button type="button" onClick={() => { setChosen(new Set(meals.map(m => m.key))); setOpen(true); }}>Review device meals</button> : <>
-      <ul className="device-meals">{meals.map(m => <li key={m.key}><label><input type="checkbox" checked={chosen.has(m.key)} onChange={e => setChosen(current => { const next = new Set(current); if (e.target.checked) next.add(m.key); else next.delete(m.key); return next; })}/> {m.day} · {m.meal.time} · {m.meal.name} · {known(m.meal.calories) ?? "?"} kcal</label></li>)}</ul>
-      <p>Copied meals keep the totals you logged (portion size wasn&apos;t recorded) and go under &ldquo;other&rdquo;. You can edit them afterwards.</p>
+    {!open ? <button type="button" onClick={() => { setChosen(new Set(meals.map(m => m.key))); setOpen(true); }}>{t("Review device meals")}</button> : <>
+      <ul className="device-meals">{meals.map(m => <li key={m.key}><label><input type="checkbox" checked={chosen.has(m.key)} onChange={e => setChosen(current => { const next = new Set(current); if (e.target.checked) next.add(m.key); else next.delete(m.key); return next; })}/> {t("{day} · {time} · {name} · {n} kcal", { day: m.day, time: m.meal.time, name: m.meal.name, n: known(m.meal.calories) ?? "?" })}</label></li>)}</ul>
+      <p>{t("Copied meals keep the totals you logged (portion size wasn't recorded) and go under “other”. You can edit them afterwards.")}</p>
       <div className="account-actions">
-        <button type="button" disabled={busy || !chosen.size} onClick={() => void copy()}>{busy ? "Copying…" : `Copy ${chosen.size} selected ${chosen.size === 1 ? "meal" : "meals"}`}</button>
-        <button type="button" disabled={busy} onClick={() => setOpen(false)}>Cancel</button>
+        <button type="button" disabled={busy || !chosen.size} onClick={() => void copy()}>{busy ? t("Copying…") : t("Copy {count} selected meals", { count: chosen.size })}</button>
+        <button type="button" disabled={busy} onClick={() => setOpen(false)}>{t("Cancel")}</button>
       </div>
     </>}
   </section>;

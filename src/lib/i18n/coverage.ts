@@ -26,12 +26,32 @@ export const TRANSLATED_FILES = [
   "src/components/photos.tsx",
   "src/components/quick-log.tsx",
   "src/lib/coach.ts",
+  // Food
+  "src/components/nutrition-dashboard.tsx",
+  "src/components/food-workspace.tsx",
+  "src/components/barcode-camera.tsx",
+  "src/components/food-camera.tsx",
+  "src/components/food-row.tsx",
+  "src/components/meal-planner.tsx",
+  "src/components/menu-picker.tsx",
+  "src/components/recipe-workbench.tsx",
+  "src/components/targets-card.tsx",
+  "src/components/device-journal-import.tsx",
+  "src/components/fasting-page.tsx",
+  "src/components/meal-idea-transfer.tsx",
+  "src/app/meal-plans/page.tsx",
+  "src/app/tools/page.tsx",
+  "src/components/journal-tools.tsx",
+  "src/components/gym-tools.tsx",
+  "src/lib/feature-guide.ts",
+  "src/lib/fitness-plans.ts",
 ];
 /** Texts that reach t() only at run time (from the server, or a variable): listed so every language must have them too. */
 export const RUNTIME_KEYS = [
   "calories", "protein", "carbs", "fat",                                  // nutrient names in the daily progress card
   "Resting it", "Easing back", "Recovered",                               // recovery stages (services/recovery.py)
   "Activity", "Sleep", "Nutrition", "Water", "Steadiness",                // Health Score parts (services/daily_tasks.py)
+  "User reviewed input",                                                  // default source of a food entered by hand (lib/wellness.ts, lib/diary.ts)
   "Numbness or tingling", "New swelling or warmth", "Pain that wakes you at night", "Weakness or giving way", "A new fall or injury", "Fever or feeling unwell",
 ];
 export const WAVE_1 = ["hi", "bn", "mr", "te", "ta", "es", "pt", "id", "ar"] as const;

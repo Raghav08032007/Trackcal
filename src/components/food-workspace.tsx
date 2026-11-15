@@ -1,3 +1,4 @@
+import { t, msg } from "@/lib/i18n";
 import { useBurn } from "@/lib/days";
 
 import { FoodCamera } from "@/components/food-camera";
@@ -181,7 +182,7 @@ const SCAN_PRESETS = [
     carbs: 28,
     fat: 19,
     fiber: 7.2,
-    nova: { group: 1, label: "Unprocessed / Whole Food", color: "text-emerald-400" },
+    nova: { group: 1, label: msg("Unprocessed / Whole Food"), color: "text-emerald-400" },
     items: [
       { name: "Artisan Sourdough Slice", portion: "60g", cal: 140, p: 5, c: 26, f: 1 },
       { name: "Fresh Hass Avocado", portion: "90g", cal: 130, p: 2, c: 2, f: 12 },
@@ -200,7 +201,7 @@ const SCAN_PRESETS = [
     carbs: 52,
     fat: 16,
     fiber: 6.0,
-    nova: { group: 1, label: "Unprocessed / Whole Food", color: "text-emerald-400" },
+    nova: { group: 1, label: msg("Unprocessed / Whole Food"), color: "text-emerald-400" },
     items: [
       { name: "Raw Atlantic Salmon Cubes", portion: "120g", cal: 220, p: 24, c: 0, f: 13 },
       { name: "Steamed Brown Rice", portion: "150g", cal: 170, p: 4, c: 36, f: 1 },
@@ -225,7 +226,7 @@ const PACKAGED_BARCODE_PRODUCTS: BarcodeView[] = [
     fatPer100g: 30.9,
     servingCalories: 81,
     novaGroup: 4,
-    novaLabel: "Ultra-Processed Food (UPF)",
+    novaLabel: msg("Ultra-Processed Food (UPF)"),
     allergens: ["Milk", "Soybeans", "Hazelnuts"]
   },
   {
@@ -260,7 +261,7 @@ const PACKAGED_BARCODE_PRODUCTS: BarcodeView[] = [
 
 export function FoodWorkspace({initialTab="scanner"}:{initialTab?:AppTab}) {
   const { ready, user } = useAccount();
-  if (!ready) return <main className="account-loading" aria-live="polite">Opening your workspace…</main>;
+  if (!ready) return <main className="account-loading" aria-live="polite">{t("Opening your workspace…")}</main>;
   return <Workspace key={user?.id || "guest"} initialTab={initialTab} />;
 }
 
@@ -274,7 +275,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [activeTab, setActiveTab] = useState<AppTab>(initialTab);
   const [selectedPreset, setSelectedPreset] = useState(-1);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<ScanView>(() => ({ ...SCAN_PRESETS[0], label: "", foodName: "Nothing scanned yet", weight: "0g", confidence: 0, calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, items: [], allergens: [], method: "Snap or upload a meal to see its estimate." } as ScanView));
+  const [scanResult, setScanResult] = useState<ScanView>(() => ({ ...SCAN_PRESETS[0], label: "", foodName: msg("Nothing scanned yet"), weight: "0g", confidence: 0, calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, items: [], allergens: [], method: msg("Snap or upload a meal to see its estimate.") } as ScanView));
   const [scanSource, setScanSource] = useState<ScanSource>("none");
   const [portionGrams, setPortionGrams] = useState(0);
   const search = useSearch(), [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(search).get("q") ?? "");   // /food-library?q=dal opens with a search
@@ -329,13 +330,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; await processPhoto(file); e.target.value = ""; };
   const processPhoto = async (file?: File) => {
     if (file) {
-      if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>10*1024*1024){setScanError('Use a nonempty JPEG, PNG or WebP under 10 MB.');setScanReady(false);return;}
+      if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>10*1024*1024){setScanError(t("Use a nonempty JPEG, PNG or WebP under 10 MB."));setScanReady(false);return;}
       setPendingPhoto(file); setPhotoRange(null);
       const requestId = ++photoRequest.current;
       if (uploadedImageUrl) URL.revokeObjectURL(uploadedImageUrl);
       const url = URL.createObjectURL(file);
       setUploadedImageUrl(url);
-      if(!photoConsent){setIsScanning(false);setScanReady(false);setScanError('Photo stays on this device. Confirm AI consent or choose a food manually in the cloud diary.');return;}
+      if(!photoConsent){setIsScanning(false);setScanReady(false);setScanError(t("Photo stays on this device. Confirm AI consent or choose a food manually in the cloud diary."));return;}
       setIsScanning(true);
       setScanError(""); setScanReady(false);
       try {
@@ -361,7 +362,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         if (result.calorie_range && result.components.every(item => item.portion_range_g)) setPhotoRange({ grams: [0, 1].map(i => Math.round(result.components.reduce((sum, item) => sum + item.portion_range_g[i], 0))) as [number, number],
           calories: [Math.round(result.calorie_range[0]), Math.round(result.calorie_range[1])], confidence: confidenceLabel(mean), fromModel: result.components.every(item => item.range_basis === "model") });
         setScanSource("photo"); setPortionGrams(grams); setCookingStyle("standard"); setScanReady(true); requestAnimationFrame(() => document.getElementById("scan-result-title")?.scrollIntoView({ block: "center" }));
-      } catch (error) { if (requestId === photoRequest.current) setScanError(error instanceof Error ? error.message : "Photo analysis failed."); }
+      } catch (error) { if (requestId === photoRequest.current) setScanError(error instanceof Error ? error.message : t("Photo analysis failed.")); }
       finally { if (requestId === photoRequest.current) setIsScanning(false); }
     }
   };
@@ -387,19 +388,19 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     setTargetCarbs(plan.macros.carbs_g);
     setTargetFat(plan.macros.fat_g);
     setShowOnboarding(false);
-    setNotice(`Your target is ${plan.calorie_target} kcal a day, with ${plan.macros.protein_g} g protein. Track it in Journal.`);
-    } catch (error) { setGoalError(error instanceof Error ? error.message : "Unable to calculate goals."); }
+    setNotice(t("Your target is {calorie_target} kcal a day, with {protein_g} g protein. Track it in Journal.", { calorie_target: plan.calorie_target, protein_g: plan.macros.protein_g }));
+    } catch (error) { setGoalError(error instanceof Error ? error.message : t("Unable to calculate goals.")); }
   };
 
   // Cooking Style & Hidden Oil Slider
   const [cookingStyle, setCookingStyle] = useState<"steamed_boiled" | "home_light" | "standard" | "restaurant_heavy" | "deep_fried">("standard");
 
   const COOKING_STYLES = {
-    steamed_boiled: { label: "Steamed / Boiled", calMult: 0.88, fatMult: 0.65, desc: "Zero added oil" },
-    home_light: { label: "Home-Cooked Light", calMult: 0.94, fatMult: 0.85, desc: "Minimal cooking oil" },
-    standard: { label: "Standard Recipe", calMult: 1.0, fatMult: 1.0, desc: "Balanced baseline" },
-    restaurant_heavy: { label: "Restaurant (Ghee/Butter Heavy)", calMult: 1.25, fatMult: 1.45, desc: "+40% hidden fats" },
-    deep_fried: { label: "Deep Fried", calMult: 1.48, fatMult: 1.85, desc: "High oil absorption" },
+    steamed_boiled: { label: msg("Steamed / Boiled"), calMult: 0.88, fatMult: 0.65, desc: msg("Zero added oil") },
+    home_light: { label: msg("Home-Cooked Light"), calMult: 0.94, fatMult: 0.85, desc: msg("Minimal cooking oil") },
+    standard: { label: msg("Standard Recipe"), calMult: 1.0, fatMult: 1.0, desc: msg("Balanced baseline") },
+    restaurant_heavy: { label: msg("Restaurant (Ghee/Butter Heavy)"), calMult: 1.25, fatMult: 1.45, desc: msg("+40% hidden fats") },
+    deep_fried: { label: msg("Deep Fried"), calMult: 1.48, fatMult: 1.85, desc: msg("High oil absorption") },
   };
 
   const handleSimulateScan = (presetIndex: number) => {
@@ -445,9 +446,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       if (pack.barcode) { await handleSearchBarcode(pack.barcode); setProductFacts(facts => ({ ...pack.details, ...Object.fromEntries(Object.entries(facts ?? {}).filter(([, value]) => Array.isArray(value) ? value.length : value)) })); return; }
       setProductFacts(pack.details);
       barcodeRequest.current++; setBarcodeOverrides({}); setBarcodeInput(""); setBarcodeSource("Your pack photo, read by AI");
-      setSelectedBarcodeProduct({ code: "No barcode", name: pack.product_name || "Product from your photo", brand: pack.brand || "Brand not read", serving: "Not stated", caloriesPer100g: pack.per_100g.calories, proteinPer100g: pack.per_100g.protein_g, carbsPer100g: pack.per_100g.carbs_g, fatPer100g: pack.per_100g.fat_g, attribution: "Read from your photo. Check it against the pack.", novaGroup: 0, novaLabel: "NOVA not assessed", allergens: pack.details.allergens ?? [] });
+      setSelectedBarcodeProduct({ code: "No barcode", name: pack.product_name || "Product from your photo", brand: pack.brand || "Brand not read", serving: "Not stated", caloriesPer100g: pack.per_100g.calories, proteinPer100g: pack.per_100g.protein_g, carbsPer100g: pack.per_100g.carbs_g, fatPer100g: pack.per_100g.fat_g, attribution: "Read from your photo. Check it against the pack.", novaGroup: 0, novaLabel: msg("NOVA not assessed"), allergens: pack.details.allergens ?? [] });
       setBarcodeReady(true);
-    } catch (error) { setBarcodeError(error instanceof Error ? error.message : "Could not read that photo."); }
+    } catch (error) { setBarcodeError(error instanceof Error ? error.message : t("Could not read that photo.")); }
     finally { setReadingPack(false); }
   }
 
@@ -464,8 +465,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const addCurrentScanToLog = () => {
     if (!scanReady || isScanning) return;
     // The sample shown before any photo is scanned is not a meal: it never goes into the diary.
-    if (!uploadedImageUrl) { setNotice("Scan a photo of your meal first. The example shown here is sample data and isn't logged."); return; }
-    setNotice(`Meal added to your journal for ${journalDate}.`);
+    if (!uploadedImageUrl) { setNotice(t("Scan a photo of your meal first. The example shown here is sample data and isn't logged.")); return; }
+    setNotice(t("Meal added to your journal for {journalDate}.", { journalDate }));
     setLoggedMeals([
       ...loggedMeals,
       {
@@ -476,7 +477,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         carbs: scaledCarbs,
         fat: scaledFat,
         grams: portionGrams > 0 ? portionGrams : undefined,
-        method: "Photo scan (user reviewed)"
+        method: msg("Photo scan (user reviewed)")
       }
     ]);
   };
@@ -493,7 +494,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const barcodeComplete = NUTRIENT_FIELDS.every(field => barcodeValues[field] !== null);
   const barcodeValueCell = (key: BarcodeKey, label: string, unit: string, tone: string) => {
     if (selectedBarcodeProduct[key] !== null) return <p className={`text-lg font-bold mt-0.5 ${tone}`}>{selectedBarcodeProduct[key]}{unit}</p>;
-    return <input aria-label={`${label} per 100 g from the label`} type="number" min="0" step="0.1" inputMode="decimal" placeholder="Unknown" value={barcodeOverrides[key] ?? ""}
+    return <input aria-label={t("{label} per 100 g from the label", { label: t(label) })} type="number" min="0" step="0.1" inputMode="decimal" placeholder={t("Unknown")} value={barcodeOverrides[key] ?? ""}
       onChange={event => { const value = event.target.value === "" ? NaN : Number(event.target.value); setBarcodeOverrides(current => { const next = { ...current }; if (Number.isFinite(value) && value >= 0) next[key] = value; else delete next[key]; return next; }); }}
       className="mt-1 w-full rounded-lg bg-slate-950 border border-amber-500/50 px-2 py-1 text-center text-white" />;
   };
@@ -528,12 +529,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         fatPer100g: res.nutrients_per_100g.fat_g,
         attribution: res.attribution,
         novaGroup: res.nova_group || 0,
-        novaLabel: res.nova_group === null ? "NOVA not assessed" : res.nova_group === 1 ? "Unprocessed / Whole Food" : (res.nova_group === 4 ? "Ultra-Processed Food (UPF)" : "Processed Food"),
+        novaLabel: res.nova_group === null ? msg("NOVA not assessed") : res.nova_group === 1 ? msg("Unprocessed / Whole Food") : (res.nova_group === 4 ? msg("Ultra-Processed Food (UPF)") : msg("Processed Food")),
         allergens: res.allergens || []
       });
       setBarcodeOverrides({}); setBarcodeReady(true); setBarcodeSource(res.cached ? `${res.source} (saved copy)` : res.source);
     } catch (err) {
-      if (requestId === barcodeRequest.current) setBarcodeError(err instanceof Error ? err.message : "Barcode not found in Open Food Facts.");
+      if (requestId === barcodeRequest.current) setBarcodeError(err instanceof Error ? err.message : t("Barcode not found in Open Food Facts."));
     } finally {
       if (requestId === barcodeRequest.current) setBarcodeLoading(false);
     }
@@ -546,7 +547,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [textError, setTextError] = useState("");
 
   const handleSimulateVoiceParse = async () => {
-    if (!voiceTextPrompt.trim()) { setTextError("Describe a meal before parsing."); return; }
+    if (!voiceTextPrompt.trim()) { setTextError(t("Describe a meal before parsing.")); return; }
     setIsParsingVoice(true);
     setTextError(""); setParsedVoiceResult(null);
     try {
@@ -569,7 +570,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         });
       }
     } catch (error) {
-      setTextError(error instanceof Error ? error.message : "Text analysis failed.");
+      setTextError(error instanceof Error ? error.message : t("Text analysis failed."));
     } finally {
       setIsParsingVoice(false);
     }
@@ -601,7 +602,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
   const handleAddIngredient = () => {
     setRecipeError("");
-    if (!newIngName.trim() || !Number.isFinite(newIngGrams) || newIngGrams <= 0 || newIngGrams > 20000 || Object.values(newIngNutrition).some(n => !Number.isFinite(n) || n < 0 || n > 20000)) { setRecipeError("Enter an ingredient name, a positive gram amount and valid nonnegative nutrition values."); return; }
+    if (!newIngName.trim() || !Number.isFinite(newIngGrams) || newIngGrams <= 0 || newIngGrams > 20000 || Object.values(newIngNutrition).some(n => !Number.isFinite(n) || n < 0 || n > 20000)) { setRecipeError(t("Enter an ingredient name, a positive gram amount and valid nonnegative nutrition values.")); return; }
     setRecipeIngredients([
       ...recipeIngredients,
       {
@@ -612,7 +613,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     ]);
     setNewIngName("");
     setNewIngNutrition({ cal: 0, p: 0, c: 0, f: 0 });
-    setNotice("Recipe ingredient saved.");
+    setNotice(t("Recipe ingredient saved."));
   };
 
   const localFoods = SAMPLE_DATABASE.filter(
@@ -635,9 +636,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       const response = await fetch(`/api/foods?q=${encodeURIComponent(searchQuery.trim())}`, { signal: AbortSignal.timeout(15000) });
       const data = await response.json();
       if (id !== foodSearchRequest.current) return;
-      if (!response.ok) throw new Error(data.error || "Food search failed.");
-      setRemoteFoods(data.results); if (!data.results.length) setFoodSearchError("No complete nutrition records found for this query. Try a more specific food name.");
-    } catch (error) { if (id === foodSearchRequest.current) setFoodSearchError(error instanceof Error ? error.message : "Food search failed."); }
+      if (!response.ok) throw new Error(data.error || t("Food search failed."));
+      setRemoteFoods(data.results); if (!data.results.length) setFoodSearchError(t("No complete nutrition records found for this query. Try a more specific food name."));
+    } catch (error) { if (id === foodSearchRequest.current) setFoodSearchError(error instanceof Error ? error.message : t("Food search failed.")); }
     finally { if (id === foodSearchRequest.current) setFoodSearchLoading(false); }
   };
 
@@ -645,9 +646,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
     <div className="trackcal-app food-focus min-h-screen flex flex-col font-sans">
       {/* Main Content */}
       <main className="app-main" data-active-tab={activeTab}>
-        {notice && <div role="status" className="app-toast"><CheckCircle2 size={16} /><span>{notice}</span><button aria-label="Dismiss notification" onClick={() => setNotice("")}>×</button></div>}
-        <header className="food-page-heading"><div><h1>{foodNames[activeTab]}</h1><p>{foodIntros[activeTab]}</p></div><button className="destination-button" onClick={()=>setShowOnboarding(true)}>My goals</button><details className="food-tool-picker"><summary>Choose another food tool</summary><div className="destination-mini-grid">{(Object.keys(foodRoutes) as AppTab[]).map(tab=><button key={tab} className="destination-button" aria-current={activeTab===tab?'page':undefined} onClick={()=>navigateTab(tab)}>{foodNames[tab]}</button>)}</div></details></header>
-        <MealIdeaTransfer onChoose={idea=>{setVoiceTextPrompt(idea);setActiveTab("voice_text");setNotice("Meal idea loaded. Add actual ingredients and quantities, then review the estimate before logging.");}}/>
+        {notice && <div role="status" className="app-toast"><CheckCircle2 size={16} /><span>{notice}</span><button aria-label={t("Dismiss notification")} onClick={() => setNotice("")}>×</button></div>}
+        <header className="food-page-heading"><div><h1>{t(foodNames[activeTab])}</h1><p>{t(foodIntros[activeTab])}</p></div><button className="destination-button" onClick={()=>setShowOnboarding(true)}>{t("My goals")}</button><details className="food-tool-picker"><summary>{t("Choose another food tool")}</summary><div className="destination-mini-grid">{(Object.keys(foodRoutes) as AppTab[]).map(tab=><button key={tab} className="destination-button" aria-current={activeTab===tab?'page':undefined} onClick={()=>navigateTab(tab)}>{foodNames[tab]}</button>)}</div></details></header>
+        <MealIdeaTransfer onChoose={idea=>{setVoiceTextPrompt(idea);setActiveTab("voice_text");setNotice(t("Meal idea loaded. Add actual ingredients and quantities, then review the estimate before logging."));}}/>
         <div id="tracking-workspace" className="focused-tool-content"/>
         {/* TAB 1: AI PHOTO SCANNER */}
         {activeTab === "scanner" && (
@@ -656,7 +657,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                 <input
                   type="file"
-                  aria-label="Meal or nutrition label photo"
+                  aria-label={t("Meal or nutrition label photo")}
                   ref={fileInputRef}
                   onChange={handleImageFileChange}
                   accept="image/jpeg,image/png,image/webp"
@@ -666,25 +667,24 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Camera className="w-5 h-5 text-emerald-400" />
-                    <h2 className="font-semibold text-white">Photo of your meal</h2>
+                    <h2 className="font-semibold text-white">{t("Photo of your meal")}</h2>
                   </div>
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-all font-semibold cursor-pointer"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    Choose a photo
-                  </button>
+                    {t("Choose a photo")}</button>
                 </div>
 
-                <button className="food-camera-open" onClick={() => setCameraOpen(true)}><Camera size={20} /> Scan food with camera</button>
+                <button className="food-camera-open" onClick={() => setCameraOpen(true)}><Camera size={20} /> {t("Scan food with camera")}</button>
                 {cameraOpen && <FoodCamera consent={photoConsent} onConsent={setPhotoConsent} onClose={() => setCameraOpen(false)} onCapture={file => { setCameraOpen(false); void processPhoto(file); }} />}
-                <div className="scan-privacy-card"><label className="scanner-consent"><input type="checkbox" aria-label="Allow this photo to be sent to the configured AI provider" checked={photoConsent} onChange={e=>setPhotoConsent(e.target.checked)}/> Send this photo for AI analysis</label><p className="scanner-privacy-note">Optional transfer to the configured AI provider. Without consent, your preview stays local. Review estimates; allergens are not assessed.</p><label className="scanner-note">What the photo can&apos;t show (optional)<input maxLength={300} value={photoNote} onChange={e=>setPhotoNote(e.target.value)} placeholder="3 red bananas, apple 170 g"/></label><div className="account-actions"><a className="destination-button" href="/nutrition#photo-review">Private photo & manual food selection ↗</a>{pendingPhoto&&photoConsent&&<button type="button" disabled={isScanning} onClick={()=>void handleImageFileChange({target:{files:[pendingPhoto],value:''}} as unknown as React.ChangeEvent<HTMLInputElement>)}>Analyze selected photo</button>}{uploadedImageUrl&&<button type="button" onClick={()=>{photoRequest.current++;setUploadedImageUrl(null);setPendingPhoto(null);if(fileInputRef.current)fileInputRef.current.value='';setScanReady(false);setScanError('Local photo removed.');}}>Delete selected photo</button>}</div></div>
+                <div className="scan-privacy-card"><label className="scanner-consent"><input type="checkbox" aria-label={t("Allow this photo to be sent to the configured AI provider")} checked={photoConsent} onChange={e=>setPhotoConsent(e.target.checked)}/> {t("Send this photo for AI analysis")}</label><p className="scanner-privacy-note">{t("Optional transfer to the configured AI provider. Without consent, your preview stays local. Review estimates; allergens are not assessed.")}</p><label className="scanner-note">{t("What the photo can't show (optional)")}<input maxLength={300} value={photoNote} onChange={e=>setPhotoNote(e.target.value)} placeholder={t("3 red bananas, apple 170 g")}/></label><div className="account-actions"><a className="destination-button" href="/nutrition#photo-review">{t("Private photo & manual food selection ↗")}</a>{pendingPhoto&&photoConsent&&<button type="button" disabled={isScanning} onClick={()=>void handleImageFileChange({target:{files:[pendingPhoto],value:''}} as unknown as React.ChangeEvent<HTMLInputElement>)}>{t("Analyze selected photo")}</button>}{uploadedImageUrl&&<button type="button" onClick={()=>{photoRequest.current++;setUploadedImageUrl(null);setPendingPhoto(null);if(fileInputRef.current)fileInputRef.current.value='';setScanReady(false);setScanError(t("Local photo removed."));}}>{t("Delete selected photo")}</button>}</div></div>
                 <div className="aspect-[4/3] rounded-xl bg-slate-950 border border-slate-800 relative flex flex-col items-center justify-center p-6 text-center overflow-hidden group">
                   {uploadedImageUrl ? (
                     <img
                       src={uploadedImageUrl}
-                      alt="Uploaded Food"
+                      alt={t("Uploaded Food")}
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   ) : (
@@ -700,19 +700,17 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <div className="relative z-10 flex flex-col items-center gap-3 bg-slate-950/80 px-4 py-3 rounded-xl border border-emerald-500/30">
                       <div className="w-10 h-10 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin"></div>
                       <p className="text-xs font-semibold text-emerald-400 animate-pulse">
-                        Estimating food and nutrition with AI…
-                      </p>
+                        {t("Estimating food and nutrition with AI…")}</p>
                     </div>
                   ) : (
                     <div className={`z-10 flex flex-col items-center gap-2 bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 backdrop-blur-xs ${uploadedImageUrl ? "scan-photo-caption" : "relative"}`}>
                       {!uploadedImageUrl && <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-0.5">
                         <Utensils className="w-6 h-6" />
                       </div>}
-                      <h3 className="font-semibold text-white text-base">{scanResult.foodName}</h3>
-                      {!uploadedImageUrl && <p className="text-xs text-slate-400 max-w-xs">{scanResult.method}</p>}
+                      <h3 className="font-semibold text-white text-base">{t(scanResult.foodName)}</h3>
+                      {!uploadedImageUrl && <p className="text-xs text-slate-400 max-w-xs">{t(scanResult.method)}</p>}
                       {scanSource !== "none" && !uploadedImageUrl && <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Estimate — review portions and ingredients
-                      </div>}
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {t("Estimate — review portions and ingredients")}</div>}
                     </div>
                   )}
 
@@ -723,7 +721,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                 <div className="mt-6">
                   {scanError && <p role="alert" className="text-rose-300 text-sm mb-3">{scanError}</p>}
-                  <p className="text-xs font-medium text-slate-400 mb-2.5">Demo meals (sample data):</p>
+                  <p className="text-xs font-medium text-slate-400 mb-2.5">{t("Demo meals (sample data):")}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {SCAN_PRESETS.map((preset, idx) => (
                       <button
@@ -737,7 +735,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                         }`}
                       >
                         <p className="font-semibold">{preset.label}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{preset.calories} kcal</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{t("{calories} kcal", { calories: preset.calories })}</p>
                       </button>
                     ))}
                   </div>
@@ -747,23 +745,22 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <h3 className="text-sm font-semibold text-white">Explainable AI Breakdown</h3>
+                  <h3 className="text-sm font-semibold text-white">{t("Explainable AI Breakdown")}</h3>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Review AI estimates against the food and portion you actually ate. Photos cannot measure food weight or hidden ingredients; correct the saved entry in your journal.
-                </p>
+                  {t("Review AI estimates against the food and portion you actually ate. Photos cannot measure food weight or hidden ingredients; correct the saved entry in your journal.")}</p>
                 <div className="grid grid-cols-3 gap-2 mt-4 text-center">
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                    <p className="text-[11px] text-slate-400">NOVA Score</p>
-                    <p className={`text-xs font-bold ${scanResult.nova.color} mt-0.5`}>{scanResult.nova.group ? `Group ${scanResult.nova.group}` : "Not assessed"}</p>
+                    <p className="text-[11px] text-slate-400">{t("NOVA Score")}</p>
+                    <p className={`text-xs font-bold ${scanResult.nova.color} mt-0.5`}>{scanResult.nova.group ? t("Group {group}", { group: scanResult.nova.group }) : t("Not assessed")}</p>
                   </div>
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                    <p className="text-[11px] text-slate-400">Plate Area</p>
-                    <p className="text-xs font-bold text-slate-200 mt-0.5">Not measured</p>
+                    <p className="text-[11px] text-slate-400">{t("Plate Area")}</p>
+                    <p className="text-xs font-bold text-slate-200 mt-0.5">{t("Not measured")}</p>
                   </div>
                   <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-                    <p className="text-[11px] text-slate-400">Density Model</p>
-                    <p className="text-xs font-bold text-slate-200 mt-0.5">Not measured</p>
+                    <p className="text-[11px] text-slate-400">{t("Density Model")}</p>
+                    <p className="text-xs font-bold text-slate-200 mt-0.5">{t("Not measured")}</p>
                   </div>
                 </div>
               </div>
@@ -774,20 +771,18 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div className="flex items-start justify-between">
                   <div>
                     <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">
-                      {scanSource === "photo" ? "Detected classification" : scanSource === "sample" ? "Sample result, not your meal" : "Waiting for a scan"}
+                      {scanSource === "photo" ? t("Detected classification") : scanSource === "sample" ? t("Sample result, not your meal") : t("Waiting for a scan")}
                     </span>
-                    <h2 id="scan-result-title" className="text-2xl font-bold text-white mt-1">{scanResult.foodName}</h2>
+                    <h2 id="scan-result-title" className="text-2xl font-bold text-white mt-1">{t(scanResult.foodName)}</h2>
                     {scanSource !== "none" && <p className="text-xs text-slate-400 mt-1">
-                      Estimated portions — review and correct in your journal
-                    </p>}
+                      {t("Estimated portions — review and correct in your journal")}</p>}
                   </div>
                   <button
                     onClick={addCurrentScanToLog}
                     disabled={!scanReady || isScanning}
                     className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-emerald-500/20 active:scale-95 cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" /> Log This Meal
-                  </button>
+                    <Plus className="w-4 h-4" /> {t("Log This Meal")}</button>
                 </div>
 
                 {/* Scaled Macro Pills */}
@@ -796,7 +791,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <div className="flex items-center justify-center text-orange-400 mb-1">
                       <Flame className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-400">Calories</p>
+                    <p className="text-xs text-slate-400">{t("Calories")}</p>
                     <p className="text-xl font-bold text-white mt-0.5">{scaledCalories}</p>
                     <span className="text-[11px] text-slate-400">kcal</span>
                   </div>
@@ -805,41 +800,40 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <div className="flex items-center justify-center text-sky-400 mb-1">
                       <Dna className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-400">Protein</p>
+                    <p className="text-xs text-slate-400">{t("Protein")}</p>
                     <p className="text-xl font-bold text-sky-400 mt-0.5">{scaledProtein}g</p>
-                    <span className="text-[11px] text-slate-400">Macro: {Math.round(scaledProtein * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
+                    <span className="text-[11px] text-slate-400">{t("Macro: {n}%", { n: Math.round(scaledProtein * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100) })}</span>
                   </div>
 
                   <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl text-center">
                     <div className="flex items-center justify-center text-amber-400 mb-1">
                       <Wheat className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-400">Carbs</p>
+                    <p className="text-xs text-slate-400">{t("Carbs")}</p>
                     <p className="text-xl font-bold text-amber-400 mt-0.5">{scaledCarbs}g</p>
-                    <span className="text-[11px] text-slate-400">Macro: {Math.round(scaledCarbs * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
+                    <span className="text-[11px] text-slate-400">{t("Macro: {n}%", { n: Math.round(scaledCarbs * 4 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100) })}</span>
                   </div>
 
                   <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl text-center">
                     <div className="flex items-center justify-center text-rose-400 mb-1">
                       <Droplet className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-400">Fat</p>
+                    <p className="text-xs text-slate-400">{t("Fat")}</p>
                     <p className="text-xl font-bold text-rose-400 mt-0.5">{scaledFat}g</p>
-                    <span className="text-[11px] text-slate-400">Macro: {Math.round(scaledFat * 9 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100)}%</span>
+                    <span className="text-[11px] text-slate-400">{t("Macro: {n}%", { n: Math.round(scaledFat * 9 / (scaledProtein * 4 + scaledCarbs * 4 + scaledFat * 9 || 1) * 100) })}</span>
                   </div>
                 </div>
 
                 {/* Interactive Portion Slider */}
                 <div className="mt-6 bg-slate-950 border border-slate-800/80 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-slate-300">Portion Adjustment (Grams)</span>
+                    <span className="text-xs font-semibold text-slate-300">{t("Portion Adjustment (Grams)")}</span>
                     <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                      {portionGrams} grams
-                    </span>
+                      {t("{portionGrams} grams", { portionGrams })}</span>
                   </div>
                   <input
                     type="range"
-                    aria-label="Photo portion grams"
+                    aria-label={t("Photo portion grams")}
                     min="1"
                     max={Math.max(2000, parseInt(scanResult.weight) * 2)}
                     step="1"
@@ -847,17 +841,16 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     onChange={(e) => setPortionGrams(Number(e.target.value))}
                     className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
                   />
-                  {scanSource === "photo" && <label className="share-pot">Shared between<select key={scanResult.foodName} aria-label="Shared between how many people" defaultValue="1" onChange={e => setPortionGrams(Math.max(1, Math.round(parseInt(scanResult.weight) / Number(e.target.value))))}>{[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n === 1 ? "Just me" : `${n} people`}</option>)}</select></label>}
+                  {scanSource === "photo" && <label className="share-pot">{t("Shared between")}<select key={scanResult.foodName} aria-label={t("Shared between how many people")} defaultValue="1" onChange={e => setPortionGrams(Math.max(1, Math.round(parseInt(scanResult.weight) / Number(e.target.value))))}>{[1, 2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n === 1 ? t("Just me") : `${n} people`}</option>)}</select></label>}
                   {photoRange && scanResult.label === "Uploaded Meal" && (
                     <p role="note" className="photo-range mt-2 text-xs text-slate-300">
-                      Likely <strong>{photoRange.grams[0]}–{photoRange.grams[1]} g</strong> (about {photoRange.calories[0]}–{photoRange.calories[1]} kcal) · {photoRange.confidence} confidence.{" "}
-                      {photoRange.fromModel ? "A photo can't weigh food; " : "The range is wider when the AI is less sure; "}set the grams you actually ate.
-                    </p>
+                      {t("Likely {low}–{high} g (about {kcalLow}–{kcalHigh} kcal) · {confidence}.", { low: photoRange.grams[0], high: photoRange.grams[1], kcalLow: photoRange.calories[0], kcalHigh: photoRange.calories[1], confidence: t({ High: msg("High confidence"), Medium: msg("Medium confidence"), Low: msg("Low confidence") }[photoRange.confidence]) })}{" "}
+                      {photoRange.fromModel ? t("A photo can't weigh food; set the grams you actually ate.") : t("The range is wider when the AI is less sure; set the grams you actually ate.")}</p>
                   )}
                   <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-                    <span>100g (Light snack)</span>
-                    <span>350g (Standard)</span>
-                    <span>800g (Large Feast)</span>
+                    <span>{t("100g (Light snack)")}</span>
+                    <span>{t("350g (Standard)")}</span>
+                    <span>{t("800g (Large Feast)")}</span>
                   </div>
                 </div>
 
@@ -865,8 +858,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div className="mt-4 bg-slate-950 border border-slate-800/80 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <span className="text-xs font-semibold text-slate-300">Cooking Style & Hidden Oil</span>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Calibrates absorbed ghee, oils, and sauces</p>
+                      <span className="text-xs font-semibold text-slate-300">{t("Cooking Style & Hidden Oil")}</span>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{t("Calibrates absorbed ghee, oils, and sauces")}</p>
                     </div>
                     <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
                       {COOKING_STYLES[cookingStyle].desc}
@@ -883,7 +876,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                             : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
                         }`}
                       >
-                        {COOKING_STYLES[key].label}
+                        {t(COOKING_STYLES[key].label)}
                       </button>
                     ))}
                   </div>
@@ -892,9 +885,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 {/* Sub-item Segmented Breakdown */}
                 <div className="mt-6">
                   {scanSource === "photo" && <AllergenAlert sources={[{ level: "possible", texts: [scanResult.foodName, ...scanResult.items.flatMap(item => [item.name, item.ingredients ?? ""])] }]} />}
-                  <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">
-                    Segmented Food Components ({scanResult.items.length})
-                  </h3>
+                  <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">{t("Segmented Food Components ({length})", { length: scanResult.items.length })}</h3>
                   <div className="space-y-2">
                     {scanResult.items.map((item, index) => (
                       <div
@@ -905,20 +896,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                           <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
                           <div>
                             <p className="text-sm font-medium text-white">{item.name}</p>
-                            <p className="text-xs text-slate-400">{item.count && item.count > 1 ? `${item.count} × about ${Math.round(parseFloat(item.portion) * scaleFactor / item.count)} g = ` : "Estimated: "}{Math.round(parseFloat(item.portion) * scaleFactor)}g{item.edible && item.edible < parseFloat(item.portion) ? ` · ${Math.round(item.edible * scaleFactor)} g eaten` : ""}</p>
+                            <p className="text-xs text-slate-400">{item.count && item.count > 1 ? t("{count} × about {n} g = {total} g", { count: item.count, n: Math.round(parseFloat(item.portion) * scaleFactor / item.count), total: Math.round(parseFloat(item.portion) * scaleFactor) }) : t("Estimated: {total} g", { total: Math.round(parseFloat(item.portion) * scaleFactor) })}{item.edible && item.edible < parseFloat(item.portion) ? t(" · {n} g eaten", { n: Math.round(item.edible * scaleFactor) }) : ""}</p>
                             {item.ingredients && item.ingredients.toLowerCase() !== item.name.toLowerCase() && <p className="text-xs text-slate-400">{item.ingredients}</p>}
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className="text-xs font-bold text-white">{Math.round(item.cal * scaleFactor * styleMult.calMult)} kcal</span>
+                          <span className="text-xs font-bold text-white">{t("{n} kcal", { n: Math.round(item.cal * scaleFactor * styleMult.calMult) })}</span>
                           <p className="text-[11px] text-slate-400">
                             P: {Math.round(item.p * scaleFactor * 10) / 10}g • C: {Math.round(item.c * scaleFactor * 10) / 10}g • F: {Math.round(item.f * scaleFactor * styleMult.fatMult * 10) / 10}g
                           </p>
                         </div>
                         {scanSource === "photo" && <div className="scan-item-edit">
-                          {item.count && <div className="camera-adjust"><button type="button" aria-label={`One less ${item.name}`} disabled={item.count <= 1} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! - 1) / item.count!, item.count! - 1)}>−</button><span>{item.count}</span><button type="button" aria-label={`One more ${item.name}`} disabled={item.count >= 200} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! + 1) / item.count!, item.count! + 1)}>+</button></div>}
-                          <label>Grams<input key={item.portion + scaleFactor} type="number" min="1" max="10000" aria-label={`Grams of ${item.name}`} defaultValue={Math.round(parseFloat(item.portion) * scaleFactor)} onBlur={e => { const grams = Number(e.target.value); if (grams !== Math.round(parseFloat(item.portion) * scaleFactor)) editScanItem(index, grams); }} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}/></label>
-                          <button type="button" className="account-secondary" aria-label={`Remove ${item.name}`} disabled={scanResult.items.length < 2} onClick={() => setPlate(dropDish(scanResult.items, index, scaleFactor))}>Remove</button>
+                          {item.count && <div className="camera-adjust"><button type="button" aria-label={t("One less {name}", { name: item.name })} disabled={item.count <= 1} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! - 1) / item.count!, item.count! - 1)}>−</button><span>{item.count}</span><button type="button" aria-label={t("One more {name}", { name: item.name })} disabled={item.count >= 200} onClick={() => editScanItem(index, parseFloat(item.portion) * scaleFactor * (item.count! + 1) / item.count!, item.count! + 1)}>+</button></div>}
+                          <label>{t("Grams")}<input key={item.portion + scaleFactor} type="number" min="1" max="10000" aria-label={t("Grams of {name}", { name: item.name })} defaultValue={Math.round(parseFloat(item.portion) * scaleFactor)} onBlur={e => { const grams = Number(e.target.value); if (grams !== Math.round(parseFloat(item.portion) * scaleFactor)) editScanItem(index, grams); }} onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}/></label>
+                          <button type="button" className="account-secondary" aria-label={t("Remove {name}", { name: item.name })} disabled={scanResult.items.length < 2} onClick={() => setPlate(dropDish(scanResult.items, index, scaleFactor))}>{t("Remove")}</button>
                         </div>}
                       </div>
                     ))}
@@ -931,7 +922,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-xs font-semibold text-amber-300">Allergen Flags Detected</h4>
+                      <h4 className="text-xs font-semibold text-amber-300">{t("Allergen Flags Detected")}</h4>
                       <p className="text-xs text-slate-300 mt-0.5">
                         {scanResult.allergens.join(", ")}
                       </p>
@@ -951,25 +942,25 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <Barcode className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Scan with your camera</h2>
-                <p className="text-xs text-slate-400">Scan a barcode, confirm the product match, then review its nutrition.</p>
+                <h2 className="text-xl font-bold text-white">{t("Scan with your camera")}</h2>
+                <p className="text-xs text-slate-400">{t("Scan a barcode, confirm the product match, then review its nutrition.")}</p>
               </div>
             </div>
 
             {/* Custom Barcode Input */}
             <BarcodeCamera onCode={handleSearchBarcode} />
-            <label className="pack-photo">{readingPack ? "Reading the pack…" : "Read a photo of the pack"}<input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" disabled={readingPack} onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void readPack(file); }} /></label>
-            <p className="pack-photo-note">For certifications, codes and terms, or a product with no barcode match. The photo is sent to the AI provider and not stored.</p>
+            <label className="pack-photo">{readingPack ? t("Reading the pack…") : t("Read a photo of the pack")}<input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" disabled={readingPack} onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void readPack(file); }} /></label>
+            <p className="pack-photo-note">{t("For certifications, codes and terms, or a product with no barcode match. The photo is sent to the AI provider and not stored.")}</p>
             <div className="flex flex-col sm:flex-row gap-2 mb-5">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
-                  aria-label="Barcode number"
+                  aria-label={t("Barcode number")}
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearchBarcode(barcodeInput)}
-                  placeholder="Enter any UPC / EAN barcode (e.g. 3017620422003, 5449000000996, 0030000010204)..."
+                  placeholder={t("Enter any UPC / EAN barcode (e.g. 3017620422003, 5449000000996, 0030000010204)...")}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
                 />
               </div>
@@ -981,13 +972,11 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 {barcodeLoading ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Searching Open Food Facts...
-                  </>
+                    {t("Searching Open Food Facts...")}</>
                 ) : (
                   <>
                     <Barcode className="w-3.5 h-3.5" />
-                    Lookup Barcode
-                  </>
+                    {t("Lookup Barcode")}</>
                 )}
               </button>
             </div>
@@ -1000,7 +989,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             )}
 
             {/* Test Presets */}
-            <p className="text-xs font-semibold text-slate-400 mb-2">Or select a Global Test Barcode:</p>
+            <p className="text-xs font-semibold text-slate-400 mb-2">{t("Or select a Global Test Barcode:")}</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
               {PACKAGED_BARCODE_PRODUCTS.map((prod) => (
                 <button
@@ -1024,21 +1013,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
             {productFacts && <ProductFacts facts={productFacts} />}
             {/* Barcode Lookup Result Card */}
-            <p className="text-xs text-slate-400 mb-3">Source: {barcodeSource}. Confirm against your packaging label.</p>
-            <label className="block mb-4 text-sm text-slate-300">Amount eaten (grams)<input aria-label="Barcode amount in grams" type="number" min="1" max="10000" value={barcodeGrams} onChange={e => setBarcodeGrams(Math.max(1, Math.min(10000, Number(e.target.value) || 1)))} className="ml-3 w-24 p-2 bg-slate-950 border border-slate-700 rounded-lg" /></label>
+            <p className="text-xs text-slate-400 mb-3">{t("Source: {barcodeSource}. Confirm against your packaging label.", { barcodeSource })}</p>
+            <label className="block mb-4 text-sm text-slate-300">{t("Amount eaten (grams)")}<input aria-label={t("Barcode amount in grams")} type="number" min="1" max="10000" value={barcodeGrams} onChange={e => setBarcodeGrams(Math.max(1, Math.min(10000, Number(e.target.value) || 1)))} className="ml-3 w-24 p-2 bg-slate-950 border border-slate-700 rounded-lg" /></label>
             <div className="bg-slate-950 border border-slate-800 rounded-xl p-6">
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                      UPC: {selectedBarcodeProduct.code}
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">{t("UPC: {code}", { code: selectedBarcodeProduct.code })}
                     </span>
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      {selectedBarcodeProduct.novaLabel}
+                      {t(selectedBarcodeProduct.novaLabel)}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-white">{selectedBarcodeProduct.name}</h3>
-                  <p className="text-xs text-slate-400">{selectedBarcodeProduct.brand} • Serving size: {selectedBarcodeProduct.serving}</p>
+                  <p className="text-xs text-slate-400">{t("{brand} • Serving size: {serving}", { brand: selectedBarcodeProduct.brand, serving: selectedBarcodeProduct.serving })}</p>
                 </div>
 
                 <button
@@ -1046,7 +1034,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   onClick={() => {
                     if (!barcodeReady || barcodeLoading || !barcodeComplete) return;
                     const portion = rounded(scale(barcodeValues, barcodeGrams));
-                    setNotice(`Product added to your journal for ${journalDate}.`);
+                    setNotice(t("Product added to your journal for {journalDate}.", { journalDate }));
                     setLoggedMeals([
                       ...loggedMeals,
                       {
@@ -1063,8 +1051,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   }}
                   className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
                 >
-                  + Log to Journal
-                </button>
+                  {t("+ Log to Journal")}</button>
                 {user && barcodeComplete && !barcodeSource.startsWith("Demo") && (
                   <button
                     disabled={barcodeLoading || savingBarcode}
@@ -1076,13 +1063,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                           name: [selectedBarcodeProduct.name, selectedBarcodeProduct.brand].filter(Boolean).join(" — ").slice(0, 200), grams: 100,
                           nutrients: { calories: barcodeValues.energy_kcal, protein: barcodeValues.protein_g, carbs: barcodeValues.carbs_g, fat: barcodeValues.fat_g },
                           manual_override: Object.keys(barcodeOverrides).length > 0, estimated: false, source: `Barcode ${selectedBarcodeProduct.code}`.slice(0, 90) } });
-                        setNotice("Saved to your foods. Find it under favourites on the Nutrition page.");
-                      } catch (error) { setNotice(error instanceof Error ? error.message : "Couldn't save this food. Try again."); }
+                        setNotice(t("Saved to your foods. Find it under favourites on the Nutrition page."));
+                      } catch (error) { setNotice(error instanceof Error ? error.message : t("Couldn't save this food. Try again.")); }
                       finally { setSavingBarcode(false); }
                     }}
                     className="px-4 py-2 rounded-xl text-xs font-bold border border-emerald-500/60 text-emerald-300"
                   >
-                    {savingBarcode ? "Saving…" : "Save to my foods"}
+                    {savingBarcode ? t("Saving…") : t("Save to my foods")}
                   </button>
                 )}
               </div>
@@ -1090,32 +1077,32 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               {/* Per 100g Nutrients Grid */}
               <div className="grid grid-cols-4 gap-3 mt-6">
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
-                  <p className="text-[11px] text-slate-400">Calories (100g)</p>
+                  <p className="text-[11px] text-slate-400">{t("Calories (100g)")}</p>
                   {barcodeValueCell("caloriesPer100g", "Calories", "", "text-white")}
                   <span className="text-[11px] text-slate-400">kcal</span>
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
-                  <p className="text-[11px] text-slate-400">Protein (100g)</p>
+                  <p className="text-[11px] text-slate-400">{t("Protein (100g)")}</p>
                   {barcodeValueCell("proteinPer100g", "Protein", "g", "text-sky-400")}
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl text-center border border-slate-800/80">
-                  <p className="text-[11px] text-slate-400">Carbs (100g)</p>
+                  <p className="text-[11px] text-slate-400">{t("Carbs (100g)")}</p>
                   {barcodeValueCell("carbsPer100g", "Carbs", "g", "text-amber-400")}
                 </div>
                 <div className="p-3 bg-slate-900 rounded-xl border border-slate-800/80 text-center">
-                  <p className="text-[11px] text-slate-400">Fat (100g)</p>
+                  <p className="text-[11px] text-slate-400">{t("Fat (100g)")}</p>
                   {barcodeValueCell("fatPer100g", "Fat", "g", "text-rose-400")}
                 </div>
               </div>
 
-              {!barcodeComplete && <p role="status" className="mt-4 text-xs text-amber-300">Open Food Facts doesn&apos;t list every value for this product. Enter the missing values from the packaging label to log it.</p>}
-              {barcodeComplete && consistencyWarning(barcodeValues) && <p role="status" className="mt-4 text-xs text-amber-300">These values don&apos;t add up (calories compared with protein, carbs and fat). Please double-check the label.</p>}
+              {!barcodeComplete && <p role="status" className="mt-4 text-xs text-amber-300">{t("Open Food Facts doesn't list every value for this product. Enter the missing values from the packaging label to log it.")}</p>}
+              {barcodeComplete && consistencyWarning(barcodeValues) && <p role="status" className="mt-4 text-xs text-amber-300">{t("These values don't add up (calories compared with protein, carbs and fat). Please double-check the label.")}</p>}
               {selectedBarcodeProduct.attribution && <p className="mt-3 text-[11px] text-slate-400">{selectedBarcodeProduct.attribution}</p>}
               <AllergenAlert sources={[{ level: "declared", texts: selectedBarcodeProduct.allergens }, { level: "possible", texts: [selectedBarcodeProduct.name, productFacts?.ingredients ?? ""] }]} />
               {selectedBarcodeProduct.allergens.length > 0 && (
                 <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 text-xs text-amber-300">
                   <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                  <span>Allergen Warning: Contains {selectedBarcodeProduct.allergens.join(", ")}</span>
+                  <span>{t("Allergen Warning: Contains {n}", { n: selectedBarcodeProduct.allergens.join(", ") })}</span>
                 </div>
               )}
             </div>
@@ -1125,25 +1112,25 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         {/* TAB 3: VOICE & TEXT MEAL LOGGER */}
         {activeTab === "voice_text" && (
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="composer-head"><h2>What did you eat?</h2><p>Type it or say it, and we&apos;ll work out the calories.</p></div>
+            <div className="composer-head"><h2>{t("What did you eat?")}</h2><p>{t("Type it or say it, and we'll work out the calories.")}</p></div>
             <div className="meal-composer">
               <textarea
-                aria-label="Meal description"
+                aria-label={t("Meal description")}
                 maxLength={4000}
                 value={voiceTextPrompt}
                 onChange={(e) => { setVoiceTextPrompt(e.target.value); setParsedVoiceResult(null); }}
                 disabled={isParsingVoice}
                 rows={3}
-                placeholder="2 rotis, a cup of dal and a bowl of curd"
+                placeholder={t("2 rotis, a cup of dal and a bowl of curd")}
               />
               <div className="meal-composer-bar">
                 <VoiceInput value={voiceTextPrompt} onText={text => { setVoiceTextPrompt(text); setParsedVoiceResult(null); }} />
                 <button className="meal-composer-send" onClick={handleSimulateVoiceParse} disabled={isParsingVoice || !voiceTextPrompt.trim()}>
-                  {isParsingVoice ? "Estimating…" : "Estimate calories"}
+                  {isParsingVoice ? t("Estimating…") : t("Estimate calories")}
                 </button>
               </div>
             </div>
-            {!voiceTextPrompt && <div className="meal-chips" aria-label="Try an example">{["Masala dosa with chutney", "2 eggs on toast", "Chicken biryani, one plate"].map(example => <button key={example} type="button" onClick={() => setVoiceTextPrompt(example)}>{example}</button>)}</div>}
+            {!voiceTextPrompt && <div className="meal-chips" aria-label={t("Try an example")}>{[msg("Masala dosa with chutney"), msg("2 eggs on toast"), msg("Chicken biryani, one plate")].map(example => <button key={example} type="button" onClick={() => setVoiceTextPrompt(t(example))}>{t(example)}</button>)}</div>}
 
             {/* Parsed Result */}
             {textError && <p role="alert" className="text-rose-300 text-sm mb-4">{textError}</p>}
@@ -1151,12 +1138,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               <div className="bg-slate-950 border border-slate-800 rounded-xl p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Your estimate</span>
+                    <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">{t("Your estimate")}</span>
                     <h3 className="text-lg font-bold text-white mt-0.5">{parsedVoiceResult.title}</h3>
                   </div>
                   <button
                     onClick={() => {
-                      setNotice(`Parsed meal added to your journal for ${journalDate}.`);
+                      setNotice(t("Parsed meal added to your journal for {journalDate}.", { journalDate }));
                       setLoggedMeals([
                         ...loggedMeals,
                         {
@@ -1166,14 +1153,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                           protein: parsedVoiceResult.protein,
                           carbs: parsedVoiceResult.carbs,
                           fat: parsedVoiceResult.fat,
-                          method: "Voice / Text NLP"
+                          method: msg("Voice / Text NLP")
                         }
                       ]);
                     }}
                     className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all cursor-pointer"
                   >
-                    + Log All to Journal
-                  </button>
+                    {t("+ Log All to Journal")}</button>
                 </div>
 
                 <div className="space-y-2">
@@ -1181,10 +1167,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <div key={it.name} className="flex justify-between items-center p-3 rounded-lg bg-slate-900 border border-slate-800">
                       <div>
                         <p className="text-xs font-semibold text-white">{it.name}</p>
-                        <p className="text-[11px] text-slate-400">Weight: {it.grams}</p>
+                        <p className="text-[11px] text-slate-400">{t("Weight: {grams}", { grams: it.grams })}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs font-bold text-white">{it.cal} kcal</p>
+                        <p className="text-xs font-bold text-white">{t("{cal} kcal", { cal: it.cal })}</p>
                         <p className="text-[11px] text-slate-400">P:{it.p}g • C:{it.c}g • F:{it.f}g</p>
                       </div>
                     </div>
@@ -1198,27 +1184,27 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         {/* TAB 4: DATABASE */}
         {activeTab === "database" && (
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="composer-head"><h2>Find any food</h2><p>Over 14,000 foods and dishes, with real serving sizes.</p></div>
+            <div className="composer-head"><h2>{t("Find any food")}</h2><p>{t("Over 14,000 foods and dishes, with real serving sizes.")}</p></div>
             <div className="library-search">
               <Search aria-hidden="true" size={18} />
               <input
                 type="text"
-                aria-label="Search food, cuisine, allergen"
-                placeholder="Search rice, dosa, banana…"
+                aria-label={t("Search food, cuisine, allergen")}
+                placeholder={t("Search rice, dosa, banana…")}
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setRemoteFoods([]); setFoodSearchError(""); foodSearchRequest.current++; setFoodSearchLoading(false); }}
                 onKeyDown={e => { if (e.key === "Enter" && searchQuery.trim().length >= 2) searchGlobalFoods(); }}
               />
-              <button aria-label="Search global foods" disabled={foodSearchLoading || searchQuery.trim().length < 2} onClick={searchGlobalFoods}>{foodSearchLoading ? "Searching…" : "Search"}</button>
+              <button aria-label={t("Search global foods")} disabled={foodSearchLoading || searchQuery.trim().length < 2} onClick={searchGlobalFoods}>{foodSearchLoading ? t("Searching…") : t("Search")}</button>
             </div>
-            <h3 className="library-label">{searchQuery.trim() ? "Results" : "Popular to start with"}</h3>
+            <h3 className="library-label">{searchQuery.trim() ? t("Results") : t("Popular to start with")}</h3>
             {foodSearchError && <p role="alert" className="text-amber-400 text-xs mb-3">{foodSearchError}</p>}
             <div className="food-list">
-              {filteredFoods.length === 0 && <p className="p-6 text-center text-slate-400">No matching foods. Try another word, a barcode lookup or add it manually.</p>}
-              {searchQuery.trim().length >= 2 && <button type="button" className="library-estimate" onClick={() => { setVoiceTextPrompt(searchQuery.trim()); navigateTab("voice_text"); }}>Can&apos;t find it? Estimate &quot;{searchQuery.trim()}&quot; with AI</button>}
+              {filteredFoods.length === 0 && <p className="p-6 text-center text-slate-400">{t("No matching foods. Try another word, a barcode lookup or add it manually.")}</p>}
+              {searchQuery.trim().length >= 2 && <button type="button" className="library-estimate" onClick={() => { setVoiceTextPrompt(searchQuery.trim()); navigateTab("voice_text"); }}>{t("Can't find it? Estimate \"{n}\" with AI", { n: searchQuery.trim() })}</button>}
               {filteredFoods.map(food => <FoodRow key={food.id} food={food} remaining={budgetLeft} onLog={portion => {
-                setLoggedMeals([...loggedMeals, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), ...portion, method: "Database Log" }]);
-                setNotice(`${portion.name} added to your journal.`);
+                setLoggedMeals([...loggedMeals, { time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), ...portion, method: msg("Database Log") }]);
+                setNotice(t("{name} added to your journal.", { name: portion.name }));
               }} />)}
             </div>
           </div>
@@ -1230,9 +1216,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
           <JournalTools date={journalDate} onDate={setJournalDate} meals={loggedMeals} setMeals={setLoggedMeals} />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-              <h2 className="text-xl font-bold text-white mb-4">Meal Journal · {journalDate}</h2>
-              {deletedMeal && <p role="status" className="journal-undo">Removed {deletedMeal.meal.name}. <button type="button" onClick={() => { const rows = [...loggedMeals]; rows.splice(deletedMeal.index, 0, deletedMeal.meal); setLoggedMeals(rows); setDeletedMeal(null); }}>Undo</button></p>}
-              {loggedMeals.length === 0 && <p className="text-slate-400 text-sm">No meals yet. Add one above or log a reviewed scan.</p>}
+              <h2 className="text-xl font-bold text-white mb-4">{t("Meal Journal · {journalDate}", { journalDate })}</h2>
+              {deletedMeal && <p role="status" className="journal-undo">{t("Removed {name}.", { name: deletedMeal.meal.name })}{" "}<button type="button" onClick={() => { const rows = [...loggedMeals]; rows.splice(deletedMeal.index, 0, deletedMeal.meal); setLoggedMeals(rows); setDeletedMeal(null); }}>{t("Undo")}</button></p>}
+              {loggedMeals.length === 0 && <p className="text-slate-400 text-sm">{t("No meals yet. Add one above or log a reviewed scan.")}</p>}
               <div className="space-y-3">
                 {loggedMeals.map((item, idx) => (
                   <div
@@ -1250,17 +1236,17 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                             <Clock className="w-3 h-3" /> {item.time}
                           </span>
                           <span>•</span>
-                          <span>{item.method}</span>
+                          <span>{t(item.method)}</span>
                         </div>
                       </div>
                     </div>
                     <div className="journal-meal-end"><div className="text-right">
-                      <p className="text-base font-bold text-white">{item.calories} kcal</p>
+                      <p className="text-base font-bold text-white">{t("{calories} kcal", { calories: item.calories })}</p>
                       <p className="text-[11px] text-slate-400">
                         {item.protein}g P • {item.carbs}g C • {item.fat}g F
                       </p>
                     </div>
-                    <button type="button" className="journal-meal-delete" aria-label={`Delete ${item.name}`} onClick={() => { setDeletedMeal({ meal: item, index: idx }); setLoggedMeals(loggedMeals.filter((_, i) => i !== idx)); }}><Trash2 size={16} aria-hidden="true" /></button></div>
+                    <button type="button" className="journal-meal-delete" aria-label={t("Delete {name}", { name: item.name })} onClick={() => { setDeletedMeal({ meal: item, index: idx }); setLoggedMeals(loggedMeals.filter((_, i) => i !== idx)); }}><Trash2 size={16} aria-hidden="true" /></button></div>
                   </div>
                 ))}
               </div>
@@ -1270,20 +1256,18 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-emerald-400" />
-                    <h3 className="text-sm font-bold text-white">Meal ideas (sample suggestions)</h3>
+                    <h3 className="text-sm font-bold text-white">{t("Meal ideas (sample suggestions)")}</h3>
                   </div>
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {budgetLeft} kcal gap
-                  </span>
+                    {t("{budgetLeft} kcal gap", { budgetLeft })}</span>
                 </div>
                 <p className="text-xs text-slate-300 mb-3">
-                  Your remaining budget for this date is <strong>{budgetLeft} kcal</strong> and <strong>{Math.max(0, targetProtein - loggedMeals.reduce((a, b) => a + b.protein, 0))}g protein</strong>. These sample ideas are not personalized recommendations:
-                </p>
+                  {t("Your remaining budget for this date is {kcal} kcal and {protein} g protein. These sample ideas are not personalized recommendations:", { kcal: budgetLeft, protein: Math.max(0, targetProtein - loggedMeals.reduce((a, b) => a + b.protein, 0)) })}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                     <div>
-                      <p className="text-xs font-semibold text-white">Grilled Salmon Poké (Half Bowl)</p>
-                      <p className="text-[11px] text-slate-400">230 kcal • 24g Protein • Low Carb</p>
+                      <p className="text-xs font-semibold text-white">{t("Grilled Salmon Poké (Half Bowl)")}</p>
+                      <p className="text-[11px] text-slate-400">{t("230 kcal • 24g Protein • Low Carb")}</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1302,13 +1286,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       }}
                       className="text-[11px] px-2.5 py-1.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold cursor-pointer"
                     >
-                      + Log
-                    </button>
+                      {t("+ Log")}</button>
                   </div>
                   <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
                     <div>
-                      <p className="text-xs font-semibold text-white">Paneer Tikka with Green Mint Chutney</p>
-                      <p className="text-[11px] text-slate-400">260 kcal • 18g Protein • 5g Carbs</p>
+                      <p className="text-xs font-semibold text-white">{t("Paneer Tikka with Green Mint Chutney")}</p>
+                      <p className="text-[11px] text-slate-400">{t("260 kcal • 18g Protein • 5g Carbs")}</p>
                     </div>
                     <button
                       onClick={() => {
@@ -1327,8 +1310,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       }}
                       className="text-[11px] px-2.5 py-1.5 rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold cursor-pointer"
                     >
-                      + Log
-                    </button>
+                      {t("+ Log")}</button>
                   </div>
                 </div>
               </div>
@@ -1337,13 +1319,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             {/* Daily Summary Sidebar */}
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
               <div>
-                <h3 className="font-semibold text-white text-base mb-4">Daily Nutrition Summary</h3>
+                <h3 className="font-semibold text-white text-base mb-4">{t("Daily Nutrition Summary")}</h3>
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-400">Total Calories</span>
+                      <span className="text-slate-400">{t("Total Calories")}</span>
                       <span className="font-bold text-white">
-                        {totalCaloriesLogged} / {dailyTarget + workoutBack} kcal{workoutBack > 0 ? ` (includes +${workoutBack} from your workout)` : ""}
+                        {totalCaloriesLogged} / {dailyTarget + workoutBack} kcal{workoutBack > 0 ? t(" (includes +{workoutBack} from your workout)", { workoutBack }) : ""}
                       </span>
                     </div>
                     <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
@@ -1356,7 +1338,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-400">Protein</span>
+                      <span className="text-slate-400">{t("Protein")}</span>
                       <span className="font-bold text-sky-400">
                         {loggedMeals.reduce((a, b) => a + b.protein, 0)}g / {targetProtein}g
                       </span>
@@ -1368,7 +1350,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-400">Carbohydrates</span>
+                      <span className="text-slate-400">{t("Carbohydrates")}</span>
                       <span className="font-bold text-amber-400">
                         {loggedMeals.reduce((a, b) => a + b.carbs, 0)}g / {targetCarbs}g
                       </span>
@@ -1380,7 +1362,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-400">Dietary Fat</span>
+                      <span className="text-slate-400">{t("Dietary Fat")}</span>
                       <span className="font-bold text-rose-400">
                         {loggedMeals.reduce((a, b) => a + b.fat, 0)}g / {targetFat}g
                       </span>
@@ -1393,8 +1375,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
               </div>
 
               <div className="mt-8 pt-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
-                <span>{loggedMeals.length} meals logged</span>
-                <span className="text-emerald-400 font-semibold">Healthy Progress</span>
+                <span>{t("{count} meals logged", { count: loggedMeals.length })}</span>
+                <span className="text-emerald-400 font-semibold">{t("Healthy Progress")}</span>
               </div>
             </div>
           </div>
@@ -1409,23 +1391,23 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <BookOpen className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Build a recipe</h2>
-                <p className="text-xs text-slate-400">Calculate total dish macros and per-serving yields from raw ingredients</p>
+                <h2 className="text-xl font-bold text-white">{t("Build a recipe")}</h2>
+                <p className="text-xs text-slate-400">{t("Calculate total dish macros and per-serving yields from raw ingredients")}</p>
               </div>
             </div>
 
-            <label className="block text-xs text-slate-400 mb-4">Recipe name<input aria-label="Recipe name" maxLength={200} value={recipeName} onChange={e => setRecipeName(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 mt-1" /></label>
-            <button disabled={!recipeIngredients.length || !recipeName.trim()} className="mb-4 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm" onClick={() => { setLoggedMeals(previous => [...previous, { name: `${recipeName.trim()} (1 of ${recipeServings} servings)`, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), calories: perServingCals, protein: perServingPro, carbs: perServingCarb, fat: perServingFat, method: "Recipe" }]); setNotice(`Recipe serving added to your journal for ${journalDate}.`); }}>Log one serving</button>
+            <label className="block text-xs text-slate-400 mb-4">{t("Recipe name")}<input aria-label={t("Recipe name")} maxLength={200} value={recipeName} onChange={e => setRecipeName(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 mt-1" /></label>
+            <button disabled={!recipeIngredients.length || !recipeName.trim()} className="mb-4 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm" onClick={() => { setLoggedMeals(previous => [...previous, { name: `${recipeName.trim()} (1 of ${recipeServings} servings)`, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), calories: perServingCals, protein: perServingPro, carbs: perServingCarb, fat: perServingFat, method: "Recipe" }]); setNotice(t("Recipe serving added to your journal for {journalDate}.", { journalDate })); }}>{t("Log one serving")}</button>
             {/* Servings control */}
             <div className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800 mb-6">
               <div>
-                <span className="text-xs font-semibold text-white">Servings</span>
-                <p className="text-[11px] text-slate-400">Divides total recipe nutrition into single portions</p>
+                <span className="text-xs font-semibold text-white">{t("Servings")}</span>
+                <p className="text-[11px] text-slate-400">{t("Divides total recipe nutrition into single portions")}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setRecipeServings(Math.max(1, recipeServings - 1))}
-                  aria-label="Decrease recipe servings"
+                  aria-label={t("Decrease recipe servings")}
                   disabled={recipeServings <= 1}
                   className="w-8 h-8 rounded-lg bg-slate-900 text-white font-bold border border-slate-800 cursor-pointer"
                 >
@@ -1434,7 +1416,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 <span className="w-10 text-center font-bold text-emerald-400 text-sm">{recipeServings}</span>
                 <button
                   onClick={() => setRecipeServings(Math.min(100, recipeServings + 1))}
-                  aria-label="Increase recipe servings"
+                  aria-label={t("Increase recipe servings")}
                   disabled={recipeServings >= 100}
                   className="w-8 h-8 rounded-lg bg-slate-900 text-white font-bold border border-slate-800 cursor-pointer"
                 >
@@ -1446,20 +1428,20 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             {/* Per-Serving Macro Summary Cards */}
             <div className="grid grid-cols-4 gap-3 mb-6">
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[11px] text-slate-400">Per Serving</p>
+                <p className="text-[11px] text-slate-400">{t("Per Serving")}</p>
                 <p className="text-lg font-bold text-white mt-0.5">{perServingCals}</p>
                 <span className="text-[11px] text-slate-400">kcal</span>
               </div>
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[11px] text-slate-400">Protein</p>
+                <p className="text-[11px] text-slate-400">{t("Protein")}</p>
                 <p className="text-lg font-bold text-sky-400 mt-0.5">{perServingPro}g</p>
               </div>
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[11px] text-slate-400">Carbs</p>
+                <p className="text-[11px] text-slate-400">{t("Carbs")}</p>
                 <p className="text-lg font-bold text-amber-400 mt-0.5">{perServingCarb}g</p>
               </div>
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-                <p className="text-[11px] text-slate-400">Fat</p>
+                <p className="text-[11px] text-slate-400">{t("Fat")}</p>
                 <p className="text-lg font-bold text-rose-400 mt-0.5">{perServingFat}g</p>
               </div>
             </div>
@@ -1473,10 +1455,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     <p className="text-[11px] text-slate-400">{ing.grams}g</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-white">{ing.cal} kcal</span>
+                    <span className="text-xs font-bold text-white">{t("{cal} kcal", { cal: ing.cal })}</span>
                     <button
                       onClick={() => setRecipeIngredients(recipeIngredients.filter((_, idx) => idx !== i))}
-                      aria-label={`Remove ${ing.name}`}
+                      aria-label={t("Remove {name}", { name: ing.name })}
                       className="text-slate-500 hover:text-rose-400 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1488,21 +1470,21 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
             {/* Add ingredient row */}
             {recipeError && <p role="alert" className="text-rose-400 text-sm mb-3">{recipeError}</p>}
-            <p className="text-xs text-slate-400 mb-3">Enter nutrition for the entire ingredient amount below from its label or a trusted source. Values are saved locally; no nutrition is guessed.</p>
-            <div className="grid grid-cols-4 gap-2 mb-3">{([ ["cal", "Calories (kcal)"], ["p", "Protein (g)"], ["c", "Carbs (g)"], ["f", "Fat (g)"] ] as const).map(([key, label]) => <label key={key} className="text-xs text-slate-400">{label}<input aria-label={`Ingredient ${label}`} type="number" min="0" step="0.1" value={newIngNutrition[key]} onChange={e => setNewIngNutrition({ ...newIngNutrition, [key]: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white" /></label>)}</div>
+            <p className="text-xs text-slate-400 mb-3">{t("Enter nutrition for the entire ingredient amount below from its label or a trusted source. Values are saved locally; no nutrition is guessed.")}</p>
+            <div className="grid grid-cols-4 gap-2 mb-3">{([ ["cal", msg("Calories (kcal)")], ["p", msg("Protein (g)")], ["c", msg("Carbs (g)")], ["f", msg("Fat (g)")] ] as const).map(([key, label]) => <label key={key} className="text-xs text-slate-400">{t(label)}<input aria-label={t("Ingredient {label}", { label: t(label) })} type="number" min="0" step="0.1" value={newIngNutrition[key]} onChange={e => setNewIngNutrition({ ...newIngNutrition, [key]: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white" /></label>)}</div>
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Ingredient name (e.g. Avocado, Paneer, Almonds)..."
-                aria-label="Ingredient name"
+                placeholder={t("Ingredient name (e.g. Avocado, Paneer, Almonds)...")}
+                aria-label={t("Ingredient name")}
                 value={newIngName}
                 onChange={(e) => setNewIngName(e.target.value)}
                 className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white"
               />
               <input
                 type="number"
-                placeholder="Grams"
-                aria-label="Ingredient grams"
+                placeholder={t("Grams")}
+                aria-label={t("Ingredient grams")}
                 min="1"
                 max="20000"
                 value={newIngGrams}
@@ -1513,8 +1495,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 onClick={handleAddIngredient}
                 className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all cursor-pointer"
               >
-                + Add
-              </button>
+                {t("+ Add")}</button>
             </div>
           </div>
         )}
@@ -1522,7 +1503,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         {/* Onboarding Goal Calculator Modal */}
         {showOnboarding && (
           <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div ref={goalDialog} role="dialog" aria-modal="true" aria-label="Personalized Goal Calculator" onKeyDown={e => {
+            <div ref={goalDialog} role="dialog" aria-modal="true" aria-label={t("Personalized Goal Calculator")} onKeyDown={e => {
               if (e.key === "Escape") setShowOnboarding(false);
               if (e.key === "Tab") {
                 const controls = Array.from(e.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), select:not(:disabled)"));
@@ -1533,11 +1514,11 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
             }} className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-white">🎯 Personalized Goal Calculator</h3>
-                  <p className="text-xs text-slate-400">Mifflin-St Jeor TDEE & macro target calibration</p>
+                  <h3 className="text-lg font-bold text-white">{t("🎯 Personalized Goal Calculator")}</h3>
+                  <p className="text-xs text-slate-400">{t("Mifflin-St Jeor TDEE & macro target calibration")}</p>
                 </div>
                 <button
-                  aria-label="Close goal calculator"
+                  aria-label={t("Close goal calculator")}
                   onClick={() => setShowOnboarding(false)}
                   className="text-slate-400 hover:text-white text-sm cursor-pointer"
                 >
@@ -1547,12 +1528,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
               <div className="space-y-4 text-xs">
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Target Fitness Goal</label>
+                  <label className="text-slate-300 font-semibold block mb-1">{t("Target Fitness Goal")}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { key: "lose_weight", label: "Fat Loss (-500 kcal)" },
-                      { key: "maintain", label: "Maintain Weight" },
-                      { key: "build_muscle", label: "Muscle Gain (+300)" },
+                      { key: "lose_weight", label: msg("Fat Loss (-500 kcal)") },
+                      { key: "maintain", label: msg("Maintain Weight") },
+                      { key: "build_muscle", label: msg("Muscle Gain (+300)") },
                     ].map((g) => (
                       <button
                         key={g.key}
@@ -1563,7 +1544,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                             : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
                         }`}
                       >
-                        {g.label}
+                        {t(g.label)}
                       </button>
                     ))}
                   </div>
@@ -1571,22 +1552,22 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-slate-300 font-semibold block mb-1">Biological Sex</label>
+                    <label className="text-slate-300 font-semibold block mb-1">{t("Biological Sex")}</label>
                     <select
-                      aria-label="Biological sex"
+                      aria-label={t("Biological sex")}
                       value={onboardingForm.sex}
                       onChange={(e) => setOnboardingForm({ ...onboardingForm, sex: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
                     >
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
+                      <option value="male">{t("Male")}</option>
+                      <option value="female">{t("Female")}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-slate-300 font-semibold block mb-1">Age (Years)</label>
+                    <label className="text-slate-300 font-semibold block mb-1">{t("Age (Years)")}</label>
                     <input
                       type="number"
-                      aria-label="Goal age"
+                      aria-label={t("Goal age")}
                       min="18"
                       max="100"
                       value={onboardingForm.age}
@@ -1598,10 +1579,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-slate-300 font-semibold block mb-1">Weight (kg)</label>
+                    <label className="text-slate-300 font-semibold block mb-1">{t("Weight (kg)")}</label>
                     <input
                       type="number"
-                      aria-label="Goal weight kg"
+                      aria-label={t("Goal weight kg")}
                       min="30"
                       max="350"
                       value={onboardingForm.weight}
@@ -1610,10 +1591,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     />
                   </div>
                   <div>
-                    <label className="text-slate-300 font-semibold block mb-1">Height (cm)</label>
+                    <label className="text-slate-300 font-semibold block mb-1">{t("Height (cm)")}</label>
                     <input
                       type="number"
-                      aria-label="Goal height cm"
+                      aria-label={t("Goal height cm")}
                       min="100"
                       max="230"
                       value={onboardingForm.height}
@@ -1624,17 +1605,17 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 </div>
 
                 <div>
-                  <label className="text-slate-300 font-semibold block mb-1">Daily Activity Level</label>
+                  <label className="text-slate-300 font-semibold block mb-1">{t("Daily Activity Level")}</label>
                   <select
-                    aria-label="Daily activity level"
+                    aria-label={t("Daily activity level")}
                     value={onboardingForm.activity}
                     onChange={(e) => setOnboardingForm({ ...onboardingForm, activity: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
                   >
-                    <option value="sedentary">Sedentary (Desk job, little exercise)</option>
-                    <option value="light">Lightly Active (1-3 workouts / week)</option>
-                    <option value="moderate">Moderately Active (3-5 workouts / week)</option>
-                    <option value="very_active">Very Active (6-7 intense sessions / physical job)</option>
+                    <option value="sedentary">{t("Sedentary (Desk job, little exercise)")}</option>
+                    <option value="light">{t("Lightly Active (1-3 workouts / week)")}</option>
+                    <option value="moderate">{t("Moderately Active (3-5 workouts / week)")}</option>
+                    <option value="very_active">{t("Very Active (6-7 intense sessions / physical job)")}</option>
                   </select>
                 </div>
               </div>
@@ -1645,14 +1626,12 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                   onClick={() => setShowOnboarding(false)}
                   className="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-semibold cursor-pointer"
                 >
-                  Cancel
-                </button>
+                  {t("Cancel")}</button>
                 <button
                   onClick={calculateAndApplyOnboarding}
                   className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
                 >
-                  Calculate & Apply Targets
-                </button>
+                  {t("Calculate & Apply Targets")}</button>
               </div>
             </div>
           </div>

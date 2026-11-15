@@ -4,6 +4,7 @@
 // Only the chosen language's catalog is downloaded. Changing language redraws the app once (main.tsx keys the router by language),
 // so components call t() directly without subscribing to anything.
 import { DEFAULT_LOCALE, isLocale, localeOf, LOCALES, type LocaleCode } from "./locales";
+import { EN_PLURALS } from "./en-plurals";
 
 export { LOCALES, type LocaleCode } from "./locales";
 type Forms = Partial<Record<Intl.LDMLPluralRule, string>>;
@@ -49,9 +50,10 @@ export const subscribe = (fn: () => void) => { listeners.add(fn); return () => {
 
 /** The text in the chosen language; {placeholders} filled from vars; plural forms chosen by vars.count. */
 export function t(text: string, vars?: Record<string, string | number>): string {
-  const entry = catalog[text];
+  const entry = catalog[text], counted = vars && typeof vars.count === "number";
   let out = typeof entry === "string" ? entry
-    : entry && vars && typeof vars.count === "number" ? (entry[plural.select(vars.count)] ?? entry.other ?? text) : text;
+    : entry && counted ? (entry[plural.select(vars.count as number)] ?? entry.other ?? text)
+    : counted && EN_PLURALS[text] ? EN_PLURALS[text][vars.count === 1 ? "one" : "other"] : text;
   if (vars) out = out.replace(/\{(\w+)\}/g, (all, name: string) => (name in vars ? formatValue(vars[name]) : all));
   return out;
 }

@@ -1,4 +1,5 @@
 // Point, snap, estimate: a live viewfinder for food. The frame goes through the same review path as an uploaded photo.
+import { t } from "@/lib/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Camera, X } from "lucide-react";
@@ -18,7 +19,7 @@ export function FoodCamera({ consent, onConsent, onCapture, onClose }: { consent
         if (video.current) { video.current.srcObject = stream; await video.current.play(); setReady(true); }
       } catch (reason) {
         if (stopped) return;
-        setError(reason instanceof DOMException && reason.name === "NotAllowedError" ? "Camera access is blocked. Allow it in your browser settings, or close this and upload a photo." : "The camera isn’t available here. Close this and upload a photo instead.");
+        setError(reason instanceof DOMException && reason.name === "NotAllowedError" ? t("Camera access is blocked. Allow it in your browser settings, or close this and upload a photo.") : t("The camera isn’t available here. Close this and upload a photo instead."));
       }
     })();
     return () => { stopped = true; stream?.getTracks().forEach(track => track.stop()); };
@@ -29,16 +30,16 @@ export function FoodCamera({ consent, onConsent, onCapture, onClose }: { consent
     const scale = Math.min(1, LONGEST_SIDE / Math.max(source.videoWidth, source.videoHeight));
     const canvas = document.createElement("canvas"); canvas.width = Math.round(source.videoWidth * scale); canvas.height = Math.round(source.videoHeight * scale);
     canvas.getContext("2d")?.drawImage(source, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(blob => { if (blob) onCapture(new File([blob], "meal-camera.jpg", { type: "image/jpeg" })); else setError("That photo didn’t save. Please try again."); }, "image/jpeg", 0.88);
+    canvas.toBlob(blob => { if (blob) onCapture(new File([blob], "meal-camera.jpg", { type: "image/jpeg" })); else setError(t("That photo didn’t save. Please try again.")); }, "image/jpeg", 0.88);
   }, [onCapture]);
-  return createPortal(<div className="food-camera" role="dialog" aria-modal="true" aria-label="Food camera">
-    <video ref={video} className="food-camera-video" playsInline muted aria-label="Camera preview" />
+  return createPortal(<div className="food-camera" role="dialog" aria-modal="true" aria-label={t("Food camera")}>
+    <video ref={video} className="food-camera-video" playsInline muted aria-label={t("Camera preview")} />
     <div className="food-camera-frame" aria-hidden="true" />
-    <button className="food-camera-close" aria-label="Close camera" onClick={onClose}><X size={22} /></button>
+    <button className="food-camera-close" aria-label={t("Close camera")} onClick={onClose}><X size={22} /></button>
     <div className="food-camera-controls">
-      {error ? <p role="alert">{error}</p> : <p>{ready ? "Fit the whole plate inside the frame" : "Opening the camera…"}</p>}
-      <label className="food-camera-consent"><input type="checkbox" checked={consent} onChange={event => onConsent(event.target.checked)} /> Send this photo for AI analysis</label>
-      <button className="food-camera-shutter" aria-label={consent ? "Snap and estimate calories" : "Snap photo"} disabled={!ready} onClick={snap}><Camera size={26} /></button>
+      {error ? <p role="alert">{error}</p> : <p>{ready ? t("Fit the whole plate inside the frame") : t("Opening the camera…")}</p>}
+      <label className="food-camera-consent"><input type="checkbox" checked={consent} onChange={event => onConsent(event.target.checked)} /> {t("Send this photo for AI analysis")}</label>
+      <button className="food-camera-shutter" aria-label={consent ? t("Snap and estimate calories") : t("Snap photo")} disabled={!ready} onClick={snap}><Camera size={26} /></button>
     </div>
   </div>, document.body);
 }

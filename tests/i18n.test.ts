@@ -6,6 +6,7 @@ import fs from "node:fs";
 import { keysOf } from "@/lib/i18n/keys";
 import { RUNTIME_KEYS, TRANSLATED_FILES, WAVE_1 } from "@/lib/i18n/coverage";
 import { LOCALES } from "@/lib/i18n/locales";
+import { EN_PLURALS } from "@/lib/i18n/en-plurals";
 import { detectLocale, locale, number, setCatalogForTests, setLocale, t } from "@/lib/i18n";
 
 const catalog = (code: string) => JSON.parse(fs.readFileSync(`src/lib/i18n/messages/${code}.json`, "utf8")) as Record<string, string | Record<string, string>>;
@@ -58,5 +59,24 @@ describe("switching language", () => {
     await setLocale("ta");
     expect(locale()).toBe("ta");
     expect(detectLocale()).toBe("ta");
+  });
+  it("English says 1 meal, not 1 meals, and every counted text has singular forms in each language", () => {
+    setCatalogForTests("en", {});
+    expect(t("{count} meals logged today", { count: 1 })).toBe("1 meal logged today");
+    expect(t("{count} meals logged today", { count: 3 })).toBe("3 meals logged today");
+    expect(t("Copy {count} meals to today? You can edit or delete them afterwards.", { count: 1 })).toBe("Copy this meal to today? You can edit or delete it afterwards.");
+    for (const key of Object.keys(EN_PLURALS)) {
+      expect(placeholders(EN_PLURALS[key].one).every(p => placeholders(key).includes(p)), key).toBe(true);
+      for (const code of WAVE_1) expect(typeof catalog(code)[key], `${code}: ${key}`).toBe("object");
+    }
+  });
+  it("every text with plural forms is called with a count, so the right form is chosen", () => {
+    const sources = TRANSLATED_FILES.map(f => fs.readFileSync(f, "utf8")).join("\n");
+    const counted = Object.entries(catalog("hi")).filter(([, v]) => typeof v === "object").map(([k]) => k);
+    for (const key of counted) {
+      const at = sources.indexOf(`t(${JSON.stringify(key)}`);
+      if (at < 0) continue;   // shown on a screen not yet in the coverage list
+      expect(sources.slice(at, at + key.length + 120).includes("count"), key).toBe(true);
+    }
   });
 });

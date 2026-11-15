@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {useEffect,useMemo,useState} from "react";
 import { useTarget } from "@/lib/targets";
 import {useWorkspaceScope} from "./account-session";
@@ -11,11 +12,11 @@ const PLATES=[25,20,15,10,5,2.5,1.25];
 export function GymTools(){
  const [load,setLoad]=useState(60),[reps,setReps]=useState(5),[target,setTarget]=useState(60),[bar,setBar]=useState(20);
  const max=oneRepMax(load,reps),plates=platesPerSide(target,bar,PLATES);
- return <section className="account-card"><h2>Gym calculators</h2><p>Work out your one-rep max and which plates to load.</p>
-  <div className="studio-fields"><label>Weight lifted (kg)<input type="number" min="0" max="1000" step=".5" value={load} onChange={e=>setLoad(Number(e.target.value))}/></label><label>Reps done<input type="number" min="1" max="30" value={reps} onChange={e=>setReps(Number(e.target.value))}/></label></div>
-  <p className="gym-result" role="status">{max?`Estimated 1RM: ${max} kg`:"Use 1 to 12 reps for a useful estimate."}</p>
-  <div className="studio-fields"><label>Target bar weight (kg)<input type="number" min="0" max="1000" step=".5" value={target} onChange={e=>setTarget(Number(e.target.value))}/></label><label>Bar weight (kg)<input type="number" min="0" max="50" step=".5" value={bar} onChange={e=>setBar(Number(e.target.value))}/></label></div>
-  <p className="gym-result" role="status">{!plates?"The target is lighter than the bar.":plates.rows.length?`Each side: ${plates.rows.map(r=>`${r.count} × ${r.plate} kg`).join(", ")}`:"Just the bar."}{plates&&plates.left>0?` (${plates.left} kg short)`:""}</p>
+ return <section className="account-card"><h2>{t("Gym calculators")}</h2><p>{t("Work out your one-rep max and which plates to load.")}</p>
+  <div className="studio-fields"><label>{t("Weight lifted (kg)")}<input type="number" min="0" max="1000" step=".5" value={load} onChange={e=>setLoad(Number(e.target.value))}/></label><label>{t("Reps done")}<input type="number" min="1" max="30" value={reps} onChange={e=>setReps(Number(e.target.value))}/></label></div>
+  <p className="gym-result" role="status">{max?t("Estimated 1RM: {max} kg", { max }):t("Use 1 to 12 reps for a useful estimate.")}</p>
+  <div className="studio-fields"><label>{t("Target bar weight (kg)")}<input type="number" min="0" max="1000" step=".5" value={target} onChange={e=>setTarget(Number(e.target.value))}/></label><label>{t("Bar weight (kg)")}<input type="number" min="0" max="50" step=".5" value={bar} onChange={e=>setBar(Number(e.target.value))}/></label></div>
+  <p className="gym-result" role="status">{!plates?t("The target is lighter than the bar."):plates.rows.length?t("Each side: {plates}",{plates:plates.rows.map(r=>`${r.count} × ${r.plate} kg`).join(", ")}):t("Just the bar.")}{plates&&plates.left>0?t(" ({left} kg short)", { left: plates.left }):""}</p>
  </section>;
 }
 const PLANS=[12,14,16,18] as const;
@@ -25,9 +26,9 @@ export function FastingTimer(){
  const running=!!fast;
  useEffect(()=>{if(!running)return;setNow(Date.now());const timer=setInterval(()=>setNow(Date.now()),30000);return ()=>clearInterval(timer);},[running]);
  const elapsed=fast?now-fast.start:0,goal=fast?fast.hours*3600000:0;
- return <section className="account-card"><h2>Fasting timer</h2><p>Optional. Fasting isn&apos;t right for everyone. Skip it if you are pregnant, have diabetes, take medicine with food, or have a history of eating disorders, and ask your doctor if you are unsure.</p>
-  {fast?<><p className="gym-result" role="status">{clock(elapsed)} of {fast.hours}h{elapsed>=goal?" · goal reached":""}</p><progress max={1} value={Math.min(1,goal?elapsed/goal:0)} aria-label="Fasting progress"/><button className="account-secondary" onClick={()=>setFast(null)}>End fast</button></>
-  :<><label>Kind of fast<select value={modeId} onChange={e=>{setModeId(e.target.value);setHours(FAST_MODES.find(row=>row.id===e.target.value)?.hours??14);}}>{FAST_MODES.map(row=><option key={row.id} value={row.id}>{row.label}</option>)}</select></label>{mode.id!=="time"&&<div className="fast-guide"><p><strong>Often eaten:</strong> {mode.eat}</p><p><strong>Often avoided:</strong> {mode.skip}</p><p>Customs differ by family and community, so follow yours.</p></div>}<label>Fasting window<select value={hours} onChange={e=>setHours(Number(e.target.value))}>{PLANS.map(h=><option key={h} value={h}>{h} hours</option>)}</select></label><label><input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}/> This is right for me</label><button className="account-primary" disabled={!agreed} onClick={()=>setFast({start:Date.now(),hours})}>Start fast</button></>}
+ return <section className="account-card"><h2>{t("Fasting timer")}</h2><p>{t("Optional. Fasting isn't right for everyone. Skip it if you are pregnant, have diabetes, take medicine with food, or have a history of eating disorders, and ask your doctor if you are unsure.")}</p>
+  {fast?<><p className="gym-result" role="status">{clock(elapsed)} of {fast.hours}h{elapsed>=goal?t(" · goal reached"):""}</p><progress max={1} value={Math.min(1,goal?elapsed/goal:0)} aria-label={t("Fasting progress")}/><button className="account-secondary" onClick={()=>setFast(null)}>{t("End fast")}</button></>
+  :<><label>{t("Kind of fast")}<select value={modeId} onChange={e=>{setModeId(e.target.value);setHours(FAST_MODES.find(row=>row.id===e.target.value)?.hours??14);}}>{FAST_MODES.map(row=><option key={row.id} value={row.id}>{t(row.label)}</option>)}</select></label>{mode.id!=="time"&&<div className="fast-guide"><p><strong>{t("Often eaten:")}</strong> {t(mode.eat)}</p><p><strong>{t("Often avoided:")}</strong> {t(mode.skip)}</p><p>{t("Customs differ by family and community, so follow yours.")}</p></div>}<label>{t("Fasting window")}<select value={hours} onChange={e=>setHours(Number(e.target.value))}>{PLANS.map(h=><option key={h} value={h}>{t("{count} hours", { count: h })}</option>)}</select></label><label><input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}/> {t("This is right for me")}</label><button className="account-primary" disabled={!agreed} onClick={()=>setFast({start:Date.now(),hours})}>{t("Start fast")}</button></>}
  </section>;
 }
 export function AdaptiveGoal(){
@@ -43,9 +44,9 @@ export function AdaptiveGoal(){
   return [...rows.values()];
  },[scope]);
  const goal=adaptiveGoal(days,pace);
- return <section className="account-card"><h2>Adaptive calorie goal</h2><p>Works out what you really burn from your food log and weight trend, then suggests a daily target.</p>
-  <label>Your aim<select value={pace} onChange={e=>setPace(Number(e.target.value))}><option value={-.5}>Lose 0.5 kg a week</option><option value={-.25}>Lose 0.25 kg a week</option><option value={0}>Stay the same</option><option value={.25}>Gain 0.25 kg a week</option></select></label>
-  {goal?<><p className="gym-result" role="status">Suggested: {goal.target} kcal a day</p>{(()=>{const step=weeklyStep(target,goal.target);return step.change?<p>To get there gently, change your target by {step.change>0?"+":""}{step.change} kcal this week, from {target} to {step.next}. <button type="button" className="account-secondary" onClick={()=>setTarget(step.next)}>Use {step.next} kcal</button></p>:<p>Your current target of {target} kcal is already close. No change needed this week.</p>;})()}</>:<p role="status">Not enough data yet. It needs meals on 10 days and 4 weigh-ins across at least 2 weeks.</p>}
-  {goal&&<small>You eat about {goal.average} kcal, your weight is moving {goal.kgPerWeek} kg a week, so you burn about {goal.burn} kcal. An estimate, not medical advice.</small>}
+ return <section className="account-card"><h2>{t("Adaptive calorie goal")}</h2><p>{t("Works out what you really burn from your food log and weight trend, then suggests a daily target.")}</p>
+  <label>{t("Your aim")}<select value={pace} onChange={e=>setPace(Number(e.target.value))}><option value={-.5}>{t("Lose 0.5 kg a week")}</option><option value={-.25}>{t("Lose 0.25 kg a week")}</option><option value={0}>{t("Stay the same")}</option><option value={.25}>{t("Gain 0.25 kg a week")}</option></select></label>
+  {goal?<><p className="gym-result" role="status">{t("Suggested: {target} kcal a day", { target: goal.target })}</p>{(()=>{const step=weeklyStep(target,goal.target);return step.change?<p>{t("To get there gently, change your target by {sign}{change} kcal this week, from {target} to {next}.", { sign: step.change>0?"+":"", change: step.change, target, next: step.next })}{" "}<button type="button" className="account-secondary" onClick={()=>setTarget(step.next)}>{t("Use {next} kcal", { next: step.next })}</button></p>:<p>{t("Your current target of {target} kcal is already close. No change needed this week.", { target })}</p>;})()}</>:<p role="status">{t("Not enough data yet. It needs meals on 10 days and 4 weigh-ins across at least 2 weeks.")}</p>}
+  {goal&&<small>{t("You eat about {average} kcal, your weight is moving {kgPerWeek} kg a week, so you burn about {burn} kcal. An estimate, not medical advice.", { average: goal.average, kgPerWeek: goal.kgPerWeek, burn: goal.burn })}</small>}
  </section>;
 }

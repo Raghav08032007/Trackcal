@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useState } from "react";
 import { ChevronDown, Plus } from "lucide-react";
 
@@ -20,16 +21,16 @@ export function FoodRow({ food, remaining, onLog }: { food: LibraryFood; remaini
       <span className="food-row-kcal"><strong>{calories}</strong><small>kcal</small></span>
       <ChevronDown size={16} aria-hidden="true" />
     </button>
-    <button type="button" className="food-row-add" aria-label={`Log ${food.name}`} disabled={grams <= 0} onClick={() => onLog({ name: `${food.name} (${Math.round(grams)} g)`, calories, protein: one(food.protein * ratio), carbs: one(food.carbs * ratio), fat: one(food.fat * ratio) })}><Plus size={18} aria-hidden="true" /></button>
+    <button type="button" className="food-row-add" aria-label={t("Log {name}", { name: food.name })} disabled={grams <= 0} onClick={() => onLog({ name: `${food.name} (${Math.round(grams)} g)`, calories, protein: one(food.protein * ratio), carbs: one(food.carbs * ratio), fat: one(food.fat * ratio) })}><Plus size={18} aria-hidden="true" /></button>
     {open && <div className="food-row-panel">
       <div className="food-row-amount">
-        <label>Serving<select aria-label={`Serving of ${food.name}`} value={choice} onChange={event => setChoice(Number(event.target.value))}>{portions.map((portion, i) => <option key={portion.label} value={i}>{portion.label} ({Math.round(portion.grams)} g)</option>)}<option value={CUSTOM}>Enter grams</option></select></label>
-        {choice === CUSTOM ? <label>Grams<input type="number" min="1" max="10000" aria-label={`Grams of ${food.name}`} value={typed} onChange={event => setTyped(event.target.value)} /></label> : <label>How many<input type="number" min="0.25" max="50" step="0.25" aria-label={`How many servings of ${food.name}`} value={amount} onChange={event => setAmount(event.target.value)} /></label>}
+        <label>{t("Serving")}<select aria-label={t("Serving of {name}", { name: food.name })} value={choice} onChange={event => setChoice(Number(event.target.value))}>{portions.map((portion, i) => <option key={portion.label} value={i}>{portion.label} ({Math.round(portion.grams)} g)</option>)}<option value={CUSTOM}>{t("Enter grams")}</option></select></label>
+        {choice === CUSTOM ? <label>{t("Grams")}<input type="number" min="1" max="10000" aria-label={t("Grams of {name}", { name: food.name })} value={typed} onChange={event => setTyped(event.target.value)} /></label> : <label>{t("How many")}<input type="number" min="0.25" max="50" step="0.25" aria-label={t("How many servings of {name}", { name: food.name })} value={amount} onChange={event => setAmount(event.target.value)} /></label>}
       </div>
-      <ul className="food-row-macros" aria-label="Nutrition for this amount"><li><strong>{one(food.protein * ratio)} g</strong> protein</li><li><strong>{one(food.carbs * ratio)} g</strong> carbs</li><li><strong>{one(food.fat * ratio)} g</strong> fat</li></ul>
-      {share !== null && <p>{share}% of the {remaining} kcal you have left today. {Math.round(grams)} g in total.</p>}
+      <ul className="food-row-macros" aria-label={t("Nutrition for this amount")}><li><strong>{one(food.protein * ratio)} g</strong> {t("protein")}</li><li><strong>{one(food.carbs * ratio)} g</strong> {t("carbs")}</li><li><strong>{one(food.fat * ratio)} g</strong> {t("fat")}</li></ul>
+      {share !== null && <p>{t("{share}% of the {remaining} kcal you have left today. {n} g in total.", { share, remaining, n: Math.round(grams) })}</p>}
       {!!food.ingredients?.length && <p className="food-row-ingredients">{food.ingredients.join(", ")}</p>}
-      <small>{food.source}. {food.calories} kcal per {base} g.</small>
+      <small>{t("{source}. {calories} kcal per {base} g.", { source: food.source, calories: food.calories, base })}</small>
     </div>}
   </article>;
 }
