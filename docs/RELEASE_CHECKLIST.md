@@ -37,7 +37,7 @@ One page, in order. Details live in `infrastructure/OPERATIONS.md` (deploying, b
 
 | Area | Measured | What it means |
 |---|---|---|
-| Page speed (Lighthouse mobile, simulated slow 4G) | scores 65–82; content in 3.8–6.0 s | The app draws in the browser after its scripts load, then fetches data in a chain. Faster first loads need server rendering or a static first screen and a CDN. |
+| Page speed (Lighthouse mobile, simulated slow 4G) | scores 62–82; first paint 2.4 s; main content 3.9–5.0 s | A static first screen now paints from the HTML, and the sign-in check starts with it. The rest still waits for the app's scripts and data; server rendering and a CDN are the next steps. |
 | Layout stability (Today) | layout shift 0.007–0.06 | Good (under 0.1): nothing jumps while the page loads. |
 | API, 50 users at once, 20 accounts | p50 0.35–2.0 s; 24–150 requests a second | One Windows test process. Production runs 2 processes, so about twice that. Food search is the slowest; it is cached for 10 minutes per search. |
 | Dependencies | 0 advisories in shipped packages | 7 moderate in development-only lint tools (not shipped). |
