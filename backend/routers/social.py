@@ -190,7 +190,9 @@ def follow(handle: str, user=Depends(get_current_active_user), db: Session = Dep
     if target.user_id == user.id: raise HTTPException(422, "You can't follow yourself.")
     if blocks_between(db, user.id, target.user_id): raise HTTPException(404, 'Profile not found.')
     row = db.get(models.Follow, (user.id, target.user_id))
-    if not row: row = models.Follow(follower_id=user.id, followee_id=target.user_id, status='pending' if target.private else 'active'); db.add(row)
+    if not row:
+        row = models.Follow(follower_id=user.id, followee_id=target.user_id, status='pending' if target.private else 'active'); db.add(row)
+        notifications.notify_social(db, target.user_id, user.id)   # a new follower or follow request
     db.commit()
     return {'status': row.status}
 
@@ -337,7 +339,10 @@ class ReactionInput(BaseModel):
 def react(post_id: str, data: ReactionInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     require_flag(db); my_profile(db, user); consume(db, 'social-react', str(user.id), 300, 3600)
     post = visible_post(db, user, post_id)
-    row = db.get(models.PostReaction, (post.id, user.id)) or models.PostReaction(post_id=post.id, user_id=user.id)
+    row = db.get(models.PostReaction, (post.id, user.id))
+    if not row:
+        row = models.PostReaction(post_id=post.id, user_id=user.id)
+        notifications.notify_social(db, post.author_id, user.id)   # new kudos; changing its kind doesn't notify again
     row.kind = data.kind; db.add(row); db.commit()
     return {'post': posts_view(db, [post], user.id)[0]}
 
@@ -372,7 +377,9 @@ def add_comment(post_id: str, data: CommentInput, user=Depends(get_current_activ
     if author.posting_disabled: raise HTTPException(403, 'Commenting is paused on this account after a moderation review.')
     post = visible_post(db, user, post_id)
     if not data.body.strip(): raise HTTPException(422, 'Write a comment first.')
-    row = models.Comment(post_id=post.id, author_id=user.id, body=data.body.strip()); db.add(row); db.commit()
+    row = models.Comment(post_id=post.id, author_id=user.id, body=data.body.strip()); db.add(row)
+    notifications.notify_social(db, post.author_id, user.id)
+    db.commit()
     return {'comment': comment_view(row, author, user.id, post.author_id)}
 
 

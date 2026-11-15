@@ -152,10 +152,11 @@ def test_a_notification_too_late_to_be_useful_is_skipped():
 def test_payloads_hold_only_a_title_a_neutral_body_and_a_link():
     owner, _ = account()
     with database.SessionLocal() as db:
-        setup_person(db, owner, types={name: '08:00' for name in push.SCHEDULED}, max_per_day=5)
+        daily = [name for name in push.SCHEDULED if push.TYPES[name].get('weekday') is None]   # weekly ones have their own day
+        setup_person(db, owner, types={name: '08:00' for name in daily}, max_per_day=5)
         send = Recorder()
         run(db, datetime(2026, 10, 29, 8, 0), send)
-    assert len(send.calls) == len(push.SCHEDULED)
+    assert len(send.calls) == len(daily)
     for body in send.calls:
         assert set(body) == {'id', 'type', 'title', 'body', 'url'} and body['url'].startswith('/')
         text = (body['title'] + ' ' + body['body']).lower()

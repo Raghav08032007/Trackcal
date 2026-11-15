@@ -36,9 +36,14 @@ TYPES = {
     'motivation': {'time': '09:00', 'title': 'A thought for today', 'body': None, 'url': '/'},
     'milestone': {'time': None, 'title': 'Something to celebrate', 'body': "You've unlocked something new in TrackCal.", 'url': '/play'},
     'event_update': {'time': None, 'title': 'An event you joined has changed', 'body': 'It may be cancelled or changed. Check your events.', 'url': '/events'},
+    # Phase H: who and what stay out of the message; opening the app shows them.
+    'social': {'time': None, 'title': 'Someone cheered you on', 'body': 'You have new kudos, comments or followers.', 'url': '/feed'},
+    'record': {'time': None, 'title': 'A new personal best', 'body': 'You beat one of your own records. Take a look.', 'url': '/activities'},
+    'weekly_summary': {'time': '09:00', 'weekday': 0, 'title': 'Your week in TrackCal', 'body': 'Your weekly summary is ready.', 'url': '/weekly'},
 }
+SOCIAL_BUNDLE_MINUTES = 30   # kudos, comments and follows within one half hour arrive as one notification
 SCHEDULED = [t for t, v in TYPES.items() if v['time']]
-DEFAULT_TYPES = {t: {'enabled': t in ('daily_plan', 'milestone', 'event_update'), 'time': v['time']} for t, v in TYPES.items()}
+DEFAULT_TYPES = {t: {'enabled': t in ('daily_plan', 'milestone', 'event_update', 'social', 'record', 'weekly_summary'), 'time': v['time']} for t, v in TYPES.items()}
 
 
 def utcnow():
@@ -104,6 +109,7 @@ def plan(db, now=None):
                 choice = types[kind]
                 if not choice.get('enabled'): continue
                 if quiet(choice['time'], quiet_start, quiet_end): continue
+                if TYPES[kind].get('weekday') is not None and day.weekday() != TYPES[kind]['weekday']: continue   # weekly ones, on their day
                 when = local_slot_utc(day, choice['time'], zone)
                 if when < now - timedelta(minutes=5): continue  # turned on after today's time: start tomorrow
                 result = db.execute(insert(models.ScheduledNotification).prefix_with('IGNORE').values(
@@ -117,6 +123,20 @@ def plan(db, now=None):
 def enqueue_milestone(db, user_id, code, now=None):
     """Called when an achievement unlocks. Sent at the next tick, or after quiet hours end."""
     _enqueue_now(db, user_id, 'milestone', code, now)
+
+
+def notify_social(db, recipient_id, actor_id, now=None):
+    """Kudos, a comment or a follow. Nothing for your own actions or from someone you muted; one per half hour, bundled."""
+    if str(recipient_id) == str(actor_id): return
+    if db.query(models.SocialBlock.user_id).filter_by(user_id=str(recipient_id), target_id=str(actor_id)).first(): return
+    now = now or utcnow()
+    bucket = int(now.replace(tzinfo=timezone.utc).timestamp() // (SOCIAL_BUNDLE_MINUTES * 60))
+    _enqueue_now(db, recipient_id, 'social', f'social:{bucket}', now)
+
+
+def notify_record(db, user_id, source_id, now=None):
+    """A new personal best on an activity or a segment. Once per activity."""
+    _enqueue_now(db, user_id, 'record', f'record:{source_id}', now)
 
 
 def notify_event_change(db, event_id, reason, now=None):

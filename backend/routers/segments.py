@@ -191,7 +191,7 @@ def save_setting(data: SettingInput, user=Depends(get_current_active_user), db: 
     return {'ranking': data.ranking}
 
 
-def for_activity(db, viewer, activity):
+def for_activity(db, viewer, activity, with_history=False):
     """The segments this activity was timed on, each with where the pass sits among the owner's own times (1 = their best)."""
     out = []
     for e in db.query(models.SegmentEffort).filter(models.SegmentEffort.activity_id == activity.id).order_by(models.SegmentEffort.started_at):
@@ -201,5 +201,9 @@ def for_activity(db, viewer, activity):
         faster = db.query(models.SegmentEffort).join(models.Activity, models.Activity.id == models.SegmentEffort.activity_id) \
             .filter(models.SegmentEffort.segment_id == s.id, models.SegmentEffort.user_id == activity.user_id, models.Activity.is_deleted.is_(False),
                     models.SegmentEffort.id != e.id, models.SegmentEffort.elapsed_s < e.elapsed_s - 0.05).count()   # times are stored as single-precision floats
-        out.append({'segment_id': s.id, 'name': s.name, 'distance_m': round(s.distance_m, 1), 'elapsed_s': e.elapsed_s, 'place': faster + 1})
+        row = {'segment_id': s.id, 'name': s.name, 'distance_m': round(s.distance_m, 1), 'elapsed_s': e.elapsed_s, 'place': faster + 1}
+        if with_history:   # earlier passes by the same person: a first pass is a time, not yet a record
+            row['attempts_before'] = db.query(models.SegmentEffort).filter(models.SegmentEffort.segment_id == s.id, models.SegmentEffort.user_id == activity.user_id,
+                                                                           models.SegmentEffort.started_at < e.started_at).count()
+        out.append(row)
     return out

@@ -260,6 +260,12 @@ def create(data: ActivityInput, user=Depends(get_current_active_user), db: Sessi
     sync_post(db, user, row)
     from routers.segments import match_activity
     match_activity(db, row)   # time it on every segment along its route
+    db.flush()
+    from routers.segments import for_activity
+    from services import notifications
+    beaten = [r for r in records if r['kind'] != 'best_effort' or r.get('previous_seconds') is not None]   # a first run sets times, beats nothing
+    if beaten or any(s['place'] == 1 and s['attempts_before'] for s in for_activity(db, user, row, with_history=True)):
+        notifications.notify_record(db, user.id, row.id)   # a new best: on an activity, or on a segment run before
     db.commit()
     db.refresh(row)
     return {'activity': detail(db, user, row), 'new_records': records}
