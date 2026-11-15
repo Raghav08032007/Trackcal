@@ -25,7 +25,8 @@ class ReminderSettings(Strict):
     quiet_end:str=Field(default='07:00',pattern=r'^(?:[01]\d|2[0-3]):[0-5]\d$')
 BODY_PARTS=('neck','shoulder_l','shoulder_r','elbow_l','elbow_r','wrist_l','wrist_r','chest','abdomen','lower_back','hip_l','hip_r','knee_l','knee_r','ankle_l','ankle_r')
 # The 22 scheduled languages of India plus English; "other" keeps English labels.
-LANGUAGES=('en','hi','bn','te','mr','ta','ur','gu','kn','ml','or','pa','as','mai','sa','kok','ne','sd','ks','doi','mni','brx','sat','other')
+LANGUAGES=('en','hi','bn','te','mr','ta','ur','gu','kn','ml','or','pa','as','mai','sa','kok','ne','sd','ks','doi','mni','brx','sat',
+           'es','pt','id','ar','fr','de','tr','vi','ja','ru','other')   # Indian languages, then the international ones TrackCal is translated into
 CUISINES=('any','Indian','Mediterranean','global','north_indian','south_indian','tamil','kerala','karnataka','andhra_telangana','maharashtrian',
           'gujarati','rajasthani','punjabi','bengali','odia','bihari','northeast','kashmiri','goan','east_asian','middle_eastern','western','african','latin')
 class Condition(Strict):
@@ -40,6 +41,7 @@ class Preferences(Strict):
     display_name:str=Field(default='',max_length=100)
     age_group:Literal['under18','18_19','20_64','65plus','unspecified']='unspecified'
     language:Literal[LANGUAGES]='en'
+    ui_language:Literal['','en','hi','bn','mr','te','ta','es','pt','id','ar']=''   # the app's interface language ('' = this device decides); language above is for food names
     state:str=Field(default='',max_length=80)
     country:str=Field(default='',max_length=80)
     timezone:str=Field(default='UTC',max_length=64)
