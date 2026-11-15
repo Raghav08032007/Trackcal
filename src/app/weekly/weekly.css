@@ -82,3 +82,5 @@ path.wk-line-fitness { stroke: var(--wk-fit); } path.wk-line-fatigue { stroke: v
 @keyframes wk-rise { from { transform: scaleY(0); } }
 @media (max-width: 900px) { .wk-tiles { grid-template-columns: 1fr 1fr; } .wk-who { grid-column: 1 / -1; } }
 @media (max-width: 560px) { .wk-tiles { grid-template-columns: 1fr; } .wk-ring { width: 96px; height: 96px; } .wk-ring::after { transform-origin: 50% 48px; } .wk-big { font-size: 1.8rem; } }
+
+.wk-email h2 { display: flex; align-items: center; gap: 8px; }

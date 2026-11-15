@@ -5,7 +5,7 @@ export type Kind = "run" | "ride" | "walk" | "strength" | "mobility" | "other";
 export type Week = { start: string; minutes: number; met_minutes: number; distance_m: number; active_days: number; sessions: number; by_kind: Partial<Record<Kind, number>> };
 export type TrendDay = { day: string; load: number; fitness: number; fatigue: number; form: number };
 export type Trend = {
-  today: string; weeks: Week[]; method: string;
+  today: string; weeks: Week[]; method: string; weekly_email?: boolean;
   guideline: { met_minutes: number; minimum: number; more: number; status: "building" | "met" | "more"; text: string; days_into_week: number };
   trend: { days: TrendDay[]; fitness: number; fatigue: number; form: number; ratio: number | null; enough_history: boolean; message: string };
 };
@@ -15,6 +15,7 @@ export const KINDS: { id: Kind; label: string }[] = [
   { id: "strength", label: "Strength and workouts" }, { id: "mobility", label: "Yoga and mobility" }, { id: "other", label: "Other" },
 ];
 export const loadTrend = (weeks = 12) => wellnessRequest<Trend>(`trend?weeks=${weeks}`);
+export const setWeeklyEmail = (on: boolean) => wellnessRequest<{ weekly_email: boolean; email_verified: boolean }>("trend/email", { on }, "PUT");
 /** How steady training is, from the acute:chronic ratio; never colour alone: each has a label and an icon in the page. */
 export function pace(ratio: number | null): { id: "none" | "light" | "steady" | "building" | "jump"; label: string } {
   if (ratio === null) return { id: "none", label: "Building your baseline" };

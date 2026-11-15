@@ -1,9 +1,9 @@
 // Your weeks: 12 weeks of activity against the WHO guideline, and the fitness and fatigue trend. Estimates, explained on the page.
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, CheckCircle2, Gauge, Leaf, Table2, TrendingUp } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, Gauge, Leaf, Mail, Table2, TrendingUp } from "lucide-react";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
-import { KINDS, loadTrend, niceMax, pace, shortDate, type Trend, type Week } from "@/lib/trend";
+import { KINDS, loadTrend, niceMax, pace, setWeeklyEmail, shortDate, type Trend, type Week } from "@/lib/trend";
 import "./weekly.css";
 
 export const metadata = { title: "TrackCal — Your weeks", description: "Twelve weeks of activity against the WHO guideline, with your fitness and fatigue trend." };
@@ -36,6 +36,7 @@ function View({ data }: { data: Trend }) {
     </section>
     <WeeklyBars weeks={data.weeks} minimum={g.minimum} more={g.more} />
     <TrendLines data={data} />
+    <WeeklyEmail on={!!data.weekly_email} />
     <p className="rep-replay-note wk-method">{data.method}</p>
   </main>;
 }
@@ -125,5 +126,22 @@ function TrendLines({ data }: { data: Trend }) {
       {d && at !== null && <div className="wk-tip" role="status" style={tipAt(x(at) / W)}><strong>{shortDate(d.day)}</strong><span>Fitness {Math.round(d.fitness)} · Fatigue {Math.round(d.fatigue)}</span><span>That day: {d.load.toLocaleString()} MET-minutes</span></div>}
     </div>
     <p className="rep-replay-note">Fitness rises slowly with steady training; fatigue rises and falls quickly. When fatigue sits well above fitness, an easier day helps you absorb the work.</p>
+  </section>;
+}
+
+/** The Monday summary email. The switch moves at once and moves back if saving fails. */
+function WeeklyEmail({ on: initial }: { on: boolean }) {
+  const [on, setOn] = useState(initial), [busy, setBusy] = useState(false), [note, setNote] = useState("");
+  async function change(next: boolean) {
+    setOn(next); setBusy(true); setNote("");
+    try { const r = await setWeeklyEmail(next); setNote(next ? (r.email_verified ? "You’ll get it on Monday mornings." : "Saved. Verify your email address in Account to start receiving it.") : "Turned off."); }
+    catch { setOn(!next); setNote("Couldn’t save that. Try again."); }
+    finally { setBusy(false); }
+  }
+  return <section className="account-card wk-email" aria-labelledby="wk-email-title">
+    <h2 id="wk-email-title"><Mail size={20} aria-hidden="true" /> Weekly email</h2>
+    <label className="pref-switch"><input type="checkbox" role="switch" checked={on} disabled={busy} onChange={e => void change(e.target.checked)} /> Email me this summary every Monday</label>
+    <p className="rep-replay-note">Last week’s totals and trend, sent around 9 am your time. Totals only: nothing about food, weight or health.</p>
+    {note && <p role="status" className="rep-replay-note">{note}</p>}
   </section>;
 }
