@@ -261,7 +261,7 @@ def personalization(path):
 
 WELLNESS = {'GET': ('foods', 'diary', 'exercises', 'sessions', 'training', 'history', 'library', 'trend'),
             'POST': ('diary', 'saved-meals', 'favorites', 'templates', 'sessions', 'entries', 'library'),
-            'PUT': ('diary', 'sessions', 'entries'), 'DELETE': ('diary', 'saved-meals', 'favorites', 'templates', 'sessions', 'entries')}
+            'PUT': ('diary', 'sessions', 'entries', 'trend'), 'DELETE': ('diary', 'saved-meals', 'favorites', 'templates', 'sessions', 'entries')}
 
 
 @bp.route('/wellness/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])

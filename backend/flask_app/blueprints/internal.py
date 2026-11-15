@@ -23,10 +23,12 @@ def authorized():
 def tick():
     if not authorized(): return jsonify({'error': 'Not found'}), 404
     import database
-    from services import notifications as push
+    from services import notifications as push, weekly_email
+    with database.SessionLocal() as db:
+        emailed = weekly_email.run(db)   # email doesn't depend on push being set up
     send = push.webpush_sender()
-    if send is None: return jsonify({'error': 'VAPID keys are not configured.'}), 503
-    return jsonify(push.tick(database.SessionLocal, send))
+    if send is None: return jsonify({'error': 'VAPID keys are not configured.', 'emailed': emailed}), 503
+    return jsonify({**push.tick(database.SessionLocal, send), 'emailed': emailed})
 
 
 @bp.get('/notification-metrics')

@@ -64,6 +64,7 @@ class Preferences(Strict):
     budget:float|None=Field(default=None,ge=0,le=100000,allow_inf_nan=False)
     currency:str=Field(default='INR',pattern=r'^[A-Z]{3}$')
     reminders:ReminderSettings=Field(default_factory=ReminderSettings)
+    weekly_email:bool=False   # Phase H: Monday email with last week's summary, opt-in
     motivation:bool=True
     goal:Literal['lose','gain_muscle','fit','eat_better','sport','health_report','unspecified']='unspecified'
     sex:Literal['female','male','other','unspecified']='unspecified'
