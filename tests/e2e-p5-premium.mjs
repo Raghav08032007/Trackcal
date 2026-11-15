@@ -42,7 +42,7 @@ try{
   checks.push(`${label}: checkout → server-verified signature → 7-day trial with Premium perks`);
   assert.equal((await call('/api/adventure/initialize','POST',{timezone:'UTC'})).status,200);
   assert.equal((await call('/api/adventure/settings','POST',{character_id:'pip',accessory:'star'})).status,200);checks.push(`${label}: Premium accessory accepted`);
-  await page.getByRole('link',{name:'Me',exact:true}).click();await page.getByText(/Premium is on/).waitFor();
+  await page.locator('.app-tabbar a[data-sec="me"]').click();await page.getByText(/Premium is on/).waitFor();
   await page.goto(root+'/premium');await page.getByRole('button',{name:'Cancel Premium'}).click();await page.getByRole('button',{name:'Yes, cancel Premium'}).click();
   await page.getByText(/Cancelled\. You keep Premium until/).waitFor();status=(await call('/api/billing/status')).data;assert.equal(status.status,'cancelled');assert.equal(status.premium,true);
   checks.push(`${label}: cancel in two taps with confirmation; Premium kept until the trial ends`);
