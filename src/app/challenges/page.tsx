@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { social } from "@/lib/social";
-import { ChallengeError, challenges, dates, METRIC_OPTIONS, type ChallengeView } from "@/lib/challenges";
+import { ChallengeError, challenges, dates, METRIC_OPTIONS, goalMax, goalText, type ChallengeView } from "@/lib/challenges";
 
 export const metadata = { title: "TrackCal — Challenges" };
 
@@ -25,7 +25,7 @@ export default function Page() {
     {error && <p role="alert">{error}</p>}
     <div className="community-grid">{rows?.map(c => <Link key={c.id} href={`/challenges/${c.id}`} className="account-card community-card challenge-card">
       <span className="eyebrow">{c.phase === "running" ? "Running" : c.phase === "upcoming" ? "Starts soon" : c.phase}{c.community ? ` · ${c.community.name}` : ""}</span>
-      <h2>{c.title}</h2><p>{c.target} × {c.metric_label.toLowerCase()} · {dates(c)}</p>
+      <h2>{c.title}</h2><p>{goalText(c)} · {dates(c)}</p>
       {c.mine && <span className="challenge-bar" role="img" aria-label={`Your progress: ${c.mine.progress} of ${c.target}`}><span style={{ width: `${Math.round(c.mine.progress / c.target * 100)}%` }} /></span>}
       <small>{c.participants} taking part · {c.finished} finished{c.mine?.completed ? " · you did it ✓" : ""}</small>
     </Link>)}</div>
@@ -44,7 +44,7 @@ function CreateChallenge({ onCreated, onCancel }: { onCreated: (id: string) => v
     <h2>Start a challenge</h2>
     <label>Name<input required minLength={3} maxLength={120} value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Five active days this week" /></label>
     <label>What counts<select value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })}>{METRIC_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select><small>{hint}</small></label>
-    <label>Goal<input type="number" min={1} max={form.metric === "camera_reps" ? 30000 : 120} value={form.target} onChange={e => setForm({ ...form, target: Number(e.target.value) })} /></label>
+    <label>Goal<input type="number" min={1} max={goalMax(form.metric)} value={form.target} onChange={e => setForm({ ...form, target: Number(e.target.value) })} /></label>
     <label>Starts<input type="date" required value={form.starts_on} onChange={e => setForm({ ...form, starts_on: e.target.value })} /></label>
     <label>Ends<input type="date" required value={form.ends_on} onChange={e => setForm({ ...form, ends_on: e.target.value })} /></label>
     <label>Details<textarea maxLength={1000} rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Why, and how you'll cheer each other on" /></label>

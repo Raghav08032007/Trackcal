@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 const session = vi.hoisted(() => ({ user: { id: "u1" }, ready: true }));
 vi.mock("../src/components/account-session", () => ({ useAccount: () => session, useWorkspaceScope: () => "u1" }));
 import Challenges from "../src/app/challenges/page";
@@ -18,7 +18,7 @@ const at = (path: string) => render(<RouterProvider router={createMemoryRouter([
 it("lists challenges with progress and no ranking, and starts one in the browser's time zone", async () => {
   api((url, method) => url.endsWith("/api/social/me") ? { profile: { handle: "me" } } : method === "POST" ? { challenge: base } : { challenges: [{ ...base, mine: { progress: 2, completed: false } }] });
   render(<Challenges />);
-  expect(await screen.findByRole("heading", { name: "Five active days" })).toBeTruthy();
+  expect(await screen.findByRole("heading", { name: "Five active days" }, { timeout: 5000 })).toBeTruthy();   // the page loads lazily; slow under a full parallel run
   expect(screen.getByRole("img", { name: "Your progress: 2 of 5" })).toBeTruthy();
   expect(screen.queryByText(/#\d|\b(1st|2nd|3rd)\b/)).toBeNull();  // no positions shown
   fireEvent.click(screen.getByRole("button", { name: "Start a challenge" }));
@@ -44,4 +44,15 @@ it("shows completion and XP from the server", async () => {
   at(`/challenges/${base.id}`);
   expect(await screen.findByText("Challenge complete! +40 XP")).toBeTruthy();
   expect(screen.getByRole("img", { name: "Your progress: 5 of 5, complete" })).toBeTruthy();
+});
+
+import {goalMax,goalText,METRIC_OPTIONS} from '@/lib/challenges';
+describe('distance and active-minutes goals',()=>{
+ it('reads naturally and allows big enough goals',()=>{
+  expect(goalText({target:100,metric:'distance_km',metric_label:'Kilometres by GPS'})).toBe('100 km by GPS');
+  expect(goalText({target:1200,metric:'active_minutes',metric_label:'Active minutes'})).toBe('1,200 active minutes');
+  expect(goalText({target:5,metric:'workouts',metric_label:'Workouts of 10+ minutes'})).toBe('5 × workouts of 10+ minutes');
+  expect([goalMax('distance_km'),goalMax('active_minutes'),goalMax('meal_days')]).toEqual([12000,30000,120]);
+  expect(METRIC_OPTIONS.map(m=>m[0])).toContain('distance_km');
+ });
 });

@@ -5,7 +5,7 @@ import { ReportItem } from "@/components/report-item";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { announceXp } from "@/lib/celebrate";
-import { challenges, dates, METRIC_OPTIONS, type ChallengeView } from "@/lib/challenges";
+import { challenges, dates, METRIC_OPTIONS, goalText, type ChallengeView } from "@/lib/challenges";
 
 export const metadata = { title: "TrackCal — Challenge" };
 
@@ -26,7 +26,7 @@ export default function Page() {
   return <main className="account-page social-page"><section className="account-card challenge-cover">
     <span className="eyebrow">{c.phase === "running" ? "Running now" : c.phase === "upcoming" ? "Starts soon" : c.phase === "ended" ? "Finished" : "Cancelled"}{c.community ? <> · <Link href={`/c/${c.community.slug}`}>{c.community.name}</Link></> : null}</span>
     <h1>{c.title}</h1>
-    <p>{c.target} × {c.metric_label.toLowerCase()} · {dates(c)}</p>
+    <p>{goalText(c)} · {dates(c)}</p>
     {c.mine && <div className={`challenge-ring ${c.mine.completed ? "is-done" : ""}`} role="img" aria-label={`Your progress: ${c.mine.progress} of ${c.target}${c.mine.completed ? ", complete" : ""}`} style={{ "--pct": `${pct}%` } as React.CSSProperties}>
       <span><b>{c.mine.progress}</b>/{c.target}</span></div>}
     {c.mine?.completed && <p className="social-milestone">✓ You completed this challenge</p>}

@@ -12,7 +12,17 @@ export const METRIC_OPTIONS: [string, string, string][] = [
   ["camera_reps", "Camera reps", "only reps the camera counted, up to 500 a day"],
   ["meal_days", "Meal-logging days", "meals logged during the challenge"],
   ["events", "Events attended", "checked in with the organizer's QR code"],
+  ["distance_km", "Distance (km)", "walks, runs, hikes and rides measured by GPS, up to 200 km a day"],
+  ["active_minutes", "Active minutes", "GPS activities and completed workouts, up to 5 hours a day"],
 ];
+/** The biggest goal the form offers for each kind (the server checks the real limit for the challenge's length). */
+export const goalMax = (metric: string) => metric === "camera_reps" || metric === "active_minutes" ? 30000 : metric === "distance_km" ? 12000 : 120;
+/** "100 km by GPS", "600 active minutes", or "5 × workouts of 10+ minutes". */
+export function goalText(c: { target: number; metric: string; metric_label: string }) {
+  if (c.metric === "distance_km") return `${c.target.toLocaleString()} km by GPS`;
+  if (c.metric === "active_minutes") return `${c.target.toLocaleString()} active minutes`;
+  return `${c.target} × ${c.metric_label.toLowerCase()}`;
+}
 
 export class ChallengeError extends Error { constructor(message: string, readonly status: number) { super(message); } }
 export async function challenges<T>(path: string, method = "GET", body?: unknown): Promise<T> {
