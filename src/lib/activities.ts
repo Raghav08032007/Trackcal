@@ -11,7 +11,18 @@ export type ActivitySummary = {
 };
 export type Together = { handle: string; display_name: string; character_id: string; activity_id: string };
 export type Activity = ActivitySummary & { route: RoutePoint[]; splits: Split[]; best_efforts: BestEffort[]; mine: boolean; fixes_used?: number; fixes_dropped?: number;
-  post: import("./social").FeedPost | null; together: Together[]; records_set: string[] };
+  post: import("./social").FeedPost | null; together: Together[]; records_set: string[]; segments?: ActivitySegment[] };
+/** A segment this activity was timed on. place: where this pass sits among the owner's own times (1 = their best). */
+export type ActivitySegment = { segment_id: string; name: string; distance_m: number; elapsed_s: number; place: number };
+export type SegmentEffortRow = { elapsed_s: number; date: string; activity_id: string };
+export type RankEntry = { place: number; me: boolean; elapsed_s: number; date: string; handle: string | null; display_name: string; character_id: string };
+export type Segment = { id: string; name: string; kind: "foot" | "ride"; visibility: "public" | "private"; distance_m: number; mine: boolean;
+  best: SegmentEffortRow | null; attempts: number; history?: SegmentEffortRow[]; points?: [number, number][]; ranking: { opted_in: boolean; entries: RankEntry[] } };
+/** Segment endpoints live under /activities/segments on the server. */
+export const segments = <T,>(path = "", method = "GET", body?: unknown) => activities<T>("segments" + (path ? "/" + path : ""), method, body);
+/** Medal for a place among your own times on a segment. */
+export const medal = (place: number) => place === 1 ? { label: "Your best", tone: "gold" } : place === 2 ? { label: "2nd best", tone: "silver" } : place === 3 ? { label: "3rd best", tone: "bronze" } : null;
+
 export type NewRecord = { kind: "best_effort" | "longest" | "climb"; label: string; seconds?: number; previous_seconds?: number | null; distance_m?: number; previous_m?: number; elevation_gain_m?: number };
 export type Records = { sport: Sport; best_efforts: BestEffort[]; longest: { distance_m: number; activity_id: string; date: string } | null; biggest_climb: { elevation_gain_m: number; activity_id: string; date: string } | null };
 export type Zone = { id: string; label: string; lat: number; lon: number; radius_m: number };

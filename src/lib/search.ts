@@ -25,6 +25,7 @@ const WORDS: Record<string, string> = {
   "/programs": "program beginner course weeks plan",
   "/workouts/gps": "run running walk walking ride cycling bike hike gps record route map",
   "/activities": "activities routes splits records personal best pace strava",
+  "/segments": "segments segment leaderboard ranking stretch hill climb sprint personal record pr kom strava",
   "/plan": "7 day plan weekly schedule injury safe week",
   "/recovery": "recovery rest sore soreness muscle ready",
   "/account": "account profile password email name sign out logout",

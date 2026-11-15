@@ -34,7 +34,7 @@ export const SECTIONS: Section[] = [
         { href: "/tools", title: "Recipe import and smart tools", text: "Bring in a recipe from a link, plan within a budget.", icon: Wand2 } ] } ] },
   { id: "move", label: "Move", href: "/move", icon: Activity,
     pages: [["/move", "Overview"], ["/workouts/muscles", "By muscle"], ["/workouts/camera", "Camera"], ["/workouts/gps", "Record"], ["/workouts", "Workouts"]],
-    also: ["/workouts/*", "/activities", "/activities/*", "/programs", "/recovery", "/plan"],
+    also: ["/workouts/*", "/activities", "/activities/*", "/segments", "/segments/*", "/programs", "/recovery", "/plan"],
     groups: [
       { title: "Train", items: [
         { href: "/workouts/muscles", title: "Plan by muscle", text: "Pick the muscles to train; get a plan that leaves out anything not suitable for your injuries.", icon: Search },
@@ -43,7 +43,8 @@ export const SECTIONS: Section[] = [
         { href: "/programs", title: "Programs", text: "Step-by-step plans that grow with you.", icon: ListChecks } ] },
       { title: "Outdoors", items: [
         { href: "/workouts/gps", title: "Record a route", text: "Run, walk, hike or ride with GPS.", icon: MapPin },
-        { href: "/activities", title: "Your activities", text: "Routes, splits and personal records.", icon: Footprints } ] },
+        { href: "/activities", title: "Your activities", text: "Routes, splits and personal records.", icon: Footprints },
+        { href: "/segments", title: "Segments", text: "Your favourite stretches, timed on every run and ride.", icon: Flag } ] },
       { title: "Plan and recover", items: [
         { href: "/plan", title: "My 7-day plan", text: "A week of workouts that protects any injuries.", icon: CalendarDays },
         { href: "/recovery", title: "Recovery", text: "Which muscles are rested and ready.", icon: Moon } ] } ] },
