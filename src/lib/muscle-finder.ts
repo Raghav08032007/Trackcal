@@ -1,3 +1,4 @@
+import { localized, msg } from "./i18n";
 import {EXERCISES,EXERCISE_VARIANTS,type ExerciseDifficulty,type ExerciseKind} from './pose/types';
 import {HOLDS,HOLD_KINDS,type HoldKind} from './pose/holds';
 import {MUSCLE_LABELS,musclesFromText,type MapMuscle} from './training-insights';
@@ -37,15 +38,16 @@ export function parseSteps(raw:string|null){
 /* ── Muscle groups and daily packages ─────────────────────────────────────────────────────────────────── */
 export type MuscleCategory={id:string;label:string;hint:string;muscles:MapMuscle[]};
 export const MUSCLE_CATEGORIES:MuscleCategory[]=[
- {id:'push',label:'Push',hint:'Chest, shoulders, triceps',muscles:['chest','front-deltoids','triceps']},
- {id:'pull',label:'Pull',hint:'Back, biceps, rear shoulders',muscles:['upper-back','trapezius','biceps','back-deltoids','forearm']},
- {id:'legs',label:'Legs',hint:'Quads, glutes, hamstrings, calves',muscles:['quadriceps','gluteal','hamstring','calves','adductor','abductors']},
- {id:'core',label:'Core',hint:'Abs, obliques, lower back',muscles:['abs','obliques','lower-back']},
- {id:'arms',label:'Arms',hint:'Biceps, triceps, forearms',muscles:['biceps','triceps','forearm']},
- {id:'upper',label:'Upper body',hint:'Chest, back, shoulders, arms',muscles:['chest','upper-back','front-deltoids','back-deltoids','biceps','triceps']},
- {id:'lower',label:'Lower body',hint:'Legs and glutes',muscles:['quadriceps','gluteal','hamstring','calves']},
- {id:'full',label:'Full body',hint:'A bit of everything',muscles:['quadriceps','gluteal','chest','upper-back','front-deltoids','abs']},
+ {id:'push',label:msg("Push"),hint:msg("Chest, shoulders, triceps"),muscles:['chest','front-deltoids','triceps']},
+ {id:'pull',label:msg("Pull"),hint:msg("Back, biceps, rear shoulders"),muscles:['upper-back','trapezius','biceps','back-deltoids','forearm']},
+ {id:'legs',label:msg("Legs"),hint:msg("Quads, glutes, hamstrings, calves"),muscles:['quadriceps','gluteal','hamstring','calves','adductor','abductors']},
+ {id:'core',label:msg("Core"),hint:msg("Abs, obliques, lower back"),muscles:['abs','obliques','lower-back']},
+ {id:'arms',label:msg("Arms"),hint:msg("Biceps, triceps, forearms"),muscles:['biceps','triceps','forearm']},
+ {id:'upper',label:msg("Upper body"),hint:msg("Chest, back, shoulders, arms"),muscles:['chest','upper-back','front-deltoids','back-deltoids','biceps','triceps']},
+ {id:'lower',label:msg("Lower body"),hint:msg("Legs and glutes"),muscles:['quadriceps','gluteal','hamstring','calves']},
+ {id:'full',label:msg("Full body"),hint:msg("A bit of everything"),muscles:['quadriceps','gluteal','chest','upper-back','front-deltoids','abs']},
 ];
+localized(MUSCLE_CATEGORIES, ["label", "hint"]);
 /** A simple weekly split: what today suggests. Sunday is for rest or gentle holds. */
 export const WEEK_SPLIT=['rest','push','pull','legs','core','upper','lower'] as const;
 export const todaysCategory=(date:Date)=>WEEK_SPLIT[date.getDay()];

@@ -1,3 +1,4 @@
+import { msg } from "./i18n";
 // One day of water, movement, calories burned, sleep and mood. Signed in, it lives in the account and every screen
 // shares one copy; taps change counters by amounts (so two phones add up), are shown at once, and wait in an outbox
 // while offline. Signed out, it is this browser's values as before.
@@ -27,7 +28,7 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch("/api/personalization/days" + path, { method: body === undefined ? "GET" : "POST", credentials: "same-origin",
     headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(data.error || "Could not save. Please try again."), { status: response.status });
+  if (!response.ok) throw Object.assign(new Error(data.error || msg("Could not save. Please try again.")), { status: response.status });
   return data as T;
 }
 function valid(d: unknown): d is Day { const v = d as Partial<Day> | null; return !!v && typeof v.day === "string" && typeof v.water_ml === "number" && typeof v.burned_total === "number"; }

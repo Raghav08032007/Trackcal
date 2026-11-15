@@ -1,3 +1,4 @@
+import { msg } from "../i18n";
 // Posture compared with the example. Each exercise's example motion (exercise-motions.ts) is measured the same way the camera
 // measures a person (body-shape.ts). The joints the example keeps steady through the whole move, such as a straight body in a push-up
 // or an upright chest in a squat, are what posture means for that exercise. When yours drifts well away from the example's for a
@@ -37,24 +38,32 @@ export function postureRules(kind:ExerciseKind):PostureRule[]{
  const bodies=m.keys.map(k=>exampleBody(m,k)),rules:PostureRule[]=[],moves=travel(m),upsideDown=bodies.some(b=>b.headDown>.2);
  const span=(metric:PostureMetric)=>{const v=bodies.map(b=>b[metric]).filter(Number.isFinite);return v.length===bodies.length?{lo:Math.min(...v),hi:Math.max(...v),mean:v.reduce((a,b)=>a+b,0)/v.length}:null;};
  const tilt=span('tilt'),flat=!!tilt&&lying(tilt.mean);
- if(tilt&&!flat&&!upsideDown&&tilt.hi-tilt.lo<STEADY&&tilt.mean<30)rules.push({metric:'tilt',ref:tilt.mean,tip:'Stand up straight, like the example.',point:'Stand upright, back long'});
+ if(tilt&&!flat&&!upsideDown&&tilt.hi-tilt.lo<STEADY&&tilt.mean<30)rules.push({metric:'tilt',ref:tilt.mean,tip:msg("Stand up straight, like the example."),point:msg("Stand upright, back long")});
  const hip=span('hip');
- if(hip&&hip.hi-hip.lo<STEADY&&hip.mean>150)rules.push({metric:'hip',ref:hip.mean,setup:flat,tip:flat?'Keep your body in one straight line, like the example.':'Keep your hips straight, like the example.',point:flat?'Body in one straight line':'Hips straight'});
+ if(hip&&hip.hi-hip.lo<STEADY&&hip.mean>150)rules.push({metric:'hip',ref:hip.mean,setup:flat,tip:flat?msg("Keep your body in one straight line, like the example."):msg("Keep your hips straight, like the example."),point:flat?msg("Body in one straight line"):msg("Hips straight")});
  const knee=span('knee');
- if(knee&&knee.hi-knee.lo<STEADY&&knee.mean>150&&(moves.thigh>30||flat))rules.push({metric:'knee',ref:knee.mean,tip:'Keep your legs straight.',point:'Legs straight'});
+ if(knee&&knee.hi-knee.lo<STEADY&&knee.mean>150&&(moves.thigh>30||flat))rules.push({metric:'knee',ref:knee.mean,tip:msg("Keep your legs straight."),point:msg("Legs straight")});
  const elbow=span('elbow');
- if(elbow&&elbow.hi-elbow.lo<STEADY&&elbow.mean>150&&moves.arm>45&&moves.torso<40&&moves.thigh<40&&!(flat&&moves.torso>15))rules.push({metric:'elbow',ref:elbow.mean,tip:'Keep your arms straight.',point:'Arms straight'});
+ if(elbow&&elbow.hi-elbow.lo<STEADY&&elbow.mean>150&&moves.arm>45&&moves.torso<40&&moves.thigh<40&&!(flat&&moves.torso>15))rules.push({metric:'elbow',ref:elbow.mean,tip:msg("Keep your arms straight."),point:msg("Arms straight")});
  return rules;
 }
 
 /** What the example asks of the moving joint at the bottom of each rep, in words. */
 /** Moves whose main motion reads better in words of its own than from the joint that moves most. */
 const DEPTH_WORDS:Partial<Record<ExerciseKind,string>>={
- ohsquat:'Bend your knees to about a right angle',sidelunge:'Bend the stepping knee to about a right angle',bulgarian:'Bend your front knee to about a right angle',
- bridge:'Lift your hips until your body is in a line',hipthrust:'Lift your hips until your body is in a line',
- deadlift:'Hinge at your hips, back flat',rdl:'Hinge at your hips, back flat',goodmorning:'Hinge at your hips, back flat',kbswing:'Hinge, then swing to chest height',snatch:'Hinge, then lift all the way overhead',
- hspu:'Bend your elbows to lower your head',birddog:'Reach one arm and the opposite leg out straight',donkey:'Lift one leg up behind you',sidebend:'Lean to the side, then stand tall',
- calf:'Rise onto your toes',wcalf:'Rise onto your toes',superman:'Lift your chest and legs off the floor',punch:'Punch straight out at shoulder height',
+ ohsquat:msg("Bend your knees to about a right angle"),sidelunge:msg("Bend the stepping knee to about a right angle"),bulgarian:msg("Bend your front knee to about a right angle"),
+ bridge:msg("Lift your hips until your body is in a line"),hipthrust:msg("Lift your hips until your body is in a line"),
+ deadlift:msg("Hinge at your hips, back flat"),rdl:msg("Hinge at your hips, back flat"),goodmorning:msg("Hinge at your hips, back flat"),kbswing:msg("Hinge, then swing to chest height"),snatch:msg("Hinge, then lift all the way overhead"),
+ hspu:msg("Bend your elbows to lower your head"),birddog:msg("Reach one arm and the opposite leg out straight"),donkey:msg("Lift one leg up behind you"),sidebend:msg("Lean to the side, then stand tall"),
+ calf:msg("Rise onto your toes"),wcalf:msg("Rise onto your toes"),superman:msg("Lift your chest and legs off the floor"),punch:msg("Punch straight out at shoulder height"),
+};
+/** How far to move, as whole sentences so each language can word them: to about a right angle, about halfway, a little. */
+const DEPTH_CUES={
+ legs:[msg("Lift your legs to about a right angle"),msg("Lift your legs about halfway"),msg("Lift your legs a little")],
+ curl:[msg("Curl your body up to about a right angle"),msg("Curl your body up about halfway"),msg("Curl your body up a little")],
+ hinge:[msg("Hinge at your hips to about a right angle"),msg("Hinge at your hips about halfway"),msg("Hinge at your hips a little")],
+ knees:[msg("Bend your knees to about a right angle"),msg("Bend your knees about halfway"),msg("Bend your knees a little")],
+ elbows:[msg("Bend your elbows to about a right angle"),msg("Bend your elbows about halfway"),msg("Bend your elbows a little")],
 };
 export function depthPoint(kind:ExerciseKind):string|null{
  const base=(EXERCISE_VARIANTS[kind]??kind) as ExerciseKind;if(DEPTH_WORDS[base])return DEPTH_WORDS[base]!;
@@ -63,20 +72,20 @@ export function depthPoint(kind:ExerciseKind):string|null{
  const bodies=m.keys.map(k=>exampleBody(m,k));let best:{metric:'knee'|'hip'|'elbow';low:number;range:number}|null=null;
  for(const metric of ['knee','hip','elbow'] as const){const v=bodies.map(b=>b[metric]).filter(Number.isFinite);if(v.length<2)continue;const range=Math.max(...v)-Math.min(...v);if(!best||range>best.range)best={metric,low:Math.min(...v),range};}
  // Straight arms swinging up (raises, jacks): say how high.
- if((!best||best.range<25||best.metric==='elbow'&&best.range<40)&&moves.arm>45)return `Raise your arms ${moves.armTop>140?'overhead':'to shoulder height'}`;
+ if((!best||best.range<25||best.metric==='elbow'&&best.range<40)&&moves.arm>45)return moves.armTop>140?msg("Raise your arms overhead"):msg("Raise your arms to shoulder height");
  if(!best||best.range<25)return null;
- const how=best.low<105?'to about a right angle':best.low<140?'about halfway':'a little';
+ const how=best.low<105?0:best.low<140?1:2;   // to about a right angle, about halfway, a little
  if(best.metric==='hip'){
   // The hip closes either because the body bends (a hinge, a sit-up) or because the legs lift (knee raises, leg raises).
-  if(moves.thigh>moves.torso)return moves.kneeBent?'Lift your knees to about hip height':`Lift your legs ${how==='to about a right angle'?'to about a right angle':how}`;
-  const flatBody=bodies[0].tilt>60;return flatBody?`Curl your body up ${how}`:`Hinge at your hips ${how}`;
+  if(moves.thigh>moves.torso)return moves.kneeBent?msg("Lift your knees to about hip height"):DEPTH_CUES.legs[how];
+  const flatBody=bodies[0].tilt>60;return flatBody?DEPTH_CUES.curl[how]:DEPTH_CUES.hinge[how];
  }
- return {knee:`Bend your knees ${how}`,elbow:`Bend your elbows ${how}`}[best.metric];
+ return {knee:DEPTH_CUES.knees[how],elbow:DEPTH_CUES.elbows[how]}[best.metric];
 }
 
 /** The points shown under the example: how deep to go, then what to keep steady. */
 /** What the form checker (form-check.ts) also watches for these families. */
-const FAMILY_POINTS:Record<string,string[]>={squat:['Feet about shoulder width','Knees over your toes'],curl:['Elbows close to your sides'],lunge:['Front knee over your ankle']};
+const FAMILY_POINTS:Record<string,string[]>={squat:[msg("Feet about shoulder width"),msg("Knees over your toes")],curl:[msg("Elbows close to your sides")],lunge:[msg("Front knee over your ankle")]};
 export function formPoints(kind:ExerciseKind):string[]{
  const depth=depthPoint(kind),family=formFamily(kind);
  return [...(depth?[depth]:[]),...(family?FAMILY_POINTS[family]??[]:[]),...postureRules(kind).map(r=>r.point)].slice(0,3);

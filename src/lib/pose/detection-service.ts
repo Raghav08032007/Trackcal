@@ -1,3 +1,4 @@
+import { msg } from "../i18n";
 import type {PoseFrame} from './types';
 /** Inference budget: when the recent average exceeds it, the frame rate steps down (24 → 20 → 15 fps). */
 export const BUDGET_MS=60;const RATES=[24,20,15],WINDOW=15;
@@ -7,11 +8,11 @@ export type PoseStats={fps:number;averageMs:number;delegate:'GPU'|'CPU'|'';lowPe
 /** Browser camera errors, in words a person can act on. */
 export function cameraError(error:unknown):Error{
  const name=error instanceof DOMException||error instanceof Error?error.name:'';
- if(name==='NotAllowedError'||name==='SecurityError')return Error('Camera permission was denied. Allow camera access in your browser settings, or use manual workouts.');
- if(name==='NotFoundError')return Error('No camera was found. Connect one, or use manual workouts.');
- if(name==='OverconstrainedError')return Error('The selected camera is not available. Choose Default camera and retry.');
- if(name==='NotReadableError'||name==='AbortError')return Error('The camera is being used by another app. Close it and retry, or use manual workouts.');
- return error instanceof Error?error:Error('Camera unavailable. Use manual workouts.');
+ if(name==='NotAllowedError'||name==='SecurityError')return Error(msg("Camera permission was denied. Allow camera access in your browser settings, or use manual workouts."));
+ if(name==='NotFoundError')return Error(msg("No camera was found. Connect one, or use manual workouts."));
+ if(name==='OverconstrainedError')return Error(msg("The selected camera is not available. Choose Default camera and retry."));
+ if(name==='NotReadableError'||name==='AbortError')return Error(msg("The camera is being used by another app. Close it and retry, or use manual workouts."));
+ return error instanceof Error?error:Error(msg("Camera unavailable. Use manual workouts."));
 }
 export class PoseDetectionService{
  private cancelInit:(()=>void)|null=null;private video:HTMLVideoElement|null=null;
@@ -20,17 +21,17 @@ export class PoseDetectionService{
  private stats(){const averageMs=this.timings.length?this.timings.reduce((a,b)=>a+b,0)/this.timings.length:0;this.onStats?.({fps:RATES[this.rate],averageMs:Math.round(averageMs),delegate:this.delegate,lowPerformance:this.rate>0});}
  async start(video:HTMLVideoElement,device:string,facing:'user'|'environment',onReady:()=>void,onCameraGranted?:()=>void){
   this.stop();const version=this.generation;
-  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||typeof Worker==='undefined'||typeof createImageBitmap==='undefined')throw Error('Camera tracking needs HTTPS or localhost and a browser with Web Workers and ImageBitmap. Use manual workouts instead.');
+  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia||typeof Worker==='undefined'||typeof createImageBitmap==='undefined')throw Error(msg("Camera tracking needs HTTPS or localhost and a browser with Web Workers and ImageBitmap. Use manual workouts instead."));
   try{
    const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{...(device?{deviceId:{exact:device}}:{facingMode:{ideal:facing}}),width:{ideal:640},height:{ideal:480},frameRate:{ideal:15,max:24}}});
    if(version!==this.generation){stream.getTracks().forEach(t=>t.stop());return;}
    this.stream=stream;this.video=video;video.srcObject=stream;onCameraGranted?.();await video.play();if(version!==this.generation)return;
-   stream.getTracks().forEach(track=>{track.onended=()=>{if(version===this.generation)this.fail('The camera disconnected. Reconnect it or use manual logging.');};});
+   stream.getTracks().forEach(track=>{track.onended=()=>{if(version===this.generation)this.fail(msg("The camera disconnected. Reconnect it or use manual logging."));};});
    const worker=new Worker('/pose-worker.js');this.worker=worker;
    await new Promise<void>((resolve,reject)=>{
-    const timeout=setTimeout(()=>reject(Error('Model loading timed out. Check local model assets, then retry.')),45000);
-    this.cancelInit=()=>{clearTimeout(timeout);reject(Error('Camera initialization cancelled.'));};
-    worker.onerror=()=>{clearTimeout(timeout);reject(Error('On-device worker unavailable. Try an updated browser or manual workouts.'));this.fail('On-device worker unavailable. Use manual workouts or retry.');};
+    const timeout=setTimeout(()=>reject(Error(msg("Model loading timed out. Check local model assets, then retry."))),45000);
+    this.cancelInit=()=>{clearTimeout(timeout);reject(Error(msg("Camera initialization cancelled.")));};
+    worker.onerror=()=>{clearTimeout(timeout);reject(Error(msg("On-device worker unavailable. Try an updated browser or manual workouts.")));this.fail(msg("On-device worker unavailable. Use manual workouts or retry."));};
     worker.onmessage=({data})=>{
      if(version!==this.generation)return;
      if(data.type==='ready'){clearTimeout(timeout);this.cancelInit=null;this.delegate=data.delegate==='GPU'?'GPU':'CPU';this.stats();resolve();}
@@ -44,7 +45,7 @@ export class PoseDetectionService{
       if(this.timings.length>=WINDOW&&average>BUDGET_MS&&this.rate<RATES.length-1){this.rate++;this.timings=[];}
       if(this.timings.length%WINDOW===0)this.stats();
       if(data.ms>180)this.slow++;else this.slow=Math.max(0,this.slow-1);
-      if(this.slow>=20){this.fail('This device is struggling to track smoothly. Your counts are kept; switch to manual logging.');return;}
+      if(this.slow>=20){this.fail(msg("This device is struggling to track smoothly. Your counts are kept; switch to manual logging."));return;}
       this.onFrame(data as PoseFrame);
      }
     };worker.postMessage({type:'init'});
@@ -62,8 +63,8 @@ export class PoseDetectionService{
       let brightness:number|undefined;
       if(typeof OffscreenCanvas!=='undefined'){const c=new OffscreenCanvas(16,12),ctx=c.getContext('2d',{willReadFrequently:true});if(ctx){ctx.drawImage(bitmap,0,0,16,12);const pixels=ctx.getImageData(0,0,16,12).data;let sum=0;for(let i=0;i<pixels.length;i+=4)sum+=(pixels[i]+pixels[i+1]+pixels[i+2])/3;brightness=sum/(pixels.length/4);}}
       worker.postMessage({type:'frame',bitmap,timestamp:performance.now(),width,height,brightness},[bitmap]);
-      this.watchdog=setTimeout(()=>this.fail('Tracking stopped responding. Your camera has been shut down; retry or log manually.'),this.timings.length?STALL_MS:WARM_UP_MS);
-     }catch{if(version===this.generation)this.fail('A frame could not be processed. Retry or use manual workouts.');}
+      this.watchdog=setTimeout(()=>this.fail(msg("Tracking stopped responding. Your camera has been shut down; retry or log manually.")),this.timings.length?STALL_MS:WARM_UP_MS);
+     }catch{if(version===this.generation)this.fail(msg("A frame could not be processed. Retry or use manual workouts."));}
     }
     if(version===this.generation)this.timer=setTimeout(()=>void sample(),1000/RATES[this.rate]);
    };void sample();

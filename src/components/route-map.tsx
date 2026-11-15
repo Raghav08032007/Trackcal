@@ -1,4 +1,5 @@
 // A route drawn from its own points: no map service, so nothing about where you went leaves TrackCal.
+import { t } from "@/lib/i18n";
 import { useMemo } from "react";
 import type { RoutePoint, Split, Sport } from "@/lib/activities";
 import { duration, pace } from "@/lib/activities";
@@ -31,7 +32,7 @@ export function RouteMap({ route, showEnds, label }: { route: RoutePoint[]; show
     const nice = [50, 100, 200, 500, 1000, 2000, 5000, 10000].find(m => m / metresPerUnit >= 60) ?? 10000;
     return { metres: nice, width: nice / metresPerUnit };
   }, [metresPerUnit]);
-  if (xy.length < 2) return <div className="route-map route-map-empty"><p>No route to show. Shared routes hide the start and end, so a short one may be hidden entirely.</p></div>;
+  if (xy.length < 2) return <div className="route-map route-map-empty"><p>{t("No route to show. Shared routes hide the start and end, so a short one may be hidden entirely.")}</p></div>;
   const [start, end] = [xy[0], xy[xy.length - 1]];
   return <svg className="route-map" viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label}>
     <defs><pattern id="route-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" className="route-grid" /></pattern></defs>
@@ -54,10 +55,10 @@ export function ElevationProfile({ route }: { route: RoutePoint[] }) {
   const alts = points.map(p => p[3]), lo = Math.min(...alts), hi = Math.max(...alts), range = Math.max(hi - lo, 10);
   const xy = points.map(p => [(p[4] / total) * w, h - 12 - ((p[3] - lo) / range) * (h - 30)] as [number, number]);
   return <figure className="elevation">
-    <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Elevation from ${Math.round(lo)} m to ${Math.round(hi)} m`} preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label={t("Elevation from {n} m to {n2} m", { n: Math.round(lo), n2: Math.round(hi) })} preserveAspectRatio="none">
       <path d={`${pathOf(xy)}L${w} ${h}L0 ${h}Z`} className="elevation-fill" /><path d={pathOf(xy)} className="elevation-line" />
     </svg>
-    <figcaption><span>{Math.round(lo)} m</span><span>Elevation</span><span>{Math.round(hi)} m</span></figcaption>
+    <figcaption><span>{Math.round(lo)} m</span><span>{t("Elevation")}</span><span>{Math.round(hi)} m</span></figcaption>
   </figure>;
 }
 
@@ -68,7 +69,7 @@ export function SplitBars({ splits, sport }: { splits: Split[]; sport: Sport }) 
   // A short last piece can't be the fastest kilometre: only splits of at least 500 m compete.
   const whole = timed.filter(s => s.distance_m >= 500), fastest = Math.min(...(whole.length ? whole : timed).map(s => s.pace_s_per_km!)), slowest = Math.max(...timed.map(s => s.pace_s_per_km!));
   return <table className="splits">
-    <thead><tr><th scope="col">Km</th><th scope="col">{sport === "ride" ? "Speed" : "Pace"}</th><th scope="col"><span className="sr-only">Relative pace</span></th><th scope="col">Time</th></tr></thead>
+    <thead><tr><th scope="col">{t("Km")}</th><th scope="col">{sport === "ride" ? t("Speed") : t("Pace")}</th><th scope="col"><span className="sr-only">{t("Relative pace")}</span></th><th scope="col">{t("Time")}</th></tr></thead>
     <tbody>{splits.map(s => {
       const p = s.pace_s_per_km, share = p ? 0.35 + 0.65 * (slowest === fastest ? 1 : (slowest - p) / (slowest - fastest)) : 0;
       return <tr key={s.km} data-fastest={(p === fastest && (s.distance_m >= 500 || !whole.length)) || undefined}>

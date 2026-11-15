@@ -1,3 +1,4 @@
+import { localizedMap, msg } from "./i18n";
 import {EXERCISES,type ExerciseKind} from './pose/types';
 import type {Session} from './wellness';
 
@@ -12,8 +13,9 @@ const NAMES:Record<string,MapMuscle[]>={quads:['quadriceps'],glutes:['gluteal'],
  biceps:['biceps'],triceps:['triceps'],forearms:['forearm'],arms:['biceps','triceps'],abs:['abs'],'lower abs':['abs'],obliques:['obliques'],core:['abs','obliques'],
  lats:['upper-back'],'upper back':['upper-back','trapezius'],'lower back':['lower-back'],'whole body':[...LEGS,'chest','front-deltoids','abs','upper-back']};
 /** Words in an exercise's muscle list that aren't muscles on the map. */
-export const NOT_A_MUSCLE=new Set(['heart rate','balance','grip']);
-export const MUSCLE_LABELS:Record<MapMuscle,string>={quadriceps:'Quads',gluteal:'Glutes',hamstring:'Hamstrings',calves:'Calves',adductor:'Inner thighs',abductors:'Outer hips',chest:'Chest','front-deltoids':'Front shoulders','back-deltoids':'Rear shoulders',biceps:'Biceps',triceps:'Triceps',forearm:'Forearms',abs:'Abs',obliques:'Obliques','upper-back':'Upper back','lower-back':'Lower back',trapezius:'Traps'};
+export const NOT_A_MUSCLE=new Set([msg("heart rate"),'balance','grip']);
+export const MUSCLE_LABELS:Record<MapMuscle,string>={quadriceps:msg("Quads"),gluteal:msg("Glutes"),hamstring:msg("Hamstrings"),calves:msg("Calves"),adductor:msg("Inner thighs"),abductors:msg("Outer hips"),chest:msg("Chest"),'front-deltoids':msg("Front shoulders"),'back-deltoids':msg("Rear shoulders"),biceps:msg("Biceps"),triceps:msg("Triceps"),forearm:msg("Forearms"),abs:msg("Abs"),obliques:msg("Obliques"),'upper-back':msg("Upper back"),'lower-back':msg("Lower back"),trapezius:msg("Traps")};
+localizedMap(MUSCLE_LABELS);
 
 export const musclesFromText=(text:string):MapMuscle[]=>[...new Set(text.toLowerCase().split(',').map(name=>name.trim()).flatMap(name=>NAMES[name]??[]))];
 export const musclesOf=(kind:ExerciseKind):MapMuscle[]=>musclesFromText(EXERCISES[kind].muscles);

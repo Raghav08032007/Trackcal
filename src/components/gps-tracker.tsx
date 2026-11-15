@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "./account-session";
@@ -11,7 +12,7 @@ type Status = "ready" | "tracking" | "paused" | "review" | "saved";
 
 export function GpsTracker() {
   const { ready, user } = useAccount();
-  return !ready ? <main className="account-loading">Opening GPS…</main> : user ? <Tracker key={user.id} /> : <main className="account-page"><section className="account-card"><h1>Walk, run, hike or ride, tracked.</h1><p>Sign in to record your route, splits and personal records.</p><Link className="account-primary" href="/login?next=/workouts/gps">Sign in</Link></section></main>;
+  return !ready ? <main className="account-loading">{t("Opening GPS…")}</main> : user ? <Tracker key={user.id} /> : <main className="account-page"><section className="account-card"><h1>{t("Walk, run, hike or ride, tracked.")}</h1><p>{t("Sign in to record your route, splits and personal records.")}</p><Link className="account-primary" href="/login?next=/workouts/gps">{t("Sign in")}</Link></section></main>;
 }
 
 /** Records raw GPS fixes; the server measures them (distance, moving time, splits, climb, records) when the activity is saved.
@@ -36,7 +37,7 @@ function Tracker() {
   };
 
   async function begin() {
-    if (!("geolocation" in navigator)) { setError("This device has no GPS in the browser."); return; }
+    if (!("geolocation" in navigator)) { setError(t("This device has no GPS in the browser.")); return; }
     setError(""); started.current = performance.now();
     if (!startedAt.current) startedAt.current = new Date().toISOString();
     watch.current = navigator.geolocation.watchPosition(p => {
@@ -46,12 +47,12 @@ function Tracker() {
         setMetres(meter.current.metres);
         if (meter.current.metres >= nextKm.current * 1000) {
           const k = nextKm.current; nextKm.current++;
-          if (voice) say(`${k} kilometre${k > 1 ? "s" : ""}. ${spokenPace(sport, meter.current.metres, elapsedBefore.current + performance.now() - started.current)}.`);
+          if (voice) say(t("{count} kilometres. {pace}", { count: k, pace: spokenPace(sport, meter.current.metres, elapsedBefore.current + performance.now() - started.current) }));
           navigator.vibrate?.(200);
         }
       }
       keep();
-    }, failure => { setError(failure.code === 1 ? "Location permission is off. Allow it in your browser settings to record." : "Waiting for a GPS signal. Step outside for a clearer view of the sky."); },
+    }, failure => { setError(failure.code === 1 ? t("Location permission is off. Allow it in your browser settings to record.") : t("Waiting for a GPS signal. Step outside for a clearer view of the sky.")); },
     { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
     try { lock.current = await (navigator as unknown as { wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> } }).wakeLock?.request("screen") ?? null; } catch { /* the screen may dim; recording carries on while the page is open */ }
     setStatus("tracking");
@@ -78,9 +79,9 @@ function Tracker() {
         xp = done.awarded_xp;
       } catch { /* already in the journal, or the journal is busy: the activity itself is saved */ }
       setSaved({ activity: result.activity, records: result.new_records, xp }); setStatus("saved");
-      if (voice && result.new_records.length) say(`New personal record: ${result.new_records[0].label}.`);
+      if (voice && result.new_records.length) say(t("New personal record: {label}.", { label: result.new_records[0].label }));
     } catch (failure) {
-      setError(failure instanceof Error ? `${failure.message} Your recording is kept on this device.` : "Could not save. Your recording is kept on this device; try again.");
+      setError(failure instanceof Error ? t("{message} Your recording is kept on this device.", { message: t(failure.message) }) : t("Could not save. Your recording is kept on this device; try again."));
     } finally { setBusy(false); }
   }
   const current = (): Pending => ({ id: id.current, sport, started_at: startedAt.current, fixes: fixes.current, elapsed_ms: elapsedBefore.current });
@@ -89,50 +90,50 @@ function Tracker() {
     setMetres(0); setElapsed(0); setAccuracy(null); setName(""); setVisibility("private"); setSaved(null); setStatus("ready"); dropPending(); setPending(null);
   }
 
-  const signal = accuracy === null ? null : accuracy <= 10 ? "Strong" : accuracy <= 25 ? "Fair" : "Weak";
+  const signal = accuracy === null ? null : accuracy <= 10 ? t("Strong") : accuracy <= 25 ? t("Fair") : t("Weak");
   return <main className="wellness-page gps-page">
-    <section className="camera-intro"><span className="eyebrow">OUTDOORS</span><h1>Record an activity</h1><p>Route, splits, climb and personal records from your phone&apos;s GPS. Keep this page open while you move. Activities are private until you share them.</p></section>
+    <section className="camera-intro"><span className="eyebrow">{t("OUTDOORS")}</span><h1>{t("Record an activity")}</h1><p>{t("Route, splits, climb and personal records from your phone's GPS. Keep this page open while you move. Activities are private until you share them.")}</p></section>
     {error && <p role="alert" className="camera-alert">{error}</p>}
-    {pending && status === "ready" && <section className="account-card gps-recover"><h2>An unsaved {sportTitle(pending.sport).toLowerCase()} is on this device</h2><p>Recorded {new Date(pending.started_at).toLocaleString()} · {pending.fixes.length} GPS points.</p>
-      <div className="account-actions"><button className="account-primary" disabled={busy} onClick={() => void save(pending, "", "private")}>{busy ? "Saving…" : "Save it"}</button><button disabled={busy} onClick={() => { dropPending(); setPending(null); }}>Discard</button></div></section>}
+    {pending && status === "ready" && <section className="account-card gps-recover"><h2>{t("An unsaved {n} is on this device", { n: sportTitle(pending.sport).toLowerCase() })}</h2><p>{t("Recorded {n} · {length} GPS points.", { n: new Date(pending.started_at).toLocaleString(), length: pending.fixes.length })}</p>
+      <div className="account-actions"><button className="account-primary" disabled={busy} onClick={() => void save(pending, "", "private")}>{busy ? t("Saving…") : t("Save it")}</button><button disabled={busy} onClick={() => { dropPending(); setPending(null); }}>{t("Discard")}</button></div></section>}
     <section className="account-card gps-card">
-      {status === "ready" && <div className="camera-equipment" role="group" aria-label="Sport">{SPORTS.map(s => <button key={s.id} type="button" aria-pressed={sport === s.id} onClick={() => setSport(s.id)}>{s.title}</button>)}</div>}
-      {status !== "saved" && <div className="gps-stats" aria-live="polite"><div><strong>{km(metres)}</strong><small>km</small></div><div><strong>{duration(elapsed / 1000)}</strong><small>time</small></div><div><strong>{pace(sport, metres, elapsed / 1000)}</strong><small>{sport === "ride" ? "speed" : "pace"}</small></div></div>}
-      {signal && (status === "tracking" || status === "paused") && <p className="gps-signal" data-signal={signal.toLowerCase()}><span aria-hidden="true" /> GPS {signal.toLowerCase()} · about {accuracy} m{accuracy! > 35 ? ". Points this rough are left out until the signal improves." : ""}</p>}
-      {status === "ready" && voiceAvailable() && <label className="camera-voice"><input type="checkbox" checked={voice} onChange={e => { setVoice(e.target.checked); try { localStorage.setItem("trackcal:gps:voice", e.target.checked ? "on" : "off"); } catch { /* remembered for this visit */ } }} /> Announce each kilometre</label>}
+      {status === "ready" && <div className="camera-equipment" role="group" aria-label={t("Sport")}>{SPORTS.map(s => <button key={s.id} type="button" aria-pressed={sport === s.id} onClick={() => setSport(s.id)}>{s.title}</button>)}</div>}
+      {status !== "saved" && <div className="gps-stats" aria-live="polite"><div><strong>{km(metres)}</strong><small>km</small></div><div><strong>{duration(elapsed / 1000)}</strong><small>{t("time")}</small></div><div><strong>{pace(sport, metres, elapsed / 1000)}</strong><small>{sport === "ride" ? "speed" : "pace"}</small></div></div>}
+      {signal && (status === "tracking" || status === "paused") && <p className="gps-signal" data-signal={signal.toLowerCase()}><span aria-hidden="true" /> {t("GPS")}{" "}{signal.toLowerCase()} {t("· about")}{" "}{accuracy} m{accuracy! > 35 ? t(". Points this rough are left out until the signal improves.") : ""}</p>}
+      {status === "ready" && voiceAvailable() && <label className="camera-voice"><input type="checkbox" checked={voice} onChange={e => { setVoice(e.target.checked); try { localStorage.setItem("trackcal:gps:voice", e.target.checked ? "on" : "off"); } catch { /* remembered for this visit */ } }} /> {t("Announce each kilometre")}</label>}
       {status === "review" && <div className="gps-review">
-        <label>Name <input value={name} maxLength={120} placeholder={`Leave blank for "Morning ${sport}"`} onChange={e => setName(e.target.value)} /></label>
-        <fieldset className="visibility-choice"><legend>Who can see it</legend>{VISIBILITY.map(v => <label key={v.id}><input type="radio" name="visibility" checked={visibility === v.id} onChange={() => setVisibility(v.id)} /> <span><strong>{v.title}</strong><small>{v.detail}</small></span></label>)}</fieldset>
+        <label>{t("Name")}{" "}<input value={name} maxLength={120} placeholder={t("Leave blank for \"Morning {sport}\"", { sport })} onChange={e => setName(e.target.value)} /></label>
+        <fieldset className="visibility-choice"><legend>{t("Who can see it")}</legend>{VISIBILITY.map(v => <label key={v.id}><input type="radio" name="visibility" checked={visibility === v.id} onChange={() => setVisibility(v.id)} /> <span><strong>{v.title}</strong><small>{v.detail}</small></span></label>)}</fieldset>
       </div>}
       <div className="account-actions">
-        {status === "ready" && <button className="account-primary" onClick={() => void begin()}>Start {sportTitle(sport).toLowerCase()}</button>}
-        {status === "tracking" && <><button onClick={pause}>Pause</button><button className="account-primary" onClick={finish}>Finish</button></>}
-        {status === "paused" && <><button className="account-primary" onClick={() => void begin()}>Resume</button><button onClick={finish}>Finish</button></>}
-        {status === "review" && <>{elapsedBefore.current >= 30000 && fixes.current.length >= 2 ? <button className="account-primary" disabled={busy} onClick={() => void save(current(), name, visibility)}>{busy ? "Measuring your route…" : `Save ${sportTitle(sport).toLowerCase()}`}</button> : <p>Record for at least 30 seconds outdoors to save an activity.</p>}<button disabled={busy} onClick={reset}>Discard</button></>}
+        {status === "ready" && <button className="account-primary" onClick={() => void begin()}>{t("Start {n}", { n: sportTitle(sport).toLowerCase() })}</button>}
+        {status === "tracking" && <><button onClick={pause}>{t("Pause")}</button><button className="account-primary" onClick={finish}>{t("Finish")}</button></>}
+        {status === "paused" && <><button className="account-primary" onClick={() => void begin()}>{t("Resume")}</button><button onClick={finish}>{t("Finish")}</button></>}
+        {status === "review" && <>{elapsedBefore.current >= 30000 && fixes.current.length >= 2 ? <button className="account-primary" disabled={busy} onClick={() => void save(current(), name, visibility)}>{busy ? t("Measuring your route…") : t("Save {n}", { n: sportTitle(sport).toLowerCase() })}</button> : <p>{t("Record for at least 30 seconds outdoors to save an activity.")}</p>}<button disabled={busy} onClick={reset}>{t("Discard")}</button></>}
       </div>
       {status === "saved" && saved && <div className="gps-saved">
         <Celebration />
         <h2>{saved.activity.name}</h2>
-        <div className="gps-stats"><div><strong>{km(saved.activity.distance_m)}</strong><small>km</small></div><div><strong>{duration(saved.activity.moving_s)}</strong><small>moving</small></div><div><strong>{pace(saved.activity.sport, saved.activity.distance_m, saved.activity.moving_s)}</strong><small>{saved.activity.sport === "ride" ? "avg speed" : "avg pace"}</small></div></div>
-        {saved.records.length > 0 && <ul className="new-records" aria-label="New personal records">{saved.records.map(r => <li key={r.kind + r.label}><span aria-hidden="true">🏆</span> <strong>{r.label}</strong> {recordText(r, saved.activity.sport)}</li>)}</ul>}
-        {saved.xp > 0 && <p className="gps-xp">+{saved.xp} points</p>}
-        <div className="account-actions"><Link className="account-primary" href={`/activities/${saved.activity.id}`}>See splits and map</Link><button onClick={reset}>Record another</button></div>
+        <div className="gps-stats"><div><strong>{km(saved.activity.distance_m)}</strong><small>km</small></div><div><strong>{duration(saved.activity.moving_s)}</strong><small>{t("moving")}</small></div><div><strong>{pace(saved.activity.sport, saved.activity.distance_m, saved.activity.moving_s)}</strong><small>{saved.activity.sport === "ride" ? t("avg speed") : t("avg pace")}</small></div></div>
+        {saved.records.length > 0 && <ul className="new-records" aria-label={t("New personal records")}>{saved.records.map(r => <li key={r.kind + r.label}><span aria-hidden="true">🏆</span> <strong>{r.label}</strong> {recordText(r, saved.activity.sport)}</li>)}</ul>}
+        {saved.xp > 0 && <p className="gps-xp">{t("+{xp} points", { xp: saved.xp })}</p>}
+        <div className="account-actions"><Link className="account-primary" href={`/activities/${saved.activity.id}`}>{t("See splits and map")}</Link><button onClick={reset}>{t("Record another")}</button></div>
       </div>}
     </section>
-    <p className="gps-footnote"><Link href="/activities">Your activities, records and privacy zones →</Link></p>
+    <p className="gps-footnote"><Link href="/activities">{t("Your activities, records and privacy zones →")}</Link></p>
   </main>;
 }
 
 function spokenPace(sport: Sport, metres: number, ms: number) {
   if (metres < 50) return "";
   const s = ms / 1000;
-  if (sport === "ride") return `Average ${Math.round((metres / s) * 3.6)} kilometres an hour`;
+  if (sport === "ride") return t("Average {n} kilometres an hour.", { n: Math.round((metres / s) * 3.6) });
   const per = s / (metres / 1000), m = Math.floor(per / 60), sec = Math.round(per % 60);
-  return `Average pace ${m} minutes ${sec} seconds per kilometre`;
+  return t("Average pace {m} minutes {sec} seconds per kilometre.", { m, sec });
 }
 function recordText(r: NewRecord, sport: Sport) {
-  if (r.kind === "best_effort" && r.seconds) return `in ${duration(r.seconds)}${r.previous_seconds ? `, ${duration(r.previous_seconds - r.seconds)} faster than before` : " (your first)"}`;
-  if (r.kind === "longest" && r.distance_m) return `${km(r.distance_m)} km ${sport === "ride" ? "ridden" : "covered"}`;
-  if (r.kind === "climb" && r.elevation_gain_m) return `${Math.round(r.elevation_gain_m)} m climbed`;
+  if (r.kind === "best_effort" && r.seconds) return r.previous_seconds ? t("in {time}, {faster} faster than before", { time: duration(r.seconds), faster: duration(r.previous_seconds - r.seconds) }) : t("in {time} (your first)", { time: duration(r.seconds) });
+  if (r.kind === "longest" && r.distance_m) return sport === "ride" ? t("{km} km ridden", { km: km(r.distance_m) }) : t("{km} km covered", { km: km(r.distance_m) });
+  if (r.kind === "climb" && r.elevation_gain_m) return t("{n} m climbed", { n: Math.round(r.elevation_gain_m) });
   return "";
 }

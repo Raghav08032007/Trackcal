@@ -23,7 +23,7 @@ it('guides the next unfinished quest and derives growth from server progress',as
  await userEvent.click(screen.getByRole('button',{name:'Help me choose'}));
  expect(screen.getByRole('status').textContent).toContain('complete label detective');
  expect(screen.getByRole('link',{name:/Take my next step/}).getAttribute('href')).toBe('#label-detective');
- expect(screen.getByText('Level 6 · 1270 XP · 3-day task streak')).toBeTruthy();
+ expect(screen.getByText('Level 6 · 1,270 XP · 3-day task streak')).toBeTruthy();
  expect((screen.getByRole('progressbar') as HTMLProgressElement).value).toBe(20);
 });
 it('encourages rest after all quests and does not invent guest progress',async()=>{

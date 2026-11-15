@@ -49,7 +49,7 @@ export const locale = () => current;
 export const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 
 /** The text in the chosen language; {placeholders} filled from vars; plural forms chosen by vars.count. */
-export function t(text: string, vars?: Record<string, string | number>): string {
+export function t(text: string, vars?: Record<string, string | number | null | undefined>): string {
   const entry = catalog[text], counted = vars && typeof vars.count === "number";
   let out = typeof entry === "string" ? entry
     : entry && counted ? (entry[plural.select(vars.count as number)] ?? entry.other ?? text)
@@ -57,10 +57,27 @@ export function t(text: string, vars?: Record<string, string | number>): string 
   if (vars) out = out.replace(/\{(\w+)\}/g, (all, name: string) => (name in vars ? formatValue(vars[name]) : all));
   return out;
 }
-const formatValue = (v: string | number) => (typeof v === "number" ? number(v) : v);
+const formatValue = (v: string | number | null | undefined) => (typeof v === "number" ? number(v) : v ?? "");
 
 /** Marks a text for translation where it is defined (in a list or table); t() translates it where it is shown. */
 export const msg = (text: string) => text;
+
+/** Makes the named fields of each row read in the chosen language (texts and lists of texts), for data tables shown in many
+ *  places, like exercise names. The English stays stored, so ids, saving and comparisons are unchanged; each read is t(). */
+export function localized<T extends object>(rows: Iterable<T>, fields: readonly string[]) {
+  for (const row of rows) for (const field of fields) {
+    if (!Object.prototype.hasOwnProperty.call(row, field)) continue;
+    let raw = (row as Record<string, unknown>)[field];
+    if (typeof raw !== "string" && !Array.isArray(raw)) continue;
+    Object.defineProperty(row, field, {
+      enumerable: true, configurable: true,
+      get: () => typeof raw === "string" ? t(raw) : Array.isArray(raw) ? raw.map(x => typeof x === "string" ? t(x) : x) : raw,
+      set: (value: unknown) => { raw = value; },
+    });
+  }
+}
+/** The same for a table of texts by key ({ easy: "Easy", … }). */
+export const localizedMap = (table: Record<string, string>) => localized([table], Object.keys(table));
 
 /** Numbers and dates in the chosen language's style: 1,00,000 for Indian languages, 100.000 in Brazil, Arabic digits for Arabic. */
 export const number = (n: number, options?: Intl.NumberFormatOptions) => new Intl.NumberFormat(localeOf(current).format, options).format(n);

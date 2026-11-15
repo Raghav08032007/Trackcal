@@ -1,3 +1,4 @@
+import { msg } from "./i18n";
 // Workouts on the account: one history (sessions, hand-logged workouts and routes), and the training library
 // (circuits, program progress, next rep targets). Signed in, every screen shares one copy and browser-only data
 // is copied once; signed out, the browser keeps them as before.
@@ -19,7 +20,7 @@ async function request<T>(path: string, body?: unknown, method?: string): Promis
   const response = await fetch("/api/wellness/" + path, { method: method ?? (body === undefined ? "GET" : "POST"), credentials: "same-origin",
     headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || data.detail || "Could not save. Please try again.");
+  if (!response.ok) throw new Error(data.error || data.detail || msg("Could not save. Please try again."));
   return data as T;
 }
 const changed = () => window.dispatchEvent(new Event("trackcal-workouts"));
@@ -36,7 +37,7 @@ async function migrate(s: string): Promise<Library | null> {
   const local = exportLocalEntries(s) as Record<string, unknown>, list = (k: string) => Array.isArray(local[k]) ? local[k] as unknown[] : [];
   const workouts = (list("trackcal:studio:workouts") as WorkoutEntry[]).filter(w => /^[0-9a-f-]{36}$/i.test(w.id) && /^\d{4}-\d{2}-\d{2}$/.test(w.date) && w.name?.trim())
     .map(w => ({ id: w.id, day: w.date, name: w.name.trim().slice(0, 120), minutes: Math.min(1440, Math.round(w.minutes) || 0), sets: Math.min(200, Math.round(w.sets) || 0),
-      reps: Math.min(1000, Math.round(w.reps) || 0), load: Math.min(1000, w.load || 0), source: (w.source || "Manual entry").slice(0, 40) }));
+      reps: Math.min(1000, Math.round(w.reps) || 0), load: Math.min(1000, w.load || 0), source: (w.source || msg("Manual entry")).slice(0, 40) }));
   const body = { workouts: workouts.slice(-500), circuits: list("trackcal:studio:circuits").slice(0, 50), program_days: list("trackcal:studio:program-days").slice(0, 500), next_targets: list("trackcal:studio:next-targets").slice(0, 100) };
   if (!body.workouts.length && !body.circuits.length && !body.program_days.length && !body.next_targets.length) return null;
   try { const result = await request<Library & { workouts: number }>("library/import", body); for (const k of LOCAL) { try { localStorage.removeItem(workspaceKey(k, s)); } catch { /* storage off */ } } if (result.workouts) changed(); return result; }
@@ -119,7 +120,7 @@ export function useNextTargets(): [Library["next_targets"], (next: Library["next
 export type HistoryPage = { items: HistoryItem[]; has_more: boolean; active_days?: string[] };
 export async function historyRequest(kind: HistoryKind, offset = 0, limit = 20) {
   const page = await request<HistoryPage>(`history?kind=${kind}&offset=${offset}&limit=${limit}`);
-  if (!page || !Array.isArray(page.items)) throw new Error("Could not load your workouts.");   // an error page or an older server
+  if (!page || !Array.isArray(page.items)) throw new Error(msg("Could not load your workouts."));   // an error page or an older server
   return page;
 }
 
@@ -139,8 +140,8 @@ export function useActiveDays() {
 }
 const EMPTY: string[] = [];
 
-export async function addWorkout(entry: EntryInput & { id?: string }) { const item = await request<HistoryItem>("entries", { id: entry.id ?? crypto.randomUUID(), source: "Manual entry", ...entry }); changed(); return item; }
-export async function editWorkout(id: string, entry: EntryInput) { const item = await request<HistoryItem>("entries/" + id, { source: "Manual entry", ...entry }, "PUT"); changed(); return item; }
+export async function addWorkout(entry: EntryInput & { id?: string }) { const item = await request<HistoryItem>("entries", { id: entry.id ?? crypto.randomUUID(), source: msg("Manual entry"), ...entry }); changed(); return item; }
+export async function editWorkout(id: string, entry: EntryInput) { const item = await request<HistoryItem>("entries/" + id, { source: msg("Manual entry"), ...entry }, "PUT"); changed(); return item; }
 export async function removeHistoryItem(item: HistoryItem) { await request(`${item.kind === "manual" ? "entries" : "sessions"}/${item.id}`, undefined, "DELETE"); changed(); }
 export async function restoreHistoryItem(item: HistoryItem) { const back = await request<HistoryItem>(`${item.kind === "manual" ? "entries" : "sessions"}/${item.id}/restore`, {}); changed(); return back; }
 
@@ -164,7 +165,7 @@ function useLocalRows(signedIn: boolean): [WorkoutEntry[], React.Dispatch<React.
   const s = useWorkspaceScope(), [rows, setRows] = useState<WorkoutEntry[]>([]);
   useEffect(() => {
     if (!signedIn) return; let live = true;
-    const load = () => void loadLibrary(s).then(() => historyRequest("manual", 0, 50)).then(p => { if (live) setRows(p.items.map(i => ({ id: i.id, date: i.day, name: i.title, minutes: i.minutes, sets: i.sets ?? 0, reps: i.reps ?? 0, load: i.load ?? 0, source: i.source ?? "Manual entry" })).reverse()); }).catch(() => {});
+    const load = () => void loadLibrary(s).then(() => historyRequest("manual", 0, 50)).then(p => { if (live) setRows(p.items.map(i => ({ id: i.id, date: i.day, name: i.title, minutes: i.minutes, sets: i.sets ?? 0, reps: i.reps ?? 0, load: i.load ?? 0, source: i.source ?? msg("Manual entry") })).reverse()); }).catch(() => {});
     load(); window.addEventListener("trackcal-workouts", load); return () => { live = false; window.removeEventListener("trackcal-workouts", load); };
   }, [signedIn, s]);
   return [rows, setRows];

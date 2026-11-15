@@ -1,3 +1,4 @@
+import { localized, localizedMap, msg } from "../i18n";
 import {angle,normalize} from './landmarks';
 import type {Move} from './exercise-motions';
 import type {Landmark,PoseFrame} from './types';
@@ -5,7 +6,7 @@ import type {Landmark,PoseFrame} from './types';
 /** Positions you hold rather than repeat: core, isometric strength, balance and flexibility. */
 export type HoldKind='plank'|'wallsit'|'bridgehold'|'tree'|'legbalance'|'warrior'|'downdog'|'forwardfold';
 export type HoldStyle='core'|'strength'|'balance'|'mobility';
-export const HOLD_STYLES:Record<HoldStyle,string>={core:'Core',strength:'Strength',balance:'Balance',mobility:'Mobility and flexibility'};
+export const HOLD_STYLES:Record<HoldStyle,string>={core:msg("Core"),strength:msg("Strength"),balance:msg("Balance"),mobility:msg("Mobility and flexibility")};
 type Hold={title:string;style:HoldStyle;muscles:string;setup:string;cue:string;move:Move;check:(p:Landmark[])=>boolean};
 
 const both=(v:number):[number,number]=>[v,v];
@@ -22,34 +23,36 @@ const upright=(p:Landmark[])=>tilt(mid(p[11],p[12]),mid(p[23],p[24]))>70;
 const standingOnOne=(p:Landmark[])=>{const [a,b]=legs(p),lifted=a.ank.y<b.ank.y?a:b,standing=lifted===a?b:a;return standing.bend>155&&lifted.ank.y<standing.ank.y-.2*standing.len?lifted:null;};
 
 export const HOLDS:Record<HoldKind,Hold>={
- plank:{title:'Plank',style:'core',muscles:'Abs, shoulders, glutes',setup:'Side-on to the camera, whole body in view.',cue:'Straight line from head to heels',
+ plank:{title:msg("Plank"),style:'core',muscles:msg("Abs, shoulders, glutes"),setup:msg("Side-on to the camera, whole body in view."),cue:msg("Straight line from head to heels"),
   move:{view:'side',anchor:'hand',keys:[{torso:76,thigh:both(-76),shin:both(-76)}]},
   // A straight body reads 140-175 degrees through camera noise. Forearm planks rest on the elbows, so either the elbow or the wrist is below the shoulder.
   check:p=>{const s=side(p);return tilt(s.sh,s.hip)<35&&angle(s.sh,s.hip,s.ank)>140&&angle(s.hip,s.knee,s.ank)>140&&(s.wr.y>s.sh.y||s.el.y>s.sh.y);}},
- wallsit:{title:'Wall sit or squat hold',style:'strength',muscles:'Quads, glutes',setup:'Side-on, back against a wall or free-standing.',cue:'Thighs level, knees over ankles',
+ wallsit:{title:msg("Wall sit or squat hold"),style:'strength',muscles:msg("Quads, glutes"),setup:msg("Side-on, back against a wall or free-standing."),cue:msg("Thighs level, knees over ankles"),
   move:{view:'side',anchor:'foot',keys:[{torso:5,thigh:both(88),shin:both(0),arm:both(0),fore:both(0)}]},
   check:p=>{const s=side(p),knee=angle(s.hip,s.knee,s.ank),hip=angle(s.sh,s.hip,s.knee),[a,b]=legs(p);return knee>65&&knee<115&&hip>65&&hip<125&&tilt(s.sh,s.hip)>55&&Math.abs(a.ank.x-b.ank.x)<.35*a.len;}},
- bridgehold:{title:'Glute bridge hold',style:'strength',muscles:'Glutes, hamstrings, lower back',setup:'Lie side-on, knees bent, feet flat.',cue:'Squeeze and keep the hips high',
+ bridgehold:{title:msg("Glute bridge hold"),style:'strength',muscles:msg("Glutes, hamstrings, lower back"),setup:msg("Lie side-on, knees bent, feet flat."),cue:msg("Squeeze and keep the hips high"),
   move:{view:'side',anchor:'shoulder',keys:[{torso:-112,thigh:both(108),shin:both(10),arm:both(95),fore:both(95)}]},
   check:p=>{const s=side(p),knee=angle(s.hip,s.knee,s.ank);return tilt(s.sh,s.hip)<50&&s.hip.y<s.sh.y&&s.hip.y<s.ank.y&&angle(s.sh,s.hip,s.knee)>125&&knee>55&&knee<120;}},
- tree:{title:'Tree pose',style:'balance',muscles:'Ankles, hips, core',setup:'Face the camera, whole body in view.',cue:'Foot on the inner leg, hands overhead',
+ tree:{title:msg("Tree pose"),style:'balance',muscles:msg("Ankles, hips, core"),setup:msg("Face the camera, whole body in view."),cue:msg("Foot on the inner leg, hands overhead"),
   move:{view:'front',anchor:'hip',keys:[{thigh:[0,60],shin:[0,-80],arm:[-170,170],fore:[-170,170]}]},
   check:p=>{const lifted=standingOnOne(p);return upright(p)&&!!lifted&&lifted.bend<110;}},
- legbalance:{title:'Single-leg balance',style:'balance',muscles:'Ankles, hips, core',setup:'Side-on or facing the camera.',cue:'Lift one leg and stay tall',
+ legbalance:{title:msg("Single-leg balance"),style:'balance',muscles:msg("Ankles, hips, core"),setup:msg("Side-on or facing the camera."),cue:msg("Lift one leg and stay tall"),
   move:{view:'side',anchor:'hip',keys:[{thigh:[0,85],shin:[0,85],arm:both(90),fore:both(90)}]},
   check:p=>{const lifted=standingOnOne(p);return upright(p)&&!!lifted&&lifted.bend>=120;}},
- warrior:{title:'Warrior II',style:'mobility',muscles:'Hips, legs, shoulders',setup:'Face the camera with room to step wide.',cue:'Front knee bent, arms out wide',
+ warrior:{title:msg("Warrior II"),style:'mobility',muscles:msg("Hips, legs, shoulders"),setup:msg("Face the camera with room to step wide."),cue:msg("Front knee bent, arms out wide"),
   move:{view:'front',anchor:'hip',keys:[{thigh:[-45,70],shin:[-45,-5],arm:[-92,92],fore:[-92,92]}]},
   check:p=>{const [a,b]=legs(p),bent=Math.min(a.bend,b.bend),straight=Math.max(a.bend,b.bend),arm=dist(p[11],p[13])+dist(p[13],p[15]);
    return upright(p)&&Math.abs(a.ank.x-b.ank.x)>.9*a.len&&bent>75&&bent<135&&straight>150&&Math.abs(p[15].y-p[11].y)<.35*arm&&Math.abs(p[16].y-p[12].y)<.35*arm;}},
- downdog:{title:'Downward dog',style:'mobility',muscles:'Hamstrings, calves, shoulders',setup:'Side-on, hands and feet on the floor.',cue:'Hips high, heels reaching down',
+ downdog:{title:msg("Downward dog"),style:'mobility',muscles:msg("Hamstrings, calves, shoulders"),setup:msg("Side-on, hands and feet on the floor."),cue:msg("Hips high, heels reaching down"),
   move:{view:'side',anchor:'hand',keys:[{torso:130,thigh:both(-50),shin:both(-50),arm:both(30),fore:both(30)}]},
   check:p=>{const s=side(p),hip=angle(s.sh,s.hip,s.ank),len=dist(s.hip,s.knee)+dist(s.knee,s.ank);return s.hip.y<s.sh.y&&s.hip.y<s.ank.y&&hip>45&&hip<120&&angle(s.hip,s.knee,s.ank)>140&&s.wr.y>s.sh.y&&Math.abs(s.wr.x-s.ank.x)>.6*len;}},
- forwardfold:{title:'Standing forward fold',style:'mobility',muscles:'Hamstrings, lower back',setup:'Side-on, whole body in view.',cue:'Fold from the hips, let your head hang',
+ forwardfold:{title:msg("Standing forward fold"),style:'mobility',muscles:msg("Hamstrings, lower back"),setup:msg("Side-on, whole body in view."),cue:msg("Fold from the hips, let your head hang"),
   move:{view:'side',anchor:'foot',keys:[{torso:150,thigh:both(0),shin:both(0),arm:both(5),fore:both(5)}]},
   check:p=>{const s=side(p),len=dist(s.hip,s.knee)+dist(s.knee,s.ank);return s.sh.y>s.hip.y&&angle(s.sh,s.hip,s.ank)<80&&angle(s.hip,s.knee,s.ank)>150&&s.ank.y>s.hip.y&&Math.abs(s.wr.x-s.ank.x)<.45*len;}},
 };
 export const HOLD_KINDS=Object.keys(HOLDS) as HoldKind[];
+localized(Object.values(HOLDS), ["title", "muscles", "setup", "cue"]);
+localizedMap(HOLD_STYLES);
 
 const GRACE_MS=1000,MAX_STEP_MS=250,LEFT=[11,13,15,23,25,27],RIGHT=[12,14,16,24,26,28];
 /** Side-on, the far arm and leg hide behind the body, so one clear side is enough to judge the position. */

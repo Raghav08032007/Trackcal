@@ -1,3 +1,4 @@
+import { msg } from "../i18n";
 /* Form checks adapted from Exercise-Correction by Ngô Hồng Quốc Bảo (MIT licence):
  * https://github.com/NgoQuocBao1010/Exercise-Correction
  * Its squat foot and knee ratios, bicep curl upper-arm and peak-contraction angles and lunge knee range are used here.
@@ -11,8 +12,8 @@ const FAMILY:Partial<Record<ExerciseKind|'plank',FormFamily>>={squat:'squat',wsq
  curl:'curl',hammer:'curl',bandcurl:'curl',bbcurl:'curl',lunge:'lunge',wlunge:'lunge',revlunge:'lunge',bblunge:'lunge',pushup:'plank',kneepush:'plank',widepush:'plank',diamondpush:'plank',plank:'plank'};
 export const formFamily=(kind:ExerciseKind|'plank')=>FAMILY[kind]??null;
 
-export const FORM_TIPS={feet_narrow:'Feet a little wider, about shoulder width.',feet_wide:'Bring your feet in a little.',knees_in:'Push your knees out over your toes.',knees_out:'Knees are drifting wide. Keep them over your toes.',
- elbow_drift:'Keep your elbow close to your side.',short_curl:'Curl all the way up and squeeze.',knee_forward:"Don't let your knee bend past a right angle.",hips_high:'Lower your hips into a straight line.',hips_low:'Lift your hips. Keep a straight line from head to heels.'} as const;
+export const FORM_TIPS={feet_narrow:msg("Feet a little wider, about shoulder width."),feet_wide:msg("Bring your feet in a little."),knees_in:msg("Push your knees out over your toes."),knees_out:msg("Knees are drifting wide. Keep them over your toes."),
+ elbow_drift:msg("Keep your elbow close to your side."),short_curl:msg("Curl all the way up and squeeze."),knee_forward:msg("Don't let your knee bend past a right angle."),hips_high:msg("Lower your hips into a straight line."),hips_low:msg("Lift your hips. Keep a straight line from head to heels.")} as const;
 export type FormIssue=keyof typeof FORM_TIPS;
 
 const FOOT_SHOULDER=[1.2,2.8],KNEE_FOOT={up:[.5,1],middle:[.7,1],down:[.7,1.1]},UPPER_ARM_MAX=40,PEAK_MAX=60,LUNGE_KNEE=[60,125],HIP_LINE=165,CONFIRM=5,VISIBLE=.6;

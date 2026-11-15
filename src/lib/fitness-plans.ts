@@ -1,4 +1,4 @@
-import { msg } from "./i18n";
+import { msg, t, localized } from "./i18n";
 import {EXERCISES,type ExerciseKind} from './pose/types';
 import type {Circuit,CircuitStep} from './workout-coach';
 import type {Session} from './wellness';
@@ -7,16 +7,17 @@ import type {Session} from './wellness';
 type ProgramStep=[ExerciseKind,number];
 export type Program={id:string;name:string;summary:string;weeks:number;rest:number;days:ProgramStep[][]};
 export const PROGRAMS:Program[]=[
- {id:'home-start',name:'Home starter',summary:'Three short full-body days. No equipment.',weeks:4,rest:45,days:[[['squat',10],['wallpush',10],['bridge',10],['crunch',10]],[['lunge',8],['incline',10],['superman',10],['calf',15]],[['sumo',10],['kneepush',8],['bridge',12],['crunch',12]]]},
- {id:'legs-glutes',name:'Legs and glutes',summary:'Two lower-body days. No equipment.',weeks:4,rest:60,days:[[['squat',15],['lunge',10],['bridge',15],['calf',20]],[['sumo',12],['lunge',12],['bridge',15],['squat',15]]]},
- {id:'dumbbell',name:'Dumbbell basics',summary:'Three days with a pair of dumbbells.',weeks:4,rest:60,days:[[['wsquat',10],['press',8],['row',10],['curl',10]],[['rdl',10],['overhead',8],['hammer',10],['wlunge',8]],[['wsquat',12],['row',10],['press',10],['curl',12]]]},
+ {id:'home-start',name:msg("Home starter"),summary:msg("Three short full-body days. No equipment."),weeks:4,rest:45,days:[[['squat',10],['wallpush',10],['bridge',10],['crunch',10]],[['lunge',8],['incline',10],['superman',10],['calf',15]],[['sumo',10],['kneepush',8],['bridge',12],['crunch',12]]]},
+ {id:'legs-glutes',name:msg("Legs and glutes"),summary:msg("Two lower-body days. No equipment."),weeks:4,rest:60,days:[[['squat',15],['lunge',10],['bridge',15],['calf',20]],[['sumo',12],['lunge',12],['bridge',15],['squat',15]]]},
+ {id:'dumbbell',name:msg("Dumbbell basics"),summary:msg("Three days with a pair of dumbbells."),weeks:4,rest:60,days:[[['wsquat',10],['press',8],['row',10],['curl',10]],[['rdl',10],['overhead',8],['hammer',10],['wlunge',8]],[['wsquat',12],['row',10],['press',10],['curl',12]]]},
 ];
+localized(PROGRAMS,["name","summary"]);
 export const programDays=(program:Program)=>program.weeks*program.days.length;
 /** Each week adds about a tenth to every target. */
 export function programDay(program:Program,index:number):Circuit|null{
  if(!Number.isInteger(index)||index<0||index>=programDays(program))return null;
  const perWeek=program.days.length,week=Math.floor(index/perWeek),steps:CircuitStep[]=program.days[index%perWeek].map(([kind,reps])=>({kind,target:Math.min(100,Math.round(reps*(1+week*.1)))}));
- return {id:`${program.id}:${index}`,name:`${program.name}, week ${week+1} day ${index%perWeek+1}`,rest:program.rest,steps};
+ return {id:`${program.id}:${index}`,name:t("{name}, week {week} day {day}",{name:program.name,week:week+1,day:index%perWeek+1}),rest:program.rest,steps};
 }
 export function nextProgramDay(program:Program,done:string[]){
  for(let index=0;index<programDays(program);index++)if(!done.includes(`${program.id}:${index}`))return index;

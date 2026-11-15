@@ -1,3 +1,4 @@
+import { msg } from "../i18n";
 import type {Observation,TrackingResult} from './types';
 import {REJECTION_TIPS,type ExerciseConfig,type RejectionReason} from './exercise-config';
 import type {ExerciseForm} from './exercise-forms';
@@ -61,20 +62,20 @@ export class RepCounter{
  }
  private travelled(form:ExerciseForm,share=1){
   const y=this.cycle!;
-  for(const [part,most] of Object.entries(form.still??{}))if((form.planted&&part==='wrists'?y.travel.least(part as BodyPart):y.travel.of(part as BodyPart))>most)return 'moved '+part;
-  for(const [part,least] of Object.entries(form.moves??{}))if(y.travel.of(part as BodyPart)<least*share)return 'still '+part;
+  for(const [part,most] of Object.entries(form.still??{}))if((form.planted&&part==='wrists'?y.travel.least(part as BodyPart):y.travel.of(part as BodyPart))>most)return "moved "+part;
+  for(const [part,least] of Object.entries(form.moves??{}))if(y.travel.of(part as BodyPart)<least*share)return "still "+part;
   return '';
  }
  update(o:Observation,t:number,body?:Body):TrackingResult{
   const c=this.config,inCycle=()=>this.phase==='GOING_DOWN'||this.phase==='DOWN'||this.phase==='GOING_UP';
   const out=(accepted:boolean,message:string,paused=false):TrackingResult=>({reps:this.reps,phase:this.phase,confidence:o.confidence,message,accepted,paused,rejection:this.rejected&&t-this.rejected.at<TIP_MS?this.rejected.reason:null,progress:o.valid?Math.min(1,Math.max(0,(c.up-o.angle)/(c.up-c.down))):0});
-  if(!Number.isFinite(t)||t<=this.last)return out(false,'Duplicate or stale frame ignored.');
+  if(!Number.isFinite(t)||t<=this.last)return out(false,msg("Duplicate or stale frame ignored."));
   if(t-this.last>GAP_MS&&this.phase!=='SETUP'){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();}
   this.last=t;
   // The analyzer started again from a new position: a rep in progress can't be finished against it.
   if(o.restart){if(inCycle())this.reject('lost_tracking',t);this.resetMovement();this.cycle=null;}
   // A low-confidence frame or two is normal in a dim room: the rep carries on unless tracking stays gone.
-  if(!o.valid){this.lost??=t;if(t-this.lost<GRACE_MS)return out(false,o.reason||'Tracking paused.');if(inCycle())this.reject('lost_tracking',t);this.resetMovement();return out(false,o.reason||'Tracking paused.',true);}
+  if(!o.valid){this.lost??=t;if(t-this.lost<GRACE_MS)return out(false,o.reason||msg("Tracking paused."));if(inCycle())this.reject('lost_tracking',t);this.resetMovement();return out(false,o.reason||msg("Tracking paused."),true);}
   this.lost=null;
   const a=o.angle;
   if(this.cycle){this.cycle.bottom=Math.min(this.cycle.bottom,a);const mid=(c.up+c.down)/2,below=a<mid-CROSSING_MARGIN?true:a>mid+CROSSING_MARGIN?false:this.cycle.below;if(below!==this.cycle.below){this.cycle.below=below;this.cycle.crossings++;}}
@@ -110,6 +111,6 @@ export class RepCounter{
     break;
   }
   const tip=this.rejected&&t-this.rejected.at<TIP_MS?REJECTION_TIPS[this.rejected.reason]:'';
-  return out(true,tip||(this.phase==='SETUP'?'Return to a comfortable starting position.':'Tracking is active. You can pause whenever you need.'));
+  return out(true,tip||(this.phase==='SETUP'?msg("Return to a comfortable starting position."):msg("Tracking is active. You can pause whenever you need.")));
  }
 }

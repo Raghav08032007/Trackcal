@@ -1,3 +1,4 @@
+import { msg } from "./i18n";
 /* The "build me a workout" flow follows workout-cool by Snouzy (MIT licence): https://github.com/Snouzy/workout-cool
  * Choose muscles and equipment, get one exercise per muscle, shuffle any of them, with suggested reps by type. */
 import {EXERCISES,EXERCISE_VARIANTS,gearOf,styleOf,type ExerciseDifficulty,type ExerciseGear,type ExerciseKind} from './pose/types';
@@ -25,7 +26,7 @@ export function generateWorkout(input:GeneratorInput,random:()=>number=Math.rand
   const open=choices(input,group).filter(kind=>!used.has(motion(kind)));if(!open.length)continue;
   const pick=open[Math.floor(random()*open.length)];used.add(motion(pick));steps.push({kind:pick,target:targetFor(pick,input.level)});
  }
- return steps.length?{id:`made-${Date.now()}`,name:'Made for you',rest:input.rest,steps}:null;
+ return steps.length?{id:`made-${Date.now()}`,name:msg("Made for you"),rest:input.rest,steps}:null;
 }
 /** Swap one exercise for another that fits the same choices. */
 export function shuffleStep(circuit:Circuit,index:number,input:GeneratorInput,random:()=>number=Math.random):Circuit{

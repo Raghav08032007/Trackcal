@@ -1,3 +1,4 @@
+import { msg } from "./i18n";
 // GPS activities: requests, formatting, and keeping an unsaved recording safe on this device.
 export type Sport = "walk" | "run" | "hike" | "ride";
 export type Visibility = "private" | "followers" | "everyone";
@@ -21,7 +22,7 @@ export type Segment = { id: string; name: string; kind: "foot" | "ride"; visibil
 /** Segment endpoints live under /activities/segments on the server. */
 export const segments = <T,>(path = "", method = "GET", body?: unknown) => activities<T>("segments" + (path ? "/" + path : ""), method, body);
 /** Medal for a place among your own times on a segment. */
-export const medal = (place: number) => place === 1 ? { label: "Your best", tone: "gold" } : place === 2 ? { label: "2nd best", tone: "silver" } : place === 3 ? { label: "3rd best", tone: "bronze" } : null;
+export const medal = (place: number) => place === 1 ? { label: msg("Your best"), tone: "gold" } : place === 2 ? { label: msg("2nd best"), tone: "silver" } : place === 3 ? { label: msg("3rd best"), tone: "bronze" } : null;
 
 export type NewRecord = { kind: "best_effort" | "longest" | "climb"; label: string; seconds?: number; previous_seconds?: number | null; distance_m?: number; previous_m?: number; elevation_gain_m?: number };
 export type Records = { sport: Sport; best_efforts: BestEffort[]; longest: { distance_m: number; activity_id: string; date: string } | null; biggest_climb: { elevation_gain_m: number; activity_id: string; date: string } | null };
@@ -30,12 +31,12 @@ export type Zone = { id: string; label: string; lat: number; lon: number; radius
 export type Fix = [number, number, number, number, number | null];
 
 export const SPORTS: { id: Sport; title: string; verb: string }[] = [
-  { id: "walk", title: "Walk", verb: "walk" }, { id: "run", title: "Run", verb: "run" }, { id: "hike", title: "Hike", verb: "hike" }, { id: "ride", title: "Ride", verb: "ride" },
+  { id: "walk", title: msg("Walk"), verb: "walk" }, { id: "run", title: msg("Run"), verb: "run" }, { id: "hike", title: msg("Hike"), verb: "hike" }, { id: "ride", title: msg("Ride"), verb: "ride" },
 ];
 export const VISIBILITY: { id: Visibility; title: string; detail: string }[] = [
-  { id: "private", title: "Only me", detail: "Nobody else can see it." },
-  { id: "followers", title: "Followers", detail: "People you approved. Start and end are hidden." },
-  { id: "everyone", title: "Everyone", detail: "Anyone on TrackCal. Start, end and privacy zones are hidden." },
+  { id: "private", title: msg("Only me"), detail: msg("Nobody else can see it.") },
+  { id: "followers", title: msg("Followers"), detail: msg("People you approved. Start and end are hidden.") },
+  { id: "everyone", title: msg("Everyone"), detail: msg("Anyone on TrackCal. Start, end and privacy zones are hidden.") },
 ];
 
 export class ActivityError extends Error { constructor(message: string, readonly status: number) { super(message); } }
@@ -43,7 +44,7 @@ export async function activities<T>(path = "", method = "GET", body?: unknown): 
   const response = await fetch("/api/activities" + (path && !path.startsWith("?") ? "/" + path : path), { method, headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new ActivityError(data.error || "Activities are unavailable right now. Nothing was changed.", response.status);
+  if (!response.ok) throw new ActivityError(data.error || msg("Activities are unavailable right now. Nothing was changed."), response.status);
   return data as T;
 }
 
@@ -59,7 +60,7 @@ export function pace(sport: Sport, metres: number, seconds: number) {
   if (sport === "ride") return `${((metres / seconds) * 3.6).toFixed(1)} km/h`;
   return `${duration(seconds / (metres / 1000))} /km`;
 }
-export const paceLabel = (sport: Sport) => (sport === "ride" ? "Avg speed" : "Pace");
+export const paceLabel = (sport: Sport) => (sport === "ride" ? msg("Avg speed") : msg("Pace"));
 export const sportTitle = (sport: Sport) => SPORTS.find(s => s.id === sport)?.title ?? sport;
 export function when(iso: string) {
   const d = new Date(iso);

@@ -1,3 +1,4 @@
+import { msg } from "../i18n";
 import {angle,confidence,normalize,visible} from './landmarks';
 import {OneEuroFilter} from './one-euro';
 import type {ExerciseConfig} from './exercise-config';
@@ -68,21 +69,21 @@ export class JointAnalyzer implements ExerciseAnalyzer{
  private level:number|null=null;private floor:number|null=null;private leg=0;private lastT:number|null=null;private stillFor=0;private slow:number|null=null;private feet:number|null=null;private ankles:number|null=null;private hips:number|null=null;private jumpUntil=0;
  observe(frame:PoseFrame):Observation{
   const c=this.config,p=normalize(frame),bad=(reason:string,quality=0)=>{this.resetFilters();return {angle:0,confidence:quality,valid:false,reason};};
-  if(!p)return bad(frame.landmarks.length>1?'Only one person should be in view.':'Step back so your whole body is in frame.');
-  if(frame.brightness!==undefined&&frame.brightness<28)return bad('Try a brighter, evenly lit space.');
+  if(!p)return bad(frame.landmarks.length>1?msg("Only one person should be in view."):msg("Step back so your whole body is in frame."));
+  if(frame.brightness!==undefined&&frame.brightness<28)return bad(msg("Try a brighter, evenly lit space."));
   const q=[confidence(p,c.required[0]),confidence(p,c.required[1])] as const;
   if(this.fixedSide!==undefined)this.side=this.fixedSide;
   else if(this.side===null)this.side=q[0]>=q[1]?0:1;
   else if(q[this.side]<c.minVisibility&&q[1-this.side]>=c.minVisibility){this.side=this.side===0?1:0;this.resetFilters();}  // the far side flickers side-on; the rep carries on
   const side=this.side,ids=c.required[side],quality=q[side];
-  if(quality<c.minVisibility||!visible(frame,ids))return bad('Step back so your whole body is in frame.',quality);
-  const edge=c.inFrame?.[side];if(edge&&confidence(p,edge)>=c.minVisibility&&!visible(frame,edge))return bad('Step back so your whole body is in frame.',quality);
+  if(quality<c.minVisibility||!visible(frame,ids))return bad(msg("Step back so your whole body is in frame."),quality);
+  const edge=c.inFrame?.[side];if(edge&&confidence(p,edge)>=c.minVisibility&&!visible(frame,edge))return bad(msg("Step back so your whole body is in frame."),quality);
   const hipsSeen=confidence(p,[c.required[side][0],23+side])>=c.minVisibility&&visible(frame,[23+side]);
   const anchor=hipsSeen||!c.drop?[23,24]:[11,12],center={x:(p[anchor[0]].x+p[anchor[1]].x)/2,y:(p[anchor[0]].y+p[anchor[1]].y)/2};
   // Switching between hips and shoulders is not the camera moving.
   const moved=this.center&&this.anchor===anchor[0]&&Math.hypot(center.x-this.center.x,center.y-this.center.y)>.18;this.center=center;this.anchor=anchor[0];
-  if(moved){this.reach=0;this.bones=0;this.span=null;this.clearDrop();return {...bad('The view moved. Hold the camera steady and return to your starting position.',quality),restart:true};}
-  if(c.suitable&&!c.suitable(p,side))return bad('The movement is not clear from this angle. Adjust the camera.',quality);
+  if(moved){this.reach=0;this.bones=0;this.span=null;this.clearDrop();return {...bad(msg("The view moved. Hold the camera steady and return to your starting position."),quality),restart:true};}
+  if(c.suitable&&!c.suitable(p,side))return bad(msg("The movement is not clear from this angle. Adjust the camera."),quality);
   const joint=c.joints[side].map((id,i):Landmark=>({x:this.filters[i*2].filter(p[id].x,frame.timestamp),y:this.filters[i*2+1].filter(p[id].y,frame.timestamp)}));
   const extra=c.optional?.[side],legs=!extra||(confidence(p,extra)>=c.minVisibility&&visible(frame,extra));
   const knee=legs?angle(joint[0],joint[1],joint[2]):Infinity,span=legs?this.spanAngle(p,side):Infinity,drop=c.drop?this.dropAngle(p,hipsSeen,frame.timestamp,confidence(p,[27+side])>=c.minVisibility&&visible(frame,[27,28])):Infinity;this.parts={knee,span,drop};
@@ -97,9 +98,9 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   const fused=c.drop&&Number.isFinite(drop)?(Number.isFinite(knee)&&c.plane!=='front'?Math.max(blendByView(knee,drop,p),drop-DROP_SLACK):drop):c.straightens?straightByView(knee,span,p):Math.min(c.plane==='side'?spanByView(knee,span,p,this.shown(joint)):Math.min(knee,span),drop);
   const degrees=c.rise?this.riseAngle(p,frame.timestamp):this.smooth(fused,frame.timestamp);
   const reading=c.invert?180-degrees:degrees;
-  if(c.rise&&Number.isNaN(reading))return bad('That looked like a jump. Rise onto your toes and keep them on the floor.',quality);
+  if(c.rise&&Number.isNaN(reading))return bad(msg("That looked like a jump. Rise onto your toes and keep them on the floor."),quality);
   const restart=this.restarted;this.restarted=false;
-  return Number.isFinite(reading)?{angle:reading,confidence:quality,valid:true,reason:'',...(restart?{restart}:{})}:bad('The movement was not detected clearly.',quality);
+  return Number.isFinite(reading)?{angle:reading,confidence:quality,valid:true,reason:'',...(restart?{restart}:{})}:bad(msg("The movement was not detected clearly."),quality);
  }
  /** Rising onto the toes lifts everything above the ankles by the heel height, from any camera angle. The lift is measured from the
   *  standing level (the lowest the body has been lately) in leg lengths, so it fits any height and distance, and read in the same

@@ -1,3 +1,4 @@
+import { msg } from "./i18n";
 // Which exercises the app advises against for this person (injuries, surgeries, a blood report's limit), loaded once per account.
 import { useEffect, useSyncExternalStore } from "react";
 import { useAccount, useWorkspaceScope } from "@/components/account-session";
@@ -36,7 +37,7 @@ export function useExerciseSafety() {
 /** The person read why and chose to continue: recorded on their account as their own decision. */
 export async function acceptRisk(template: string) {
   const response = await fetch("/api/personalization/exercise-ack", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ template, accepted: true }), signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new Error("Could not record your decision. Check your connection and try again.");
+  if (!response.ok) throw new Error(msg("Could not record your decision. Check your connection and try again."));
   accepted.add(template); emit();
 }
 
