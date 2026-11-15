@@ -176,3 +176,58 @@ def test_camera_reps_count_only_what_the_camera_saw():
     from services.challenge_progress import camera_counted
     assert camera_counted({'tracking': {'sets': [{'estimated_reps': 10, 'corrected_reps': None}, {'estimated_reps': 8, 'corrected_reps': 50}, {'estimated_reps': 12, 'corrected_reps': 9}]}}) == 27
     assert camera_counted({}) == 0 and camera_counted(None) == 0
+
+
+# ── Phase G: distance and active-minutes goals ─────────────────────────────
+
+def gps(h, seconds=1800, speed=10 / 3, sport='run', after_seconds=2):
+    from datetime import datetime, timezone
+    from tests.test_activities_helpers import fixes_for
+    started = datetime.now(timezone.utc) + timedelta(seconds=after_seconds)
+    r = client.post('/api/v1/activities', headers=h, json={'sport': sport, 'started_at': started.isoformat(), 'fixes': fixes_for([(seconds, speed)])})
+    assert r.status_code == 201, r.text
+    return r.json()['activity']
+
+
+def test_distance_goals_count_server_measured_gps_km_from_after_joining():
+    _, h, _ = member(); init(h)
+    c = challenge(h, 'distance_km', target=10)
+    run = gps(h)                                                    # about 6 km, measured on the server
+    assert detail(h, c['id'])['challenge']['mine']['progress'] == __import__('math').floor(run['distance_m'] / 100) / 10   # 5.9, not 5
+    with database.SessionLocal() as db:                             # an activity from before joining doesn't count
+        db.get(models.Activity, run['id']).started_at -= timedelta(days=2)
+        db.commit()
+    assert detail(h, c['id'])['challenge']['mine']['progress'] == 0
+
+
+def test_active_minutes_add_gps_time_and_workouts_once_each_with_a_daily_cap(monkeypatch):
+    _, h, _ = member(); init(h)
+    c = challenge(h, 'active_minutes', target=500)
+    run = gps(h, seconds=1200)
+    workout(h, minutes=30)
+    got = detail(h, c['id'])['challenge']['mine']['progress']
+    assert got == int(run['moving_s'] / 60 + 30)
+    from services import challenge_progress
+    monkeypatch.setattr(challenge_progress, 'MINUTES_PER_DAY', 40)
+    assert detail(h, c['id'])['challenge']['mine']['progress'] == 40
+
+
+def test_a_gps_run_inside_a_workout_counts_once():
+    user_id, h, _ = member(); init(h)
+    c = challenge(h, 'active_minutes', target=500)
+    run = gps(h, seconds=1200)
+    workout(h, minutes=20)
+    with database.SessionLocal() as db:
+        s = db.query(models.WorkoutSession).filter_by(user_id=user_id, status='completed').first()
+        db.get(models.Activity, run['id']).session_id = s.id
+        db.commit()
+    assert detail(h, c['id'])['challenge']['mine']['progress'] == int(run['moving_s'] / 60)
+
+
+@pytest.mark.parametrize('metric,limit', [('distance_km', 7 * 200), ('active_minutes', 7 * 300)])
+def test_distance_and_minute_targets_have_believable_limits(metric, limit):
+    _, h, _ = member()
+    start = today()
+    body = {'title': 'QA distance week', 'metric': metric, 'starts_on': str(start), 'ends_on': str(start + timedelta(days=6)), 'timezone': 'UTC'}
+    assert client.post(C, headers=h, json={**body, 'target': limit + 1}).status_code == 422
+    assert client.post(C, headers=h, json={**body, 'target': limit}).status_code == 201

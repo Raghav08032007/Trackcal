@@ -6,9 +6,14 @@ Anti-fraud rules:
 - Workouts must be completed sessions of at least 10 recorded minutes; at most 2 count per local day.
 - Day-based metrics count distinct local days in the challenge's time zone.
 - Nothing before the person joined, or after they left, counts.
+- Distance comes only from GPS activities, measured on the server from the raw fixes, saved (`created_at`, server time) inside
+  the window as well as started in it; at most KM_PER_DAY count per local day.
+- Active minutes are GPS moving time plus completed workouts (at most 3 hours each); a run recorded inside a workout counts
+  once; at most MINUTES_PER_DAY a local day. Hand-typed log entries never count.
 - Camera sessions whose count was corrected by a large margin still count (people fix real mistakes), but mark the
   participation `flagged` for a moderator to look at. Flags never block XP or show publicly.
 """
+import math
 from collections import Counter
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -22,9 +27,12 @@ METRICS = {
     'camera_reps': 'Reps the camera counted',
     'meal_days': 'Days with a logged meal',
     'events': 'Verified events attended',
+    'distance_km': 'Kilometres by GPS (walk, run, hike or ride)',
+    'active_minutes': 'Active minutes (GPS activities and workouts)',
 }
 MIN_MINUTES, WORKOUTS_PER_DAY = 10, 2
 REPS_PER_DAY = 500
+KM_PER_DAY, MINUTES_PER_DAY, SESSION_MINUTES = 200, 300, 180
 
 
 def camera_counted(details):
@@ -91,7 +99,32 @@ def progress(db, challenge, participant):
             flagged = flagged or bool(((r.details or {}).get('tracking') or {}).get('large_edit'))
         return sum(min(REPS_PER_DAY, reps) for reps in per_day.values()), flagged
 
+    def activities():
+        return db.query(models.Activity).filter(models.Activity.user_id == uid, models.Activity.is_deleted.is_(False),
+                                                models.Activity.started_at >= start, models.Activity.started_at < end,
+                                                models.Activity.created_at >= start, models.Activity.created_at < end).all()
+
+    def distance_km():
+        per_day = Counter()
+        for a in activities():
+            per_day[_day(a.started_at, zone)] += (a.distance_m or 0) / 1000
+        return math.floor(sum(min(KM_PER_DAY, km) for km in per_day.values()) * 10) / 10   # to 0.1 km, rounded down: never finishes early
+
+    def active_minutes():
+        per_day, linked = Counter(), set()
+        for a in activities():
+            if a.session_id: linked.add(a.session_id)
+            per_day[_day(a.started_at, zone)] += min(SESSION_MINUTES, (a.moving_s or 0) / 60)
+        for r in db.query(models.WorkoutSession).filter(models.WorkoutSession.user_id == uid, models.WorkoutSession.status == 'completed',
+                                                        models.WorkoutSession.is_deleted.is_(False), models.WorkoutSession.completed_at >= start,
+                                                        models.WorkoutSession.completed_at < end).all():
+            if r.id in linked: continue
+            per_day[_day(r.completed_at, zone)] += min(SESSION_MINUTES, r.recorded_minutes or 0)
+        return int(sum(min(MINUTES_PER_DAY, m) for m in per_day.values()))
+
     m = challenge.metric
+    if m == 'distance_km': return distance_km(), False
+    if m == 'active_minutes': return active_minutes(), False
     if m == 'camera_reps': return camera_reps()
     if m in ('workouts', 'camera_workouts'):
         kept, flagged = workouts(m == 'camera_workouts'); return len(kept), flagged

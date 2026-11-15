@@ -20,7 +20,7 @@ from routers import communities, social
 from routers.auth import get_current_active_user
 from services import gamification
 from services.abuse_limits import consume
-from services.challenge_progress import METRICS, REPS_PER_DAY, progress
+from services.challenge_progress import KM_PER_DAY, METRICS, MINUTES_PER_DAY, REPS_PER_DAY, progress
 from services.feature_flags import is_enabled
 from timeutil import utcnow
 
@@ -105,7 +105,8 @@ class ChallengeInput(BaseModel):
     def sensible(self):
         days = (self.ends_on - self.starts_on).days + 1
         if not MIN_DAYS <= days <= MAX_DAYS: raise ValueError(f'Challenges last {MIN_DAYS} to {MAX_DAYS} days.')
-        limit = {'workouts': days * 2, 'camera_workouts': days * 2, 'camera_reps': days * REPS_PER_DAY, 'events': min(30, days)}.get(self.metric, days)
+        limit = {'workouts': days * 2, 'camera_workouts': days * 2, 'camera_reps': days * REPS_PER_DAY, 'events': min(30, days),
+                 'distance_km': days * KM_PER_DAY, 'active_minutes': days * MINUTES_PER_DAY}.get(self.metric, days)
         if self.target > limit: raise ValueError(f'That target is more than this challenge can count in {days} days (at most {limit}).')
         return self
 
