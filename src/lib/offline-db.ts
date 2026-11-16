@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { Dexie, type EntityTable } from "dexie";
 type CacheRow = { key: string; raw: string; updated: number };
 export type PendingBackup = { scope: string; token: string; entries: Record<string, unknown>; expected_revision: string; status: "queued" | "conflict"; updated: number };
@@ -8,7 +9,7 @@ let warning = "";
 let writes = Promise.resolve();
 const listeners = new Set<() => void>();
 function notify() { listeners.forEach(listener => listener()); }
-function fail() { warning = "IndexedDB is unavailable. Export a JSON backup; browser storage remains the fallback."; notify(); }
+function fail() { warning = t("IndexedDB is unavailable. Export a JSON backup; browser storage remains the fallback."); notify(); }
 export const deviceWarning = () => warning;
 export const subscribeDevice = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
 export function mirrorDeviceWrite(key: string, raw: string | null) {
@@ -52,7 +53,7 @@ async function processPendingBackup(scope: string, request: typeof fetch) {
   if (!item || item.status === "conflict") return item?.status || "empty";
   const response = await request("/api/account/backup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entries: item.entries, expected_revision: item.expected_revision, owner_id: scope }) });
   if (response.status === 409) { await db.backups.update(scope, { status: "conflict" }); notify(); return "conflict"; }
-  if (!response.ok) { const data = await response.json(); throw new Error(data.error || "Backup could not sync. It remains queued."); }
+  if (!response.ok) { const data = await response.json(); throw new Error(data.error || t("Backup could not sync. It remains queued.")); }
   // Preserve a newer queued snapshot created while this request was running.
   const data = await response.json();
   await db.transaction("rw", db.backups, db.revisions, async () => {

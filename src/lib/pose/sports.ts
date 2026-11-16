@@ -1,3 +1,4 @@
+import { msg } from "../i18n";
 import type {Landmark,PoseFrame} from './types';
 import {JointAnalyzer} from './analyzers';
 import {RepCounter} from './rep-counter';
@@ -34,11 +35,11 @@ export class SkipCounter implements SportCounter{
  reset(){this.count=0;this.torso.reset();this.hist=[];this.air=null;this.prevBody=null;this.last=null;this.lost=0;}
  frame(f:PoseFrame):SportState{
   const t=f.timestamp,T=this.torso.update(f),pts=SKIP_JOINTS.map(i=>px(f,i)),ok=(i:number)=>pts[SKIP_JOINTS.indexOf(i)].ok;
-  if(!T||![23,24,27,28].every(ok)){if(++this.lost>8){this.air=null;this.prevBody=null;}return this.state(this.lost>8,'Step back so your hips and both feet are in view.');}
+  if(!T||![23,24,27,28].every(ok)){if(++this.lost>8){this.air=null;this.prevBody=null;}return this.state(this.lost>8,msg("Step back so your hips and both feet are in view."));}
   this.lost=0;
   // Heights stay in pixels; only the rise above each joint's floor is divided by the torso, so its small wobble doesn't look like a hop.
   this.hist.push({t,y:pts.map(p=>p.ok?p.y:NaN)});while(this.hist.length&&t-this.hist[0].t>1500)this.hist.shift();
-  if(this.hist.length<6)return this.state(false,'Ready when you are: hop on the spot.');
+  if(this.hist.length<6)return this.state(false,msg("Ready when you are: hop on the spot."));
   // Each joint against its own usual height (median), averaged over the group first, then the floor of that average: noise in one
   // joint mostly cancels before the floor is taken, instead of every joint's floor sitting a little low.
   const ref=SKIP_JOINTS.map((_,k)=>{const v=this.hist.map(h=>h.y[k]).filter(Number.isFinite);return v.length>=5?quantile(v,.5):NaN;});
@@ -59,7 +60,7 @@ export class SkipCounter implements SportCounter{
     this.air=null;
    }
   }
-  return this.state(false,this.count?'Nice rhythm. Keep it light on your toes.':'Hop on the spot, both feet together.');
+  return this.state(false,this.count?msg("Nice rhythm. Keep it light on your toes."):msg("Hop on the spot, both feet together."));
  }
  private state(paused:boolean,message:string):SportState{return {count:this.count,paused,message,last:this.last};}
 }
@@ -84,7 +85,7 @@ export class BoxCounter implements SportCounter{
   this.arms.forEach((x,side)=>{const w=px(f,15+side),sh=px(f,11+side);if(T&&w.ok&&sh.ok&&(w.y-sh.y)/T>.6)x.high=true;
    if(x.c.reps>x.reps){x.reps=x.c.reps;if(!x.high){x.punches++;this.last={at:f.timestamp};}x.high=false;}});
   const paused=r.every(x=>x.paused);
-  return {count:this.count,paused,message:paused?r[0].message:this.count?'Fast hands. Bring each fist back to your chin.':'Fists up by your chin, then punch.',last:this.last};
+  return {count:this.count,paused,message:paused?r[0].message:this.count?msg("Fast hands. Bring each fist back to your chin."):msg("Fists up by your chin, then punch."),last:this.last};
  }
 }
 
@@ -103,9 +104,9 @@ export class SwingCounter implements SportCounter{
  reset(){this.count=0;this.torso.reset();this.prev=null;this.strokes=[null,null];this.cool=0;this.sh=null;this.last=null;}
  frame(f:PoseFrame):SportState{
   const t=f.timestamp,T=this.torso.update(f),l=px(f,15),r=px(f,16),shoulders=mid(px(f,11),px(f,12));
-  const ready=this.sport==='cricket'?'Hold the bat up behind you, then drive down through the ball.':'Racket hand up behind your head, then smash down and through.';
+  const ready=this.sport==='cricket'?msg("Hold the bat up behind you, then drive down through the ball."):msg("Racket hand up behind your head, then smash down and through.");
   if(shoulders.ok)this.sh=shoulders.y;
-  if(!T||(!l.ok&&!r.ok)||this.sh===null){this.prev=null;this.strokes=[null,null];return this.state(true,'Step back so both hands and your shoulders are in view.');}
+  if(!T||(!l.ok&&!r.ok)||this.sh===null){this.prev=null;this.strokes=[null,null];return this.state(true,msg("Step back so both hands and your shoulders are in view."));}
   // Each hand on its own: the far hand often blinks out side-on, and that shouldn't drop the near hand's swing.
   const p=this.prev;this.prev={t,l,r};
   if(!p||t-p.t>250||t<=p.t)return this.state(false,ready);
@@ -126,7 +127,7 @@ export class SwingCounter implements SportCounter{
    const shape=this.sport==='cricket'?other>.6*path&&together>.25&&top>=.4:path>=.8*other&&together<.5&&gap>=.4&&top>.25;
    if(t>=this.cool&&s.loAt-s.start<=600&&path>=1.6&&s.peak>=9&&drop>=.6&&!mirror&&shape){this.count++;this.cool=t+350;this.strokes[1-hand]=null;this.last={at:t,speed:Math.round(s.peak*10)/10};}
   }
-  return this.state(false,this.count?'Great swing. Reset, and go again.':ready);
+  return this.state(false,this.count?msg("Great swing. Reset, and go again."):ready);
  }
  private state(paused:boolean,message:string):SportState{return {count:this.count,paused,message,last:this.last};}
 }

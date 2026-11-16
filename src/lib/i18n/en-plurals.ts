@@ -23,6 +23,8 @@ export const EN_PLURALS: Record<string, { one: string; other: string }> = {
   "{count} seconds of {hold} saved, +{earned} points. Nice and steady!": { one: "{count} second of {hold} saved, +{earned} points. Nice and steady!", other: "{count} seconds of {hold} saved, +{earned} points. Nice and steady!" },
   "{count} seconds of {hold} saved. Nice and steady!": { one: "{count} second of {hold} saved. Nice and steady!", other: "{count} seconds of {hold} saved. Nice and steady!" },
   "{km} km · {count} passes": { one: "{km} km · {count} pass", other: "{km} km · {count} passes" },
+  "{count} members": { one: "{count} member", other: "{count} members" },
+  "{count} follow requests waiting →": { one: "{count} follow request waiting →", other: "{count} follow requests waiting →" },
   "{count} meals": { one: "{count} meal", other: "{count} meals" },
   "{count} meals from the last {days} days are in this device’s journal. Review them before copying anything to your account diary.": { one: "{count} meal from the last {days} days is in this device’s journal. Review it before copying anything to your account diary.", other: "{count} meals from the last {days} days are in this device’s journal. Review them before copying anything to your account diary." },
   "{count} meals logged": { one: "{count} meal logged", other: "{count} meals logged" },

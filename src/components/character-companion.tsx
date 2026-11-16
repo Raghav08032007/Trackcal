@@ -1,16 +1,17 @@
-import { t } from "@/lib/i18n";
+import { t, msg, localized } from "@/lib/i18n";
 import { useEffect,useRef,useState } from "react";
 import { useLocalState } from "@/lib/use-local-state";
 import { adventureRequest,type AdventureSummary } from "@/lib/adventure";
 
 export const companions = [
-  {unlock:0,streak:0,id:"pip",name:"Pip",species:"The growing seed",trait:"Gentle encouragement",color:"#f9d357",mark:"✿",hello:"Small steps grow strong roots.",cheer:"Look at you growing! Every little effort counts."},
-  {unlock:250,streak:3,id:"nova",name:"Nova",species:"The curious star",trait:"Learning & discovery",color:"#71d6d9",mark:"✦",hello:"Curiosity is your superpower. Let's discover something.",cheer:"A new spark of knowledge! You're lighting the way."},
-  {unlock:500,streak:7,id:"milo",name:"Milo",species:"The cozy bear",trait:"Kindness & balance",color:"#eebc91",mark:"♥",hello:"There's room for rest and a fresh start here.",cheer:"I'm proud of your effort. Take a moment to enjoy it."},
-  {unlock:750,streak:14,id:"luna",name:"Luna",species:"The thoughtful owl",trait:"Planning & reflection",color:"#ddcbea",mark:"☾",hello:"One thoughtful choice can make tomorrow easier.",cheer:"That's a thoughtful step. Your next chapter is taking shape."},
-  {unlock:1000,streak:21,id:"rio",name:"Rio",species:"The playful fox",trait:"Play & momentum",color:"#ffb07d",mark:"⚡",hello:"Ready for a tiny adventure? Let's make it fun.",cheer:"Adventure complete! A small win deserves a happy dance."},
-  {unlock:1250,streak:30,id:"sage",name:"Sage",species:"The steady turtle",trait:"Patience & consistency",color:"#86d5b3",mark:"❋",hello:"Your pace is a good pace. We can begin again today.",cheer:"Steady progress. There's no need to rush the next step."},
+  {unlock:0,streak:0,id:"pip",name:"Pip",species:msg("The growing seed"),trait:msg("Gentle encouragement"),color:"#f9d357",mark:"✿",hello:msg("Small steps grow strong roots."),cheer:msg("Look at you growing! Every little effort counts.")},
+  {unlock:250,streak:3,id:"nova",name:"Nova",species:msg("The curious star"),trait:msg("Learning & discovery"),color:"#71d6d9",mark:"✦",hello:msg("Curiosity is your superpower. Let's discover something."),cheer:msg("A new spark of knowledge! You're lighting the way.")},
+  {unlock:500,streak:7,id:"milo",name:"Milo",species:msg("The cozy bear"),trait:msg("Kindness & balance"),color:"#eebc91",mark:"♥",hello:msg("There's room for rest and a fresh start here."),cheer:msg("I'm proud of your effort. Take a moment to enjoy it.")},
+  {unlock:750,streak:14,id:"luna",name:"Luna",species:msg("The thoughtful owl"),trait:msg("Planning & reflection"),color:"#ddcbea",mark:"☾",hello:msg("One thoughtful choice can make tomorrow easier."),cheer:msg("That's a thoughtful step. Your next chapter is taking shape.")},
+  {unlock:1000,streak:21,id:"rio",name:"Rio",species:msg("The playful fox"),trait:msg("Play & momentum"),color:"#ffb07d",mark:"⚡",hello:msg("Ready for a tiny adventure? Let's make it fun."),cheer:msg("Adventure complete! A small win deserves a happy dance.")},
+  {unlock:1250,streak:30,id:"sage",name:"Sage",species:msg("The steady turtle"),trait:msg("Patience & consistency"),color:"#86d5b3",mark:"❋",hello:msg("Your pace is a good pace. We can begin again today."),cheer:msg("Steady progress. There's no need to rush the next step.")},
 ] as const;
+localized(companions as unknown as object[], ["species", "trait", "hello", "cheer"]);
 
 function companionImage(id:string){return `/characters/${id}-${id==="milo"?"v3":"v2"}.webp`;}
 

@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 // Verified events client (flags verified_events + social_feed).
 import qrcode from "qrcode-generator";
 
@@ -13,7 +14,7 @@ export class EventError extends Error { constructor(message: string, readonly st
 export async function events<T>(path: string, method = "GET", body?: unknown): Promise<T> {
   const response = await fetch("/api/events" + path, { method, headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json();
-  if (!response.ok) throw new EventError(data.error || "Events are unavailable right now. Nothing was changed.", response.status);
+  if (!response.ok) throw new EventError(data.error || t("Events are unavailable right now. Nothing was changed."), response.status);
   return data as T;
 }
 

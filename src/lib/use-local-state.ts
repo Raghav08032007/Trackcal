@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useCallback, useSyncExternalStore, type Dispatch, type SetStateAction } from "react";
 import { validStoredValue } from "./storage-validation";
 import { useWorkspaceScope } from "@/components/account-session";
@@ -74,7 +75,7 @@ export function useLocalState<T>(key: string, initial: T): [T, Dispatch<SetState
 
 export function restoreLocalEntries(entries: Record<string, unknown>, scope: string) {
   for (const [key, value] of Object.entries(entries)) {
-    if (!/^trackcal:(preferences$|appearance$|reminders$|play:(calm|character|theme|motion)$|journal:|wellness:|target:|recipe:|studio:)/.test(key) || !validStoredValue(key, value)) throw new Error("Backup contains invalid data.");
+    if (!/^trackcal:(preferences$|appearance$|reminders$|play:(calm|character|theme|motion)$|journal:|wellness:|target:|recipe:|studio:)/.test(key) || !validStoredValue(key, value)) throw new Error(t("Backup contains invalid data."));
   }
   const previous = exportLocalEntries(scope);
   const changed: string[] = [];
@@ -82,7 +83,7 @@ export function restoreLocalEntries(entries: Record<string, unknown>, scope: str
     for (const key of Object.keys({ ...previous, ...entries })) { const stored = workspaceKey(key, scope); changed.push(key); if (key in entries) localStorage.setItem(stored, JSON.stringify(entries[key])); else localStorage.removeItem(stored); }
   } catch {
     for (const key of changed) { const stored = workspaceKey(key, scope); try { if (key in previous) localStorage.setItem(stored, JSON.stringify(previous[key])); else localStorage.removeItem(stored); } catch { /* Report the storage failure below. */ } }
-    throw new Error("Browser storage is full or unavailable. Export your data before trying again.");
+    throw new Error(t("Browser storage is full or unavailable. Export your data before trying again."));
   }
   for (const key of changed) memory.delete(workspaceKey(key, scope));
   for (const key of changed) mirrorDeviceWrite(workspaceKey(key, scope), key in entries ? JSON.stringify(entries[key]) : null);

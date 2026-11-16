@@ -1,3 +1,4 @@
+import { msg, t } from "./i18n";
 // One food diary for the whole app. Signed in, every screen reads and writes the account diary on the server, through one shared
 // store per day, so Home, Food, Coach and Play always agree and nothing is lost on another device. Signed out, it is the browser
 // journal as before. The hook has the same shape as the old browser journal: [meals, setMeals].
@@ -19,7 +20,7 @@ const round = (v: number | null | undefined) => (typeof v === "number" && Number
 function fromServer(e: ServerEntry): DiaryMeal {
   const name = e.items.length === 1 ? e.items[0].name : e.items.map(i => i.name).slice(0, 3).join(", ") + (e.items.length > 3 ? ` +${e.items.length - 3}` : "");
   return { id: e.id, time: e.time ?? "", name, calories: round(e.totals.calories), protein: round(e.totals.protein), carbs: round(e.totals.carbs), fat: round(e.totals.fat),
-    method: e.method === "photo" ? "Photo" : e.method === "saved" ? "Saved meal" : e.method === "copied" ? "Imported" : "Manual", items: e.items, meal_type: e.meal_type };
+    method: e.method === "photo" ? msg("Photo") : e.method === "saved" ? msg("Saved meal") : e.method === "copied" ? msg("Imported") : msg("Manual"), items: e.items, meal_type: e.meal_type };
 }
 const mealType = (time: string) => { const h = Number(time.slice(0, 2)); return !Number.isFinite(h) ? "other" : h < 11 ? "breakfast" : h < 16 ? "lunch" : h < 19 ? "snack" : "dinner"; };
 const method = (m: string) => (/photo|scan|camera|image/i.test(m) ? "photo" : /saved|favou?rite|template|repeat|copy/i.test(m) ? "saved" : "manual");
@@ -42,6 +43,7 @@ const keyOf = (scope: string, day: string) => `${scope}|${day}`;
 function put(key: string, patch: Partial<Day>) { days.set(key, { ...(days.get(key) ?? blank()), ...patch }); emit(); }
 
 async function load(scope: string, day: string, force = false) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;  // a screen still waiting for its date (e.g. "pending") has nothing to fetch
   const key = keyOf(scope, day);
   if (!force && (days.get(key)?.loaded || loading.has(key))) return loading.get(key);
   const job = (async () => {
@@ -53,7 +55,7 @@ async function load(scope: string, day: string, force = false) {
         all.push(...page.entries); if (!page.has_more) break;
       }
       put(key, { meals: all.map(fromServer).sort((a, b) => a.time.localeCompare(b.time)), loaded: true, error: "" });
-    } catch (e) { put(key, { loaded: true, error: e instanceof Error ? e.message : "Your diary could not load." }); }
+    } catch (e) { put(key, { loaded: true, error: e instanceof Error ? e.message : t("Your diary could not load.") }); }
     finally { loading.delete(key); }
   })();
   loading.set(key, job); return job;
@@ -73,7 +75,7 @@ async function commit(scope: string, day: string, before: DiaryMeal[], after: Di
     for (const id of old.keys()) if (!next.has(id)) { await wellnessRequest(`diary/${id}`, undefined, "DELETE"); state.deleted.add(id); }
     window.dispatchEvent(new Event("trackcal-diary"));
   } catch (e) {
-    put(key, { meals: before, error: e instanceof Error ? `${e.message} Nothing was changed.` : "Could not save. Nothing was changed." });
+    put(key, { meals: before, error: e instanceof Error ? t("{message} Nothing was changed.", { message: e.message }) : t("Could not save. Nothing was changed.") });
     return;
   }
   await load(scope, day, true);
@@ -101,13 +103,15 @@ function migrated(scope: string) {
 
 export type DiaryState = { loaded: boolean; error: string; reload: () => void };
 /** [meals, setMeals, state] for one day. setMeals takes a list or an updater, like React state. */
+/** A real calendar day; callers may pass a placeholder (such as "pending") before they know today's date. */
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
 export function useDiaryMeals(day: string): [DiaryMeal[], (next: DiaryMeal[] | ((prev: DiaryMeal[]) => DiaryMeal[])) => void, DiaryState] {
   const { user } = useAccount(), scope = useWorkspaceScope(), signedIn = !!user && scope !== "guest";
   const [local, setLocal] = useLocalState<DiaryMeal[]>(`trackcal:journal:${day}`, []);
   const key = keyOf(scope, day);
   const snapshot = useSyncExternalStore(l => { listeners.add(l); return () => listeners.delete(l); }, () => days.get(key), () => days.get(key));
-  useEffect(() => { if (signedIn && day) void load(scope, day); }, [signedIn, scope, day]);
-  useEffect(() => { if (!signedIn) return; const refresh = () => void load(scope, day, true); window.addEventListener("focus", refresh); return () => window.removeEventListener("focus", refresh); }, [signedIn, scope, day]);
+  useEffect(() => { if (signedIn && DAY.test(day)) void load(scope, day); }, [signedIn, scope, day]);
+  useEffect(() => { if (!signedIn || !DAY.test(day)) return; const refresh = () => void load(scope, day, true); window.addEventListener("focus", refresh); return () => window.removeEventListener("focus", refresh); }, [signedIn, scope, day]);
   const meals = signedIn ? snapshot?.meals ?? [] : local;
   const set = useCallback((next: DiaryMeal[] | ((prev: DiaryMeal[]) => DiaryMeal[])) => {
     if (!signedIn) { setLocal(next as never); return; }

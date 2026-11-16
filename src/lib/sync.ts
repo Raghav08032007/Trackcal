@@ -2,6 +2,7 @@
 // Each change is sent a moment after it is made. The server keeps a version per key; if another device saved first,
 // the two copies are merged (lists item by item) and sent again, so nothing is overwritten unseen. Changes wait while
 // offline. The last copy the account confirmed is kept per key (the "base") to tell this device's edits apart.
+import { t } from "@/lib/i18n";
 import { useSyncExternalStore } from "react";
 import { readStored, setWriteHook, writeStored } from "@/lib/use-local-state";
 
@@ -52,7 +53,7 @@ async function call<T>(body?: unknown): Promise<T> {
   const response = await fetch("/api/account/sync", { method: body === undefined ? "GET" : "POST", credentials: "same-origin",
     headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(data.error || "Sync failed"), { status: response.status });
+  if (!response.ok) throw Object.assign(new Error(data.error || t("Sync failed")), { status: response.status });
   return data as T;
 }
 const markDirty = (key: string) => { if (!state.dirty.includes(key)) state.dirty = [...state.dirty, key]; persist(); };

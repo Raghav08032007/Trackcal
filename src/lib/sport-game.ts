@@ -1,3 +1,4 @@
+import { msg, localized } from "./i18n";
 import type {SportKind} from './pose/sports';
 /** Scoring for the sports games in Play. Points come only from movements the camera counted, never from time or taps.
  *  A combo grows while movements keep coming (each within COMBO_GAP_MS of the last) and multiplies the points, up to x5.
@@ -8,11 +9,12 @@ export type RoundSeconds=typeof ROUND_SECONDS[number];
 /** Counts for one, two and three stars in a 60-second round. */
 const STARS_60:Record<SportKind,[number,number,number]>={skip:[40,80,120],box:[40,80,130],cricket:[8,14,20],badminton:[8,14,20]};
 export const SPORTS:Record<SportKind,{title:string;unit:string;units:string;tip:string;camera:string;cues:readonly string[];hue:string}>={
- skip:{title:'Skip rope',unit:'jump',units:'jumps',tip:'With or without a rope: light hops, both feet together.',camera:'Face the camera, 2–3 m away, with your whole body from head to feet in view.',cues:['Soft knees','Both feet hop','Land light'],hue:'skip'},
- box:{title:'Shadow boxing',unit:'punch',units:'punches',tip:'Jab and cross from your guard. Each fist back to your chin.',camera:'Stand side-on, 2–3 m away, with both arms and your hips in view.',cues:['Fists up','Jab','Cross'],hue:'box'},
- cricket:{title:'Cricket drive',unit:'drive',units:'drives',tip:'No bat needed: hands together, lift back, then drive down through the line.',camera:'Face the camera, 2–3 m away, with room above your head and both hands in view.',cues:['Stance','Backlift','Drive','Follow through'],hue:'cricket'},
- badminton:{title:'Badminton smash',unit:'smash',units:'smashes',tip:'Racket hand back behind your head, other arm up, then smash down and through.',camera:'Stand side-on, 2–3 m away, with room above your head and both arms in view.',cues:['Ready','Racket back','Contact high','Smash down'],hue:'badminton'},
+ skip:{title:msg("Skip rope"),unit:msg("jump"),units:msg("jumps"),tip:msg("With or without a rope: light hops, both feet together."),camera:msg("Face the camera, 2–3 m away, with your whole body from head to feet in view."),cues:[msg("Soft knees"),msg("Both feet hop"),msg("Land light")],hue:'skip'},
+ box:{title:msg("Shadow boxing"),unit:msg("punch"),units:msg("punches"),tip:msg("Jab and cross from your guard. Each fist back to your chin."),camera:msg("Stand side-on, 2–3 m away, with both arms and your hips in view."),cues:[msg("Fists up"),msg("Jab"),msg("Cross")],hue:'box'},
+ cricket:{title:msg("Cricket drive"),unit:msg("drive"),units:msg("drives"),tip:msg("No bat needed: hands together, lift back, then drive down through the line."),camera:msg("Face the camera, 2–3 m away, with room above your head and both hands in view."),cues:[msg("Stance"),msg("Backlift"),msg("Drive"),msg("Follow through")],hue:'cricket'},
+ badminton:{title:msg("Badminton smash"),unit:msg("smash"),units:msg("smashes"),tip:msg("Racket hand back behind your head, other arm up, then smash down and through."),camera:msg("Stand side-on, 2–3 m away, with room above your head and both arms in view."),cues:[msg("Ready"),msg("Racket back"),msg("Contact high"),msg("Smash down")],hue:'badminton'},
 };
+localized(Object.values(SPORTS),["title","unit","units","tip","camera","cues"]);
 export type GameScore={count:number;points:number;combo:number;bestCombo:number;lastAt:number|null};
 export const startScore=():GameScore=>({count:0,points:0,combo:0,bestCombo:0,lastAt:null});
 /** The score after the counter reports `count` at time `at`. Only new counts add points. */
