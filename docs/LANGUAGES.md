@@ -51,7 +51,7 @@ privacy texts. Keep the glossary consistent.
 
 ## Progress
 
-Wave 1, done (3,122 texts in each language):
+Wave 1, done (3,864 texts in each language):
 - the app frame: navigation, section pages, quick add, footer, appearance, sync status, feedback, the language picker;
 - sign-in, sign-up and account recovery;
 - Today: plan, tasks, Health Score, coach lines, recovery check-in, your day, daily progress and companions;
@@ -63,10 +63,14 @@ Wave 1, done (3,122 texts in each language):
   companion card;
 - Play: quests and Pip's garden, Label Detective, the camera sports games (skip rope, shadow boxing, cricket drive,
   badminton smash) with their coaching lines, the six companions, bond card, challenges, feed and posts, communities,
-  events and event check-in. Feed times ("5 min ago") use the browser's own wording for each language.
+  events and event check-in. Feed times ("5 min ago") use the browser's own wording for each language;
+- Me and settings: the 8-step onboarding (goals, body, region, food, injuries with the body map, week), account and
+  security, health report and its plan, progress and training load, premium and payments, notifications and reminders,
+  coach booking, history export and import, help, the guided test drive, and the journey companion shown on every page.
+  State and country names stay as typed because they are saved as entered.
 
-Next, in order: Me and settings, then every other screen, then server messages (task titles, Health Score notes,
-meal ideas, advice, the activity guidance on Workouts and the weekly trend notes), emails and notifications.
+Next, in order: every other screen, then server messages (task titles, Health Score notes,
+meal ideas, advice, the activity guidance on Workouts, the weekly trend notes and the motivation quotes), emails and notifications.
 
 Counted texts: each language's catalog holds its own plural forms; English singulars live in `src/lib/i18n/en-plurals.ts`.
 A test fails if a text with plural forms is shown without a `count`.
