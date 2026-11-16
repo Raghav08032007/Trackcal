@@ -44,7 +44,7 @@ export function weeklyReview(sessions:Session[],meals:MealDay[],now:number){
  const bars=days.map(day=>({day,minutes:done.filter(session=>localDay(session.completed_at!)===day).reduce((total,session)=>total+(session.minutes||0),0)}));
  const logged=meals.filter(meal=>days.includes(meal.date)&&meal.calories>0);
  const activeDays=bars.filter(bar=>bar.minutes>0).length,averageCalories=logged.length?Math.round(logged.reduce((total,meal)=>total+meal.calories,0)/logged.length):null;
- const nudge=!done.length&&!logged.length?'A quiet week. One short workout or one logged meal is a good place to restart.':activeDays>=4?'A strong week. Keep the same rhythm next week.':activeDays>0?`You moved on ${activeDays} of 7 days. Adding one more short session is the easiest next step.`:'You logged your food but did not save a workout. Try one short camera session this week.';
+ const nudge=!done.length&&!logged.length?t("A quiet week. One short workout or one logged meal is a good place to restart."):activeDays>=4?t("A strong week. Keep the same rhythm next week."):activeDays>0?t("You moved on {n} of 7 days. Adding one more short session is the easiest next step.",{n:activeDays}):t("You logged your food but did not save a workout. Try one short camera session this week.");
  return {workouts:done.length,reps:done.reduce((total,session)=>total+repsIn(session),0),activeDays,mealDays:logged.length,averageCalories,bars,nudge};
 }
 

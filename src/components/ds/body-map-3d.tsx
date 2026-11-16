@@ -1,18 +1,21 @@
 // A 3D body you can turn and tap to mark surgeries and injuries. Every part is also a plain button beside it, so the map works with a
 // keyboard, a screen reader, or a phone that can't draw 3D. Three.js loads only when the map is on screen.
+import { t, msg, localized, localizedMap } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import type * as Three from "three";
 
 export type PartStatus = "none" | "recovered" | "healing" | "avoid";
 export type BodyPart = { id: string; label: string };
 export const BODY_PARTS: BodyPart[] = [
-  { id: "neck", label: "Neck" }, { id: "shoulder_l", label: "Left shoulder" }, { id: "shoulder_r", label: "Right shoulder" },
-  { id: "elbow_l", label: "Left elbow" }, { id: "elbow_r", label: "Right elbow" }, { id: "wrist_l", label: "Left wrist" }, { id: "wrist_r", label: "Right wrist" },
-  { id: "chest", label: "Chest" }, { id: "abdomen", label: "Abdomen" }, { id: "lower_back", label: "Lower back" },
-  { id: "hip_l", label: "Left hip" }, { id: "hip_r", label: "Right hip" }, { id: "knee_l", label: "Left knee" }, { id: "knee_r", label: "Right knee" },
-  { id: "ankle_l", label: "Left ankle" }, { id: "ankle_r", label: "Right ankle" },
+  { id: "neck", label: msg("Neck") }, { id: "shoulder_l", label: msg("Left shoulder") }, { id: "shoulder_r", label: msg("Right shoulder") },
+  { id: "elbow_l", label: msg("Left elbow") }, { id: "elbow_r", label: msg("Right elbow") }, { id: "wrist_l", label: msg("Left wrist") }, { id: "wrist_r", label: msg("Right wrist") },
+  { id: "chest", label: msg("Chest") }, { id: "abdomen", label: msg("Abdomen") }, { id: "lower_back", label: msg("Lower back") },
+  { id: "hip_l", label: msg("Left hip") }, { id: "hip_r", label: msg("Right hip") }, { id: "knee_l", label: msg("Left knee") }, { id: "knee_r", label: msg("Right knee") },
+  { id: "ankle_l", label: msg("Left ankle") }, { id: "ankle_r", label: msg("Right ankle") },
 ];
-export const STATUS_TEXT: Record<PartStatus, string> = { none: "No issue", recovered: "Recovered", healing: "Healing", avoid: "Avoid for now" };
+export const STATUS_TEXT: Record<PartStatus, string> = { none: msg("No issue"), recovered: msg("Recovered"), healing: msg("Healing"), avoid: msg("Avoid for now") };
+localized(BODY_PARTS, ["label"]);
+localizedMap(STATUS_TEXT);
 const STATUS_COLOR: Record<PartStatus, number> = { none: 0xd9d4ee, recovered: 0x16a36a, healing: 0xe59400, avoid: 0xd8343b };
 
 type Piece = { part: string | null; kind: "capsule" | "sphere" | "box"; size: number[]; at: [number, number, number]; tilt?: number };
@@ -117,8 +120,8 @@ export function BodyMap3D({ statuses, selected, onSelect }: { statuses: Record<s
   }, []);
   useEffect(() => { api.current?.paint(statuses, selected); }, [statuses, selected]);
 
-  return <div className="ds-body-stage" ref={stage} role="img" aria-label="3D body map. Use the list of body parts to choose a part.">
-    {failed && <p className="ds-body-hint">3D isn&apos;t available on this device. Use the list to mark a body part.</p>}
-    {!failed && <p className="ds-body-hint" aria-hidden="true">Drag to turn · tap a part</p>}
+  return <div className="ds-body-stage" ref={stage} role="img" aria-label={t("3D body map. Use the list of body parts to choose a part.")}>
+    {failed && <p className="ds-body-hint">{t("3D isn't available on this device. Use the list to mark a body part.")}</p>}
+    {!failed && <p className="ds-body-hint" aria-hidden="true">{t("Drag to turn · tap a part")}</p>}
   </div>;
 }

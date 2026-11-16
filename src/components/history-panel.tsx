@@ -1,5 +1,6 @@
 // Progress: monthly summaries of everything the person has logged (free for everyone), and, when the free limit applies, a plain
 // note that older detail is Premium and that nothing has been deleted.
+import { t } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { Link } from "@/lib/navigation";
@@ -23,20 +24,20 @@ export function HistoryPanel() {
   const h = data.history;
   return <section className="account-card history-panel" aria-labelledby="history-title">
     <div className="history-head"><span className="history-icon" aria-hidden="true"><History size={22} /></span>
-      <div><h2 id="history-title">Your history, month by month</h2><p className="ds-sub">Summaries of everything you've logged, always included.</p></div></div>
-    {h.limited && <p className="history-limit">You see the last {h.free_days} days in full detail. Older days are part of <Link href="/premium">Premium</Link>. <strong>Nothing has been deleted:</strong> it all comes back the moment you upgrade, and your data export always includes everything.</p>}
-    {data.months.length === 0 ? <p className="ds-sub">Nothing logged yet. Your first month will appear here.</p> :
+      <div><h2 id="history-title">{t("Your history, month by month")}</h2><p className="ds-sub">{t("Summaries of everything you've logged, always included.")}</p></div></div>
+    {h.limited && <p className="history-limit">{t("You see the last {free_days} days in full detail. Older days are part of", { free_days: h.free_days })}{" "}<Link href="/premium">{t("Premium")}</Link>. <strong>{t("Nothing has been deleted:")}</strong> {t("it all comes back the moment you upgrade, and your data export always includes everything.")}</p>}
+    {data.months.length === 0 ? <p className="ds-sub">{t("Nothing logged yet. Your first month will appear here.")}</p> :
       <div className="history-months">{data.months.map(m => <article key={m.month} className="history-month">
         <h3>{monthName(m.month)}</h3>
         <dl>
-          <div><dt>Days logged</dt><dd>{m.days_logged}</dd></div>
-          <div><dt>Meals</dt><dd>{m.meals}</dd></div>
-          {m.avg_kcal !== null && <div><dt>Average kcal</dt><dd>{m.avg_kcal}</dd></div>}
-          {m.avg_water_ml !== null && <div><dt>Average water</dt><dd>{(m.avg_water_ml / 1000).toFixed(1)} L</dd></div>}
-          {m.avg_sleep_h !== null && <div><dt>Average sleep</dt><dd>{m.avg_sleep_h} h</dd></div>}
-          <div><dt>Active minutes</dt><dd>{m.active_min}</dd></div>
-          <div><dt>Workouts</dt><dd>{m.workouts}</dd></div>
-          {m.weight_end !== null && <div><dt>Weight</dt><dd>{m.weight_start !== null && m.weight_start !== m.weight_end ? `${m.weight_start} → ${m.weight_end}` : m.weight_end} kg</dd></div>}
+          <div><dt>{t("Days logged")}</dt><dd>{m.days_logged}</dd></div>
+          <div><dt>{t("Meals")}</dt><dd>{m.meals}</dd></div>
+          {m.avg_kcal !== null && <div><dt>{t("Average kcal")}</dt><dd>{m.avg_kcal}</dd></div>}
+          {m.avg_water_ml !== null && <div><dt>{t("Average water")}</dt><dd>{(m.avg_water_ml / 1000).toFixed(1)} L</dd></div>}
+          {m.avg_sleep_h !== null && <div><dt>{t("Average sleep")}</dt><dd>{m.avg_sleep_h} h</dd></div>}
+          <div><dt>{t("Active minutes")}</dt><dd>{m.active_min}</dd></div>
+          <div><dt>{t("Workouts")}</dt><dd>{m.workouts}</dd></div>
+          {m.weight_end !== null && <div><dt>{t("Weight")}</dt><dd>{m.weight_start !== null && m.weight_start !== m.weight_end ? `${m.weight_start} → ${m.weight_end}` : m.weight_end} kg</dd></div>}
         </dl>
       </article>)}</div>}
   </section>;

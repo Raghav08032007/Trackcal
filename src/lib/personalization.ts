@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { announceXp } from "@/lib/celebrate";
 import type {AdventureSummary} from './adventure';
 export type ReminderChoice={enabled:boolean;time:string;days:number[]};
@@ -11,18 +12,18 @@ export type Plan={id:string;status:string;week_start:string;explanation:{reason:
 export type PersonalState={minor_account?:boolean;feedback_history?:{id:string;name:string;feedback:string}[];preferences:Preferences;step:number;revision:number;completed:boolean;today:string;plan:Plan|null;eligible_templates:({id:string}&Template)[];measurements:{id:string;kind:string;value:number;unit:string;canonical_value:number;display_value?:number;display_unit?:string;recorded_at:string}[];bmi:{value:number|null;classification:null;context:string};recommendations:{meals:{id:string;name:string;ingredients:string[];tip:string;substitution:string;reason:string}[];nutrition_note:string;needs_review:boolean;message:string;budget_note:string};education:{id:string;title:string;text:string;question:string;options:string[]}[]};
 export async function personalRequest<T>(path:string,body?:unknown,method?:string):Promise<T>{
  const response=await fetch('/api/personalization/'+path,{method:method||(body===undefined?'GET':'POST'),headers:body===undefined?{}:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(20000)});
- const data=await response.json();if(!response.ok)throw new Error(data.error||'Check the values and try again.');
+ const data=await response.json();if(!response.ok)throw new Error(data.error||t("Check the values and try again."));
  if(body!==undefined||method==='DELETE'){if(data.summary)window.dispatchEvent(new CustomEvent('trackcal-gamification',{detail:data.summary as AdventureSummary}));announceXp(data);window.dispatchEvent(new Event('trackcal-personalization'));}return data;
 }
 
 export function assertAdultCalculatorAllowed(state:Pick<PersonalState,'minor_account'|'preferences'>){
- if(state.minor_account||!['20_64','65plus'].includes(state.preferences?.age_group))throw new Error('Adult calorie calculations require a confirmed adult age group in your preferences. Your personal plan works without calorie targets.');
+ if(state.minor_account||!['20_64','65plus'].includes(state.preferences?.age_group))throw new Error(t("Adult calorie calculations require a confirmed adult age group in your preferences. Your personal plan works without calorie targets."));
 }
 
 // An adult age typed into the calculator answers an age group that was never set. A group already chosen is never changed here.
 export async function confirmAdultForCalculator(age:number){
  const state=await personalRequest<PersonalState>('state');
- if(Number.isInteger(age)&&age<20)throw new Error('The calorie calculator is for ages 20 and over. Your personal plan works without calorie targets.');
+ if(Number.isInteger(age)&&age<20)throw new Error(t("The calorie calculator is for ages 20 and over. Your personal plan works without calorie targets."));
  if(state.minor_account||state.preferences?.age_group!=='unspecified'||!Number.isInteger(age)||age<20||age>100)return assertAdultCalculatorAllowed(state);
  const timezone=state.revision?state.preferences.timezone:Intl.DateTimeFormat().resolvedOptions().timeZone;
  await personalRequest('onboarding',{preferences:{...state.preferences,timezone,age_group:age>=65?'65plus':'20_64'},step:Math.max(1,state.step),revision:state.revision,complete:false});

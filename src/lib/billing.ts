@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 // Premium in the browser. The server decides entitlements; this only shows them and runs Razorpay Checkout.
 export type PlanKey = "premium_monthly" | "premium_annual";
 export type Plans = {
@@ -16,7 +17,7 @@ declare global { interface Window { Razorpay?: new (options: Record<string, unkn
 export async function billingRequest<T>(action: string, body?: unknown): Promise<T> {
   const response = await fetch("/api/billing/" + action, { method: body === undefined ? "GET" : "POST", headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(20000) });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Premium is unavailable right now. You haven't been charged.");
+  if (!response.ok) throw new Error(data.error || t("Premium is unavailable right now. You haven't been charged."));
   return data as T;
 }
 
@@ -26,7 +27,7 @@ function loadCheckout(): Promise<void> {
   if (window.Razorpay) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const script = document.createElement("script"); script.src = CHECKOUT_SCRIPT; script.async = true;
-    script.onload = () => resolve(); script.onerror = () => reject(new Error("Couldn't reach Razorpay. Check your connection; you haven't been charged."));
+    script.onload = () => resolve(); script.onerror = () => reject(new Error(t("Couldn't reach Razorpay. Check your connection; you haven't been charged.")));
     document.head.appendChild(script);
   });
 }
@@ -43,7 +44,7 @@ export async function subscribe(plan: PlanKey): Promise<BillingStatus | null> {
       handler: (response: RazorpayResponse) => { billingRequest<BillingStatus>("verify", response).then(resolve, reject); },
       modal: { ondismiss: () => resolve(null) },
     });
-    checkout.on("payment.failed", event => reject(new Error(event.error?.description || "The payment didn't go through. You haven't been charged.")));
+    checkout.on("payment.failed", event => reject(new Error(event.error?.description || t("The payment didn't go through. You haven't been charged."))));
     checkout.open();
   });
 }

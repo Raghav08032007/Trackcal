@@ -127,9 +127,47 @@ export const TRANSLATED_FILES = [
   "src/lib/celebrate.ts",
   "src/components/celebration.tsx",
   "src/app/play/page.tsx",
+  // Me and settings
+  "src/components/journey-companion.tsx",
+  "src/components/personal-onboarding.tsx",
+  "src/app/health/page.tsx",
+  "src/components/ds/body-map-3d.tsx",
+  "src/components/push-settings.tsx",
+  "src/lib/targets.ts",
+  "src/lib/progress-insights.ts",
+  "src/components/ds/metrics.tsx",
+  "src/app/premium/page.tsx",
+  "src/lib/food-history.ts",
+  "src/app/profile/page.tsx",
+  "src/lib/billing.ts",
+  "src/lib/push.ts",
+  "src/components/progress-insights.tsx",
+  "src/components/history-panel.tsx",
+  "src/lib/smart-tools.ts",
+  "src/components/history-export.tsx",
+  "src/lib/health.ts",
+  "src/app/account/page.tsx",
+  "src/components/weekly-review.tsx",
+  "src/lib/gym-math.ts",
+  "src/lib/personalization.ts",
+  "src/app/progress/page.tsx",
+  "src/components/account-security.tsx",
+  "src/app/help/page.tsx",
+  "src/components/premium-notice.tsx",
+  "src/components/coach-booking.tsx",
+  "src/lib/use-count-up.ts",
+  "src/lib/calendar.ts",
+  "src/components/legacy-onboarding.tsx",
+  "src/app/routine/page.tsx",
+  "src/components/testing-guide.tsx",
+  "src/components/history-import.tsx",
+  "src/components/reminders.tsx",
+  "src/app/onboarding/page.tsx",
+  "src/app/guide/page.tsx",
 ];
 /** Texts that reach t() only at run time (from the server, or a variable): listed so every language must have them too. */
 export const RUNTIME_KEYS = [
+  "light", "moderate",                                                     // exercise intensity from a health report (services/health_plan.py)
   "owner", "moderator", "member", "going", "waitlist",                    // community roles and event sign-up states (server values)
   "calories", "protein", "carbs", "fat",                                  // nutrient names in the daily progress card
   "Resting it", "Easing back", "Recovered",                               // recovery stages (services/recovery.py)

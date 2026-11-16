@@ -1,3 +1,4 @@
+import { t, msg } from "@/lib/i18n";
 // Blood reports: read (nothing stored), confirm and save values, and the plan they lead to.
 export type Reading = { code: string; name: string; value: number; unit: string; ref_low: number | null; ref_high: number | null; source?: string };
 export type Finding = { code: string; name: string; value: number; unit: string; low: number | null; high: number | null; range_from: string; status: "normal" | "high" | "low"; severity: "ok" | "watch" | "soon" | "today"; rule: string | null; explanation: string; source?: string };
@@ -12,11 +13,11 @@ export async function health<T>(path: string, method = "GET", body?: unknown): P
   const response = await fetch(path.startsWith("/") ? path : "/api/health/" + path, { method, headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(60000) });
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new HealthError(data.error || "Reports are unavailable right now. Nothing was saved.", response.status);
+  if (!response.ok) throw new HealthError(data.error || msg("Reports are unavailable right now. Nothing was saved."), response.status);
   return data as T;
 }
 export function readFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = () => reject(new Error("That file could not be opened.")); r.readAsDataURL(file); });
+  return new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = () => reject(new Error(t("That file could not be opened."))); r.readAsDataURL(file); });
 }
 /** Display bounds for a value on its range bar: room either side of the normal band and the value. */
 export function scale(f: Finding) {
@@ -26,6 +27,6 @@ export function scale(f: Finding) {
   return { min: tidy(bottom), max: tidy(top) };
 }
 export const TARGET_TEXT: Record<string, (v: number) => string> = {
-  fibre_g: v => `${v} g fibre a day`, added_sugar_g: v => `Under ${v} g added sugar a day`, sat_fat_pct: v => `Saturated fat under ${v}% of calories`,
-  sodium_mg: v => `Salt under ${Math.round(v / 400)} g a day`, water_l: v => `${v} litres of water a day`, protein_g_per_kg: v => `Protein about ${v} g per kg of body weight`,
+  fibre_g: v => t("{v} g fibre a day", { v }), added_sugar_g: v => t("Under {v} g added sugar a day", { v }), sat_fat_pct: v => t("Saturated fat under {v}% of calories", { v }),
+  sodium_mg: v => t("Salt under {v} g a day", { v: Math.round(v / 400) }), water_l: v => t("{v} litres of water a day", { v }), protein_g_per_kg: v => t("Protein about {v} g per kg of body weight", { v }),
 };

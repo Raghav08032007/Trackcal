@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {useEffect,useMemo,useState} from 'react';
 import {useWorkspaceScope} from './account-session';
 import {CoachLine} from './coach-card';
@@ -20,11 +21,11 @@ export function WeeklyReview(){
  },[scope,training,now]);
  const [shared,setShared]=useState('');
  if(!training)return null;
- async function share(){const text=`My TrackCal week: ${review.workouts} workouts, ${review.reps} reps, ${review.activeDays} of 7 active days.`;try{if(navigator.share)await navigator.share({text});else{await navigator.clipboard.writeText(text);setShared('Copied. Paste it anywhere.');}}catch{/* closing the share sheet isn't a failure */}}
+ async function share(){const text=t("My TrackCal week: {workouts} workouts, {reps} reps, {days} of 7 active days.",{workouts:review.workouts,reps:review.reps,days:review.activeDays});try{if(navigator.share)await navigator.share({text});else{await navigator.clipboard.writeText(text);setShared(t("Copied. Paste it anywhere."));}}catch{/* closing the share sheet isn't a failure */}}
  const most=Math.max(1,...review.bars.map(bar=>bar.minutes));
- return <section className="account-card weekly-review"><h2>Your week</h2><CoachLine text={review.nudge}/>
-  <ul className="weekly-stats"><Stat value={review.workouts} label="workouts"/><Stat value={review.reps} label="reps"/><li><strong>{review.activeDays}/7</strong> active days</li>{!minor&&review.averageCalories!==null&&<li><strong>{review.averageCalories}</strong> kcal a logged day</li>}</ul>
-  <div className="weekly-bars" role="img" aria-label={`Minutes moved each day: ${review.bars.map(bar=>bar.minutes).join(', ')}`}>{review.bars.map((bar,index)=><span key={bar.day} style={{height:`${Math.max(4,bar.minutes/most*100)}%`,'--bar':index} as React.CSSProperties}/>)}</div>
-  <div className="account-actions"><button type="button" onClick={()=>void share()}>Share my week</button></div>{shared&&<p role="status">{shared}</p>}
+ return <section className="account-card weekly-review"><h2>{t("Your week")}</h2><CoachLine text={review.nudge}/>
+  <ul className="weekly-stats"><Stat value={review.workouts} label="workouts"/><Stat value={review.reps} label="reps"/><li><strong>{review.activeDays}/7</strong> {t("active days")}</li>{!minor&&review.averageCalories!==null&&<li><strong>{review.averageCalories}</strong> {t("kcal a logged day")}</li>}</ul>
+  <div className="weekly-bars" role="img" aria-label={t("Minutes moved each day: {n}", { n: review.bars.map(bar=>bar.minutes).join(', ') })}>{review.bars.map((bar,index)=><span key={bar.day} style={{height:`${Math.max(4,bar.minutes/most*100)}%`,'--bar':index} as React.CSSProperties}/>)}</div>
+  <div className="account-actions"><button type="button" onClick={()=>void share()}>{t("Share my week")}</button></div>{shared&&<p role="status">{shared}</p>}
  </section>;
 }

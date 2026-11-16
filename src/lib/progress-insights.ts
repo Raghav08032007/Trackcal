@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 import {EXERCISES,type ExerciseKind} from './pose/types';
 import {HOLDS,type HoldKind} from './pose/holds';
 import {oneRepMax} from './gym-math';
@@ -21,7 +22,7 @@ export function habitScore(days:HabitDay[]){
  }
  return Math.round(Math.min(100,score));
 }
-export const habitLabel=(score:number)=>score>=85?'A habit':score>=60?'Strong':score>=25?'Building':'Starting';
+export const habitLabel=(score:number)=>score>=85?t("A habit"):score>=60?t("Strong"):score>=25?t("Building"):t("Starting");
 /** The last `length` days as kept or missed, oldest first, ending today. */
 export function dayMarks(kept:Set<string>,now:number,length=60):HabitDay[]{
  return Array.from({length},(_,i)=>kept.has(localDay(now-(length-1-i)*86400000))?'done':'miss');
@@ -42,7 +43,7 @@ export function trainingLoad(sessions:Session[],now:number,days=90){
   series.push({day,fitness:Math.round(fitness*10)/10,fatigue:Math.round(fatigue*10)/10,form:Math.round((fitness-fatigue)*10)/10});
  }
  const last=series[series.length-1],ramp=last.fitness>0?last.fatigue/last.fitness:0;
- const note=last.fitness<1&&last.fatigue<1?'Not enough training yet to show a trend.':ramp>1.5?'You are ramping up fast. Fit in an easier day soon.':last.form>5?'You are fresh. A good day for a harder session.':'A steady balance of training and recovery.';
+ const note=last.fitness<1&&last.fatigue<1?t("Not enough training yet to show a trend."):ramp>1.5?t("You are ramping up fast. Fit in an easier day soon."):last.form>5?t("You are fresh. A good day for a harder session."):t("A steady balance of training and recovery.");
  return {series,today:last,note};
 }
 

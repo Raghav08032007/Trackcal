@@ -1,5 +1,6 @@
 // Daily food targets, one set for the whole app. Signed in, they come from the account (calculated from the profile, with any
 // manual values), shared by every screen. Signed out, they are this browser's values as before.
+import { t } from "@/lib/i18n";
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useAccount, useWorkspaceScope } from "@/components/account-session";
 import { exportLocalEntries, useLocalState, workspaceKey } from "@/lib/use-local-state";
@@ -39,9 +40,9 @@ export function loadTargets(scope: string, force = false) {
   return pending;
 }
 export async function saveTargets(patch: Partial<Record<TargetName, number | null>>) {
-  const t = await personalRequest<Targets>("targets", patch, "PUT");
-  if (!valid(t)) throw new Error("Could not save your targets. Please try again.");
-  current = t; emit(); return t;
+  const saved = await personalRequest<Targets>("targets", patch, "PUT");
+  if (!valid(saved)) throw new Error(t("Could not save your targets. Please try again."));
+  current = saved; emit(); return saved;
 }
 
 /** The whole set, for screens that show all targets and how they were worked out. */

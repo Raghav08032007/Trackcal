@@ -1,3 +1,4 @@
+import { t, msg, localizedMap } from "@/lib/i18n";
 // Web push in the browser: support checks, the explicit (tap-only) permission flow and the settings API.
 export type PushType = "daily_plan" | "workout" | "meal_log" | "rest_day" | "motivation" | "milestone" | "event_update" | "social" | "record" | "weekly_summary";
 export type PushSettings = {
@@ -5,9 +6,10 @@ export type PushSettings = {
   timezone: string; quiet_start: string; quiet_end: string; devices: { id: string; user_agent: string; created_at: string }[];
 };
 export const TYPE_LABELS: Record<PushType, string> = {
-  daily_plan: "Today's plan", workout: "Activity reminder", meal_log: "Meal check-in", rest_day: "Rest-day note", motivation: "A thought for today", milestone: "Milestones", event_update: "Changes to events you joined",
-  social: "Kudos, comments and new followers (one note per half hour at most)", record: "New personal bests", weekly_summary: "Weekly summary (Monday mornings)",
+  daily_plan: msg("Today's plan"), workout: msg("Activity reminder"), meal_log: msg("Meal check-in"), rest_day: msg("Rest-day note"), motivation: msg("A thought for today"), milestone: msg("Milestones"), event_update: msg("Changes to events you joined"),
+  social: msg("Kudos, comments and new followers (one note per half hour at most)"), record: msg("New personal bests"), weekly_summary: msg("Weekly summary (Monday mornings)"),
 };
+localizedMap(TYPE_LABELS);
 
 /** What this browser can do. iOS/iPadOS deliver web push only to a site added to the Home Screen (iOS 16.4 or later). */
 export function pushSupport(): "ok" | "ios-install" | "unsupported" {
@@ -21,7 +23,7 @@ export function pushSupport(): "ok" | "ios-install" | "unsupported" {
 export async function pushRequest<T>(path: string, method = "GET", body?: unknown): Promise<T> {
   const response = await fetch("/api/push/" + path, { method, headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Notification settings are unavailable. Nothing was changed.");
+  if (!response.ok) throw new Error(data.error || t("Notification settings are unavailable. Nothing was changed."));
   return data as T;
 }
 
