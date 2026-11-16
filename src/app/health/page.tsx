@@ -1,13 +1,13 @@
 // My health report: add a blood report (PDF, photo with consent, or typed), check the values, then see what they mean and the
 // diet and exercise plan they lead to. Optional: nothing elsewhere in the app depends on it.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { LabRangeBar } from "@/components/ds/metrics";
 import { TARGET_TEXT, health, readFile, scale, type Assessment, type Reading, type Summary, type TestInfo } from "@/lib/health";
 
-export const metadata = { title: "TrackCal — My health report" };
+export const metadata = { title:msg("TrackCal — My health report") };
 type Draft = { source: "pdf" | "photo" | "manual"; rows: Reading[]; date: string; lab: string };
 const today = () => new Date().toISOString().slice(0, 10);
 

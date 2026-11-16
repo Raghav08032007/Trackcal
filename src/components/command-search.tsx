@@ -1,5 +1,6 @@
 // Search everything: Ctrl+K (Cmd+K) or "/" from anywhere, or the search button. Pages and quick actions match as you
 // type, even offline; foods come from the food catalogue and your recent workouts from your account.
+import { t, msg, localized } from "@/lib/i18n";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Clock, Dumbbell, Search, Utensils, X, Zap, FileText } from "lucide-react";
@@ -12,7 +13,8 @@ import { ACTIONS, score, searchLocal, type Hit } from "@/lib/search";
 
 const RECENT = "trackcal-search-recent";             // not a "trackcal:" key: never synced or backed up
 const ICONS = { page: FileText, action: Zap, food: Utensils, workout: Dumbbell };
-const GROUPS: [Hit["kind"], string][] = [["action", "Quick actions"], ["page", "Pages"], ["food", "Foods"], ["workout", "Your workouts"]];
+const GROUPS: [Hit["kind"], string][] = [["action", msg("Quick actions")], ["page", msg("Pages")], ["food", msg("Foods")], ["workout", msg("Your workouts")]];
+localized(GROUPS, ["1"]);
 const readRecent = (): string[] => { try { const v = JSON.parse(localStorage.getItem(RECENT) || "[]"); return Array.isArray(v) ? v.filter(x => typeof x === "string").slice(0, 5) : []; } catch { return []; } };
 const remember = (q: string) => { try { localStorage.setItem(RECENT, JSON.stringify([q, ...readRecent().filter(x => x !== q)].slice(0, 5))); } catch { /* storage off */ } };
 
@@ -39,10 +41,10 @@ function Panel({ close }: { close: () => void }) {
       fetch(`/api/foods?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(12000) }).then(async r => {
         const data = await r.json().catch(() => ({}));
         if (!live) return;
-        if (!r.ok || !Array.isArray(data.results)) { setFoods([]); setFoodNote(navigator.onLine === false ? "Food search needs a connection." : ""); return; }
+        if (!r.ok || !Array.isArray(data.results)) { setFoods([]); setFoodNote(navigator.onLine === false ? t("Food search needs a connection.") : ""); return; }
         setFoods(data.results.slice(0, 5).map((f: { id: string; name: string; calories?: number; serving_size?: string }) => ({ kind: "food", id: `food:${f.id}`, title: f.name,
           detail: [typeof f.calories === "number" ? `${Math.round(f.calories)} kcal` : "", f.serving_size || "per 100 g"].filter(Boolean).join(" · "), href: `/food-library?q=${encodeURIComponent(f.name)}` })));
-      }).catch(() => { if (live) { setFoods([]); setFoodNote("Food search needs a connection."); } });
+      }).catch(() => { if (live) { setFoods([]); setFoodNote(t("Food search needs a connection.")); } });
     }, 300);
     return () => { live = false; clearTimeout(timer); };
   }, [query]);
@@ -61,7 +63,7 @@ function Panel({ close }: { close: () => void }) {
 
   const choose = useCallback((hit: Hit) => {
     if (query.trim()) remember(query.trim());
-    if (hit.action === "water") { setWellness(w => ({ ...w, water: w.water + 250 })); setStatus("Added 250 ml water to today."); return; }
+    if (hit.action === "water") { setWellness(w => ({ ...w, water: w.water + 250 })); setStatus(t("Added 250 ml water to today.")); return; }
     if (hit.action === "quick-add") { close(); window.dispatchEvent(new Event("trackcal-quick-add")); return; }
     if (hit.href) { close(); router.push(hit.href); }
   }, [query, setWellness, close, router]);
@@ -78,12 +80,12 @@ function Panel({ close }: { close: () => void }) {
   return <div className="cs-body">
     <div className="cs-field">
       <Search size={20} aria-hidden />
-      <input ref={input} type="search" role="combobox" aria-label="Search TrackCal" aria-expanded={hits.length > 0} aria-controls={list} aria-autocomplete="list"
-        aria-activedescendant={hits.length ? `${list}-${active}` : undefined} placeholder="Search pages, foods, workouts…" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={onKey} />
-      <button type="button" className="cs-close" onClick={close} aria-label="Close search"><X size={18} /></button>
+      <input ref={input} type="search" role="combobox" aria-label={t("Search TrackCal")} aria-expanded={hits.length > 0} aria-controls={list} aria-autocomplete="list"
+        aria-activedescendant={hits.length ? `${list}-${active}` : undefined} placeholder={t("Search pages, foods, workouts…")} value={query} onChange={e => setQuery(e.target.value)} onKeyDown={onKey} />
+      <button type="button" className="cs-close" onClick={close} aria-label={t("Close search")}><X size={18} /></button>
     </div>
-    {!query.trim() && recent.length > 0 && <div className="cs-recent"><p>Recent</p>{recent.map(r => <button key={r} type="button" onClick={() => setQuery(r)}><Clock size={14} aria-hidden />{r}</button>)}</div>}
-    <ul id={list} role="listbox" aria-label="Results" className="cs-results">
+    {!query.trim() && recent.length > 0 && <div className="cs-recent"><p>{t("Recent")}</p>{recent.map(r => <button key={r} type="button" onClick={() => setQuery(r)}><Clock size={14} aria-hidden />{r}</button>)}</div>}
+    <ul id={list} role="listbox" aria-label={t("Results")} className="cs-results">
       {GROUPS.map(([kind, label]) => {
         const group = hits.filter(h => h.kind === kind);
         if (!group.length) return null;
@@ -95,10 +97,10 @@ function Panel({ close }: { close: () => void }) {
           })}</ul></li>;
       })}
     </ul>
-    {query.trim() && !hits.length && <p className="cs-empty">Nothing found for "{query.trim()}". Try another word, like "water", "run" or "recipe".</p>}
+    {query.trim() && !hits.length && <p className="cs-empty">{t("Nothing found for \"{n}\". Try another word, like \"water\", \"run\" or \"recipe\".", { n: query.trim() })}</p>}
     {foodNote && <p className="cs-empty">{foodNote}</p>}
     <p className="cs-status" role="status">{status}</p>
-    <p className="cs-hint" aria-hidden><kbd>↑</kbd><kbd>↓</kbd> to move · <kbd>Enter</kbd> to open · <kbd>Esc</kbd> to close</p>
+    <p className="cs-hint" aria-hidden><kbd>↑</kbd><kbd>↓</kbd> {t("to move ·")}{" "}<kbd>{t("Enter")}</kbd> {t("to open ·")}{" "}<kbd>{t("Esc")}</kbd> {t("to close")}</p>
   </div>;
 }
 
@@ -119,9 +121,9 @@ export function CommandSearch({ compact = false }: { compact?: boolean }) {
     window.addEventListener("keydown", key); return () => window.removeEventListener("keydown", key);
   }, [show]);
   return <>
-    <button type="button" className={`cs-button${compact ? " cs-compact" : ""}`} aria-label="Search" title="Search (Ctrl+K or /)" aria-haspopup="dialog" aria-expanded={open} aria-keyshortcuts="Control+K Meta+K /" onClick={show}>
-      <Search size={18} aria-hidden /><span className="cs-label">Search</span><kbd className="cs-kbd" aria-hidden>Ctrl K</kbd></button>
-    {createPortal(<dialog ref={dialog} className="cs-dialog" aria-label="Search" onClose={() => setOpen(false)} onClick={e => { if (e.target === dialog.current) close(); }}>{open && <Panel close={close} />}</dialog>, document.body)}
+    <button type="button" className={`cs-button${compact ? " cs-compact" : ""}`} aria-label={t("Search")} title={t("Search (Ctrl+K or /)")} aria-haspopup="dialog" aria-expanded={open} aria-keyshortcuts="Control+K Meta+K /" onClick={show}>
+      <Search size={18} aria-hidden /><span className="cs-label">{t("Search")}</span><kbd className="cs-kbd" aria-hidden>{t("Ctrl K")}</kbd></button>
+    {createPortal(<dialog ref={dialog} className="cs-dialog" aria-label={t("Search")} onClose={() => setOpen(false)} onClick={e => { if (e.target === dialog.current) close(); }}>{open && <Panel close={close} />}</dialog>, document.body)}
   </>;
 }
 

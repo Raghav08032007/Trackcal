@@ -1,3 +1,4 @@
+import { msg, localized } from "./i18n";
 // What "search everything" can find without a connection: every page (by name and by everyday words) and quick actions.
 // Foods and your workouts are added from the server by the search panel.
 import { SECTIONS } from "@/lib/sections";
@@ -57,12 +58,13 @@ export function pageEntries(): Entry[] {
 }
 
 export const ACTIONS: Hit[] = [
-  { kind: "action", id: "water", title: "Add 250 ml water", detail: "Saved to today", action: "water" },
-  { kind: "action", id: "quick-add", title: "Quick add", detail: "Food, water, sleep, how you feel", action: "quick-add" },
-  { kind: "action", id: "camera", title: "Start a camera workout", detail: "Move", href: "/workouts/camera" },
-  { kind: "action", id: "route", title: "Record a route", detail: "Move", href: "/workouts/gps" },
-  { kind: "action", id: "log", title: "Log food", detail: "Food", href: "/scanner" },
+  { kind: "action", id: "water", title: msg("Add 250 ml water"), detail: msg("Saved to today"), action: "water" },
+  { kind: "action", id: "quick-add", title: msg("Quick add"), detail: msg("Food, water, sleep, how you feel"), action: "quick-add" },
+  { kind: "action", id: "camera", title: msg("Start a camera workout"), detail: msg("Move"), href: "/workouts/camera" },
+  { kind: "action", id: "route", title: msg("Record a route"), detail: msg("Move"), href: "/workouts/gps" },
+  { kind: "action", id: "log", title: msg("Log food"), detail: msg("Food"), href: "/scanner" },
 ];
+localized(ACTIONS, ["title", "detail"]);
 
 export const norm = (text: string) => text.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
 

@@ -3,8 +3,9 @@ import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { RootLayout } from "@/app/root-layout";
 import { Link } from "@/lib/navigation";
+import { msg, t, subscribe } from "@/lib/i18n";
 
-const DEFAULT_TITLE = "TrackCal — Food & Nutrition Journal";
+const DEFAULT_TITLE = msg("TrackCal — Food & Nutrition Journal");
 type PageModule = { default: ComponentType; metadata?: { title?: string } };
 
 const pages: Record<string, () => Promise<PageModule>> = {
@@ -73,16 +74,17 @@ function titled(load: () => Promise<PageModule>) {
   return lazy(async () => {
     const module = await load();
     const Page = module.default, title = module.metadata?.title || DEFAULT_TITLE;
-    return { default: function TitledPage() { useEffect(() => { document.title = title; }, []); return <Page />; } };
+    return { default: function TitledPage() { useEffect(() => { const show = () => { document.title = t(title); }; show(); return subscribe(show); }, []); return <Page />; } };
   });
 }
 
 function NotFound() {
-  useEffect(() => { document.title = "TrackCal — Page not found"; }, []);
-  return <main className="account-page"><section className="account-card"><h1>Page not found</h1><p>This address does not match a TrackCal page.</p><p><Link href="/">Go to the workspace →</Link></p></section></main>;
+  useEffect(() => { const show = () => { document.title = t("TrackCal — Page not found"); }; show(); return subscribe(show); }, []);
+  return <main className="account-page"><section className="account-card"><h1>{t("Page not found")}</h1><p>{t("This address does not match a TrackCal page.")}</p><p><Link href="/">{t("Go to the workspace →")}</Link></p></section></main>;
 }
 
-const loading = <main className="account-loading" aria-busy="true">Loading…</main>;
+function Loading() { return <main className="account-loading" aria-busy="true">{t("Loading…")}</main>; }
+const loading = <Loading />;
 export const routes: RouteObject[] = [{
   element: <RootLayout />,
   children: [

@@ -1,5 +1,5 @@
 // One event: details and sign-up for everyone; for the organizer, the live check-in QR code and the attendee list.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { ReportItem } from "@/components/report-item";
@@ -8,7 +8,7 @@ import { useAccount } from "@/components/account-session";
 import { CATEGORY_LABELS } from "@/lib/communities";
 import { events, qrSvg, when, type Attendee, type EventView } from "@/lib/events";
 
-export const metadata = { title: "TrackCal — Event" };
+export const metadata = { title:msg("TrackCal — Event") };
 
 export default function Page() {
   const { id = "" } = useParams(); const { ready, user } = useAccount();

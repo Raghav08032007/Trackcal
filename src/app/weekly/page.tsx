@@ -1,5 +1,5 @@
 // Your weeks: 12 weeks of activity against the WHO guideline, and the fitness and fatigue trend. Estimates, explained on the page.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, AlertTriangle, CheckCircle2, Gauge, Leaf, Mail, Table2, TrendingUp } from "lucide-react";
 import Link from "@/lib/navigation";
@@ -7,7 +7,7 @@ import { useAccount } from "@/components/account-session";
 import { KINDS, loadTrend, niceMax, pace, setWeeklyEmail, shortDate, type Trend, type Week } from "@/lib/trend";
 import "./weekly.css";
 
-export const metadata = { title: "TrackCal — Your weeks", description: "Twelve weeks of activity against the WHO guideline, with your fitness and fatigue trend." };
+export const metadata = { title:msg("TrackCal — Your weeks"), description: "Twelve weeks of activity against the WHO guideline, with your fitness and fatigue trend." };
 
 export default function Page() {
   const { ready, user } = useAccount();

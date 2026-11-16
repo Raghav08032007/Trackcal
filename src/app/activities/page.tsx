@@ -1,12 +1,12 @@
 // Your GPS activities: this week, the list, personal records per sport, and privacy zones.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { RouteThumb } from "@/components/route-map";
 import { SPORTS, activities, duration, km, pace, sportTitle, when, type ActivitySummary, type Records, type Sport, type Zone } from "@/lib/activities";
 
-export const metadata = { title: "TrackCal — Activities" };
+export const metadata = { title:msg("TrackCal — Activities") };
 type Listing = { activities: ActivitySummary[]; next: string | null; last_7_days: { count: number; distance_m: number; moving_s: number; elevation_gain_m: number } };
 
 export default function Page() {

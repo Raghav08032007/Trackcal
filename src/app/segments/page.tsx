@@ -1,5 +1,5 @@
 // Your segments: the ones you made and the ones you've been timed on, with your best on each.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Bike, Flag, Footprints, Lock } from "lucide-react";
 import Link from "@/lib/navigation";
@@ -7,7 +7,7 @@ import { useAccount } from "@/components/account-session";
 import { duration, km, segments, type Segment } from "@/lib/activities";
 import "./segments.css";
 
-export const metadata = { title: "TrackCal — Segments", description: "Your favourite stretches of road and path, timed on every run, walk and ride." };
+export const metadata = { title:msg("TrackCal — Segments"), description: "Your favourite stretches of road and path, timed on every run, walk and ride." };
 
 export default function Page() {
   const { ready, user } = useAccount();

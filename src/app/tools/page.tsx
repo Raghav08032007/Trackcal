@@ -14,6 +14,7 @@ import type { SavedRecipe, PantryEntry, ShoppingEntry } from "@/lib/smart-tools"
 const tabs = [msg("Recipe import"), msg("Meal planner"), msg("Pantry & prices"), msg("Label & voice"), msg("Workouts"), msg("Device & sync")] as const;
 /** Links can open a tab directly, e.g. /tools?tab=pantry. */
 const TAB_LINKS: Record<string, typeof tabs[number]> = { import: "Recipe import", planner: "Meal planner", pantry: "Pantry & prices", label: "Label & voice", workouts: "Workouts", device: "Device & sync" };
+export const metadata = { title:msg("TrackCal — Smart tools") };
 export default function ToolsPage() { const { user, ready } = useAccount(); return !ready ? <main className="account-loading">{t("Opening smart tools…")}</main> : <SmartWorkspace key={user?.id || "guest"} />; }
 function SmartWorkspace() {
   const { user } = useAccount(); const scope = useWorkspaceScope(), today = useLocalDate();

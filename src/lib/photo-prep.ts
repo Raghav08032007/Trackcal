@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 // Shrink a meal photo before it is uploaded for an AI estimate: longest side at most 1024 px, re-encoded as JPEG.
 // Drawing onto a canvas keeps only pixels, so EXIF metadata (GPS position, device, time) is not sent.
 // The server repeats this (backend/services/photo_prep.py), so browsers without createImageBitmap send the original.
@@ -18,7 +19,7 @@ export async function preparePhoto(file: File): Promise<string> {
   if (typeof createImageBitmap !== "function" || typeof document === "undefined") return readAsDataUrl(file);
   let bitmap: ImageBitmap;
   try { bitmap = await createImageBitmap(file, { imageOrientation: "from-image" }); }
-  catch { throw new Error("Couldn't read this photo. Try another one or log the meal manually."); }
+  catch { throw new Error(t("Couldn't read this photo. Try another one or log the meal manually.")); }
   try {
     const size = fitWithin(bitmap.width, bitmap.height);
     const canvas = document.createElement("canvas"); canvas.width = size.width; canvas.height = size.height;

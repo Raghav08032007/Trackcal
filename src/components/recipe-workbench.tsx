@@ -14,7 +14,7 @@ export function RecipeWorkbench({ recipes, setRecipes, busy, run, notice, import
   const [cost, setCost] = useState<number | null>(null), [currency, setCurrency] = useState("INR"), [minutes, setMinutes] = useState(20), [tags, setTags] = useState("");
   const [ingredients, setIngredients] = useState<DraftIngredient[]>([]), [instructions, setInstructions] = useState("");
   const [searching, setSearching] = useState<string | null>(null), [matches, setMatches] = useState<{ name: string; calories: number; protein: number; carbs: number; fat: number }[]>([]);
-  const [draftName, setDraftName] = useLocalState("trackcal:recipe:name", "My homemade recipe");
+  const [draftName, setDraftName] = useLocalState("trackcal:recipe:name", t("My homemade recipe"));
   const [, setDraftServings] = useLocalState("trackcal:recipe:servings", 2);
   const [, setDraftIngredients] = useLocalState("trackcal:recipe:ingredients", [] as { name: string; grams: number; cal: number; p: number; c: number; f: number }[]);
   function load(value: ImportedRecipe) {

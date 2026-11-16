@@ -1,12 +1,12 @@
 // TrackCal Premium (flag billing). Honest by design: price and renewal in plain words, the trial end date before
 // anyone pays, cancelling as easy as subscribing, and the core habit tools always free.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { billingRequest, dateText, rupees, subscribe, type BillingStatus, type PlanKey, type Plans } from "@/lib/billing";
 
-export const metadata = { title: "TrackCal Premium" };
+export const metadata = { title:msg("TrackCal Premium") };
 
 export default function Page() {
   const { ready, user } = useAccount();

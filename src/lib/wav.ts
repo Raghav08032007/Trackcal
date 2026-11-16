@@ -1,6 +1,7 @@
+import { t } from "@/lib/i18n";
 // Encode a mono recording as the PCM format accepted by the local Whisper worker.
 export function encodeWav(channels: Float32Array[], sampleRate: number): ArrayBuffer {
-  if (!channels.length || channels.some(channel => channel.length !== channels[0].length) || !Number.isFinite(sampleRate) || sampleRate <= 0) throw new Error("Invalid microphone recording.");
+  if (!channels.length || channels.some(channel => channel.length !== channels[0].length) || !Number.isFinite(sampleRate) || sampleRate <= 0) throw new Error(t("Invalid microphone recording."));
   const length = Math.min(960000, Math.floor(channels[0].length * 16000 / sampleRate));
   const data = new ArrayBuffer(44 + length * 2), view = new DataView(data);
   const word = (offset: number, value: string) => [...value].forEach((char, index) => view.setUint8(offset + index, char.charCodeAt(0)));

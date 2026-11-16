@@ -1,3 +1,4 @@
+import { msg } from "@/lib/i18n";
 import {FoodWorkspace} from "@/components/food-workspace";
-export const metadata={title:"TrackCal — Scanner"};
+export const metadata={title:msg("TrackCal — Scanner")};
 export default function Page(){return <FoodWorkspace initialTab="scanner"/>;}

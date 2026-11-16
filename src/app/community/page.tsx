@@ -1,6 +1,6 @@
 // One community at /c/:slug: cover, rules, join / request / leave, its posts (feed post cards), a composer for
 // members, and for moderators: requests, members and roles, reports, settings.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import Link from "@/lib/navigation";
@@ -8,7 +8,7 @@ import { SocialPost } from "@/components/social-post";
 import type { FeedPost } from "@/lib/social";
 import { CATEGORY_LABELS, communities, CommunityError, type Community, type Member, type QueueItem } from "@/lib/communities";
 
-export const metadata = { title: "TrackCal — Community" };
+export const metadata = { title:msg("TrackCal — Community") };
 
 export default function Page() {
   const { slug = "" } = useParams();

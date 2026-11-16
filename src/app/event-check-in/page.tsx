@@ -1,5 +1,5 @@
 // Opened by scanning the organizer's QR code: /events/<id>/check-in?t=<token>. Checks in once, then celebrates.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import Link from "@/lib/navigation";
@@ -7,7 +7,7 @@ import { useAccount } from "@/components/account-session";
 import { announceXp } from "@/lib/celebrate";
 import { events, type EventView } from "@/lib/events";
 
-export const metadata = { title: "TrackCal — Check in" };
+export const metadata = { title:msg("TrackCal — Check in") };
 
 export default function Page() {
   const { id = "" } = useParams(); const { ready, user } = useAccount();

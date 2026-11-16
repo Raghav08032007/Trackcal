@@ -1,5 +1,5 @@
 // One challenge: your progress ring (computed on the server from what you logged), join/leave, how it counts.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { ReportItem } from "@/components/report-item";
@@ -8,7 +8,7 @@ import { useAccount } from "@/components/account-session";
 import { announceXp } from "@/lib/celebrate";
 import { challenges, dates, METRIC_OPTIONS, goalText, type ChallengeView } from "@/lib/challenges";
 
-export const metadata = { title: "TrackCal — Challenge" };
+export const metadata = { title:msg("TrackCal — Challenge") };
 
 export default function Page() {
   const { id = "" } = useParams(); const { ready, user } = useAccount();

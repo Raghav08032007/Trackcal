@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { calculatePlan } from "./nutrition";
 /**
  * api.ts — TrackCal Full-Stack API Client
@@ -83,7 +84,7 @@ export async function readPackPhoto(file: File): Promise<PackReading> {
   const { preparePhoto } = await import("./photo-prep");
   const response = await fetch("/api/pack/read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: await preparePhoto(file) }), signal: AbortSignal.timeout(45000) });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Could not read that photo.");
+  if (!response.ok) throw new Error(data.error || t("Could not read that photo."));
   return data;
 }
 
@@ -95,10 +96,10 @@ export async function calculateOnboardingPlan(params: OnboardingParams): Promise
  * Look up barcode via Open Food Facts / USDA
  */
 export async function lookupBarcodeNutrition(code: string): Promise<BarcodeProductResult> {
-  if (!/^\d{8,14}$/.test(code)) throw new Error("Enter an 8–14 digit UPC/EAN barcode.");
+  if (!/^\d{8,14}$/.test(code)) throw new Error(t("Enter an 8–14 digit UPC/EAN barcode."));
   const response = await fetch(`/api/barcode?code=${encodeURIComponent(code)}`, { signal: AbortSignal.timeout(15000) });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Product lookup failed.");
+  if (!response.ok) throw new Error(data.error || t("Product lookup failed."));
   return data;
 }
 
@@ -115,14 +116,14 @@ async function analyzeMeal(input: { text?: string; image?: string }): Promise<im
     body: JSON.stringify(input), signal: AbortSignal.timeout(70000),
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Unable to analyze this meal.");
+  if (!response.ok) throw new Error(data.error || t("Unable to analyze this meal."));
   return data;
 }
 
 export async function analyzeMealPhoto(file: File, note = "") {
-  if (!file.size) throw new Error("Choose a nonempty image.");
-  if (file.size > 10 * 1024 * 1024) throw new Error("Choose an image under 10 MB.");
-  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Use a JPEG, PNG or WebP photo.");
+  if (!file.size) throw new Error(t("Choose a nonempty image."));
+  if (file.size > 10 * 1024 * 1024) throw new Error(t("Choose an image under 10 MB."));
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error(t("Use a JPEG, PNG or WebP photo."));
   const { preparePhoto } = await import("./photo-prep");
   return analyzeMeal({ image: await preparePhoto(file), ...(note.trim() ? { text: note.trim() } : {}) });
 }

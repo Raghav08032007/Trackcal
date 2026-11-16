@@ -1,6 +1,6 @@
 // A person's profile at /u/:handle: follow (or request), their posts, and report / mute / block. Your own profile
 // also shows follow requests (private accounts) and lets you edit your details.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import Link from "@/lib/navigation";
@@ -8,7 +8,7 @@ import { SocialPost } from "@/components/social-post";
 import { ProfileSetup } from "@/app/feed/page";
 import { avatar, REPORT_REASONS, social, SocialError, type FeedPost, type Profile } from "@/lib/social";
 
-export const metadata = { title: "TrackCal — Profile" };
+export const metadata = { title:msg("TrackCal — Profile") };
 type View = { profile: Profile; locked: boolean; posts: FeedPost[]; next: string | null };
 
 export default function Page() {

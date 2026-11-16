@@ -587,7 +587,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [newIngName, setNewIngName] = useState("");
   const [newIngGrams, setNewIngGrams] = useState(100);
   const [newIngNutrition, setNewIngNutrition] = useState({ cal: 0, p: 0, c: 0, f: 0 });
-  const [recipeName, setRecipeName] = useLocalState("trackcal:recipe:name", "My homemade recipe");
+  const [recipeName, setRecipeName] = useLocalState("trackcal:recipe:name", t("My homemade recipe"));
   const [recipeError, setRecipeError] = useState("");
 
   const totalRecipeCals = recipeIngredients.reduce((a, b) => a + b.cal, 0);

@@ -1,8 +1,8 @@
 // Cache public navigation only. Authenticated responses, API data and account HTML never enter this cache.
 // Updates wait: a new version activates only when the page asks (SKIP_WAITING), so a workout is never interrupted.
 importScripts("/backup-sync.js");
-const CACHE = "trackcal-shell-v4";
-const PUBLIC_FILES = ["/offline.html", "/offline.css", "/offline.js"];
+const CACHE = "trackcal-shell-v5";
+const PUBLIC_FILES = ["/offline.html", "/offline.css", "/offline-i18n.js", "/offline.js"];
 self.addEventListener("install", event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(PUBLIC_FILES))); });
 self.addEventListener("activate", event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith("trackcal-shell-") && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())); });
 self.addEventListener("message", event => { if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting(); });

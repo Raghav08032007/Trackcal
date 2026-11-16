@@ -1,12 +1,12 @@
 // Challenges: open ones to join, yours, and starting a new one. Progress always comes from what you actually log.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { social } from "@/lib/social";
 import { ChallengeError, challenges, dates, METRIC_OPTIONS, goalMax, goalText, type ChallengeView } from "@/lib/challenges";
 
-export const metadata = { title: "TrackCal — Challenges" };
+export const metadata = { title:msg("TrackCal — Challenges") };
 
 export default function Page() {
   const { ready, user } = useAccount(); const router = useRouter();

@@ -1,3 +1,4 @@
+import { msg, t } from "@/lib/i18n";
 // Brings every character image (/characters/*.webp) to life, on any page:
 // idle breathing (staggered), tilting toward the mouse pointer, a hop with sparkles and a short cheer when tapped,
 // and a confetti celebration on every visible character when the server awards XP.
@@ -7,7 +8,7 @@ import { useEffect } from "react";
 import { XP_AWARDED_EVENT } from "@/lib/celebrate";
 
 const CHARACTER = 'img[src*="/characters/"]';
-const CHEERS = ["Nice one!", "Let's go!", "You've got this ✨", "Small wins count!", "Look at you go!", "High five!"];
+const CHEERS = [msg("Nice one!"), msg("Let's go!"), msg("You've got this ✨"), msg("Small wins count!"), msg("Look at you go!"), msg("High five!")];
 const COLORS = ["#ffdf83", "#04a09a", "#ff7a59", "#d9b2fe", "#ffd166"];
 
 export function calmMotion() {
@@ -32,7 +33,7 @@ function cheer(target: HTMLElement) {
   document.querySelectorAll(".lc-cheer").forEach(node => node.remove());
   const rect = target.getBoundingClientRect(), bubble = document.createElement("div");
   bubble.className = "lc-cheer"; bubble.setAttribute("aria-hidden", "true");
-  bubble.textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+  bubble.textContent = t(CHEERS[Math.floor(Math.random() * CHEERS.length)]);
   bubble.style.left = `${rect.left + rect.width / 2}px`; bubble.style.top = `${Math.max(8, rect.top - 6)}px`;
   document.body.appendChild(bubble);
   setTimeout(() => bubble.remove(), 1600);

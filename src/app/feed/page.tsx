@@ -1,12 +1,12 @@
 // The TrackCal feed (flag social_feed): pick a handle, then Following / Discover, share text or an app milestone.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { SocialPost } from "@/components/social-post";
 import { avatar, CHARACTERS, social, SocialError, type FeedPost, type Profile } from "@/lib/social";
 
-export const metadata = { title: "TrackCal — Feed" };
+export const metadata = { title:msg("TrackCal — Feed") };
 type Me = { profile: Profile | null; requests: number };
 
 export default function Page() {

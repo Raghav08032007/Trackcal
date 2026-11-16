@@ -1,12 +1,12 @@
 // Communities directory: discover (search, category), your communities, and starting a new one.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { social } from "@/lib/social";
 import { CATEGORY_LABELS, communities, CommunityError, type Community } from "@/lib/communities";
 
-export const metadata = { title: "TrackCal — Communities" };
+export const metadata = { title:msg("TrackCal — Communities") };
 
 export default function Page() {
   const { ready, user } = useAccount(); const router = useRouter();

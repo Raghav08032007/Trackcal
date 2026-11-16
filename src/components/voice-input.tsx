@@ -1,3 +1,4 @@
+import { t, msg } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import { encodeWav } from "@/lib/wav";
@@ -6,8 +7,8 @@ interface Recognition { lang: string; interimResults: boolean; continuous: boole
 type SpeechWindow = Window & { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
 type Mode = "idle" | "listening" | "recording" | "working";
 const SILENCE_MS = 4000, MAX_RECORDING_MS = 30000;
-const DENIED = "Microphone blocked. Allow it from the lock icon in the address bar, then try again.";
-const UNAVAILABLE = "Voice input is unavailable in this browser. Type your meal below.";
+const DENIED = msg("Microphone blocked. Allow it from the lock icon in the address bar, then try again.");
+const UNAVAILABLE = msg("Voice input is unavailable in this browser. Type your meal below.");
 
 async function recordingToWavBase64(blob: Blob) {
   const context = new AudioContext();
@@ -32,10 +33,10 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
   const withBase = (base: string, text: string) => (base.trim() ? `${base.trim()} ${text}` : text);
 
   async function record() {
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") { setError(UNAVAILABLE); setMode("idle"); return; }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") { setError(t(UNAVAILABLE)); setMode("idle"); return; }
     let stream: MediaStream;
     try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-    catch { setError(DENIED); setMode("idle"); return; }
+    catch { setError(t(DENIED)); setMode("idle"); return; }
     const base = latest.current, chunks: Blob[] = [], clip = new MediaRecorder(stream); recorder.current = clip;
     clip.ondataavailable = event => chunks.push(event.data);
     clip.onstop = async () => {
@@ -45,9 +46,9 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
       try {
         const response = await fetch("/api/transcribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ audio: await recordingToWavBase64(new Blob(chunks)) }), signal: AbortSignal.timeout(30000) });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Could not understand that. Try again or type your meal.");
+        if (!response.ok) throw new Error(data.error || t("Could not understand that. Try again or type your meal."));
         if (alive.current) onText(withBase(base, data.text));
-      } catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : "Could not understand that. Try again or type your meal."); }
+      } catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : t("Could not understand that. Try again or type your meal.")); }
       finally { if (alive.current) setMode("idle"); }
     };
     clip.start(); setMode("recording"); silence.current = setTimeout(() => clip.stop(), MAX_RECORDING_MS);
@@ -69,16 +70,16 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
     };
     instance.onerror = event => {
       clearTimeout(silence.current); instance.onend = null;
-      if (event?.error === "not-allowed") { setError(DENIED); setMode("idle"); }
-      else if (event?.error === "no-speech") { setError("Didn't catch anything. Press the button and speak a little louder."); setMode("idle"); }
+      if (event?.error === "not-allowed") { setError(t(DENIED)); setMode("idle"); }
+      else if (event?.error === "no-speech") { setError(t("Didn't catch anything. Press the button and speak a little louder.")); setMode("idle"); }
       else if (event?.error === "aborted") setMode("idle");
       else if (event?.error) void record();
-      else { setError("Microphone or speech service unavailable. Check permission or type your meal."); setMode("idle"); }
+      else { setError(t("Microphone or speech service unavailable. Check permission or type your meal.")); setMode("idle"); }
     };
     instance.onend = () => { clearTimeout(silence.current); setMode("idle"); };
     try { instance.start(); setMode("listening"); silence.current = setTimeout(() => instance.stop?.(), SILENCE_MS * 2); } catch { void record(); }
   }
-  const label = mode === "listening" ? "Stop listening" : mode === "recording" ? "Stop and write it down" : mode === "working" ? "Writing it down…" : "Speak a meal";
-  const hint = mode === "listening" ? "Listening. Your words appear below." : mode === "recording" ? "Recording. Press stop when you finish." : "Say what you ate and how much. Audio is sent to a speech or AI service to write it down.";
-  return <div className={`voice-input voice-${mode}`}><label className="voice-language">Language<select value={language} disabled={mode !== "idle"} onChange={event => setLanguage(event.target.value)}><option value="en-IN">English</option><option value="hi-IN">हिन्दी</option><option value="ta-IN">தமிழ்</option></select></label><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button>{mode !== "idle" && <span>{hint}</span>}{error && <p role="alert">{error}</p>}</div>;
+  const label = mode === "listening" ? t("Stop listening") : mode === "recording" ? t("Stop and write it down") : mode === "working" ? t("Writing it down…") : t("Speak a meal");
+  const hint = mode === "listening" ? t("Listening. Your words appear below.") : mode === "recording" ? t("Recording. Press stop when you finish.") : t("Say what you ate and how much. Audio is sent to a speech or AI service to write it down.");
+  return <div className={`voice-input voice-${mode}`}><label className="voice-language">{t("Language")}<select value={language} disabled={mode !== "idle"} onChange={event => setLanguage(event.target.value)}><option value="en-IN">{t("English")}</option><option value="hi-IN">हिन्दी</option><option value="ta-IN">தமிழ்</option></select></label><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button>{mode !== "idle" && <span>{hint}</span>}{error && <p role="alert">{error}</p>}</div>;
 }

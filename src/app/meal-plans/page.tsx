@@ -1,5 +1,5 @@
 // Meal plans: plan the week's meals from your recipes and pantry, within your targets and budget.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useState } from "react";
 import { useLocalDate, useLocalState } from "@/lib/use-local-state";
 import { MealPlanner } from "@/components/meal-planner";
@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import Link from "@/lib/navigation";
 import type { SavedRecipe, PantryEntry, ShoppingEntry } from "@/lib/smart-tools";
 
-export const metadata = { title: "TrackCal — Meal plans" };
+export const metadata = { title:msg("TrackCal — Meal plans") };
 
 export default function Page() {
   const today = useLocalDate();

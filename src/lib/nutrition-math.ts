@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 // Pure nutrition arithmetic (mirrors backend/services/nutrition_math.py so the app and the server agree).
 // Values are per 100 g unless stated. Unknown is null and stays null, never 0. Calories round to a whole number,
 // macros to one decimal, halves rounding up. Totals over items with unknown values are reported as partial.
@@ -17,11 +18,11 @@ export function roundValue(field: Field, value: number | null): number | null {
 }
 
 export function scale(per100g: Nutrients, grams: number): Nutrients {
-  if (!finiteNonNegative(grams)) throw new Error("Grams must be a finite, non-negative number.");
+  if (!finiteNonNegative(grams)) throw new Error(t("Grams must be a finite, non-negative number."));
   const result = {} as Nutrients;
   for (const field of FIELDS) {
     const value = per100g[field];
-    if (value !== null && !finiteNonNegative(value)) throw new Error(`${field} must be a finite, non-negative number or unknown.`);
+    if (value !== null && !finiteNonNegative(value)) throw new Error(t("{field} must be a finite, non-negative number or unknown.", { field }));
     result[field] = value === null ? null : (value * grams) / 100;
   }
   return result;
@@ -44,7 +45,7 @@ export function total(items: Nutrients[]): { totals: Nutrients; partial: Field[]
 }
 
 export function servingGrams(unit: keyof typeof SERVING_UNITS_G | "piece", quantity = 1, gramsPerPiece: number | null = null): number | null {
-  if (!finiteNonNegative(quantity)) throw new Error("Quantity must be a finite, non-negative number.");
+  if (!finiteNonNegative(quantity)) throw new Error(t("Quantity must be a finite, non-negative number."));
   if (unit === "piece") return gramsPerPiece === null ? null : quantity * gramsPerPiece; // never guessed
   return quantity * SERVING_UNITS_G[unit];
 }

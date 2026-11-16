@@ -1,5 +1,5 @@
 // Events: what's coming up, what you're going to or organizing, and creating a new one.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
@@ -7,7 +7,7 @@ import { social } from "@/lib/social";
 import { CATEGORY_LABELS } from "@/lib/communities";
 import { EventError, events, when, type EventView } from "@/lib/events";
 
-export const metadata = { title: "TrackCal — Events" };
+export const metadata = { title:msg("TrackCal — Events") };
 
 export default function Page() {
   const { ready, user } = useAccount(); const router = useRouter();

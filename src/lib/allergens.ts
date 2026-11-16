@@ -1,3 +1,4 @@
+import { msg, localizedMap } from "./i18n";
 /* Allergen matching follows fud-ai by apoorvdarshan (MIT licence): https://github.com/apoorvdarshan/fud-ai
  * Your listed allergies are checked against what a label declares first, then traces, then ingredients, then the
  * food's name, and the strongest match wins. Words for Indian foods are added so paneer counts as milk and maida as wheat. */
@@ -36,4 +37,5 @@ export function checkAllergens(sources:AllergenSource[],allergies:string[]){
  }
  return {level:'none' as const,matched:[] as string[]};
 }
-export const ALLERGEN_WORDS:Record<AllergenLevel,string>={declared:'Contains',may:'May contain',possible:'Might contain'};
+export const ALLERGEN_WORDS:Record<AllergenLevel,string>={declared:msg("Contains"),may:msg("May contain"),possible:msg("Might contain")};
+localizedMap(ALLERGEN_WORDS);
