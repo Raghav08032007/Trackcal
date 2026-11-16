@@ -51,7 +51,7 @@ privacy texts. Keep the glossary consistent.
 
 ## Progress
 
-Wave 1, done (2,579 texts in each language):
+Wave 1, done (3,122 texts in each language):
 - the app frame: navigation, section pages, quick add, footer, appearance, sync status, feedback, the language picker;
 - sign-in, sign-up and account recovery;
 - Today: plan, tasks, Health Score, coach lines, recovery check-in, your day, daily progress and companions;
@@ -60,9 +60,12 @@ Wave 1, done (2,579 texts in each language):
 - Move: camera workouts with every exercise, level, tip and camera message, the spoken voice coach (it speaks in the chosen
   language with a matching installed voice), holds, choosing by muscle, workout builder and programs, GPS recording, routes,
   activities and privacy zones, segments, weekly effort, recovery map, workout history, safety checks, rep replay and the
-  companion card.
+  companion card;
+- Play: quests and Pip's garden, Label Detective, the camera sports games (skip rope, shadow boxing, cricket drive,
+  badminton smash) with their coaching lines, the six companions, bond card, challenges, feed and posts, communities,
+  events and event check-in. Feed times ("5 min ago") use the browser's own wording for each language.
 
-Next, in order: Play, Me and settings, then every other screen, then server messages (task titles, Health Score notes,
+Next, in order: Me and settings, then every other screen, then server messages (task titles, Health Score notes,
 meal ideas, advice, the activity guidance on Workouts and the weekly trend notes), emails and notifications.
 
 Counted texts: each language's catalog holds its own plural forms; English singulars live in `src/lib/i18n/en-plurals.ts`.
