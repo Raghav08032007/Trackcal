@@ -51,7 +51,7 @@ privacy texts. Keep the glossary consistent.
 
 ## Progress
 
-Wave 1, done (3,864 texts in each language):
+Wave 1, done (4,505 texts in each language):
 - the app frame: navigation, section pages, quick add, footer, appearance, sync status, feedback, the language picker;
 - sign-in, sign-up and account recovery;
 - Today: plan, tasks, Health Score, coach lines, recovery check-in, your day, daily progress and companions;
@@ -67,10 +67,20 @@ Wave 1, done (3,864 texts in each language):
 - Me and settings: the 8-step onboarding (goals, body, region, food, injuries with the body map, week), account and
   security, health report and its plan, progress and training load, premium and payments, notifications and reminders,
   coach booking, history export and import, help, the guided test drive, and the journey companion shown on every page.
-  State and country names stay as typed because they are saved as entered.
+  State and country names stay as typed because they are saved as entered;
+- every other screen: the design system page, search and the command palette, voice input, label reading, the exercise
+  library, pantry and Grocy, price checks, photo credits, the body preview, the app tour, the privacy notice, the product
+  terms, "page not found", and every browser tab title (the tab title changes with the language too);
+- the standalone offline journal (`public/offline.html`), which opens with no network and no app bundle. `build.py` writes
+  its texts to `public/offline-i18n.js` (the rows listed in `OFFLINE_KEYS` in `scripts/i18n/offline.py`), and the service
+  worker caches that file with the page.
 
-Next, in order: every other screen, then server messages (task titles, Health Score notes,
-meal ideas, advice, the activity guidance on Workouts, the weekly trend notes and the motivation quotes), emails and notifications.
+Left in English on purpose: food and product names from databases, photo file names and artists' names on the credits page,
+the user's own email and entries, CSV column names, keyboard shortcuts, and saved source labels such as "Manual entry".
+The privacy notice and terms also need a legal review in each language before launch.
+
+Next: server messages (task titles, Health Score notes, meal ideas, advice, the activity guidance on Workouts, the weekly
+trend notes and the motivation quotes), emails and notifications.
 
 Counted texts: each language's catalog holds its own plural forms; English singulars live in `src/lib/i18n/en-plurals.ts`.
 A test fails if a text with plural forms is shown without a `count`.
