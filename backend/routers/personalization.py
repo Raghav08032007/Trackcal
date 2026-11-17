@@ -12,6 +12,7 @@ from services import adventure,gamification,personalization as rules
 from services.personalization_inputs import SaveProgress,Preferences,MeasurementInput,GeneratePlan,ActivityAction,PlanAction,ReminderAction,EducationInput
 from services.abuse_limits import consume
 import models
+from services.i18n import msg, tr
 
 def lock(db,user):db.query(models.User).filter_by(id=user.id).with_for_update().one()
 def profile(db,user,required=False):
@@ -36,7 +37,7 @@ def measurement_view(row,units='metric'):
 def plan_view(db,plan):
  if not plan:return None
  activities=db.query(models.PlanActivity).filter_by(plan_id=plan.id).order_by(models.PlanActivity.scheduled_day,models.PlanActivity.id).all()
- return {'id':plan.id,'week_start':plan.week_start,'status':plan.status,'explanation':plan.snapshot,'activities':[{'id':a.id,'template_id':a.template_id,'day':a.scheduled_day,'minutes':a.minutes,'status':a.status,'feedback':a.feedback,'template':{**rules.TEMPLATES[a.template_id],'recovery':rules.RECOVERY}} for a in activities]}
+ return {'id':plan.id,'week_start':plan.week_start,'status':plan.status,'explanation':rules.explanation_view(plan.snapshot),'activities':[{'id':a.id,'template_id':a.template_id,'day':a.scheduled_day,'minutes':a.minutes,'status':a.status,'feedback':a.feedback,'template':{**rules.template_view(a.template_id),'recovery':tr(rules.RECOVERY)}} for a in activities]}
 
 def state(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);row=profile(db,user);prefs=prefs_for(row)
@@ -51,7 +52,7 @@ def state(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
   if latest_row:latest[kind]=latest_row.canonical_value
  feedback_rows=db.query(models.PlanActivity).join(models.ActivityPlan).filter(models.ActivityPlan.user_id==user.id,models.PlanActivity.feedback.isnot(None)).order_by(models.ActivityPlan.created_at.desc()).limit(50).all()
  plan=db.query(models.ActivityPlan).filter_by(user_id=user.id).filter(models.ActivityPlan.status!='archived').order_by(models.ActivityPlan.created_at.desc(),models.ActivityPlan.id.desc()).first()
- data={'minor_account':bool(user.is_minor),'feedback_history':[{'id':a.id,'name':rules.TEMPLATES[a.template_id]['name'],'feedback':a.feedback} for a in feedback_rows],'preferences':prefs.model_dump(),'step':row.step if row else 1,'revision':row.revision if row else 0,'completed':bool(row and row.completed_at),'measurements':[measurement_view(m,prefs.units) for m in measurements],'bmi':rules.bmi(latest.get('height'),latest.get('weight'),prefs.age_group),'plan':plan_view(db,plan),'recommendations':rules.recommendations(prefs),'education':[{key:value for key,value in {'id':key,**module}.items() if key!='answer'} for key,module in rules.EDUCATION.items()],'eligible_templates':[{'id':key,**rules.TEMPLATES[key]} for key in rules.eligible_templates(prefs,include_camera=True)],'today':str(local_now(prefs).date())}
+ data={'minor_account':bool(user.is_minor),'feedback_history':[{'id':a.id,'name':tr(rules.TEMPLATES[a.template_id]['name']),'feedback':a.feedback} for a in feedback_rows],'preferences':prefs.model_dump(),'step':row.step if row else 1,'revision':row.revision if row else 0,'completed':bool(row and row.completed_at),'measurements':[measurement_view(m,prefs.units) for m in measurements],'bmi':rules.bmi(latest.get('height'),latest.get('weight'),prefs.age_group),'plan':plan_view(db,plan),'recommendations':rules.recommendations(prefs),'education':[rules.education_view(key) for key in rules.EDUCATION],'eligible_templates':[{'id':key,**rules.template_view(key)} for key in rules.eligible_templates(prefs,include_camera=True)],'today':str(local_now(prefs).date())}
  db.commit();return data
 
 def save_progress(data:SaveProgress,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
@@ -149,14 +150,14 @@ def education(data:EducationInput,user=Depends(get_current_active_user),db:Sessi
  consume(db,'education-check',str(user.id),30,3600);lock(db,user);profile(db,user,True)
  module=rules.EDUCATION[data.module];correct=data.answer==module['answer']
  points=reward(db,user,data.module+'_learning',f'v1:{data.module}',f'v2:lesson:{data.module}:{user.id}') if correct else 0
- return result(db,user,correct=correct,explanation=module['text'],awarded_xp=points)
+ return result(db,user,correct=correct,explanation=tr(module['text']),awarded_xp=points)
 
 def due_reminders(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);row=profile(db,user)
  if not row:return {'items':[]}
  prefs=prefs_for(row);now=local_now(prefs);day=str(now.date());clock=now.strftime('%H:%M');utc=now.astimezone(timezone.utc).replace(tzinfo=None)
  if rules.quiet(clock,prefs.reminders.quiet_start,prefs.reminders.quiet_end):return {'items':[]}
- messages={'hydration':'Consider a hydration break if it suits your needs. No universal amount is prescribed.','workout':'Review your optional planned activity. Rest or reschedule whenever needed.','recovery':'Make room for a comfortable pause.','sleep':'A reminder for your chosen wind-down routine.','motivation':'A small step or a fresh start both count.'}
+ messages={'hydration':msg('Consider a hydration break if it suits your needs. No universal amount is prescribed.'),'workout':msg('Review your optional planned activity. Rest or reschedule whenever needed.'),'recovery':msg('Make room for a comfortable pause.'),'sleep':msg('A reminder for your chosen wind-down routine.'),'motivation':msg('A small step or a fresh start both count.')}
  items=[]
  for category,message in messages.items():
   setting=getattr(prefs.reminders,category)
@@ -165,7 +166,7 @@ def due_reminders(user=Depends(get_current_active_user),db:Session=Depends(get_d
   delivery=db.query(models.ReminderDelivery).filter_by(user_id=user.id,category=category,local_day=day).with_for_update().first()
   if not delivery:delivery=models.ReminderDelivery(user_id=user.id,category=category,local_day=day);db.add(delivery);db.flush()
   if delivery.status=='dismissed' or delivery.snoozed_until and delivery.snoozed_until>utc:continue
-  items.append({'id':delivery.id,'category':category,'message':message})
+  items.append({'id':delivery.id,'category':category,'message':tr(message)})
  db.commit();return {'items':items[:5],'timezone':prefs.timezone,'delivery':'in-app while open; no external push'}
 
 def reminder_action(identifier:uuid.UUID,data:ReminderAction,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
@@ -335,7 +336,7 @@ def recovery_view(user=Depends(get_current_active_user), db: Session = Depends(g
     acc = access(db, user, today); parts = [evaluate(c, by_part.get(c.part, []), today) for c in prefs.conditions]
     if acc['limited']:
         for p in parts: p['history'] = [h for h in p['history'] if h['day'] >= acc['from']]   # the stage still uses all four weeks
-    return {'today': today.isoformat(), 'parts': parts, 'history': acc, 'red_flags': RED_FLAGS, 'source': SOURCE}
+    return {'today': today.isoformat(), 'parts': parts, 'history': acc, 'red_flags': {key: tr(label) for key, label in RED_FLAGS.items()}, 'source': tr(SOURCE)}
 
 
 def pain_checkin(data: PainCheckinInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):

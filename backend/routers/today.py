@@ -14,6 +14,7 @@ from routers.personalization import checkins_by_part, latest_weight, local_now, 
 from services import daily_tasks, gamification
 from services import personalization as rules
 from services.abuse_limits import consume
+from services.i18n import tr
 
 
 class TaskDone(BaseModel):
@@ -102,7 +103,7 @@ def today_view(user=Depends(get_current_active_user), db: Session = Depends(get_
     task_days = sum(d['day'] in set(mark_days) for d in week)
     return {'today': day, 'tasks': tasks, 'done': sum(t['done'] for t in tasks),
             'streak': {'current': streak['current'], 'best': streak['best'], 'protected_days': streak['protected_days'][-5:],
-                       'rule': 'Days with a task done. One missed day a week is covered, and planned rest days keep it going.'},
+                       'rule': tr('Days with a task done. One missed day a week is covered, and planned rest days keep it going.')},
             'health': daily_tasks.health_score(week, {'calories': targets.get('calories'), 'protein': targets.get('protein')}, task_days)}
 
 

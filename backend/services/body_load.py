@@ -6,6 +6,8 @@ Sides are not separated: the exercises here load both sides.
 """
 from __future__ import annotations
 
+from services.i18n import msg
+
 PARTS = ('neck', 'shoulder', 'elbow', 'wrist', 'chest', 'abdomen', 'lower_back', 'hip', 'knee', 'ankle')
 H, L = 'H', 'L'
 
@@ -120,9 +122,27 @@ def allowed(template, guard):
 
 
 def why_left_out(guard):
-    """Plain sentences for the plan screen."""
+    """Plain sentences for the plan screen, in English (they are stored with the plan; shown with services.i18n.tr)."""
     out = []
     for part, level in sorted(guard.items()):
         name = LABELS.get(part, part)
         out.append(f'Nothing that loads your {name} while it heals.' if level == 'avoid' else f'Only light work for your {name}; heavy and impact moves wait until it has recovered.')
     return out
+
+
+# The sentences why_left_out can produce, each translated as a whole.
+PROTECTED_TEXTS = [msg('Nothing that loads your neck while it heals.'), msg('Nothing that loads your shoulder while it heals.'),
+    msg('Nothing that loads your elbow while it heals.'), msg('Nothing that loads your wrist while it heals.'),
+    msg('Nothing that loads your chest while it heals.'), msg('Nothing that loads your abdomen while it heals.'),
+    msg('Nothing that loads your lower back while it heals.'), msg('Nothing that loads your hip while it heals.'),
+    msg('Nothing that loads your knee while it heals.'), msg('Nothing that loads your ankle while it heals.'),
+    msg('Only light work for your neck; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your shoulder; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your elbow; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your wrist; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your chest; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your abdomen; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your lower back; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your hip; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your knee; heavy and impact moves wait until it has recovered.'),
+    msg('Only light work for your ankle; heavy and impact moves wait until it has recovered.')]

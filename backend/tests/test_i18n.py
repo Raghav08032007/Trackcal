@@ -10,23 +10,24 @@ from services import i18n
 
 BACKEND = Path(__file__).resolve().parents[1]
 WAVE1 = [code for code in i18n.LANGS if code != 'en']
-SKIP = {'tests', 'i18n', '.venv', 'alembic', 'migrations', '__pycache__', 'runtime', 'uploads', 'scripts'}
+SOURCE = ('routers', 'services', 'flask_app', 'schemas')   # the code that sends texts to people (not tests, tools or virtualenvs)
 
 
 def wrapped_texts():
     """(file, text, plural) for every literal passed to tr(), tr_n() or msg() in the server code. f-strings are refused."""
     found = []
-    for path in sorted(BACKEND.rglob('*.py')):
-        if SKIP & set(path.relative_to(BACKEND).parts): continue
+    files = [path for folder in SOURCE for path in (BACKEND / folder).rglob('*.py')] + sorted(BACKEND.glob('*.py'))
+    for path in sorted(files):
+        if '__pycache__' in path.parts: continue
         for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))):
             if not isinstance(node, ast.Call): continue
             name = getattr(node.func, 'id', None) or getattr(node.func, 'attr', None)
             if name not in ('tr', 'tr_n', 'msg'): continue
-            args = node.args[:2] if name == 'tr_n' else node.args[:1]
+            args = node.args[1:2] if name == 'tr_n' else node.args[:1]   # tr_n: the 'other' text is the catalog key
             for arg in args:
                 assert not isinstance(arg, ast.JoinedStr), f'{path.name}:{node.lineno}: use tr("... {{name}}", name=...) instead of an f-string'
                 if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                    found.append((path.name, arg.value, name == 'tr_n' and arg is args[1]))
+                    found.append((path.name, arg.value, name == 'tr_n'))
     return found
 
 
@@ -43,6 +44,16 @@ def data_texts():
         elif isinstance(value, list):
             for item in value: walk(item)
     walk(quotes)
+    from services import personalization as plans
+    for t in plans.TEMPLATES.values(): out += [('personalization.py', t['name'], False), ('personalization.py', t['review'], False)] + [('personalization.py', part, False) for part in plans.sentences(t['instructions'])]
+    for m in plans.MEALS: out += [('personalization.py', m[f], False) for f in ('name', 'tip', 'substitution')]
+    for m in plans.EDUCATION.values(): out += [('personalization.py', m[f], False) for f in ('title', 'text', 'question')] + [('personalization.py', o, False) for o in m['options']]
+    out.append(('personalization.py', plans.RECOVERY, False))
+    from services import health_plan, lab_reference, recovery
+    for test in lab_reference.BY_CODE.values(): out += [('lab_reference.py', t, False) for t in (test.name, test.explain_high, test.explain_low) if t]
+    for rule in health_plan.RULES.values(): out += [('health_plan.py', t, False) for t in rule['diet'] + rule['move']]
+    out += [('health_plan.py', about, False) for about, _ in health_plan.WHY.values()]
+    out += [('recovery.py', t, False) for t in list(recovery.NAMES.values()) + list(recovery.RED_FLAGS.values()) + [recovery.SOURCE]]
     return out
 
 

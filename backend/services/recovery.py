@@ -19,6 +19,7 @@ from __future__ import annotations
 from datetime import date
 
 from services import body_load
+from services.i18n import tr
 
 ORDER = ('avoid', 'healing', 'recovered')
 NAMES = {'avoid': 'Resting it', 'healing': 'Easing back', 'recovered': 'Recovered'}
@@ -59,37 +60,38 @@ def evaluate(condition, checkins, today: date):
     base = body_load.stage(condition)
     recent = [c for c in checkins if (today - _days(c['day'])).days <= 28]
     latest = recent[-1] if recent and (today - _days(recent[-1]['day'])).days < FRESH_DAYS else None
-    stage, reason, alert, advice = base, 'Set from what you told us about it.', None, ''
+    stage, reason, alert, advice = base, tr('Set from what you told us about it.'), None, ''
     if latest and (latest.get('red_flags') or latest['pain'] >= PAUSE_PAIN):
         flags = [RED_FLAGS.get(f, f) for f in latest.get('red_flags') or []]
         stage, alert = 'avoid', 'doctor'
-        reason = f"You reported {', '.join(flags).lower()}." if flags else f"Your pain was {latest['pain']} out of 10."
-        advice = 'Exercise for this area is paused. Please see a doctor, or a physiotherapist, before you start again.'
+        reason = tr('You reported {flags}.', flags=', '.join(tr(f) for f in flags).lower()) if flags else tr('Your pain was {pain} out of 10.', pain=latest['pain'])
+        advice = tr('Exercise for this area is paused. Please see a doctor, or a physiotherapist, before you start again.')
     elif latest and len(recent) >= 2 and _worse(recent[-3] if len(recent) > 2 else None, recent[-2]) and _worse(recent[-2], recent[-1]):
         stage, alert = ORDER[max(0, ORDER.index(base) - 1)], 'physio'
-        reason = 'It has been getting worse two check-ins running.'
-        advice = 'We have stepped back to lighter work for this area. If it keeps getting worse, see a physiotherapist or doctor.'
+        reason = tr('It has been getting worse two check-ins running.')
+        advice = tr('We have stepped back to lighter work for this area. If it keeps getting worse, see a physiotherapist or doctor.')
     elif latest and latest['pain'] > EASE_PAIN and base == 'recovered':
-        stage, reason = 'healing', f"Your pain was {latest['pain']} out of 10, so only light work for now."
+        stage, reason = 'healing', tr('Your pain was {pain} out of 10, so only light work for now.', pain=latest['pain'])
     elif _held_by_time(condition) and base == 'avoid':
-        reason = 'Recent surgery or injury: this area rests until enough time has passed' + (' and a professional has cleared it.' if condition.kind == 'surgery' else '.')
+        reason = (tr('Recent surgery or injury: this area rests until enough time has passed and a professional has cleared it.') if condition.kind == 'surgery'
+                  else tr('Recent surgery or injury: this area rests until enough time has passed.'))
     else:
         ease, done = _streak(recent, EASE_PAIN), _streak(recent, DONE_PAIN)
         if base != 'recovered' and done >= DONE_DAYS:
-            stage, reason = 'recovered', f'{done} days running with pain 1 or less.'
+            stage, reason = 'recovered', tr('{n} days running with pain 1 or less.', n=done)
         elif base == 'avoid' and ease >= EASE_DAYS:
-            stage, reason = 'healing', f'{ease} days running with pain 2 or less, so light work can start again.'
+            stage, reason = 'healing', tr('{n} days running with pain 2 or less, so light work can start again.', n=ease)
         elif recent and base != 'recovered':
-            reason = f"{ease} of {EASE_DAYS} steady days so far." if base == 'avoid' else f"{done} of {DONE_DAYS} days with pain 1 or less so far."
+            reason = tr('{n} of {total} steady days so far.', n=ease, total=EASE_DAYS) if base == 'avoid' else tr('{n} of {total} days with pain 1 or less so far.', n=done, total=DONE_DAYS)
     nxt = ''
     if alert is None and stage == 'avoid' and not _held_by_time(condition):
-        nxt = f'{max(0, EASE_DAYS - _streak(recent, EASE_PAIN))} more day(s) with pain 2 or less to start easing back.'
+        nxt = tr('{n} more day(s) with pain 2 or less to start easing back.', n=max(0, EASE_DAYS - _streak(recent, EASE_PAIN)))
     elif alert is None and stage == 'healing':
-        nxt = f'{max(0, DONE_DAYS - _streak(recent, DONE_PAIN))} more day(s) with pain 1 or less to count as recovered.'
+        nxt = tr('{n} more day(s) with pain 1 or less to count as recovered.', n=max(0, DONE_DAYS - _streak(recent, DONE_PAIN)))
     return {'part': condition.part, 'label': body_load.LABELS.get(body_load.region(condition.part), condition.part).replace('_', ' '),
             'side': {'l': 'left', 'r': 'right'}.get(condition.part.rsplit('_', 1)[-1]) if condition.part.endswith(('_l', '_r')) else None,
-            'kind': condition.kind, 'base': base, 'stage': stage, 'stage_name': NAMES[stage], 'reason': reason, 'alert': alert, 'advice': advice,
-            'next': nxt, 'checked_today': bool(recent and recent[-1]['day'] == today.isoformat()), 'history': recent[-28:], 'source': SOURCE}
+            'kind': condition.kind, 'base': base, 'stage': stage, 'stage_name': tr(NAMES[stage]), 'reason': reason, 'alert': alert, 'advice': advice,
+            'next': nxt, 'checked_today': bool(recent and recent[-1]['day'] == today.isoformat()), 'history': recent[-28:], 'source': tr(SOURCE)}
 
 
 def effective_conditions(conditions, checkins_by_part, today: date):

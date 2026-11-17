@@ -24,17 +24,23 @@ A part with no data that week is left out and the rest are re-weighted, so not l
 """
 from __future__ import annotations
 
+from services.i18n import msg, tr, tr_n
+
 WEIGHTS = {'activity': 25, 'sleep': 20, 'nutrition': 25, 'water': 15, 'steadiness': 15}
-SOURCES = {'activity': 'WHO physical activity guidelines 2020: 150-300 minutes a week',
-           'sleep': 'American Academy of Sleep Medicine and National Sleep Foundation: 7-9 hours for adults',
-           'nutrition': 'Your daily targets (Mifflin-St Jeor energy; ICMR-NIN 2020 protein)',
-           'water': 'Your daily water goal', 'steadiness': 'Days you completed at least one task'}
-NAMES = {'activity': 'Activity', 'sleep': 'Sleep', 'nutrition': 'Nutrition', 'water': 'Water', 'steadiness': 'Steadiness'}
-TIPS = {'activity': 'Add a 20-minute walk or a short camera workout on 3 more days this week.',
-        'sleep': 'Aim for 7-9 hours: a fixed bedtime and no screens for the last half hour help most.',
-        'nutrition': 'Log two meals a day and keep close to your calorie and protein targets.',
-        'water': 'Keep a bottle in sight and have a glass with each meal.',
-        'steadiness': 'Finish one of today\'s three tasks each day: small and steady counts most.'}
+SOURCES = {'activity': msg('WHO physical activity guidelines 2020: 150-300 minutes a week'),
+           'sleep': msg('American Academy of Sleep Medicine and National Sleep Foundation: 7-9 hours for adults'),
+           'nutrition': msg('Your daily targets (Mifflin-St Jeor energy; ICMR-NIN 2020 protein)'),
+           'water': msg('Your daily water goal'), 'steadiness': msg('Days you completed at least one task')}
+NAMES = {'activity': msg('Activity'), 'sleep': msg('Sleep'), 'nutrition': msg('Nutrition'), 'water': msg('Water'), 'steadiness': msg('Steadiness')}
+TIPS = {'activity': msg('Add a 20-minute walk or a short camera workout on 3 more days this week.'),
+        'sleep': msg('Aim for 7-9 hours: a fixed bedtime and no screens for the last half hour help most.'),
+        'nutrition': msg('Log two meals a day and keep close to your calorie and protein targets.'),
+        'water': msg('Keep a bottle in sight and have a glass with each meal.'),
+        'steadiness': msg('Finish one of today\'s three tasks each day: small and steady counts most.')}
+# Body parts as routers/today.injuries names them (side + region), each translated as a whole phrase.
+PART_NAMES = [msg('neck'), msg('left shoulder'), msg('right shoulder'), msg('left elbow'), msg('right elbow'), msg('left wrist'),
+              msg('right wrist'), msg('chest'), msg('abdomen'), msg('lower back'), msg('left hip'), msg('right hip'), msg('left knee'),
+              msg('right knee'), msg('left ankle'), msg('right ankle')]
 WEEK_ACTIVE_MIN, DAY_ACTIVE_MIN, GLASS_ML = 150, 20, 250
 
 
@@ -45,24 +51,29 @@ def choose_tasks(ctx):
     tasks = []
     if ctx.get('injured'):
         parts = ctx['injured']
-        tasks.append({'id': 'checkin', 'title': f"Check in on your {parts[0]}" + (f" and {len(parts) - 1} more" if len(parts) > 1 else ''),
-                      'why': 'Your daily pain score moves your recovery stage safely.', 'done': bool(ctx.get('checked_in')), 'tick': False, 'href': '/recovery'})
+        title = (tr('Check in on your {part} and {n} more', part=tr(parts[0]), n=len(parts) - 1) if len(parts) > 1
+                 else tr('Check in on your {part}', part=tr(parts[0])))
+        title = title[:1].upper() + title[1:]   # some languages start with the part's name
+        tasks.append({'id': 'checkin', 'title': title,
+                      'why': tr('Your daily pain score moves your recovery stage safely.'), 'done': bool(ctx.get('checked_in')), 'tick': False, 'href': '/recovery'})
     plan = ctx.get('plan_today')
     if plan:
-        tasks.append({'id': 'plan', 'title': f"{plan['name']}, {plan['minutes']} minutes", 'why': "Today's session from your weekly plan.",
+        tasks.append({'id': 'plan', 'title': tr('{name}, {minutes} minutes', name=tr(plan['name']), minutes=plan['minutes']),
+                      'why': tr("Today's session from your weekly plan."),
                       'done': bool(plan.get('done')), 'tick': False, 'href': '/plan'})
     if ctx.get('post_meal_walk'):
-        tasks.append({'id': 'walk', 'title': 'Walk 10 minutes after lunch and dinner', 'why': 'Your report flags blood sugar; walks after meals lower the rise (ADA).',
+        tasks.append({'id': 'walk', 'title': tr('Walk 10 minutes after lunch and dinner'),
+                      'why': tr('Your report flags blood sugar; walks after meals lower the rise (ADA).'),
                       'done': bool(ctx.get('walk_done')), 'tick': True, 'href': None})
     goal = ctx.get('water_goal_ml') or 2000
     left = max(0, goal - (ctx.get('water_ml') or 0))
     glasses = -(-left // GLASS_ML)
-    tasks.append({'id': 'water', 'title': 'Water goal reached' if not left else f"Drink {glasses} more glass{'es' if glasses != 1 else ''} of water",
-                  'why': f'Your goal is {goal / 1000:g} litres today.', 'done': not left, 'tick': False, 'href': '/'})
-    tasks.append({'id': 'meals', 'title': 'Log two meals', 'why': 'Logged meals make your calorie and protein numbers accurate.',
+    tasks.append({'id': 'water', 'title': tr('Water goal reached') if not left else tr_n('Drink {count} more glass of water', 'Drink {count} more glasses of water', glasses),
+                  'why': tr('Your goal is {litres} litres today.', litres=goal / 1000), 'done': not left, 'tick': False, 'href': '/'})
+    tasks.append({'id': 'meals', 'title': tr('Log two meals'), 'why': tr('Logged meals make your calorie and protein numbers accurate.'),
                   'done': (ctx.get('meals_today') or 0) >= 2, 'tick': False, 'href': '/food'})
-    tasks.append({'id': 'sleep', 'title': "Log last night's sleep", 'why': 'Sleep is a fifth of your Health Score.', 'done': bool(ctx.get('sleep_logged')), 'tick': False, 'href': '/'})
-    tasks.append({'id': 'move', 'title': f'Move for {DAY_ACTIVE_MIN} minutes', 'why': 'About 150 minutes a week is the WHO guideline.',
+    tasks.append({'id': 'sleep', 'title': tr("Log last night's sleep"), 'why': tr('Sleep is a fifth of your Health Score.'), 'done': bool(ctx.get('sleep_logged')), 'tick': False, 'href': '/'})
+    tasks.append({'id': 'move', 'title': tr('Move for {minutes} minutes', minutes=DAY_ACTIVE_MIN), 'why': tr('About 150 minutes a week is the WHO guideline.'),
                   'done': (ctx.get('active_min_today') or 0) >= DAY_ACTIVE_MIN or bool(ctx.get('move_done')), 'tick': True, 'href': '/move'})
     return tasks[:3]
 
@@ -86,10 +97,10 @@ def health_score(days, targets, task_days):
     parts = {}
     active = [d.get('active_min') or 0 for d in days]
     if any(active):
-        week = sum(active); parts['activity'] = (min(100, round(100 * week / WEEK_ACTIVE_MIN)), f'{week} of {WEEK_ACTIVE_MIN} active minutes this week')
+        week = sum(active); parts['activity'] = (min(100, round(100 * week / WEEK_ACTIVE_MIN)), tr('{n} of {total} active minutes this week', n=week, total=WEEK_ACTIVE_MIN))
     nights = [d['sleep_hours'] for d in days if d.get('sleep_hours')]
     if nights:
-        parts['sleep'] = (round(sum(_night(h) for h in nights) / len(nights)), f'{sum(7 <= h <= 9 for h in nights)} of {len(nights)} logged nights had 7-9 hours')
+        parts['sleep'] = (round(sum(_night(h) for h in nights) / len(nights)), tr('{n} of {total} logged nights had 7-9 hours', n=sum(7 <= h <= 9 for h in nights), total=len(nights)))
     fed = [d for d in days if (d.get('meals') or 0) >= 2 and d.get('kcal')]
     if fed and targets.get('calories'):
         def day_score(d):
@@ -97,18 +108,18 @@ def health_score(days, targets, task_days):
             p = 100 if not targets.get('protein') else 100 if d.get('protein', 0) >= .9 * targets['protein'] else 70 if d.get('protein', 0) >= .7 * targets['protein'] else 40
             return .6 * e + .4 * p
         on = sum(abs(d['kcal'] / targets['calories'] - 1) <= .10 for d in fed)
-        parts['nutrition'] = (round(sum(day_score(d) for d in fed) / len(fed)), f'{on} of {len(fed)} fully logged days within 10% of your calorie target')
+        parts['nutrition'] = (round(sum(day_score(d) for d in fed) / len(fed)), tr('{n} of {total} fully logged days within 10% of your calorie target', n=on, total=len(fed)))
     wet = [d for d in days if d.get('water_ml')]
     if wet:
         parts['water'] = (round(100 * sum(min(1, d['water_ml'] / (d.get('water_goal_ml') or 2000)) for d in wet) / len(wet)),
-                          f"{sum(d['water_ml'] >= (d.get('water_goal_ml') or 2000) for d in wet)} of {len(wet)} days reached the water goal")
+                          tr('{n} of {total} days reached the water goal', n=sum(d['water_ml'] >= (d.get('water_goal_ml') or 2000) for d in wet), total=len(wet)))
     if task_days or parts:
-        parts['steadiness'] = (round(100 * task_days / 7), f'{task_days} of the last 7 days with a task done')
-    out = [{'id': k, 'name': NAMES[k], 'score': v[0], 'detail': v[1], 'source': SOURCES[k], 'weight': WEIGHTS[k]} for k, v in parts.items()]
+        parts['steadiness'] = (round(100 * task_days / 7), tr('{n} of the last 7 days with a task done', n=task_days))
+    out = [{'id': k, 'name': tr(NAMES[k]), 'score': v[0], 'detail': v[1], 'source': tr(SOURCES[k]), 'weight': WEIGHTS[k]} for k, v in parts.items()]
     if len(out) < 2:
-        return {'score': None, 'parts': out, 'focus': None, 'note': 'Log a few days of meals, water, sleep or activity to see your Health Score.'}
+        return {'score': None, 'parts': out, 'focus': None, 'note': tr('Log a few days of meals, water, sleep or activity to see your Health Score.')}
     total = sum(p['weight'] for p in out)
     score = round(sum(p['score'] * p['weight'] for p in out) / total)
     low = min(out, key=lambda p: (p['score'], -p['weight']))
-    return {'score': score, 'parts': out, 'focus': {'id': low['id'], 'name': low['name'], 'tip': TIPS[low['id']]} if low['score'] < 90 else None,
-            'note': 'A lifestyle score from the last 7 days. It is not a medical assessment and does not use your blood results.'}
+    return {'score': score, 'parts': out, 'focus': {'id': low['id'], 'name': low['name'], 'tip': tr(TIPS[low['id']])} if low['score'] < 90 else None,
+            'note': tr('A lifestyle score from the last 7 days. It is not a medical assessment and does not use your blood results.')}

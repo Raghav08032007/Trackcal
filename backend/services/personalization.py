@@ -1,6 +1,8 @@
 """Deterministic choices; no BMI, body changes, XP or paid inference affect plans."""
 from datetime import timedelta
 
+from services.i18n import msg, tr
+
 TEMPLATES={
  'walk':dict(name='Comfortable walk',interests=['fitness','endurance','sports','routine'],equipment=[],setting=['home','outdoor','gym'],seated=False,floor=False,instructions='Choose a familiar clear route. Begin slowly, keep a comfortable pace and take breaks whenever needed.',alternative='chair',difficulty='gentle'),
  'chair':dict(name='Seated movement break',interests=['fitness','mobility','routine'],equipment=['chair'],setting=['home','gym','outdoor'],seated=True,floor=False,instructions='Use a stable non-wheeled chair. Sit supported and gently move hands and shoulders within a comfortable range. Rest as needed.',alternative='recovery',difficulty='gentle'),
@@ -91,7 +93,7 @@ TEMPLATES.update({
 for key,base,title,gear in (('widepush','pushup','Wide push-ups',''),('diamondpush','pushup','Diamond push-ups',''),('revlunge','lunge','Reverse lunges',''),('bwgoodmorning','goodmorning','Bodyweight good mornings',''),('toetouch','rdl','Standing toe touches',''),('sumojump','squatjump','Sumo jump squats',''),('bandcurl','curl','Band curls','resistance bands'),('bandrow','seatrow','Band rows','resistance bands'),('bandpress','press','Band shoulder press','resistance bands'),('bandraise','raise','Band side raises','resistance bands'),('bandfront','front','Band front raises','resistance bands'),('bandsquat','wsquat','Band squats','resistance bands'),('bandpulldown','latpull','Band pulldowns','resistance bands'),('bandkickback','kickback','Band tricep kickbacks','resistance bands'),('bbcurl','curl','Barbell curls','barbell'),('bbrow','row','Barbell rows','barbell'),('bbpress','press','Barbell overhead press','barbell'),('bblunge','wlunge','Barbell lunges','barbell'),('frontsquat','wsquat','Barbell front squats','barbell'),('kbsquat','wsquat','Kettlebell goblet squats','kettlebell'),('kbdeadlift','deadlift','Kettlebell deadlifts','kettlebell'),('kbpress','press','Kettlebell press','kettlebell'),('kbrow','row','Kettlebell rows','kettlebell'),('kbhighpull','uprow','Kettlebell high pulls','kettlebell')):
     TEMPLATES['camera_'+key]={**TEMPLATES['camera_'+base],'name':f'Camera {title.lower()} practice','equipment':[gear] if gear else []}
 # Holds: timed positions for core, balance and flexibility.
-for key,title in (('plank','plank'),('wallsit','wall sit'),('bridgehold','glute bridge hold'),('tree','tree pose'),('legbalance','single-leg balance'),('warrior','warrior II'),('downdog','downward dog'),('forwardfold','standing forward fold')):
+for key,title in (('plank','plank'),('wallsit','wall sit'),('bridgehold','glute bridge'),('tree','tree pose'),('legbalance','single-leg balance'),('warrior','warrior II'),('downdog','downward dog'),('forwardfold','standing forward fold')):
     TEMPLATES['camera_'+key]={**TEMPLATES['camera_bridge'],'name':f'Camera {title} hold','instructions':'Hold only a position you can keep comfortably and stop if anything hurts. The camera times the hold; it does not check form.'}
 for template in TEMPLATES.values():template.update({'version':1,'review':'Application safety review 2026-10-28; not a clinical prescription'})
 RECOVERY='Stop if an activity causes pain, dizziness or unusual symptoms. Use your professional guidance; these templates are not treatment plans.'
@@ -134,10 +136,47 @@ def recommendations(prefs):
  meals=[] if unknown or prefs.professional_restrictions else [m for m in MEALS if prefs.diet in m['diet'] and not allergens.intersection(m['allergens'])]
  preferred={'quick':{'yogurt','egg','chickpea'},'batch':{'lentil','tofu','fish'},'flexible':set()}[prefs.preparation]
  meals=sorted(meals,key=lambda m:(m['cuisine']!=prefs.cuisine,m['id'] not in preferred,-len(set(m['ingredients'])&set(prefs.ingredients)),m['id']))
- return {'meals':[{**m,'reason':f"Matches your {prefs.diet} preference; known declared allergens excluded. Cuisine/available ingredients determine ordering."} for m in meals[:4]],'nutrition_note':'Check every ingredient and cross-contact information. These ideas do not certify allergen safety. No calorie or water target is generated.','needs_review':unknown or bool(prefs.professional_restrictions),'community_categories':[{'category':v,'operational':False} for v in prefs.interests],'event_categories':[{'category':v,'operational':False} for v in prefs.interests],'message':'Choose one small activity at your own pace.' if prefs.motivation else '', 'budget_note':'Budget is a planning preference; these ideas have no invented prices. Use the existing reviewed recipe cost planner.'}
+ return {'meals':[{**meal_view(m),'reason':tr(DIET_REASON.get(prefs.diet,DIET_REASON['balanced']))} for m in meals[:4]],'nutrition_note':tr('Check every ingredient and cross-contact information. These ideas do not certify allergen safety. No calorie or water target is generated.'),'needs_review':unknown or bool(prefs.professional_restrictions),'community_categories':[{'category':v,'operational':False} for v in prefs.interests],'event_categories':[{'category':v,'operational':False} for v in prefs.interests],'message':tr('Choose one small activity at your own pace.') if prefs.motivation else '', 'budget_note':tr('Budget is a planning preference; these ideas have no invented prices. Use the existing reviewed recipe cost planner.')}
 
 CARDIO=('walk','cycle','run')
 def _strength(key):return key in ('strength','gym') or key.startswith('camera_')
+# Texts sent to the person: the tables above stay English (the coverage test reads them); these views translate them.
+def sentences(text):
+ """Instructions share many sentences, so they are translated one sentence at a time (the same wording everywhere)."""
+ import re;return [part for part in re.split(r'(?<=[.!?])\s+',text or '') if part]
+def template_view(key):
+ t=TEMPLATES[key];return {**t,'name':tr(t['name']),'instructions':' '.join(tr(part) for part in sentences(t['instructions'])),'review':tr(t['review'])}
+def meal_view(m):
+ return {**m,'name':tr(m['name']),'tip':tr(m['tip']),'substitution':tr(m['substitution'])}
+def education_view(key):
+ m=EDUCATION[key];return {'id':key,**{k:v for k,v in m.items() if k!='answer'},'title':tr(m['title']),'text':tr(m['text']),'question':tr(m['question']),'options':[tr(o) for o in m['options']]}
+def _line_view(line):
+ if not isinstance(line,dict):return tr(line) if isinstance(line,str) else line
+ text=tr(line['key'],**line.get('values',{})) if line.get('key') else tr(line.get('text'))
+ source=line.get('source');source='; '.join(tr(part) for part in source.split('; ')) if isinstance(source,str) and source else source
+ return {**line,'text':text,'source':source}
+def explanation_view(snapshot):
+ """A stored plan explanation in the person's language (plans made before translation keep their English sentences
+ where a sentence held numbers)."""
+ if not isinstance(snapshot,dict):return snapshot
+ out=dict(snapshot)
+ for field in ('report','priorities','protected'):
+  if isinstance(out.get(field),list):out[field]=[_line_view(item) for item in out[field]]
+ return out
+DIET_REASON={'balanced':msg('Matches your balanced preference; known declared allergens excluded. Cuisine/available ingredients determine ordering.'),
+ 'vegetarian':msg('Matches your vegetarian preference; known declared allergens excluded. Cuisine/available ingredients determine ordering.'),
+ 'eggetarian':msg('Matches your eggetarian preference; known declared allergens excluded. Cuisine/available ingredients determine ordering.'),
+ 'vegan':msg('Matches your vegan preference; known declared allergens excluded. Cuisine/available ingredients determine ordering.'),
+ 'jain':msg('Matches your jain preference; known declared allergens excluded. Cuisine/available ingredients determine ordering.'),
+ 'pescatarian':msg('Matches your pescatarian preference; known declared allergens excluded. Cuisine/available ingredients determine ordering.'),
+ 'non_veg':msg('Matches your non_veg preference; known declared allergens excluded. Cuisine/available ingredients determine ordering.')}
+INTENSITY_LINE={'light':msg('Your report suggests light exercise for now, so jumping and running sessions are left out.'),
+ 'moderate':msg('Your report suggests moderate exercise for now, so jumping and running sessions are left out.')}
+SOURCES=[msg('TrackCal safety rule'),msg('ACSM guidelines on gradual progression')]
+PRIORITIES=[msg('A blood report that needs a doctor today stops automated exercise'),msg('Professional restrictions and pain feedback block automated exercise'),
+ msg('Injured and operated body parts are protected by their stage'),msg('Accessibility, equipment and setting eligibility'),msg('Explicit rest and available days'),
+ msg('Interests and comfort feedback'),msg('Conservative duration; never XP/BMI-based progression')]
+
 def apply_report(choices,report,prefs,minutes):
  """What a confirmed blood report changes in the week, each change with the guideline behind it. Returns (choices, plan of
  strength days and active minutes, explanation lines). Nothing changes without a report; a report that needs a doctor today
@@ -147,18 +186,19 @@ def apply_report(choices,report,prefs,minutes):
  lines=[]
  if not report:return choices,None,lines
  if report.get('safety')=='today':
-  return [],None,[{'text':'Your blood report needs a doctor today, so no exercise is planned until a doctor has seen it. Rest days only.','source':'TrackCal safety rule'}]
+  text=msg('Your blood report needs a doctor today, so no exercise is planned until a doctor has seen it. Rest days only.')
+  return [],None,[{'text':text,'key':text,'source':'TrackCal safety rule'}]
  plan=report.get('plan') or {};ex=plan.get('exercise') or {};why={w['rule']:w for w in plan.get('why',[])}
  def source_of(field):  # the guidelines of just the findings that set this part of the plan
   return '; '.join(dict.fromkeys(why[r]['source'] for r in why if field in RULES.get(r,{}).get('exercise',{}))) or ACTIVITY_SOURCE
  if ex.get('intensity') in ('light','moderate'):
   dropped=[k for k in choices if k in INTENSE or k=='run']
   choices=[k for k in choices if k not in dropped]
-  if dropped:lines.append({'text':f"Your report suggests {ex['intensity']} exercise for now, so jumping and running sessions are left out.",'source':source_of('intensity')})
+  if dropped:lines.append({'text':INTENSITY_LINE[ex['intensity']],'key':INTENSITY_LINE[ex['intensity']],'source':source_of('intensity')})
  strength=int(ex.get('strength_days') or 0);cardio=int(ex.get('cardio_min') or 0)
- if strength:lines.append({'text':f'{strength} strength days this week, as your report suggests.','source':ACTIVITY_SOURCE})
- if ex.get('post_meal_walk'):lines.append({'text':'A 10-15 minute walk after lunch and dinner lowers the sugar rise from that meal.','source':source_of('post_meal_walk')})
- if ex.get('no_high_protein'):lines.append({'text':'No high-protein shakes or bulking sessions while your kidney result is being reviewed.','source':source_of('no_high_protein')})
+ if strength:lines.append({'text':f'{strength} strength days this week, as your report suggests.','key':msg('{n} strength days this week, as your report suggests.'),'values':{'n':strength},'source':ACTIVITY_SOURCE})
+ if ex.get('post_meal_walk'):lines.append({'text':msg('A 10-15 minute walk after lunch and dinner lowers the sugar rise from that meal.'),'source':source_of('post_meal_walk')})
+ if ex.get('no_high_protein'):lines.append({'text':msg('No high-protein shakes or bulking sessions while your kidney result is being reviewed.'),'source':source_of('no_high_protein')})
  return choices,{'strength_days':strength,'cardio_min':cardio},lines
 
 def generate(prefs,today,previous_feedback,report=None):
@@ -198,9 +238,10 @@ def generate(prefs,today,previous_feedback,report=None):
  if target and target.get('cardio_min'):
   week=sum(a['minutes'] for a in activities if a['template_id'] in CARDIO)
   from services.health_plan import ACTIVITY_SOURCE
-  text=f"This week: {week} active minutes towards the {target['cardio_min']} a week your report suggests." if week<target['cardio_min'] else f"This week reaches the {target['cardio_min']} active minutes a week your report suggests."
-  if week<target['cardio_min']:text+=' Add a few minutes each week as it gets easier; going up gradually is safest.'
-  report_lines.append({'text':text,'source':ACTIVITY_SOURCE+'; ACSM guidelines on gradual progression'})
+  if week<target['cardio_min']:key=msg('This week: {week} active minutes towards the {target} a week your report suggests. Add a few minutes each week as it gets easier; going up gradually is safest.')
+  else:key=msg('This week reaches the {target} active minutes a week your report suggests.')
+  values={'week':week,'target':target['cardio_min']}
+  report_lines.append({'text':key.replace('{week}',str(week)).replace('{target}',str(target['cardio_min'])),'key':key,'values':values,'source':ACTIVITY_SOURCE+'; ACSM guidelines on gradual progression'})
  return activities,{'report':report_lines,'protected':protected,'priorities':['Professional restrictions and pain feedback block automated exercise','Injured and operated body parts are protected by their stage','Accessibility, equipment and setting eligibility','Explicit rest and available days','Interests and comfort feedback','Conservative duration; never XP/BMI-based progression'],'preferred_time':prefs.workout_time,'professional_review':bool(prefs.professional_restrictions or previous_feedback.get('pain')),'reason':'Only rest options are offered where professional review is needed.' if not choices else 'Activities fit your selected setting, equipment, interests and available days. No automatic difficulty increase.'}
 
 def normalize_measurement(kind,value,unit):
@@ -212,9 +253,9 @@ def normalize_measurement(kind,value,unit):
  return result
 
 def bmi(height_cm,weight_kg,age_group):
- if height_cm is None or weight_kg is None:return {'value':None,'classification':None,'context':'Height and weight are optional. No BMI is calculated without both.'}
+ if height_cm is None or weight_kg is None:return {'value':None,'classification':None,'context':tr('Height and weight are optional. No BMI is calculated without both.')}
  value=round(weight_kg/(height_cm/100)**2,1)
- return {'value':value,'classification':None,'context':'BMI is a screening calculation, not a diagnosis, and does not describe body composition or individual health. No plan uses it.' if age_group in ('20_64','65plus') else 'No adult classification is provided for younger or unspecified ages. Age- and sex-specific clinical interpretation is not implemented.'}
+ return {'value':value,'classification':None,'context':tr('BMI is a screening calculation, not a diagnosis, and does not describe body composition or individual health. No plan uses it.') if age_group in ('20_64','65plus') else tr('No adult classification is provided for younger or unspecified ages. Age- and sex-specific clinical interpretation is not implemented.')}
 
 def quiet(time,start,end):
  if start==end:return False

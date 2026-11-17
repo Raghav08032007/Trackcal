@@ -6,6 +6,7 @@ the strictest limit and the largest target win. Nothing here changes or suggests
 """
 from __future__ import annotations
 
+from services.i18n import msg, tr
 from services.lab_reference import BY_CODE, normal_range
 
 VEG = {'vegetarian', 'eggetarian', 'vegan', 'jain'}
@@ -77,13 +78,18 @@ ACTIVITY_SOURCE = 'WHO physical activity guidelines 2020: 150-300 minutes of mod
 INTENSITY = ['light', 'moderate', 'vigorous']
 
 
+# The food a line adds for the person's diet: the line is translated with its {placeholder}, then filled with the translated words.
+FOOD_WORDS = [msg(', eggs, chicken or fish'), msg(', and lean meat, chicken or fish'), msg(' and fatty fish (salmon, mackerel, sardine) twice a week'),
+              msg(', and eggs'), msg(', eggs and fish'), msg(' and organ meat'), msg(', organ meat, red meat and shellfish')]
+
+
 def _food(line, diet):
     veg = diet in VEG
-    return (line.replace('{nonveg}', '' if veg else ', eggs, chicken or fish')
-                .replace('{meat}', '' if veg else ', and lean meat, chicken or fish')
-                .replace('{fish}', '' if veg else ' and fatty fish (salmon, mackerel, sardine) twice a week')
-                .replace('{egg_fish}', ', and eggs' if diet == 'eggetarian' else '' if veg else ', eggs and fish')
-                .replace('{purine}', ' and organ meat' if veg else ', organ meat, red meat and shellfish') )
+    words = {'nonveg': '' if veg else ', eggs, chicken or fish', 'meat': '' if veg else ', and lean meat, chicken or fish',
+             'fish': '' if veg else ' and fatty fish (salmon, mackerel, sardine) twice a week',
+             'egg_fish': ', and eggs' if diet == 'eggetarian' else '' if veg else ', eggs and fish',
+             'purine': ' and organ meat' if veg else ', organ meat, red meat and shellfish'}
+    return tr(line, **{key: tr(value) if value else '' for key, value in words.items() if '{' + key + '}' in line})
 
 
 def judge(result, sex):
@@ -104,8 +110,8 @@ def judge(result, sex):
     elif (s_low is not None and v < s_low) or (s_high is not None and v > s_high):
         severity = 'soon'
     rule = test.high_rule if status == 'high' else test.low_rule if status == 'low' else None
-    explanation = test.explain_high if status == 'high' else test.explain_low if status == 'low' else f'Your {test.name} is in the normal range.'
-    return {'code': test.code, 'name': test.name, 'value': v, 'unit': test.unit, 'low': low, 'high': high, 'range_from': 'your lab' if lab else 'standard adult range',
+    explanation = tr(test.explain_high) if status == 'high' else tr(test.explain_low) if status == 'low' else tr('Your {name} is in the normal range.', name=tr(test.name))
+    return {'code': test.code, 'name': tr(test.name), 'value': v, 'unit': test.unit, 'low': low, 'high': high, 'range_from': tr('your lab') if lab else tr('standard adult range'),
             'status': status, 'severity': severity, 'rule': rule, 'explanation': explanation, 'source': test.source}
 
 
@@ -113,18 +119,18 @@ def assess(results, sex='unspecified', age_group='unspecified', diet='balanced')
     findings = [judge(r, sex) for r in results if r.get('code') in BY_CODE]
     worst = 'today' if any(f['severity'] == 'today' for f in findings) else 'soon' if any(f['severity'] == 'soon' for f in findings) else 'ok'
     out = {'findings': findings, 'safety': worst, 'plan': None,
-           'safety_message': {'today': 'One or more results need a doctor today. Please contact your doctor or visit a clinic now. We have not made a diet or exercise plan until a doctor has seen these results.',
-                              'soon': 'Some results should be reviewed by a doctor this week. The plan below is general lifestyle guidance and does not replace that visit.',
+           'safety_message': {'today': tr('One or more results need a doctor today. Please contact your doctor or visit a clinic now. We have not made a diet or exercise plan until a doctor has seen these results.'),
+                              'soon': tr('Some results should be reviewed by a doctor this week. The plan below is general lifestyle guidance and does not replace that visit.'),
                               'ok': ''}[worst],
-           'disclaimer': 'This explains your report and suggests lifestyle changes. It is not a diagnosis and never changes medicines. Discuss your report with your doctor.'}
+           'disclaimer': tr('This explains your report and suggests lifestyle changes. It is not a diagnosis and never changes medicines. Discuss your report with your doctor.')}
     if worst == 'today':
         return out
     rules = list(dict.fromkeys(f['rule'] for f in findings if f['rule']))
     if age_group == 'under18':
-        out['plan_note'] = 'Under 18: we explain your results, but a doctor should guide any plan.'
+        out['plan_note'] = tr('Under 18: we explain your results, but a doctor should guide any plan.')
         return out
     if not rules:
-        out['plan'] = {'rules': [], 'targets': {}, 'diet': [], 'move': ['Your results are in range. Keep up regular activity and balanced meals.'], 'exercise': {}, 'retest_days': 365}
+        out['plan'] = {'rules': [], 'targets': {}, 'diet': [], 'move': [tr('Your results are in range. Keep up regular activity and balanced meals.')], 'exercise': {}, 'retest_days': 365}
         return out
     targets, exercise, diet_lines, move_lines, retest = {}, {}, [], [], 365
     for key in rules:
@@ -140,13 +146,15 @@ def assess(results, sex='unspecified', age_group='unspecified', diet='balanced')
                 exercise[name] = exercise.get(name, False) or value
             else:
                 exercise[name] = max(exercise.get(name, value), value)
-        diet_lines += [_food(l, diet) for l in rule['diet']]
+        diet_lines += rule['diet']
         move_lines += rule['move']
         retest = min(retest, rule['retest_days'])
     if exercise.get('intensity') in ('light', 'moderate'):
         exercise.pop('intervals_per_week', None)  # intervals wait until the reason for the limit is resolved
         move_lines = [l for l in move_lines if 'interval' not in l.lower()]
-    why = [{'rule': key, 'about': WHY[key][0], 'source': WHY[key][1], 'retest_days': RULES[key]['retest_days']} for key in rules]
+    diet_lines = [_food(l, diet) for l in diet_lines]
+    move_lines = [tr(l) for l in move_lines]   # after the English 'interval' filter above
+    why = [{'rule': key, 'about': tr(WHY[key][0]), 'source': WHY[key][1], 'retest_days': RULES[key]['retest_days']} for key in rules]
     out['plan'] = {'rules': rules, 'targets': targets, 'exercise': exercise, 'diet': list(dict.fromkeys(diet_lines)), 'move': list(dict.fromkeys(move_lines)), 'retest_days': retest,
                    'why': why, 'activity_source': ACTIVITY_SOURCE}
     return out

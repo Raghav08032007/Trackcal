@@ -16,16 +16,17 @@ from routers.auth import get_current_active_user
 from routers.personalization import local_now, prefs_for
 from routers.training import CATEGORIES
 from services import training_load as tl
+from services.i18n import msg, tr
 
 
 def trend(weeks: int = Query(12, ge=4, le=26), user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
     today = local_now(prefs).date()
-    return {**tl.summarise(collect(db, user.id, prefs, today, weeks), today, weeks), 'weekly_email': prefs.weekly_email, 'method': METHOD}
+    return {**tl.summarise(collect(db, user.id, prefs, today, weeks), today, weeks), 'weekly_email': prefs.weekly_email, 'method': tr(METHOD)}
 
 
-METHOD = ('Minutes × METs (Compendium of Physical Activities). WHO: 600–1,200 MET-minutes a week. '
-          'Fitness and fatigue are 42- and 7-day weighted averages of daily effort. Estimates, not a medical assessment.')
+METHOD = msg('Minutes × METs (Compendium of Physical Activities). WHO: 600–1,200 MET-minutes a week. '
+              'Fitness and fatigue are 42- and 7-day weighted averages of daily effort. Estimates, not a medical assessment.')
 
 
 def collect(db, user_id, prefs, today, weeks=12):

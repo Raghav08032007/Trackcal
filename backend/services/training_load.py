@@ -14,6 +14,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from datetime import date, timedelta
+from services.i18n import tr
 
 WHO_MIN, WHO_MORE = 600, 1200      # MET-minutes a week
 BRISK_WALK_MET = 4.3
@@ -134,24 +135,25 @@ def summarise(items, today: date, weeks=12):
 
 def guideline(met_minutes, days_in):
     if met_minutes >= WHO_MORE:
-        status, text = 'more', 'You’re above the WHO level for extra health benefits this week.'
+        status, text = 'more', tr('You’re above the WHO level for extra health benefits this week.')
     elif met_minutes >= WHO_MIN:
-        status, text = 'met', 'You’ve met the WHO weekly activity guideline. Going on to 1,200 brings extra benefits.'
+        status, text = 'met', tr('You’ve met the WHO weekly activity guideline. Going on to 1,200 brings extra benefits.')
     else:
         need = WHO_MIN - met_minutes
-        status, text = 'building', f'{need:,} MET-minutes to the WHO weekly minimum: about {math.ceil(need / BRISK_WALK_MET / 5) * 5} minutes of brisk walking.'
+        status, text = 'building', tr('{need} MET-minutes to the WHO weekly minimum: about {minutes} minutes of brisk walking.',
+                                    need=need, minutes=math.ceil(need / BRISK_WALK_MET / 5) * 5)
     return {'met_minutes': met_minutes, 'minimum': WHO_MIN, 'more': WHO_MORE, 'status': status, 'text': text, 'days_into_week': days_in}
 
 
 def advice(ratio, enough):
     if not enough:
-        return 'Your trend appears after three weeks with a few active days. Until then, every session still counts in your weekly totals.'
+        return tr('Your trend appears after three weeks with a few active days. Until then, every session still counts in your weekly totals.')
     if ratio is None:
-        return 'No activity in the last four weeks. Start gently: a few short sessions rebuild the habit safely.'
+        return tr('No activity in the last four weeks. Start gently: a few short sessions rebuild the habit safely.')
     if ratio > 1.5:
-        return 'This week is much bigger than your recent weeks. Big jumps are when injuries happen most, so keep the next few days easy.'
+        return tr('This week is much bigger than your recent weeks. Big jumps are when injuries happen most, so keep the next few days easy.')
     if ratio > 1.3:
-        return 'You’re building quickly. Fine for a week; avoid stacking another big jump on top.'
+        return tr('You’re building quickly. Fine for a week; avoid stacking another big jump on top.')
     if ratio >= 0.8:
-        return 'Steady: you’re training at a level your body is used to. A good place to build from.'
-    return 'Lighter than usual. Good for recovery; if it wasn’t planned, a short session keeps your fitness ticking over.'
+        return tr('Steady: you’re training at a level your body is used to. A good place to build from.')
+    return tr('Lighter than usual. Good for recovery; if it wasn’t planned, a short session keeps your fitness ticking over.')

@@ -18,6 +18,7 @@ from services import notifications as push
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from services.personalization_inputs import Strict
+from services.i18n import tr
 
 TypeName = Literal['daily_plan', 'workout', 'meal_log', 'rest_day', 'motivation', 'milestone', 'event_update', 'social', 'record', 'weekly_summary']
 
@@ -143,4 +144,4 @@ def motivation(day: str | None = None):
     from datetime import date
     try: chosen = date.fromisoformat(day) if day else push.utcnow().date()
     except ValueError: raise HTTPException(422, 'Use YYYY-MM-DD.')
-    return {'day': str(chosen), 'message': push.motivation_for(chosen)}
+    return {'day': str(chosen), 'message': tr(push.motivation_for(chosen))}

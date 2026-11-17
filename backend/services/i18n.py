@@ -68,7 +68,7 @@ def number(value, lang=None):
     """A number in the language's style, as the browser writes it: 1,50,000 in Indian languages (Bengali and Marathi digits for
     those two), 150.000 and 2,5 in Spanish, Portuguese and Indonesian (Spanish groups from 10.000). English stays as Python writes it."""
     code = supported(lang) or current()
-    if code == 'en': return str(value)
+    if code == 'en': return str(int(value)) if isinstance(value, float) and value.is_integer() else str(value)
     if isinstance(value, float) and value.is_integer(): value = int(value)
     text = f'{value:.3f}'.rstrip('0').rstrip('.') if isinstance(value, float) else str(int(value))
     sign = '-' if text.startswith('-') else ''
