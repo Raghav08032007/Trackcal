@@ -1,0 +1,8 @@
+"""Server translations: shared messages. Draft: native review needed. Columns: hi, bn, mr, te, ta, es, pt, id, ar."""
+
+LANGS = ['hi', 'bn', 'mr', 'te', 'ta', 'es', 'pt', 'id', 'ar']
+
+T = {
+ "An unexpected error occurred. Please contact support with the request ID.": ["एक अनपेक्षित त्रुटि हुई। कृपया अनुरोध ID के साथ सहायता से संपर्क करें।", "একটি অপ্রত্যাশিত ত্রুটি হয়েছে। অনুরোধের ID সহ সহায়তার সঙ্গে যোগাযোগ করুন।", "अनपेक्षित त्रुटी आली. कृपया विनंती ID सह मदतीशी संपर्क साधा.", "అనుకోని లోపం జరిగింది. దయచేసి అభ్యర్థన IDతో సహాయాన్ని సంప్రదించండి.", "எதிர்பாராத பிழை ஏற்பட்டது. கோரிக்கை ID உடன் உதவியைத் தொடர்புகொள்ளுங்கள்.", "Se produjo un error inesperado. Contacta con soporte indicando el ID de la solicitud.", "Ocorreu um erro inesperado. Fale com o suporte informando o ID da solicitação.", "Terjadi kesalahan tak terduga. Hubungi dukungan dengan menyertakan ID permintaan.", "حدث خطأ غير متوقع. يُرجى التواصل مع الدعم مع ذكر معرّف الطلب."],
+ "Your change could not be saved because the server was busy. Please try again.": ["सर्वर व्यस्त था, इसलिए आपका बदलाव सहेजा नहीं जा सका। कृपया फिर से कोशिश करें।", "সার্ভার ব্যস্ত ছিল, তাই আপনার পরিবর্তন রাখা যায়নি। আবার চেষ্টা করুন।", "सर्व्हर व्यस्त असल्याने तुमचा बदल जतन झाला नाही. कृपया पुन्हा प्रयत्न करा.", "సర్వర్ బిజీగా ఉన్నందున మీ మార్పు సేవ్ కాలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.", "சேவையகம் பரபரப்பாக இருந்ததால் உங்கள் மாற்றம் சேமிக்கப்படவில்லை. மீண்டும் முயலுங்கள்.", "No se pudo guardar tu cambio porque el servidor estaba ocupado. Inténtalo de nuevo.", "Não foi possível salvar sua alteração porque o servidor estava ocupado. Tente de novo.", "Perubahan Anda tidak tersimpan karena server sedang sibuk. Coba lagi.", "تعذّر حفظ تغييرك لأن الخادم كان مشغولًا. يُرجى المحاولة مرة أخرى."],
+}

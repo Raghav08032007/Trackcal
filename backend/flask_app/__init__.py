@@ -114,6 +114,7 @@ def create_app():
         response.headers['X-Request-ID'] = g.get('request_id', '')
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Cache-Control'] = 'no-store'
+        if 'lang' in g: response.headers['Content-Language'] = g.lang   # set when a text in this response was translated
         logger.info(json.dumps({'event': 'request', 'request_id': g.get('request_id'), 'method': request.method, 'status': response.status_code,
                                 'duration_ms': round((time.monotonic() - g.get('started', time.monotonic())) * 1000)}))
         return response
