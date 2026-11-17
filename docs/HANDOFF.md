@@ -40,7 +40,7 @@ Keep server values the web app translates itself in English: roles, statuses and
 ## House rules
 
 - Secrets stay only in the git-ignored `backend/.env`. Never print, commit or put them in `VITE_` variables.
-- Don't push to any remote. Use the test database `trackcal_phase3_test` for checks and delete test accounts afterwards.
+- Push to GitHub only when the owner asks. Use the test database `trackcal_phase3_test` for checks and delete test accounts afterwards.
 - Leave these pre-existing uncommitted files alone: `backend/routers/workout_history.py`, `docs/bench/*`, `docs/p*.png`,
   `docs/phase*`.
 - Explain each phase before doing it, and report scores out of 100 per area.
