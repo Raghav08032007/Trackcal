@@ -46,6 +46,23 @@ export async function setLocale(code: LocaleCode) {
 }
 
 export const locale = () => current;
+
+/** Lets the server answer in the chosen language: same-origin /api requests carry it as Accept-Language (unless a caller set
+ * one). Installed once at start-up, so the many plain fetch() calls need no change. */
+export function sendLanguageToServer(target: { fetch: typeof fetch; location: { href: string; origin: string } } = window) {
+  const original = target.fetch.bind(target) as typeof fetch & { trackcalLanguage?: true };
+  if ((target.fetch as typeof original).trackcalLanguage) return;
+  const wrapped = ((input: RequestInfo | URL, init?: RequestInit) => {
+    const href = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    const url = new URL(href, target.location.href);
+    if (url.origin !== target.location.origin || !url.pathname.startsWith("/api/")) return original(input, init);
+    const headers = new Headers(init?.headers ?? (typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined));
+    if (!headers.has("Accept-Language")) headers.set("Accept-Language", current);
+    return original(input, { ...init, headers });
+  }) as typeof original;
+  wrapped.trackcalLanguage = true;
+  target.fetch = wrapped;
+}
 export const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 
 /** The text in the chosen language; {placeholders} filled from vars; plural forms chosen by vars.count. */

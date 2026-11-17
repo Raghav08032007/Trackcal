@@ -22,7 +22,7 @@ import "@/app/vivid.css";        // section colours and the type pair
 import "@/app/motion.css";       // last: colour transitions, presses, depth and the footer
 import "@/app/joy.css";          // after motion: a colour for every tab and card, rewarding feedback
 import { createRouter } from "@/routes";
-import { initI18n, locale, subscribe } from "@/lib/i18n";
+import { initI18n, locale, sendLanguageToServer, subscribe } from "@/lib/i18n";
 
 /** The app, redrawn once in the new language when the language changes (lib/i18n), so components just call t(). */
 function App() {
@@ -42,4 +42,5 @@ function appStyles(): Promise<void> {
 }
 
 // Styles and the chosen language's text first, so the first draw is styled and in the right language.
+sendLanguageToServer();   // the server writes its messages in the chosen language
 void Promise.all([appStyles(), initI18n().catch(() => {})]).then(() => createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>));
