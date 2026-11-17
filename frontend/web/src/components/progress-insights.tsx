@@ -1,0 +1,50 @@
+import { t, msg } from "@/lib/i18n";
+import {useActiveDays} from "@/lib/workouts";
+import {useCheckins,useRecentDays} from "@/lib/days";
+import {useEffect,useMemo,useState} from 'react';
+import {useWorkspaceScope} from './account-session';
+import {dayMarks,habitLabel,habitScore,progressSeries,trainingLoad,workoutDays,type ProgressSeries} from '@/lib/progress-insights';
+import {exportLocalEntries} from '@/lib/use-local-state';
+import {wellnessRequest,type TrainingData} from '@/lib/wellness';
+
+/** A small line chart. Values only, so it reads the same in light and dark themes. */
+function Line({values,label,color='#07807a'}:{values:number[];label:string;color?:string}){
+ if(values.length<2)return null;
+ const max=Math.max(...values),min=Math.min(...values),span=max-min||1,points=values.map((v,i)=>`${(i/(values.length-1)*100).toFixed(2)},${(36-(v-min)/span*32).toFixed(2)}`).join(' ');
+ return <svg className="insight-line" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label={label}><polyline points={points} fill="none" stroke={color} strokeWidth="1.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round"/></svg>;
+}
+
+/** Habit strength, training load and progress for each exercise, from one load of your workouts. */
+export function ProgressInsights(){
+ const scope=useWorkspaceScope(),[checkins]=useCheckins(),activeDays=useActiveDays(),{days:recentDays}=useRecentDays(),[training,setTraining]=useState<TrainingData|null>(null),[now]=useState(()=>Date.now()),[picked,setPicked]=useState('');
+ useEffect(()=>{let live=true;wellnessRequest<TrainingData>('training').then(data=>{if(live)setTraining(data);}).catch(()=>{});return()=>{live=false;};},[]);
+ const view=useMemo(()=>{
+  if(!training)return null;
+  const saved=Object.entries(exportLocalEntries(scope) as Record<string,unknown>),sessions=training.sessions??[];
+  // Signed in, meal days come from the account diary; signed out, from this browser's journal.
+  const ate=new Set(recentDays?recentDays.filter(d=>(d.meals??0)>0).map(d=>d.day):saved.flatMap(([key,value])=>{const day=/^trackcal:journal:(\d{4}-\d{2}-\d{2})$/.exec(key)?.[1];return day&&Array.isArray(value)&&value.length?[day]:[];}));
+  const checked=new Set(checkins.map(row=>row.date));
+  const habits=[[msg("Move"),new Set([...workoutDays(sessions),...activeDays])],[msg("Log food"),ate],[msg("Check in"),checked]] as const;
+  return {habits:habits.map(([name,days])=>({name,score:habitScore(dayMarks(days as Set<string>,now))})),load:trainingLoad(sessions,now),series:progressSeries(sessions)};
+ },[training,scope,now,checkins,recentDays,activeDays]);
+ if(!view)return null;
+ const chosen:ProgressSeries|undefined=view.series.find(s=>s.key===picked)??view.series[0],recent=view.load.series.slice(-42);
+ return <>
+  <section className="account-card insight-card"><h2>{t("Habit strength")}</h2><p>{t("Each day you keep a habit makes it stronger. A missed day costs a little, not everything.")}</p>
+   <ul className="habit-list">{view.habits.map(h=><li key={h.name}><span>{t(h.name)}</span><div className="habit-meter" role="meter" aria-label={t("{name} habit strength", { name: t(h.name) })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={h.score}><span style={{width:`${h.score}%`}}/></div><strong>{h.score}</strong><small>{habitLabel(h.score)}</small></li>)}</ul>
+  </section>
+  <section className="account-card insight-card"><h2>{t("Training load")}</h2><p>{view.load.note}</p>
+   <ul className="weekly-stats"><li><strong>{view.load.today.fitness}</strong> {t("fitness")}</li><li><strong>{view.load.today.fatigue}</strong> {t("fatigue")}</li><li><strong>{view.load.today.form>0?'+':''}{view.load.today.form}</strong> {t("form")}</li></ul>
+   <div className="insight-legend"><span className="key-fitness">{t("Fitness")}</span><span className="key-fatigue">{t("Fatigue")}</span></div>
+   <div className="insight-stack"><Line values={recent.map(d=>d.fitness)} label={t("Fitness over the last six weeks")}/><Line values={recent.map(d=>d.fatigue)} label={t("Fatigue over the last six weeks")} color="#f5a524"/></div>
+   <p className="rep-replay-note">{t("Worked out from minutes moved. A guide to balancing hard and easy days, not a medical measure.")}</p>
+  </section>
+  <section className="account-card insight-card"><h2>{t("Progress by exercise")}</h2>
+   {!chosen?<p>{t("Save a few workouts and your best for each exercise appears here.")}</p>:<>
+    <label>{t("Exercise")}<select value={chosen.key} onChange={e=>setPicked(e.target.value)}>{view.series.map(s=><option key={s.key} value={s.key}>{s.title} ({s.points.length})</option>)}</select></label>
+    <p className="insight-best">{chosen.points.length>1?t("First {first} {unit}, best {best} {unit}, latest {value} {unit}.", { first: chosen.points[0].value, best: Math.max(...chosen.points.map(p=>p.value)), value: chosen.points[chosen.points.length-1].value, unit: chosen.unit }):t("First {first} {unit}, best {best} {unit}.", { first: chosen.points[0].value, best: Math.max(...chosen.points.map(p=>p.value)), unit: chosen.unit })}</p>
+    {chosen.points.length>1?<Line values={chosen.points.map(p=>p.value)} label={t("{title} best per session", { title: chosen.title })}/>:<p className="rep-replay-note">{t("One more session and a chart appears.")}</p>}
+   </>}
+  </section>
+ </>;
+}

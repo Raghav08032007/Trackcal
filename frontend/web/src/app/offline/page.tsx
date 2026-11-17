@@ -1,0 +1,3 @@
+import { t } from "@/lib/i18n";
+import Link from "@/lib/navigation";
+export default function OfflinePage() { return <main className="account-page"><div className="account-card"><h1>{t("Your offline journal is ready.")}</h1><p>{t("Record meals in the standalone guest journal, including after reopening without a connection. Transfer guest entries to your account when you reconnect. Private account data stays separate.")}</p><a href="/offline.html">{t("Open offline journal →")}</a><p>{t("Queued backups retry across the app when your signed-in session reconnects.")}</p><Link href="/">{t("Open my workspace →")}</Link></div></main>; }

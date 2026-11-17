@@ -1,0 +1,198 @@
+/* Vivid: type and colour on top of the foundation. Loaded last.
+   Poppins for headings, buttons and labels; DM Sans for reading. Every section has its own colour, used for its tabs, buttons,
+   accents and the faint wash behind the page: Today teal, Food orange, Move violet, Play pink, Me blue.
+   Every text/background pair here meets WCAG AA (4.5:1) in light and dark. */
+
+/* ── Type ───────────────────────────────────────────────────────────────────────────────── */
+:root, :root[data-theme] {
+  --ds-font: "DM Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ds-display: "Poppins", "DM Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --tc-display: var(--ds-display);
+}
+body { font-feature-settings: normal; letter-spacing: 0; font-weight: 450; }
+html body :is(h1, h2, h3, h4, .page-header h1, .ds-hero h1, .t-display, .t-title, legend) { font-family: var(--ds-display); font-weight: 600; letter-spacing: -.015em; }
+html body h1 { font-weight: 700; letter-spacing: -.025em; }
+html body :is(button, summary, .account-primary, .account-secondary, .ds-btn, .destination-button, .app-section-pages a, .app-tabbar a, label, .eyebrow, .page-head-eyebrow, th) { font-family: var(--ds-display); }
+html body :is(.account-primary, .account-secondary, .ds-btn, .destination-button, .gate-primary, .gate-secondary) { font-weight: 600; }
+html body summary { font-weight: 600; }
+
+/* ── Section colours ─────────────────────────────────────────────────────────────────────── */
+/* fill / fill-2: a gradient that carries white text. ink: accent text. soft: tinted backgrounds. bright: icons and washes. */
+:root, :root[data-section="today"], :root[data-section="none"] { --sec-fill: #0b7a6c; --sec-fill-2: #0e7490; --sec-ink: #0b7a6c; --sec-soft: #dff7f2; --sec-bright: #14b8a6; }
+:root[data-section="food"] { --sec-fill: #c2410c; --sec-fill-2: #be123c; --sec-ink: #c2410c; --sec-soft: #ffedd5; --sec-bright: #f97316; }
+:root[data-section="move"] { --sec-fill: #6d28d9; --sec-fill-2: #4338ca; --sec-ink: #6d28d9; --sec-soft: #ede9fe; --sec-bright: #8b5cf6; }
+:root[data-section="play"] { --sec-fill: #be185d; --sec-fill-2: #7e22ce; --sec-ink: #be185d; --sec-soft: #fce7f3; --sec-bright: #ec4899; }
+:root[data-section="me"] { --sec-fill: #1d4ed8; --sec-fill-2: #0e7490; --sec-ink: #1d4ed8; --sec-soft: #dbeafe; --sec-bright: #3b82f6; }
+html[data-theme="dark"] { --sec-ink: #2dd4bf; --sec-soft: #0f2d2a; --sec-bright: #2dd4bf; }
+html[data-theme="dark"][data-section="food"] { --sec-ink: #fdba74; --sec-soft: #3a1d0c; --sec-bright: #fb923c; }
+html[data-theme="dark"][data-section="move"] { --sec-ink: #c4b5fd; --sec-soft: #251a45; --sec-bright: #a78bfa; }
+html[data-theme="dark"][data-section="play"] { --sec-ink: #f9a8d4; --sec-soft: #3d1029; --sec-bright: #f472b6; }
+html[data-theme="dark"][data-section="me"] { --sec-ink: #93c5fd; --sec-soft: #142449; --sec-bright: #60a5fa; }
+/* The brand accent, fills and focus rings follow the section you're in. */
+:root, :root[data-theme] {
+  --ds-fill: var(--sec-fill); --ds-fill-hover: var(--sec-fill-2); --ds-indigo: var(--sec-ink); --ds-indigo-soft: var(--sec-soft);
+  --sec-gradient: linear-gradient(135deg, var(--sec-fill), var(--sec-fill-2));
+}
+
+/* A faint wash of colour behind every page, so it never looks flat grey. */
+html body, html body.tc-studio {
+  background:
+    radial-gradient(900px 520px at 100% -10%, color-mix(in srgb, var(--sec-bright) 13%, transparent), transparent 70%),
+    radial-gradient(700px 480px at -10% 30%, color-mix(in srgb, #8b5cf6 7%, transparent), transparent 70%),
+    radial-gradient(800px 500px at 50% 110%, color-mix(in srgb, #f97316 6%, transparent), transparent 70%),
+    var(--ds-bg);
+  background-attachment: fixed;
+}
+
+/* ── Buttons and tabs in the section's colour ───────────────────────────────────────────── */
+html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button:not(.play-button-white)):is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button) {
+  background: var(--sec-gradient); box-shadow: 0 1px 0 #ffffff33 inset, 0 10px 22px -12px var(--sec-fill);
+}
+@media (hover: hover) {
+  html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary):not(:disabled):hover { background: linear-gradient(135deg, var(--sec-fill-2), var(--sec-fill)); }
+}
+html body .app-section-pages a[aria-current="page"] { background: var(--sec-gradient); border-color: transparent; color: #fff; }
+html body :is(.eyebrow, .page-head-eyebrow) { color: var(--sec-ink); }
+
+/* Bottom bar (phones) and top bar (laptops): every tab wears its section's colour; the one you're on is filled with it. */
+.app-tabbar a[data-sec="today"] { --tab: #0b7a6c; --tab-2: #0e7490; --tab-icon: #0d9488; }
+.app-tabbar a[data-sec="food"] { --tab: #c2410c; --tab-2: #be123c; --tab-icon: #ea580c; }
+.app-tabbar a[data-sec="move"] { --tab: #6d28d9; --tab-2: #4338ca; --tab-icon: #7c3aed; }
+.app-tabbar a[data-sec="play"] { --tab: #be185d; --tab-2: #7e22ce; --tab-icon: #db2777; }
+.app-tabbar a[data-sec="me"] { --tab: #1d4ed8; --tab-2: #0e7490; --tab-icon: #2563eb; }
+html[data-theme="dark"] .app-tabbar a[data-sec="today"] { --tab-icon: #2dd4bf; }
+html[data-theme="dark"] .app-tabbar a[data-sec="food"] { --tab-icon: #fb923c; }
+html[data-theme="dark"] .app-tabbar a[data-sec="move"] { --tab-icon: #a78bfa; }
+html[data-theme="dark"] .app-tabbar a[data-sec="play"] { --tab-icon: #f472b6; }
+html[data-theme="dark"] .app-tabbar a[data-sec="me"] { --tab-icon: #60a5fa; }
+html body .app-tabbar a[data-sec] svg { color: var(--tab-icon); }
+html body .app-tabbar a[data-sec][aria-current="page"] { background: linear-gradient(135deg, var(--tab), var(--tab-2)); color: #fff; box-shadow: 0 8px 18px -10px var(--tab); }
+html body .app-tabbar a[data-sec][aria-current="page"] svg { color: #fff; }
+/* "+" quick add: a round button on phones, a pill on laptops, in a teal-violet-pink gradient (white text passes AA on every stop). */
+html body .app-tabbar .qa-button svg { background: linear-gradient(135deg, #0b7a6c, #6d28d9 55%, #be185d); box-shadow: 0 8px 18px -8px #6d28d9aa; }
+@media (min-width: 860px) {
+  html body .app-tabbar .qa-button.qa-button { background: linear-gradient(135deg, #0b7a6c, #6d28d9 55%, #be185d); color: #fff; box-shadow: 0 8px 18px -10px #6d28d9; }
+  html body .app-tabbar .qa-button svg { background: none; box-shadow: none; }
+}
+
+/* ── Icon tiles cycle through the palette, so a page of cards reads at a glance ─────────────────── */
+html body .hub-card { --tile: #0d9488; --tile-soft: #ccfbf1; }
+html body .hub-group li:nth-child(5n+2) > .hub-card { --tile: #ea580c; --tile-soft: #ffedd5; }
+html body .hub-group li:nth-child(5n+3) > .hub-card { --tile: #7c3aed; --tile-soft: #ede9fe; }
+html body .hub-group li:nth-child(5n+4) > .hub-card { --tile: #db2777; --tile-soft: #fce7f3; }
+html body .hub-group li:nth-child(5n+5) > .hub-card { --tile: #2563eb; --tile-soft: #dbeafe; }
+html[data-theme="dark"] body .hub-card-icon.hub-card-icon { background: color-mix(in srgb, var(--tile) 24%, var(--ds-surface)); }
+html body .hub-card-icon { background: var(--tile-soft); color: var(--tile); border-radius: 14px; }
+html[data-theme="dark"] body .hub-card-icon { color: color-mix(in srgb, var(--tile) 55%, #fff); }
+html body .hub-card-arrow { color: var(--tile); }
+html body .hub-icon { background: var(--sec-gradient); color: #fff; border-radius: 16px; }
+
+/* ── Numbers that mean something carry its colour: water cyan, energy burned orange, sleep violet ──────── */
+html body .day-water .day-big { color: #0e7490; }
+html body .day-burn .day-big { color: #c2410c; }
+html body .day-sleep .day-big { color: #6d28d9; }
+html[data-theme="dark"] body .day-water .day-big { color: #67e8f9; }
+html[data-theme="dark"] body .day-burn .day-big { color: #fdba74; }
+html[data-theme="dark"] body .day-sleep .day-big { color: #c4b5fd; }
+
+/* ── Phones and laptops: readable small print and comfortable taps ──────────────────────────────── */
+/* Nothing smaller than about 12 px: labels under numbers, quest meters, the companion's caption, older 11 px utility text. */
+html body :is(.companion-help-button small, .companion-plan-summary :is(span, strong), .daily-quest-meter :is(span, strong), .daily-focus .eyebrow,
+  .progress-stats span, .play-hero .play-sticker, .text-\[9px\], .text-\[10px\], .text-\[11px\]) { font-size: max(12.5px, .75rem); }
+/* Standalone links ("Log your first meal", "Your privacy →") are a full finger's height on touch screens. */
+@media (pointer: coarse), (max-width: 1024px) {
+  html body main :is(div, section, header, footer, article, aside, nav) > a:not([class]), html body .camera-holds-link {
+    display: inline-flex; align-items: center; min-height: 44px; }
+}
+
+/* Laptop widths: the centred tab bar and the header's tools (search, Ask Pip) must never meet. Tabs get tighter and Pip shows just
+   his picture (his name stays for screen readers) until the screen is wide enough for both. */
+@media (min-width: 860px) and (max-width: 1799px) {
+  html body .app-tabbar a { padding: 0 12px; gap: 6px; }
+  html body .companion-help-button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  html body .companion-help-button { padding: 4px; min-width: 52px; justify-content: center; }
+}
+@media (min-width: 860px) and (max-width: 1099px) {
+  html body .app-tabbar a { padding: 0 9px; font-size: .8125rem; }
+  html body .app-tabbar a svg { width: 18px; height: 18px; }
+}
+/* Small print stays readable even where older rules shrink it. */
+html body :is(.companion-help-button small, .daily-quest-meter :is(span, strong), .daily-focus .eyebrow, .play-hero .play-sticker, .daily-focus span) { font-size: max(12.5px, .75rem) !important; }
+@media (pointer: coarse), (max-width: 1024px) { html body main li > a:not([class]) { display: inline-flex; align-items: center; min-height: 44px; } }
+/* Setup checklist rows: the whole row is the tap target. */
+html body .first-steps li a { display: inline-flex; align-items: center; min-height: 44px; }
+/* Eyebrow labels never drop below 12.5 px (older rules made them .72rem, about 11.5 px on phones). */
+html body.tc-studio main .eyebrow, html body main .eyebrow { font-size: max(12.5px, .75rem); }
+
+/* ── Exercise sample: the example on a loop, its controls, and what the camera watches for ───────────── */
+html body .exercise-sample { display: grid; gap: 10px; margin: 12px 0; padding: 14px; border: 1px solid var(--ds-line); border-radius: 18px; background: var(--ds-surface); }
+html body .exercise-sample > h3 { margin: 0; font-size: 1.0625rem; color: var(--sec-ink); }
+html body .exercise-sample .exercise-demo { margin: 0; border-radius: 14px; background: linear-gradient(180deg, var(--sec-soft), color-mix(in srgb, var(--sec-soft) 30%, var(--ds-surface))); overflow: hidden; }
+html body .exercise-sample figcaption { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px; }
+html body .exercise-sample figcaption span { flex: 1 1 100%; font-size: .875rem; color: var(--ds-muted); }
+html body .exercise-sample figcaption button { min-height: 40px; padding: 0 14px; border: 1px solid var(--ds-line); border-radius: 999px; background: var(--ds-surface); color: var(--ds-ink); font: 600 .875rem/1 var(--ds-display); cursor: pointer; }
+html body .exercise-sample figcaption button[aria-pressed="true"] { background: var(--sec-gradient); border-color: transparent; color: #fff; }
+html body .exercise-sample-lead { margin: 2px 0 0; font: 600 .875rem/1.3 var(--ds-display); color: var(--ds-ink); }
+html body .exercise-points { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+html body .exercise-points li { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--sec-soft); color: var(--ds-ink); font-size: .9375rem; }
+html body .exercise-points li::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--sec-gradient); }
+
+/* Follow along: a small looping example in the corner of the live camera view. */
+.camera-follow { position: absolute; right: 12px; bottom: 12px; z-index: 2; display: grid; justify-items: center; gap: 2px; width: clamp(88px, 22%, 140px); padding: 6px 6px 8px;
+  border-radius: 16px; background: color-mix(in srgb, #ffffff 88%, transparent); box-shadow: 0 8px 24px -12px #00000080; backdrop-filter: blur(6px); }
+/* The figure is drawn for a light background, so the card stays light in both themes. */
+html[data-theme="dark"] .camera-follow span { color: #0f1c1b; }
+.camera-follow .move-thumb { width: 100%; height: auto; aspect-ratio: 1; }
+.camera-follow span { font: 600 .75rem/1.2 var(--ds-display); color: var(--ds-ink); }
+/* The small moving figure (follow along, exercise lists) wears the same colours as the main example; the shirt takes the section colour. */
+.move-thumb .demo-shadow { fill: #023432; }
+.move-thumb :is([class*="-leg"], [class*="-arm"], .demo-neck, .demo-head) { fill: #c98b63; }
+.move-thumb :is(.demo-far-leg, .demo-far-arm) { fill: #a9704c; }
+.move-thumb :is(.demo-torso, [class*="-sleeve"]) { fill: var(--sec-fill); }
+.move-thumb .demo-far-sleeve { fill: var(--sec-fill-2); }
+.move-thumb :is(.demo-hips, [class*="-short"]) { fill: #1f2937; }
+.move-thumb .demo-far-short { fill: #111827; }
+.move-thumb [class*="-shoe"] { fill: #f26b4e; }
+.move-thumb .demo-far-shoe { fill: #c9523a; }
+.move-thumb [class*="-weight"] { fill: #2a4240; }
+.move-thumb .demo-hair { fill: #2a1d16; }
+.move-thumb .demo-eyes { fill: #1f2937; }
+
+/* ══ Today ══════════════════════════════════════════════════════════════════════════════════ */
+/* Coach card: a soft wash of the section colour, the mood check as compact chips rather than full-width slabs. */
+html body .coach-card.coach-card { padding: 18px; border: 1px solid color-mix(in srgb, var(--sec-bright) 30%, var(--ds-line)); border-radius: 22px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sec-bright) 14%, var(--ds-surface)), var(--ds-surface) 65%); box-shadow: 0 12px 28px -24px var(--sec-fill); }
+html body .coach-checkin.coach-checkin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+html body .coach-checkin > :is(p, span, strong):first-child { flex: 1 1 100%; margin: 0 0 2px; }
+html body .coach-checkin button.coach-checkin-button, html body .coach-checkin button { flex: 0 0 auto; width: auto; min-height: 42px; padding: 0 18px; border: 1px solid var(--ds-line); border-radius: 999px;
+  background: var(--ds-surface); color: var(--ds-ink); font: 600 .9375rem/1 var(--ds-display); box-shadow: none; }
+html body .coach-checkin button:is([aria-pressed="true"], [data-active]) { background: var(--sec-gradient); border-color: transparent; color: #fff; }
+@media (hover: hover) { html body .coach-checkin button:not([aria-pressed="true"]):hover { border-color: var(--sec-bright); background: var(--sec-soft); } }
+html body .coach-card .account-actions :is(a, button) { flex: 0 1 auto; }
+
+/* Your day: each tile carries its own colour as a soft tint and a top edge. */
+html body .day-tile.day-tile { position: relative; overflow: hidden; border: 1px solid color-mix(in srgb, var(--tile-c) 22%, var(--ds-line)); background: color-mix(in srgb, var(--tile-c) 7%, var(--ds-surface)); }
+html body .day-tile::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, var(--tile-c), color-mix(in srgb, var(--tile-c) 40%, #fff)); }
+html body .day-water { --tile-c: #0891b2; } html body .day-sleep { --tile-c: #7c3aed; } html body .day-burn { --tile-c: #ea580c; }
+html[data-theme="dark"] body .day-tile.day-tile { background: color-mix(in srgb, var(--tile-c) 12%, var(--ds-surface)); }
+html body .day-meter { background: color-mix(in srgb, #0891b2 16%, transparent); border-radius: 999px; }
+html body .day-meter > * { background: linear-gradient(90deg, #06b6d4, #0e7490); border-radius: inherit; }
+html body .day-choice[aria-pressed="true"] { background: linear-gradient(135deg, #7c3aed, #4338ca); border-color: transparent; color: #fff; }
+
+/* First steps: a clean card, a gradient meter and coloured step rings. */
+html body .first-steps.first-steps { padding: 18px; border: 1px solid var(--ds-line); border-radius: 22px; background: var(--ds-surface); box-shadow: 0 12px 28px -24px #0f1c1b55; }
+html body .first-steps > :is(h2, h3, p, strong):first-child { font-family: var(--ds-display); font-weight: 600; }
+html body .first-steps-meter { background: color-mix(in srgb, var(--sec-bright) 18%, transparent); }
+html body .first-steps-meter span { background: linear-gradient(90deg, #0d9488, #7c3aed, #db2777); }
+html body .first-steps li:nth-child(1)::before { border-color: #ea580c; } html body .first-steps li:nth-child(2)::before { border-color: #7c3aed; } html body .first-steps li:nth-child(3)::before { border-color: #db2777; }
+html body .first-steps li[data-done]::before { background: var(--sec-gradient); border-color: transparent; }
+/* Home destinations: natural height, icon tiles cycling through the palette, a lift on hover. */
+html body .destination-grid .destination-card.destination-card { min-height: 0; padding: 20px; border-radius: 20px; }
+html body .destination-card { --tile: #0d9488; }
+html body .destination-grid > :nth-child(5n+2) { --tile: #ea580c; } html body .destination-grid > :nth-child(5n+3) { --tile: #7c3aed; }
+html body .destination-grid > :nth-child(5n+4) { --tile: #db2777; } html body .destination-grid > :nth-child(5n+5) { --tile: #2563eb; }
+html body .destination-icon { display: grid; place-items: center; flex: none; width: 46px; height: 46px; border-radius: 14px; background: color-mix(in srgb, var(--tile) 14%, var(--ds-surface)); color: var(--tile); }
+html[data-theme="dark"] body .destination-icon { background: color-mix(in srgb, var(--tile) 24%, var(--ds-surface)); color: color-mix(in srgb, var(--tile) 55%, #fff); }
+html body .destination-card > svg:last-child { color: var(--tile); }
+html body .destination-card-copy strong { font-family: var(--ds-display); font-weight: 600; }
+

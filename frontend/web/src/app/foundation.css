@@ -1,0 +1,143 @@
+/* Foundation: one font, one palette and one button, card and form look for every page. Loaded last.
+   The older sheets (globals, studio, theme, clay, vibe…) keep their layout rules but now draw their fonts and colours
+   from the design system tokens in ds.css, so light, dark and Comfort mode follow it everywhere.
+   A few rules repeat a class (.x.x.x) to outrank older, very specific selectors without !important. */
+
+/* ── Two fonts: Inter for reading and numbers, Outfit for headings ─────────────────────────────── */
+:root, :root[data-theme] {
+  --ds-font: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ds-display: "Outfit Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --pro-font: var(--ds-font); --tc-display: var(--ds-display); --font-geist-sans: var(--ds-font); --font-sans: var(--ds-font);
+}
+body, button, input, select, textarea, .hero-copy h2 em, .auth-story h1 em { font-family: var(--ds-font); }
+/* Inter's clearer forms: a single-storey 'a' is not used; open digits that line up in tables and totals. */
+body { font-feature-settings: "cv11", "ss01"; font-variant-numeric: tabular-nums; letter-spacing: -.006em; -webkit-font-smoothing: antialiased; }
+html body :is(h1, h2, h3, .page-header h1, .ds-hero h1, .t-display, .t-title) { font-family: var(--ds-display); letter-spacing: -.02em; font-weight: 650; }
+html body h1 { line-height: 1.1; }
+.hero-copy h2 em, .auth-story h1 em { font-style: normal; color: var(--ds-indigo); }
+
+/* ── One palette: older tokens point at the design system ─────────────────────────────────────── */
+:root, :root[data-theme] {
+  /* Fills carry white text, so they stay deep in both themes; --ds-indigo is the lighter accent for text on dark. */
+  --ds-fill: #0b7a6c; --ds-fill-hover: #096a5e;
+}
+:root[data-theme="dark"] { --ds-fill: #0b7a6c; --ds-fill-hover: #096a5e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ds-fill: #0b7a6c; --ds-fill-hover: #096a5e; } }
+:root, :root[data-theme] {
+  --pro-bg: var(--ds-bg); --pro-surface: var(--ds-surface); --pro-sunken: var(--ds-sunken); --surface-2: var(--ds-sunken);
+  --pro-ink: var(--ds-ink); --pro-muted: var(--ds-muted); --pro-line: var(--ds-line); --pro-line-strong: var(--ds-line);
+  --pro-accent: var(--ds-indigo); --pro-accent-hover: var(--ds-indigo); --pro-accent-soft: var(--ds-indigo-soft); --pro-accent-ink: var(--ds-indigo-ink);
+  --pro-fill: var(--ds-fill); --pro-fill-hover: var(--ds-fill-hover); --pro-good: var(--ds-green);
+  --tc-ink: var(--ds-ink); --tc-muted: var(--ds-muted); --tc-bg: var(--ds-bg); --tc-surface: var(--ds-surface); --tc-soft: var(--ds-sunken);
+  --tc-line: var(--ds-line); --tc-purple: var(--ds-indigo); --tc-violet: var(--ds-indigo); --tc-violet-deep: var(--ds-indigo-ink);
+  --clay-violet: var(--ds-indigo); --clay-violet-deep: var(--ds-indigo-ink); --clay-card: var(--ds-surface);
+  --tab-ink: var(--ds-ink); --tab-active: var(--ds-indigo); --tab-line: var(--ds-line);
+  --tc-r-sm: var(--ds-r-sm); --tc-r: var(--ds-r); --tc-r-lg: var(--ds-r-lg);
+}
+body.tc-studio { background: var(--ds-bg); color: var(--ds-ink); }
+
+/* ── One button ───────────────────────────────────────────────────────────────────────────── */
+/* Primary buttons: vibe.css already forces every primary to --pro-fill, which now points at --ds-fill. */
+html body :is(.account-secondary, .destination-button, .hero-secondary).account-secondary.account-secondary,
+html body .destination-button.destination-button.destination-button, html body .hero-secondary.hero-secondary.hero-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 1px solid var(--ds-line); border-radius: 16px;
+  background: var(--ds-surface); color: var(--ds-ink); font: 700 1rem/1.2 var(--ds-font); text-decoration: none; box-shadow: none; cursor: pointer;
+}
+html body :is(.account-secondary, .destination-button, .hero-secondary):hover { border-color: var(--ds-indigo); }
+html body :is(.account-primary, .account-secondary, .destination-button, .hero-primary, .hero-secondary):focus-visible { outline: 3px solid var(--ds-indigo); outline-offset: 2px; }
+html body :is(.account-primary, .account-secondary, .destination-button, .hero-primary, .hero-secondary):disabled { opacity: .55; cursor: not-allowed; filter: none; }
+@media (prefers-reduced-motion: no-preference) {
+  html body :is(.account-primary, .account-secondary, .destination-button, .hero-primary, .hero-secondary) { transition: filter var(--ds-fast) var(--ds-ease), border-color var(--ds-fast) var(--ds-ease), transform var(--ds-fast) var(--ds-ease); }
+  html body :is(.account-primary, .account-secondary, .destination-button, .hero-primary, .hero-secondary):active { transform: scale(.98); }
+}
+
+/* ── Cards and forms ──────────────────────────────────────────────────────────────────────── */
+html body .account-card.account-card { background: var(--ds-surface); color: var(--ds-ink); border: 1px solid var(--ds-line); border-radius: var(--ds-r-lg); box-shadow: var(--ds-shadow); }
+html body .account-card :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]) {
+  min-height: 48px; border-radius: var(--ds-r-sm); border: 1px solid var(--ds-line); background: var(--ds-surface); color: var(--ds-ink); font: 600 1rem/1.3 var(--ds-font);
+}
+html body .account-card textarea { min-height: 96px; padding-block: 10px; }
+html body :is(input, select, textarea):focus-visible { outline: 3px solid var(--ds-indigo); outline-offset: 1px; }
+
+/* ── Readable small print: nothing under 13px ─────────────────────────────────────────────── */
+html body :is(.account-fine, .eyebrow, .play-xp, .play-sticker, .studio-status, .seed-label, .play-ticker, .barcode-scan-tips p,
+  .auth-assurance span, .play-section-head span, .play-bottom p, .play-bottom strong, .play-button) { font-size: max(13px, .8125rem); }
+html body .account-card .account-fine, html body .account-fine summary { font-size: max(13px, .8125rem); line-height: 1.5; }
+
+/* ── One shape and weight for action buttons (chips and pills stay round on purpose) ─────────── */
+html body :is(.account-primary, .account-secondary, .destination-button, .hero-primary, .hero-secondary, .play-button, .ds-btn, .gate-primary).account-primary,
+html body :is(.account-primary, .account-secondary, .destination-button, .hero-primary, .hero-secondary, .play-button, .ds-btn, .gate-primary).account-secondary,
+html body .destination-button.destination-button.destination-button, html body .play-button.play-button.play-button, html body .ds-btn.ds-btn.ds-btn,
+html body .gate-primary.gate-primary.gate-primary { border-radius: 14px; font-weight: 700; }
+
+/* ── Tab bar labels: readable at every age ────────────────────────────────────────────────── */
+html body .app-tabbar a, html body .qa-button { font-size: .75rem; }
+@media (min-width: 900px) { html body .app-tabbar a, html body .qa-button { font-size: .875rem; } }
+
+/* Camera mode switch: the chosen mode uses the deep fill, and its small print stays fully readable on it. */
+html body .camera-mode-switch a[aria-current="page"] { background: var(--ds-fill); color: #fff; }
+html body .camera-mode-switch a[aria-current="page"] small { opacity: 1; }
+
+/* Card headings inside cards start at the left (an older rule pushed them right). */
+html body .account-card > .wellness-heading { justify-content: space-between; }
+
+/* ══ Shared components: one look for buttons, cards, fields, tabs, dialogs and numbers on every page ══════════════════ */
+:root, :root[data-theme] {
+  --ds-r-sm: 10px; --ds-r: 14px; --ds-r-lg: 20px;                 /* crisper corners than before */
+  --ds-ring: 0 0 0 3px color-mix(in srgb, var(--ds-indigo) 28%, transparent);
+  --ds-btn-h: max(46px, var(--ds-tap));
+}
+
+/* Buttons. Primary: the deep brand fill. Secondary: a quiet outline. Same height, corners and type everywhere. */
+html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button:not(.play-button-white)):is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .play-button) {
+  min-height: var(--ds-btn-h); padding: 0 22px; border-radius: 12px; border: 0;
+  background: var(--ds-fill); color: #fff; font: 650 1rem/1.2 var(--ds-font); letter-spacing: -.005em;
+  box-shadow: 0 1px 0 #ffffff26 inset, 0 1px 2px #0f1c1b29, 0 8px 18px -10px color-mix(in srgb, var(--ds-fill) 70%, transparent);
+}
+html body :is(.account-secondary, .ds-btn-quiet, .gate-secondary, .hero-secondary, .destination-button):is(.account-secondary, .ds-btn-quiet, .gate-secondary, .hero-secondary, .destination-button) {
+  min-height: var(--ds-btn-h); padding: 0 20px; border-radius: 12px; border: 1px solid var(--ds-line);
+  background: var(--ds-surface); color: var(--ds-ink); font: 650 1rem/1.2 var(--ds-font); box-shadow: 0 1px 2px #0f1c1b0f;
+}
+html body .ds-btn-danger.ds-btn-danger { min-height: var(--ds-btn-h); border-radius: 12px; font: 650 1rem/1.2 var(--ds-font); }
+@media (hover: hover) {
+  html body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary):not(:disabled):hover { background: var(--ds-fill-hover); }
+  html body :is(.account-secondary, .ds-btn-quiet, .gate-secondary, .hero-secondary, .destination-button):not(:disabled):hover { border-color: color-mix(in srgb, var(--ds-indigo) 55%, var(--ds-line)); background: var(--ds-raised); }
+}
+html body :is(.account-primary, .account-secondary, .ds-btn, .gate-primary, .gate-secondary, .hero-primary, .hero-secondary, .destination-button, .play-button):focus-visible { outline: 0; box-shadow: var(--ds-ring); }
+
+/* Cards: one surface, one border, one soft shadow. */
+html body :is(.account-card, .ds-card, .hub-card):is(.account-card, .ds-card, .hub-card) {
+  border: 1px solid var(--ds-line); border-radius: var(--ds-r-lg); background: var(--ds-surface);
+  box-shadow: 0 1px 2px #0f1c1b0a, 0 12px 28px -22px #0f1c1b40;
+}
+html[data-theme="dark"] body :is(.account-card, .ds-card, .hub-card) { box-shadow: 0 1px 0 #ffffff08 inset, 0 16px 32px -24px #000000c0; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body a.hub-card:hover { border-color: color-mix(in srgb, var(--ds-indigo) 45%, var(--ds-line)); transform: translateY(-2px); transition: transform var(--ds-med) var(--ds-ease), border-color var(--ds-med); }
+}
+
+/* Fields: tall enough to tap, a clear hover, and a soft brand ring on focus instead of a heavy outline. */
+html body .tc-studio :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]) {
+  min-height: 46px; border: 1px solid var(--ds-line); border-radius: var(--ds-r-sm); background: var(--ds-surface); color: var(--ds-ink); font-family: var(--ds-font);
+}
+html body .tc-studio :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=range]):hover { border-color: color-mix(in srgb, var(--ds-ink) 28%, var(--ds-line)); }
+html body .tc-studio :is(input, select, textarea):focus-visible { outline: 0; border-color: var(--ds-indigo); box-shadow: var(--ds-ring); }
+html body .tc-studio :is(input[type=checkbox], input[type=radio], input[type=range]) { accent-color: var(--ds-fill); }
+html body .tc-studio label { font-weight: 600; }
+
+/* Section tabs and filter chips: one pill. The page you're on is filled. */
+html body .app-section-pages a:is(a) { min-height: 40px; padding: 0 16px; border: 1px solid var(--ds-line); border-radius: 999px; background: var(--ds-surface); color: var(--ds-ink); font: 600 .9375rem/1 var(--ds-font); display: inline-flex; align-items: center; }
+html body .app-section-pages a[aria-current="page"] { background: var(--ds-fill); border-color: var(--ds-fill); color: #fff; }
+@media (hover: hover) { html body .app-section-pages a:not([aria-current="page"]):hover { border-color: color-mix(in srgb, var(--ds-indigo) 50%, var(--ds-line)); } }
+
+/* Small labels above headings. */
+html body :is(.eyebrow, .page-head-eyebrow) { font: 650 .75rem/1.3 var(--ds-font); letter-spacing: .09em; text-transform: uppercase; color: var(--ds-indigo); }
+
+/* Dialogs (quick add, search, safety): one sheet with a soft backdrop. */
+html body :is(.qa-dialog, .cs-dialog, .safety-dialog):is(.qa-dialog, .cs-dialog, .safety-dialog) {
+  border: 1px solid var(--ds-line); border-radius: 22px; background: var(--ds-surface); color: var(--ds-ink);
+  box-shadow: 0 24px 64px -24px #0f1c1b66, 0 2px 8px #0f1c1b14;
+}
+html body :is(.qa-dialog, .cs-dialog)::backdrop, html body .safety-backdrop { background: color-mix(in srgb, #0b1314 52%, transparent); backdrop-filter: blur(3px); }
+
+/* Big numbers (kcal, water, reps): the heading font, digits that line up. */
+html body :is(.day-big, .hub-stats strong, .t-num, .stat-value) { font-family: var(--ds-display); font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }

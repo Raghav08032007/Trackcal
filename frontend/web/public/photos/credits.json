@@ -1,0 +1,83 @@
+{
+ "fruit": {
+  "title": "Fruit Salad Or Fruit Bowl.jpg",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "artist": "Manjeshwari poet mysore",
+  "source": "https://commons.wikimedia.org/wiki/File:Fruit_Salad_Or_Fruit_Bowl.jpg",
+  "width": 640,
+  "height": 386
+ },
+ "salad": {
+  "title": "Avocado salad in Argentina.jpg",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "artist": "Horacio Cambeiro",
+  "source": "https://commons.wikimedia.org/wiki/File:Avocado_salad_in_Argentina.jpg",
+  "width": 640,
+  "height": 480
+ },
+ "smoothie": {
+  "title": "Kiwi Smoothie.jpg",
+  "license": "CC0",
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "artist": "rawpixel.com",
+  "source": "https://commons.wikimedia.org/wiki/File:Kiwi_Smoothie.jpg",
+  "width": 640,
+  "height": 609
+ },
+ "yoga": {
+  "title": "Woman in the park doing yoga on the mat.jpg",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "artist": "Shixart1985",
+  "source": "https://commons.wikimedia.org/wiki/File:Woman_in_the_park_doing_yoga_on_the_mat.jpg",
+  "width": 640,
+  "height": 427
+ },
+ "pushup": {
+  "title": "Push up in the park.jpg",
+  "license": "CC BY 3.0",
+  "license_url": "https://creativecommons.org/licenses/by/3.0",
+  "artist": "Pam loves pie",
+  "source": "https://commons.wikimedia.org/wiki/File:Push_up_in_the_park.jpg",
+  "width": 640,
+  "height": 850
+ },
+ "toast": {
+  "title": "Avocado toast with eggs (28508171495).jpg",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "artist": "Luca Nebuloni from Milan, Italy",
+  "source": "https://commons.wikimedia.org/wiki/File:Avocado_toast_with_eggs_(28508171495).jpg",
+  "width": 640,
+  "height": 480
+ },
+ "bowl": {
+  "title": "BuddhaBowlLot.jpg",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "artist": "PizzaMan",
+  "source": "https://commons.wikimedia.org/wiki/File:BuddhaBowlLot.jpg",
+  "width": 640,
+  "height": 480
+ },
+ "plate": {
+  "title": "Grilled chicken served with creamy mashed potatoes and fresh vegetables undefined.jpg",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "artist": "Shixart1985",
+  "source": "https://commons.wikimedia.org/wiki/File:Grilled_chicken_served_with_creamy_mashed_potatoes_and_fresh_vegetables_undefined.jpg",
+  "width": 640,
+  "height": 480
+ },
+ "track": {
+  "title": "Athletics track start line numbers 1, 2, 3.jpg",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "artist": "Santeri Viinamäki",
+  "source": "https://commons.wikimedia.org/wiki/File:Athletics_track_start_line_numbers_1,_2,_3.jpg",
+  "width": 640,
+  "height": 480
+ }
+}

@@ -51,3 +51,4 @@ Thumbs.db
 
 # coverage data
 .coverage
+frontend/web/tests/tmp/

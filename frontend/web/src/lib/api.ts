@@ -1,0 +1,129 @@
+import { t } from "@/lib/i18n";
+import { calculatePlan } from "./nutrition";
+/**
+ * api.ts — TrackCal Full-Stack API Client
+ * Local calculations and same-origin server requests. Provider failures remain visible.
+ */
+
+
+
+export interface OnboardingParams {
+  age: number;
+  gender: "male" | "female" | "other";
+  weight_kg: number;
+  height_cm: number;
+  activity_level: "sedentary" | "lightly_active" | "moderately_active" | "very_active" | "extremely_active";
+  primary_goal: "lose_weight" | "maintain" | "gain_muscle" | "recomposition";
+  speed_kg_per_week?: number;
+  dietary_preference?: string;
+  regional_cuisine?: string;
+}
+
+export interface OnboardingPlanResult {
+  bmr: number;
+  tdee: number;
+  calorie_target: number;
+  deficit_or_surplus: number;
+  macros: {
+    protein_g: number;
+    protein_kcal: number;
+    protein_pct: number;
+    carbs_g: number;
+    carbs_kcal: number;
+    carbs_pct: number;
+    fat_g: number;
+    fat_kcal: number;
+    fat_pct: number;
+  };
+  recommended_water_ml: number;
+  strategy_notes: string;
+}
+
+export interface BarcodeProductResult {
+  source: string;
+  barcode: string;
+  product_name: string | null;
+  brand: string | null;
+  serving_size: string | null;
+  serving_g: number | null;
+  nova_group: number | null;
+  /** Per 100 g. null means Open Food Facts does not list it (unknown, never 0). */
+  nutrients_per_100g: { energy_kcal: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null; fiber_g: number | null; sugar_g: number | null; sodium_mg: number | null; saturated_fat_g: number | null };
+  complete: boolean;
+  consistency_warning: boolean;
+  allergens: string[];
+  ingredients_text: string | null;
+  attribution: string;
+  community_data: boolean;
+  cached: boolean;
+  details?: ProductDetails;
+}
+
+export interface ProductDetails {
+  registered_in?: string | null;
+  made_in?: string | null;
+  sold_in?: string[];
+  certifications?: { name: string; region: string | null; meaning: string | null }[];
+  additives?: { code: string; name: string | null }[];
+  codes?: { kind: string; value: string }[];
+  terms?: { term: string; meaning: string }[];
+  ingredients?: string | null;
+  allergens?: string[];
+}
+
+export interface PackReading {
+  product_name: string;
+  brand: string;
+  barcode: string | null;
+  per_100g: { calories: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null };
+  details: ProductDetails;
+}
+
+/** Reads the name, marks, codes and terms printed on a pack. */
+export async function readPackPhoto(file: File): Promise<PackReading> {
+  const { preparePhoto } = await import("./photo-prep");
+  const response = await fetch("/api/pack/read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: await preparePhoto(file) }), signal: AbortSignal.timeout(45000) });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || t("Could not read that photo."));
+  return data;
+}
+
+export async function calculateOnboardingPlan(params: OnboardingParams): Promise<OnboardingPlanResult> {
+  return calculatePlan(params);
+}
+
+/**
+ * Look up barcode via Open Food Facts / USDA
+ */
+export async function lookupBarcodeNutrition(code: string): Promise<BarcodeProductResult> {
+  if (!/^\d{8,14}$/.test(code)) throw new Error(t("Enter an 8–14 digit UPC/EAN barcode."));
+  const response = await fetch(`/api/barcode?code=${encodeURIComponent(code)}`, { signal: AbortSignal.timeout(15000) });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || t("Product lookup failed."));
+  return data;
+}
+
+/**
+ * Parse a meal description through the server AI route.
+ */
+export async function parseMealWithAI(prompt: string): Promise<import("./meal-analysis").MealAnalysis> {
+  return analyzeMeal({ text: prompt });
+}
+
+async function analyzeMeal(input: { text?: string; image?: string }): Promise<import("./meal-analysis").MealAnalysis> {
+  const response = await fetch("/api/analyze", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input), signal: AbortSignal.timeout(70000),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || t("Unable to analyze this meal."));
+  return data;
+}
+
+export async function analyzeMealPhoto(file: File, note = "") {
+  if (!file.size) throw new Error(t("Choose a nonempty image."));
+  if (file.size > 10 * 1024 * 1024) throw new Error(t("Choose an image under 10 MB."));
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error(t("Use a JPEG, PNG or WebP photo."));
+  const { preparePhoto } = await import("./photo-prep");
+  return analyzeMeal({ image: await preparePhoto(file), ...(note.trim() ? { text: note.trim() } : {}) });
+}

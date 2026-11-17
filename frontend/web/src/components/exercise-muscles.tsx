@@ -1,0 +1,11 @@
+import { t } from "@/lib/i18n";
+import Model,{type IExerciseData,type Muscle} from 'react-body-highlighter';
+import {musclesFromText} from '@/lib/training-insights';
+
+/** The muscles an exercise works, front and back, using react-body-highlighter (MIT). */
+export function ExerciseMuscles({muscles,title}:{muscles:string;title:string}){
+ const worked=musclesFromText(muscles);
+ if(!worked.length)return null;
+ const data:IExerciseData[]=[{name:title,muscles:worked as unknown as Muscle[]}];
+ return <div className="exercise-muscles" role="img" aria-label={t("{title} works: {muscles}", { title, muscles })}><Model data={data} type="anterior" highlightedColors={['#07807a']} bodyColor="#c5dede"/><Model data={data} type="posterior" highlightedColors={['#07807a']} bodyColor="#c5dede"/></div>;
+}

@@ -1,0 +1,247 @@
+/* Motion and depth, loaded last: colour that glides between sections, presses you can feel, cards with a little 3D, and the footer.
+   Every movement here is switched off under Reduce motion (the app setting) and the system's reduced-motion preference. */
+
+/* ── Section colours glide ─────────────────────────────────────────────────────────────────── */
+/* Registered as real colours, so moving from Food to Move fades orange into violet instead of jumping. */
+@property --sec-fill { syntax: "<color>"; inherits: true; initial-value: #0b7a6c; }
+@property --sec-fill-2 { syntax: "<color>"; inherits: true; initial-value: #0e7490; }
+@property --sec-ink { syntax: "<color>"; inherits: true; initial-value: #0b7a6c; }
+@property --sec-soft { syntax: "<color>"; inherits: true; initial-value: #dff7f2; }
+@property --sec-bright { syntax: "<color>"; inherits: true; initial-value: #14b8a6; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) { transition: --sec-fill .6s ease, --sec-fill-2 .6s ease, --sec-ink .6s ease, --sec-soft .6s ease, --sec-bright .6s ease; }
+
+  /* Everything you can touch changes colour smoothly. */
+  html:not([data-motion="reduced"]) body :is(button, a[href], summary, input, select, textarea, .hub-card, .destination-card, .photo-card, .day-tile, .theme-choice) {
+    transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .3s ease, transform .25s cubic-bezier(.34, 1.4, .64, 1), opacity .25s ease, background-position .5s ease;
+  }
+
+  /* Primary buttons: the gradient glides across on hover, the button lifts with a glow in its own colour, and presses in. */
+  html:not([data-motion="reduced"]) body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary):is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary) {
+    background-image: linear-gradient(120deg, var(--sec-fill), var(--sec-fill-2) 50%, var(--sec-fill)); background-size: 220% 100%; background-position: 0 0;
+  }
+  html:not([data-motion="reduced"]) body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary):not(:disabled):hover {
+    background-position: 100% 0; transform: translateY(-2px); box-shadow: 0 1px 0 #ffffff40 inset, 0 14px 26px -12px var(--sec-fill);
+  }
+  html:not([data-motion="reduced"]) body :is(.account-secondary, .ds-btn-quiet, .destination-button, .app-section-pages a, .theme-choice, .coach-checkin button):not(:disabled):hover {
+    transform: translateY(-1px); box-shadow: 0 8px 18px -12px var(--sec-fill);
+  }
+  html:not([data-motion="reduced"]) body :is(button, a[href]):not(:disabled):active { transform: translateY(0) scale(.97); transition-duration: .08s; }
+
+  /* Touch or click: a ripple in the section colour spreads from exactly where you pressed (white on filled buttons). */
+  html:not([data-motion="reduced"]) body :is(button, a[href])[data-touch-feedback="true"] { overflow: hidden; }
+  html:not([data-motion="reduced"]) body :is(button, a[href])[data-touch-feedback="true"]::after {
+    content: ""; position: absolute; inset: auto; left: var(--touch-x); top: var(--touch-y); width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+    background: color-mix(in srgb, var(--sec-bright) 42%, transparent); pointer-events: none; animation: tc-ripple .6s cubic-bezier(.2, .8, .2, 1) forwards;
+  }
+  html:not([data-motion="reduced"]) body :is(.account-primary, .ds-btn-primary, .gate-primary, .hero-primary, .app-tabbar a[aria-current="page"], .qa-button, .feedback-button)[data-touch-feedback="true"]::after { background: #ffffff70; }
+
+  /* Laptops: cards tilt gently towards the pointer, with a soft light following it. */
+  html:not([data-motion="reduced"]) body :is(.hub-card, .destination-card, .photo-card, .day-tile):is(a, div, article, section)[data-depth-active="true"][data-depth-active] {
+    transform: perspective(900px) rotateX(var(--surface-rx, 0deg)) rotateY(var(--surface-ry, 0deg)) translateY(-3px);
+    box-shadow: 0 2px 4px #0f1c1b14, 0 22px 40px -22px color-mix(in srgb, var(--tile, var(--sec-fill)) 70%, transparent);
+  }
+  html:not([data-motion="reduced"]) body :is(.hub-card, .destination-card, .photo-card)[data-depth-active="true"]::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(420px circle at var(--surface-light-x, 50%) var(--surface-light-y, 50%), #ffffff38, transparent 45%);
+  }
+
+  /* New content arrives softly. */
+  html:not([data-motion="reduced"]) body main > :is(section, .account-card) { animation: tc-rise .45s cubic-bezier(.2, .8, .2, 1) both; }
+}
+@keyframes tc-ripple { from { transform: scale(0); opacity: .9; } to { transform: scale(46); opacity: 0; } }
+@keyframes tc-rise { from { transform: translateY(10px); } to { transform: none; } }   /* moves only: visible from the first frame */
+html body :is(.hub-card, .destination-card, .photo-card) { position: relative; transform-style: preserve-3d; }
+
+/* ── Depth: a top highlight and layered, colour-tinted shadows instead of flat grey ─────────────────── */
+html body :is(.account-card, .ds-card, .hub-card, .destination-card, .coach-card, .first-steps) {
+  box-shadow: 0 1px 0 #ffffff inset, 0 1px 2px #0f1c1b0d, 0 14px 30px -24px color-mix(in srgb, var(--sec-fill) 55%, #0f1c1b);
+}
+html[data-theme="dark"] body :is(.account-card, .ds-card, .hub-card, .destination-card, .coach-card, .first-steps) { box-shadow: 0 1px 0 #ffffff0d inset, 0 18px 36px -24px #000000d0; }
+
+/* ── Footer: brand, link columns and preferences, with a colour band along the top ─────────────────── */
+html body .site-footer.site-footer {
+  position: relative; display: grid; grid-template-columns: 1fr; gap: 26px; box-sizing: border-box; width: min(1180px, calc(100% - 32px)); margin: 48px auto 32px;
+  padding: 30px clamp(20px, 3vw, 34px) 22px; border: 1px solid var(--ds-line); border-radius: 26px; overflow: hidden; color: var(--ds-ink); font-size: .9375rem;
+  background: radial-gradient(600px 220px at 100% 0, color-mix(in srgb, var(--sec-bright) 10%, transparent), transparent 70%), var(--ds-surface);
+  box-shadow: 0 1px 2px #0f1c1b0d, 0 20px 40px -32px color-mix(in srgb, var(--sec-fill) 60%, #0f1c1b);
+}
+html body .site-footer::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, #0d9488, #2563eb, #7c3aed, #db2777, #ea580c); }
+@media (min-width: 860px) { html body .site-footer.site-footer { grid-template-columns: 1.1fr 1.2fr 1.5fr; gap: 36px; } }
+html body .site-footer h2 { margin: 0 0 12px; font: 600 .75rem/1.2 var(--ds-display); letter-spacing: .1em; text-transform: uppercase; color: var(--ds-muted); }
+html body .site-footer-brand { display: grid; gap: 10px; align-content: start; justify-items: start; }
+html body .site-footer-logo { font: 700 1.6rem/1 var(--ds-display); letter-spacing: -.03em; text-decoration: none;
+  background: linear-gradient(120deg, #0b7a6c, #6d28d9 55%, #be185d); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html body .site-footer-logo span { color: #c2410c; -webkit-text-fill-color: #c2410c; }
+html body .site-footer-brand p { margin: 0; color: var(--ds-muted); max-width: 30ch; }
+html body .site-footer-links { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+html body .site-footer-links div { display: grid; gap: 2px; align-content: start; }
+html body .site-footer-links a { display: inline-flex; align-items: center; min-height: 40px; color: var(--ds-ink); font: 500 .9375rem/1.2 var(--ds-display); text-decoration: none; }
+html body .site-footer-links a::after { content: "→"; margin-left: 6px; opacity: 0; transform: translateX(-4px); transition: opacity .2s, transform .2s; color: var(--sec-ink); }
+html body .site-footer-links a:hover { color: var(--sec-ink); }
+html body .site-footer-links a:hover::after { opacity: 1; transform: none; }
+html body .site-footer-prefs { display: grid; gap: 12px; align-content: start; }
+html body .site-footer .feedback-button { min-height: 42px; margin-top: 6px; padding: 0 20px; border: 0; border-radius: 999px; color: #fff; cursor: pointer; font: 600 .9375rem/1 var(--ds-display);
+  background: linear-gradient(120deg, #0b7a6c, #6d28d9 55%, #be185d); background-size: 200% 100%; box-shadow: 0 10px 22px -12px #6d28d9; }
+html body .site-footer .feedback-button:hover { background-position: 100% 0; }
+html body .site-footer-note { grid-column: 1 / -1; margin: 0; padding-top: 16px; border-top: 1px solid var(--ds-line); color: var(--ds-muted); font-size: .8125rem; }
+
+/* Appearance: a segmented control with icons. */
+html body .site-footer .theme-control { min-width: 0; margin: 0; padding: 0; border: 0; }
+html body .site-footer .theme-control legend { margin-bottom: 8px; padding: 0; font: 600 .9375rem/1.2 var(--ds-display); color: var(--ds-ink); }
+html body .theme-choices { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border: 1px solid var(--ds-line); border-radius: 14px; background: var(--ds-sunken); }
+html body .theme-choice { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 10px; cursor: pointer; color: var(--ds-muted); font: 600 .875rem/1 var(--ds-display); }
+html body .theme-choice input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+html body .theme-choice:has(input:checked) { background: var(--ds-surface); color: var(--sec-ink); box-shadow: 0 1px 2px #0f1c1b1f, 0 6px 14px -8px var(--sec-fill); }
+html body .theme-choice:has(input:focus-visible) { box-shadow: var(--ds-ring); }
+
+/* Reduce motion and Comfort mode: switches. */
+html body .pref-switch { display: flex; align-items: center; gap: 12px; min-height: 40px; font: 500 .9375rem/1.2 var(--ds-display); color: var(--ds-ink); cursor: pointer; }
+html body .pref-switch input[type="checkbox"][role="switch"] { appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 44px; height: 26px; margin: 0; border-radius: 999px; background: var(--ds-line); cursor: pointer; transition: background .25s ease; }
+html body .pref-switch input[type="checkbox"][role="switch"]::before { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px #0f1c1b40; transition: transform .25s cubic-bezier(.34, 1.4, .64, 1); }
+html body .pref-switch input[type="checkbox"][role="switch"]:checked { background: linear-gradient(120deg, var(--sec-fill), var(--sec-fill-2)); }
+html body .pref-switch input[type="checkbox"][role="switch"]:checked::before { transform: translateX(18px); }
+html body .pref-switch input[type="checkbox"][role="switch"]:focus-visible { outline: 0; box-shadow: var(--ds-ring); }
+
+html[data-theme="dark"] body .site-footer-logo { background-image: linear-gradient(120deg, #2dd4bf, #a78bfa 55%, #f472b6); }
+html[data-theme="dark"] body .site-footer-logo span { color: #fdba74; -webkit-text-fill-color: #fdba74; }
+html body .pref-switch input[type="checkbox"][role="switch"] { min-width: 44px; min-height: 26px; max-height: 26px; border: 0; }
+
+/* Retest reminder on Today, and the report's reasons in the weekly plan. */
+html body .retest-reminder.retest-reminder { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; padding: 18px; border-color: color-mix(in srgb, #7c3aed 30%, var(--ds-line));
+  background: linear-gradient(135deg, color-mix(in srgb, #7c3aed 10%, var(--ds-surface)), var(--ds-surface) 70%); }
+html body .retest-reminder h2 { margin: 0 0 4px; font-size: 1.0625rem; }
+html body .retest-reminder p { margin: 0 0 8px; }
+html body .retest-icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; }
+html body .personal-report-why { margin: 12px 0; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--sec-bright) 35%, var(--ds-line)); border-radius: 16px; background: var(--sec-soft); }
+html body .personal-report-why h3 { margin: 0 0 8px; font-size: 1rem; }
+html body .personal-report-why ul { display: grid; gap: 8px; margin: 0; padding-left: 18px; }
+html body .personal-report-why small { display: block; color: var(--ds-muted); font-size: .8125rem; }
+html body .health-why strong { font-family: var(--ds-display); }
+html body .retest-reminder .account-secondary { color: var(--ds-ink); }
+
+/* ── Injury check-ins and recovery ────────────────────────────────────────────────────────────────── */
+html body .recovery-card.recovery-card { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; padding: 18px;
+  border-color: color-mix(in srgb, #db2777 28%, var(--ds-line)); background: linear-gradient(135deg, color-mix(in srgb, #db2777 9%, var(--ds-surface)), var(--ds-surface) 70%); }
+html body .recovery-card h2 { margin: 0 0 10px; font-size: 1.0625rem; }
+html body .recovery-icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #db2777, #ea580c); color: #fff; }
+html body .recovery-card > div, html body .recovery-part { min-width: 0; flex: 1; }
+html body .recovery-form { display: grid; gap: 12px; }
+html body .recovery-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+html body .recovery-form legend { margin-bottom: 8px; padding: 0; font: 600 .9375rem/1.3 var(--ds-display); }
+html body .pain-scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 4px; }
+html body .pain-dot { position: relative; display: grid; place-items: center; min-height: 40px; border-radius: 10px; border: 1px solid var(--ds-line); background: var(--ds-surface); cursor: pointer; font: 600 .9375rem/1 var(--ds-display); }
+html body .pain-dot input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+html body .pain-dot[data-level="mild"] { --pc: #15803d; } html body .pain-dot[data-level="moderate"] { --pc: #d97706; } html body .pain-dot[data-level="severe"] { --pc: #dc2626; }
+html body .pain-dot:has(input:checked) { background: var(--pc); border-color: transparent; color: #fff; box-shadow: 0 6px 14px -8px var(--pc); }
+html body .pain-dot[data-level="moderate"]:has(input:checked) { background: #b45309; }
+html body .pain-dot:has(input:focus-visible) { box-shadow: var(--ds-ring); }
+html body .pain-word { margin: 6px 0 0; color: var(--ds-muted); font-size: .875rem; }
+html body .trend-choices { display: flex; gap: 6px; flex-wrap: wrap; }
+html body .trend-choice { position: relative; display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid var(--ds-line); border-radius: 999px; background: var(--ds-surface); cursor: pointer; font: 600 .875rem/1 var(--ds-display); }
+html body .trend-choice input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+html body .trend-choice:has(input:checked) { background: var(--sec-gradient); border-color: transparent; color: #fff; }
+html body .trend-choice:has(input:focus-visible) { box-shadow: var(--ds-ring); }
+html body .red-flags summary { cursor: pointer; font: 600 .875rem/1.3 var(--ds-display); min-height: 32px; }
+html body .red-flag { display: flex; align-items: center; gap: 10px; min-height: 40px; font-weight: 500; }
+html body .recovery-steps { display: flex; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
+html body .recovery-steps li { flex: 1; padding: 6px 8px; border-radius: 10px; background: var(--ds-sunken); color: var(--ds-muted); font: 600 .75rem/1.2 var(--ds-display); text-align: center; }
+html body .recovery-steps li[data-on] { background: linear-gradient(135deg, #db2777, #ea580c); color: #fff; }
+html body .recovery-recovered .recovery-steps li[data-on] { background: linear-gradient(135deg, #0b7a6c, #15803d); }
+html body .recovery-stage p { margin: 0 0 6px; }
+html body .recovery-alert { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--ds-red-soft); color: var(--ds-red); font-weight: 600; }
+html body .pain-chart { display: block; width: 100%; max-width: 360px; height: auto; margin: 8px 0; }
+html body .pain-band-high { fill: color-mix(in srgb, #dc2626 10%, transparent); } html body .pain-band-safe { fill: color-mix(in srgb, #16a34a 12%, transparent); }
+html body .pain-line { fill: none; stroke: #db2777; stroke-width: 2.5; stroke-linejoin: round; }
+html body .pain-point { fill: #db2777; } html body .pain-flag { fill: #dc2626; stroke: #fff; stroke-width: 1.5; }
+html body .recovery-part h3 small { color: var(--ds-muted); font-weight: 500; }
+html:not([data-theme="dark"]) body .recovery-alert { color: #b91c1c; }
+@media (max-width: 520px) { html body .pain-scale { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; } html body .pain-dot { min-height: 44px; } }
+html body .recovery-part h3::first-letter { text-transform: uppercase; }
+
+/* ── Today's 3 tasks, streak and Health Score ─────────────────────────────────────────────────────── */
+html body .today-tasks.today-tasks { margin: 12px 0; padding: 20px; background: linear-gradient(160deg, color-mix(in srgb, #0d9488 9%, var(--ds-surface)), var(--ds-surface) 55%); }
+html body .today-tasks-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+html body .today-tasks h2 { margin: 0; font-size: 1.25rem; }
+html body .streak-pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; color: #fff; font-family: var(--ds-display);
+  background: linear-gradient(135deg, #c2410c, #be185d); box-shadow: 0 8px 18px -10px #be185d; }
+html body .streak-pill strong { font-size: 1.125rem; }
+html body .task-list { display: grid; gap: 8px; margin: 14px 0 6px; padding: 0; list-style: none; }
+html body .task-row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--ds-line); border-radius: 16px; background: var(--ds-surface); }
+html body .task-row[data-done] { background: color-mix(in srgb, #0d9488 8%, var(--ds-surface)); border-color: color-mix(in srgb, #0d9488 30%, var(--ds-line)); }
+html body .task-check { display: grid; place-items: center; flex: none; width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; border: 2px solid var(--ds-line);
+  background: var(--ds-surface); color: transparent; }
+html body button.task-check { width: 44px; height: 44px; cursor: pointer; }
+html body .task-row[data-done] .task-check { background: linear-gradient(135deg, #0b7a6c, #0e7490); border-color: transparent; color: #fff; }
+html body .task-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+html body .task-text strong { font-family: var(--ds-display); font-weight: 600; }
+html body .task-row[data-done] .task-text strong { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--ds-ink) 40%, transparent); }
+html body .task-text small { color: var(--ds-muted); font-size: .8125rem; }
+html body .task-go { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; background: var(--sec-soft); color: var(--sec-ink); font: 600 .875rem/1 var(--ds-display); text-decoration: none; }
+html body .streak-rule { margin: 0 0 14px; font-size: .8125rem; }
+html body .health-score { padding-top: 14px; border-top: 1px solid var(--ds-line); }
+html body .health-score-main { display: flex; gap: 14px; align-items: center; }
+html body .health-score-main h3 { margin: 0 0 2px; }
+html body .health-ring { flex: none; width: 88px; height: 88px; }
+html body .health-ring-track { fill: none; stroke: var(--ds-sunken); stroke-width: 9; }
+html body .health-ring-value { fill: none; stroke-width: 9; stroke-linecap: round; }
+html body .health-ring-text { font: 700 22px var(--ds-display); fill: var(--ds-ink); }
+html body .health-focus { margin: 6px 0 0; font-size: .875rem; }
+html body .health-parts { display: grid; gap: 8px; margin: 14px 0 8px; padding: 0; list-style: none; }
+html body .health-parts li { display: grid; grid-template-columns: 96px 1fr 34px; align-items: center; gap: 4px 10px; }
+html body .health-parts small { grid-column: 1 / -1; color: var(--ds-muted); font-size: .8125rem; }
+html body .health-part-name { font: 600 .875rem/1.2 var(--ds-display); }
+html body .health-part-bar { height: 8px; border-radius: 999px; background: var(--ds-sunken); overflow: hidden; }
+html body .health-part-bar i { display: block; height: 100%; border-radius: inherit; background: var(--part); }
+html body .health-part-score { text-align: right; font: 600 .875rem/1 var(--ds-display); font-variant-numeric: tabular-nums; }
+html body .health-sources summary { cursor: pointer; font: 600 .875rem/1.3 var(--ds-display); min-height: 32px; }
+html body .health-sources ul { padding-left: 18px; font-size: .8125rem; }
+@media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) body .health-ring-value { transition: stroke-dasharray .8s cubic-bezier(.2, .8, .2, 1); }
+  html:not([data-motion="reduced"]) body .health-part-bar i { transition: width .8s cubic-bezier(.2, .8, .2, 1); } }
+
+/* ── History: monthly summaries and the free-history note ─────────────────────────────────────────── */
+html body .history-panel.history-panel { margin-top: 20px; }
+html body .history-head { display: flex; gap: 12px; align-items: flex-start; }
+html body .history-head h2 { margin: 0; }
+html body .history-icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--sec-gradient); color: #fff; }
+html body .history-limit { margin: 14px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--sec-soft); }
+html body .history-months { display: grid; gap: 12px; margin-top: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+html body .history-month { padding: 14px; border: 1px solid var(--ds-line); border-radius: 16px; background: var(--ds-raised); }
+html body .history-month h3 { margin: 0 0 8px; font-size: 1rem; }
+html body .history-month dl { display: grid; gap: 4px; margin: 0; }
+html body .history-month dl div { display: flex; justify-content: space-between; gap: 8px; font-size: .875rem; }
+html body .history-month dt { color: var(--ds-muted); }
+html body .history-month dd { margin: 0; font: 600 .875rem/1.3 var(--ds-display); font-variant-numeric: tabular-nums; }
+
+/* Phase F3: counting to the person's own range */
+html body .own-range { display: grid; gap: 6px; margin: 4px 0 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--sec-fill, #0d9488) 35%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sec-fill, #0d9488) 10%, var(--ds-surface, #fff)), color-mix(in srgb, var(--sec-fill-2, #6366f1) 8%, var(--ds-surface, #fff)));
+  animation: own-range-in .4s cubic-bezier(.2, .8, .2, 1) both; }
+html body .own-range p { margin: 0; font-size: .875rem; line-height: 1.45; color: var(--ds-ink, inherit); }
+html body .own-range-switch { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; font-size: .9rem; cursor: pointer; }
+html body .own-range-switch input:disabled { opacity: .55; cursor: not-allowed; }
+html body .own-range .own-range-gain { font-weight: 600; color: #15803d; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .own-range .own-range-gain { color: #4ade80; } }
+:root[data-theme="dark"] .own-range .own-range-gain { color: #4ade80; }
+@keyframes own-range-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { html body .own-range { animation: none; } }
+/* The camera page stacks its labels and paints every input in dark mode (with !important): the range switch stays a row and a switch. */
+html body .camera-page .own-range label.own-range-switch { flex-direction: row; justify-content: flex-start; margin: 0; }
+html body .camera-page .own-range input.own-range-input[role="switch"] { width: 44px; height: 26px; padding: 0; background: var(--ds-line) !important; border: 0 !important; }
+html body .camera-page .own-range input.own-range-input[role="switch"]:checked { background: linear-gradient(120deg, var(--sec-fill, #0d9488), var(--sec-fill-2, #6366f1)) !important; }
+
+/* Phase I: Today's tasks placeholder, the same shape as the card, so the page doesn't jump when it loads. */
+html body .today-tasks-loading .skeleton-line { display: block; border-radius: 6px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 70%, transparent); width: 70%; }
+html body .today-tasks-loading .skeleton-line.short { width: 45%; margin-top: 6px; }
+html body .today-tasks-loading .skeleton-block { min-height: 64px; border-radius: 14px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 45%, transparent); }
+html body .coach-card-loading .skeleton-text { border-radius: 8px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); color: transparent; }
+html body .coach-card-loading .skeleton-pill { display: inline-block; min-height: 44px; min-width: 72px; border-radius: 12px; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); }
+html body .coach-card-loading .skeleton-pill.wide { min-width: 100%; }
+html body .quick-log-placeholder { min-width: 140px; color: transparent; background: color-mix(in srgb, var(--ds-line, #e5e7eb) 55%, transparent); }
+
+/* Language picker in the footer's Preferences. */
+html body .language-picker { display: grid; gap: 4px; margin-bottom: 12px; }
+html body .language-picker label { display: flex; align-items: center; gap: 8px; font-weight: 600; flex-wrap: wrap; }
+html body .language-picker select { min-height: 44px; border-radius: 12px; padding: 0 10px; font: inherit; }
+html body .language-picker small { color: var(--ds-muted, #57534e); }

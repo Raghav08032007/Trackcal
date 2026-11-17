@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" class="h-full antialiased">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#00201c" />
+    <meta name="description" content="Track meals, review nutrition estimates and build daily habits." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="TrackCal" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>TrackCal — Food & Nutrition Journal</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="preload" as="image" type="image/webp" href="/characters/pip-256.webp" />
+    <!-- The first screen, drawn before any script runs; React replaces it. -->
+    <link rel="stylesheet" href="/shell.css" />
+    <!-- Who is signed in: asked for alongside the HTML, so the app doesn't wait for its scripts to start this request. -->
+    <link rel="preload" href="/api/account/session" as="fetch" crossorigin />
+  </head>
+  <body class="tc-studio min-h-full flex flex-col">
+    <div id="root" class="contents"><div class="boot" aria-hidden="true"><div class="boot-bar"><span class="boot-brand">trackcal<i>.</i></span></div><div class="boot-band"></div><div class="boot-main"><div class="boot-card boot-hero"></div><div class="boot-card"></div><div class="boot-card"></div></div><div class="boot-tabs"></div></div><p class="boot-sr" role="status">Loading TrackCal…</p></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
