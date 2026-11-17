@@ -33,7 +33,7 @@ Still to do, in order:
 4. Emails (`services/account_mail.py`, `services/weekly_email.py`) and push (`services/notifications.py`): pass
    `lang=` with the account's saved `ui_language`.
 5. Run `backend/.venv/Scripts/python backend/i18n/build.py`, then the backend tests (about 7 minutes, so run them in the
-   background), the web tests, and a browser check in Hindi, Arabic and Spanish. Commit the web repo first, then the root.
+   background), the web tests, and a browser check in Hindi, Arabic and Spanish, then commit.
 
 Keep server values the web app translates itself in English: roles, statuses and challenge goal labels.
 
@@ -50,3 +50,9 @@ Keep server values the web app translates itself in English: roles, statuses and
 Run `alembic upgrade head`; add the SMTP and Razorpay (Test Mode first) keys; decide GST, terms of sale and a refund policy;
 set up a host, a domain and the every-minute scheduler; decide the under-18 rules for the feed; get native and legal review
 of the translations.
+
+## Repository
+
+One git repository since 17 November 2026: `frontend/web` used to be a separate repo inside this one, and its history is
+now merged in (its older commits show paths without the `frontend/web/` prefix). GitHub: a private repository; the branch
+`bakeoff/version-b` is pushed as `main`.
