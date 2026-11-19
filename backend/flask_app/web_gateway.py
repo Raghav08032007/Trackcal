@@ -421,7 +421,7 @@ def health_photo():
 SLUG = r'[a-z0-9-]{3,40}'
 COMMUNITY = [('GET', r''), ('POST', r''), ('GET', SLUG), ('PUT', SLUG), ('POST', SLUG + r'/membership'), ('DELETE', SLUG + r'/membership'),
              ('GET', SLUG + r'/members'), ('POST', SLUG + r'/members/[a-z0-9_.]{1,30}'), ('GET', SLUG + r'/posts'), ('POST', SLUG + r'/posts'),
-             ('GET', SLUG + r'/moderation'), ('POST', SLUG + r'/moderation')]
+             ('GET', SLUG + r'/moderation'), ('POST', SLUG + r'/moderation'), ('GET', r'bans'), ('POST', r'appeals'), ('POST', SLUG + r'/appeal')]
 
 
 @bp.route('/communities', defaults={'path': ''}, methods=['GET', 'POST'])

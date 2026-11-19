@@ -91,7 +91,7 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 
 | ID | Sev | Issue | Evidence | Plan |
 |---|---|---|---|---|
-| KI-40 | 2 | Community owners and moderators are volunteers with real power over who belongs. There is no appeal path for a person banned from a community, and no site-level view of how communities are moderated | `routers/communities.py` | Before enabling: an "appeal to TrackCal" link on the ban notice, and a site admin list of communities with open-report counts |
+| KI-40 | ~~2~~ **Resolved** | Community owners and moderators are volunteers with real power over who belongs. There is no appeal path for a person banned from a community, and no site-level view of how communities are moderated | `routers/communities.py` | Before enabling: an "appeal to TrackCal" link on the ban notice, and a site admin list of communities with open-report counts Done: banned people see the community under "Removed from a community" and can appeal to TrackCal (one open appeal, 30 days after a decision); only site moderators decide (reinstate or keep the ban); the moderation screen lists every community with members, moderators, bans, open reports and open appeals (`routers/communities.py`, `tests/test_appeals.py`) |
 | KI-41 | 3 | Anyone with a feed profile can create a community (5 each); names and descriptions aren't screened beyond reports | — | Add communities to the keyword pre-screen planned in KI-37 |
 | KI-36 | — | The under-18 launch gate (Phase 7) applies to communities too | KI-36 | Decide once for feed and communities |
 

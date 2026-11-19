@@ -6,6 +6,8 @@ export type Community = {
   membership: { role: "owner" | "moderator" | "member"; status: "active" | "pending" | "banned" } | null; can_moderate: boolean; pending?: number;
 };
 export type Member = { handle: string; display_name: string; character_id: string; role: string };
+// A community that banned you, and where your appeal to TrackCal stands (appeal: open, upheld, or none yet).
+export type Ban = { slug: string; name: string; appeal: "open" | "upheld" | null; can_appeal: boolean; next_appeal_at: string | null };
 export type QueueItem = { target_type: "post" | "comment"; target_id: string; reasons: string[]; content: string; hidden: boolean | null };
 export const CATEGORY_LABELS: Record<string, string> = {
   running: msg("Running"), walking: msg("Walking"), yoga: msg("Yoga"), strength: msg("Strength"), cycling: msg("Cycling"), sports: msg("Sports"), cooking: msg("Cooking"),

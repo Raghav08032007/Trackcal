@@ -24,7 +24,7 @@ from timeutil import utcnow
 from services import screening
 
 REACTIONS = ('like', 'cheer', 'clap', 'hug')
-RESERVED = {'admin', 'trackcal', 'support', 'help', 'moderator', 'official', 'root', 'system', 'me', 'settings'}
+RESERVED = {'admin', 'trackcal', 'support', 'help', 'moderator', 'official', 'root', 'system', 'me', 'settings', 'bans', 'appeals'}
 CHARACTERS = ('pip', 'nova', 'milo', 'luna', 'rio', 'sage')
 AUTO_HIDE_REPORTS = 3
 PAGE = 20
@@ -458,7 +458,8 @@ def require_moderator(user):
 
 def moderation_queue(user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     require_flag(db); require_moderator(user)
-    rows = db.query(models.ContentReport).filter_by(status='open').order_by(models.ContentReport.created_at).limit(200).all()
+    rows = (db.query(models.ContentReport).filter(models.ContentReport.status == 'open', models.ContentReport.target_type != 'ban')   # appeals: below
+            .order_by(models.ContentReport.created_at).limit(200).all())
     grouped = {}
     for r in rows:
         item = grouped.setdefault((r.target_type, r.target_id), {'target_type': r.target_type, 'target_id': r.target_id, 'reasons': [], 'report_ids': []})
@@ -469,7 +470,11 @@ def moderation_queue(user=Depends(get_current_active_user), db: Session = Depend
         item['content'] = describe(kind, target) if target else '(deleted)'
         item['hidden'] = is_hidden(kind, target) if target else None
         out.append(item)
-    return {'queue': out, 'flagged_entries': flagged_entries(db)}
+    extra = {}
+    if is_enabled(db, 'communities'):
+        from routers import communities   # communities imports this module
+        extra = {'appeals': communities.appeals_queue(db), 'communities': communities.overview(db)}
+    return {'queue': out, 'flagged_entries': flagged_entries(db), **extra}
 
 
 def flagged_entries(db):

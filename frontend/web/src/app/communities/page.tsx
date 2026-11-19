@@ -1,10 +1,10 @@
 // Communities directory: discover (search, category), your communities, and starting a new one.
-import { t, msg } from "@/lib/i18n";
+import { t, msg, date } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
 import { social } from "@/lib/social";
-import { CATEGORY_LABELS, communities, CommunityError, type Community } from "@/lib/communities";
+import { CATEGORY_LABELS, communities, CommunityError, type Ban, type Community } from "@/lib/communities";
 
 export const metadata = { title:msg("TrackCal — Communities") };
 
@@ -39,6 +39,7 @@ export default function Page() {
       <button className="account-secondary">{t("Search")}</button>
     </form>
     {error && <p role="alert">{error}</p>}
+    <Bans />
     <div className="community-grid">{rows?.map(c => <Link key={c.slug} href={`/c/${c.slug}`} className="account-card community-card">
       <span className="eyebrow">{CATEGORY_LABELS[c.category] || c.category}{c.visibility === "private" ? t(" · private") : ""}</span>
       <h2>{c.name}</h2><p>{c.description || t("No description yet.")}</p>
@@ -63,4 +64,34 @@ function CreateCommunity({ onCreated, onCancel }: { onCreated: (slug: string) =>
     {error && <p role="alert">{error}</p>}
     <div className="account-actions"><button className="account-primary" disabled={busy}>{busy ? t("Creating…") : t("Create community")}</button><button type="button" onClick={onCancel}>{t("Cancel")}</button></div>
   </form>;
+}
+
+
+// Communities that removed you, with an appeal to TrackCal. Shown only when there is at least one; only you see it.
+function Bans() {
+  const [bans, setBans] = useState<Ban[]>([]), [open, setOpen] = useState(""), [note, setNote] = useState(""), [busy, setBusy] = useState(false), [message, setMessage] = useState("");
+  const load = useCallback(() => communities<{ bans?: Ban[] }>("bans").then(v => setBans(Array.isArray(v.bans) ? v.bans : []), () => setBans([])), []);
+  useEffect(() => { void load(); }, [load]);
+  if (!bans.length) return null;
+  async function send(slug: string) {
+    if (busy) return; setBusy(true); setMessage("");
+    try { const r = await communities<{ status: string }>(`${slug}/appeal`, "POST", { note: note.trim() }); setMessage(r.status); setOpen(""); setNote(""); await load(); }
+    catch (e) { setMessage(e instanceof Error ? e.message : t("Couldn't send.")); } finally { setBusy(false); }
+  }
+  return <section className="account-card community-bans" aria-labelledby="bans-title">
+    <h2 id="bans-title">{t("Removed from a community")}</h2>
+    <p>{t("A community's moderators removed you from these communities. You can ask TrackCal to look again. The community's own moderators don't decide appeals.")}</p>
+    {message && <p role="status">{message}</p>}
+    {bans.map(ban => <div className="studio-list-row" key={ban.slug}>
+      <p><strong>{ban.name}</strong> · {ban.appeal === "open" ? t("Your appeal is with our team.") : ban.appeal === "upheld" ? t("Our team kept the removal.") : t("Not appealed yet.")}
+        {ban.next_appeal_at ? ` ${t("You can appeal again on {date}.", { date: date(new Date(ban.next_appeal_at), { dateStyle: "medium" }) })}` : ""}</p>
+      {ban.can_appeal && (open === ban.slug
+        ? <form className="account-form" onSubmit={e => { e.preventDefault(); void send(ban.slug); }}>
+            <label>{t("Why should we look again?")}<textarea required minLength={10} maxLength={500} rows={3} value={note} onChange={e => setNote(e.target.value)} /></label>
+            <div className="account-actions"><button className="account-primary" disabled={busy || note.trim().length < 10}>{busy ? t("Sending…") : t("Send appeal")}</button>
+              <button type="button" onClick={() => { setOpen(""); setNote(""); }}>{t("Cancel")}</button></div>
+          </form>
+        : <div className="account-actions"><button className="account-secondary" onClick={() => { setOpen(ban.slug); setNote(""); setMessage(""); }}>{t("Ask TrackCal to review")}</button></div>)}
+    </div>)}
+  </section>;
 }

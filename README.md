@@ -30,7 +30,7 @@ The web app is built with Vite, React 19 and React Router. The API runs on Flask
 - Quests, XP, levels, badges, Pip's garden and six companion characters.
 - Label Detective and camera sports games: skip rope, shadow boxing, cricket drive and badminton smash.
 - Challenges, a feed with posts, kudos and comments, communities, and events with QR-code check-in.
-- Reporting and moderation.
+- Reporting and moderation: a word screen that holds hurtful or self-harm posts for review (with a helpline), flagged challenge entries, ban appeals to TrackCal, and an overview of how each community is moderated. People get notified of new followers, comments and kudos (opt-in, bundled).
 
 **Me**
 - An 8-step onboarding, account and security, history export and import, and account closure (data is erased after 30 days).
@@ -137,10 +137,6 @@ texts and legal review of the privacy notice and terms.
 
 - A report button for events, and checks on event locations.
 - Event reminder notifications, and a billing reminder before a trial ends.
-- A moderator screen for flagged challenge entries, and automatic text screening (slurs, self-harm phrases) for posts,
-  communities and events.
-- Follow, comment and reaction notifications (opt-in).
-- An appeal path for people removed from a community.
 - A trainer dashboard to manage several clients.
 - Ranking, paging and spam controls for the Discover feed as it grows.
 - A lighter pose model for low-end phones.

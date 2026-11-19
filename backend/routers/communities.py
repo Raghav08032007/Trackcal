@@ -7,6 +7,7 @@ Roles: owner (one), moderators, members. Moderators approve, remove and ban memb
 comments in their community; site admins can do the same everywhere. Reactions and comments reuse the feed's
 endpoints, whose visibility rule (`social.can_view`) knows about communities."""
 import re
+from datetime import timedelta
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
@@ -284,3 +285,109 @@ def moderate(slug: str, data: ModerationInput, user=Depends(get_current_active_u
     db.query(models.ContentReport).filter_by(target_type=data.target_type, target_id=data.target_id, status='open').update({'status': status, 'resolved_at': utcnow()})
     db.commit()
     return {'status': status}
+
+
+# ── Appeals (KI-40) ───────────────────────────────────────────────────────
+# A ban can be appealed to TrackCal. The community's own moderators never decide an appeal, so the review is independent.
+# Appeals are stored as reports (target_type 'ban', target_id = the community), so no table is needed. One open appeal
+# at a time; after a decision the person can appeal again APPEAL_WAIT_DAYS later.
+APPEAL_WAIT_DAYS = 30
+
+
+class AppealInput(BaseModel):
+    note: str = Field(min_length=10, max_length=500)
+
+
+def _last_appeal(db, user_id, community_id):
+    return (db.query(models.ContentReport).filter_by(reporter_id=str(user_id), target_type='ban', target_id=community_id)
+            .order_by(models.ContentReport.created_at.desc()).first())
+
+
+def _appeal_state(last, now):
+    """(state, can_appeal, next_at): state is open, upheld or None (never appealed, or reinstated before a new ban)."""
+    if not last: return None, True, None
+    if last.status == 'open': return 'open', False, None
+    next_at = (last.resolved_at or last.created_at) + timedelta(days=APPEAL_WAIT_DAYS)
+    return ('upheld' if last.status == 'dismissed' else None), next_at <= now, (next_at.isoformat() + 'Z' if next_at > now else None)
+
+
+def my_bans(user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Communities that banned you, and where your appeal stands. Only you see this list."""
+    require_flags(db)
+    rows = (db.query(models.Community).join(models.CommunityMember, models.CommunityMember.community_id == models.Community.id)
+            .filter(models.CommunityMember.user_id == str(user.id), models.CommunityMember.status == 'banned').order_by(models.Community.name).all())
+    now, out = utcnow(), []
+    for community in rows:
+        state, can, next_at = _appeal_state(_last_appeal(db, user.id, community.id), now)
+        out.append({'slug': community.slug, 'name': community.name, 'appeal': state, 'can_appeal': can, 'next_appeal_at': next_at})
+    return {'bans': out}
+
+
+def appeal(slug: str, data: AppealInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    require_flags(db); consume(db, 'community-appeal', str(user.id), 5, 86400)
+    community = by_slug(db, slug)
+    m = membership(db, community, user.id)
+    if not m or m.status != 'banned': raise HTTPException(404, 'You are not banned from this community.')
+    last = _last_appeal(db, user.id, community.id)
+    state, can, _ = _appeal_state(last, utcnow())
+    if state == 'open': raise HTTPException(409, 'Your appeal is already with our team.')
+    if not can: raise HTTPException(409, 'You can appeal again 30 days after the last decision.')
+    if last:   # one row per person and community (a unique key): a new appeal reopens it with the new note
+        last.status, last.note, last.created_at, last.resolved_at = 'open', data.note.strip(), utcnow(), None
+    else: db.add(models.ContentReport(reporter_id=str(user.id), target_type='ban', target_id=community.id, reason='appeal', note=data.note.strip()))
+    db.commit()
+    return {'status': tr("Thanks. TrackCal's team will review this. The community's own moderators don't decide appeals.")}
+
+
+def appeals_queue(db):
+    """Open appeals for site moderators, oldest first."""
+    rows = db.query(models.ContentReport).filter_by(target_type='ban', status='open').order_by(models.ContentReport.created_at).limit(100).all()
+    out = []
+    for r in rows:
+        community = db.get(models.Community, r.target_id); person = social.profile_of(db, r.reporter_id)
+        out.append({'id': r.id, 'community': community.name if community else '(deleted)', 'slug': community.slug if community else None,
+                    'handle': person.handle if person else None, 'note': r.note, 'created_at': r.created_at.isoformat() + 'Z'})
+    return out
+
+
+def overview(db, limit=50):
+    """How each community is moderated: members, moderators, bans, open reports and open appeals. Busiest first."""
+    counts = {}
+    for cid, status, role, n in (db.query(models.CommunityMember.community_id, models.CommunityMember.status, models.CommunityMember.role, func.count())
+                                 .group_by(models.CommunityMember.community_id, models.CommunityMember.status, models.CommunityMember.role)):
+        c = counts.setdefault(cid, {'members': 0, 'moderators': 0, 'banned': 0, 'open_reports': 0, 'open_appeals': 0})
+        if status == 'banned': c['banned'] += n
+        elif status == 'active':
+            c['members'] += n
+            if role in ('owner', 'moderator'): c['moderators'] += n
+    open_reports = db.query(models.ContentReport).filter(models.ContentReport.status == 'open')
+    for cid, n in (open_reports.filter(models.ContentReport.target_type == 'post').join(models.Post, models.Post.id == models.ContentReport.target_id)
+                   .with_entities(models.Post.community_id, func.count()).filter(models.Post.community_id.isnot(None)).group_by(models.Post.community_id)):
+        counts.setdefault(cid, {'members': 0, 'moderators': 0, 'banned': 0, 'open_reports': 0, 'open_appeals': 0})['open_reports'] += n
+    for cid, n in (open_reports.filter(models.ContentReport.target_type == 'comment').join(models.Comment, models.Comment.id == models.ContentReport.target_id)
+                   .join(models.Post, models.Post.id == models.Comment.post_id).with_entities(models.Post.community_id, func.count())
+                   .filter(models.Post.community_id.isnot(None)).group_by(models.Post.community_id)):
+        counts.setdefault(cid, {'members': 0, 'moderators': 0, 'banned': 0, 'open_reports': 0, 'open_appeals': 0})['open_reports'] += n
+    for cid, n in open_reports.filter(models.ContentReport.target_type == 'ban').with_entities(models.ContentReport.target_id, func.count()).group_by(models.ContentReport.target_id):
+        counts.setdefault(cid, {'members': 0, 'moderators': 0, 'banned': 0, 'open_reports': 0, 'open_appeals': 0})['open_appeals'] += n
+    ranked = sorted(counts.items(), key=lambda kv: (-(kv[1]['open_reports'] + kv[1]['open_appeals']), -kv[1]['banned'], -kv[1]['members']))[:limit]
+    names = {c.id: c for c in db.query(models.Community).filter(models.Community.id.in_([cid for cid, _ in ranked]))} if ranked else {}
+    return [{'slug': names[cid].slug, 'name': names[cid].name, 'archived': names[cid].archived, **c} for cid, c in ranked if cid in names]
+
+
+class AppealDecision(BaseModel):
+    appeal_id: str = Field(min_length=36, max_length=36)
+    action: Literal['reinstate', 'uphold']
+
+
+def decide_appeal(data: AppealDecision, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Site moderators only. Reinstate lifts the ban (the person can join again); uphold keeps it."""
+    require_flags(db); social.require_moderator(user)
+    row = db.query(models.ContentReport).filter_by(id=data.appeal_id, target_type='ban').with_for_update().first()
+    if not row or row.status != 'open': raise HTTPException(404, 'Not found.')
+    if data.action == 'reinstate':
+        m = db.get(models.CommunityMember, (row.target_id, row.reporter_id))
+        if m and m.status == 'banned': db.delete(m)
+    row.status, row.resolved_at = ('actioned' if data.action == 'reinstate' else 'dismissed'), utcnow()
+    db.commit()
+    return {'status': 'reinstated' if data.action == 'reinstate' else 'upheld'}

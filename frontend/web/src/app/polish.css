@@ -172,3 +172,10 @@ html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #d
 .body-compare-after img { height: 100%; object-fit: cover; }
 .body-compare-label { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 10px; background: #03100ed9; color: #fff; }
 .body-compare-slider { display: grid; gap: 6px; max-width: 420px; margin: 0 auto 12px; }
+
+/* Moderation overview table: scrolls sideways on a phone instead of widening the page. */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.moderation-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.moderation-table :is(th, td) { padding: 8px 10px; text-align: start; border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent); white-space: nowrap; }
+.moderation-table td { font-variant-numeric: tabular-nums; }
+.moderation-table thead th { font-size: .8rem; opacity: .8; }
