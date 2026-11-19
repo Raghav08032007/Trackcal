@@ -1,5 +1,6 @@
 import { msg, t, locale, localized } from "./i18n";
 import { localeOf } from "./i18n/locales";
+import { announceFrom } from "@/lib/notice";
 // Social feed client (flag social_feed). The server applies every visibility and safety rule.
 export type Reaction = "like" | "cheer" | "clap" | "hug";
 export type Author = { handle: string; display_name: string; character_id: string };
@@ -28,6 +29,7 @@ export async function social<T>(path: string, method = "GET", body?: unknown): P
   const response = await fetch("/api/social/" + path, { method, headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json();
   if (!response.ok) throw new SocialError(data.error || t("The feed is unavailable right now. Nothing was changed."), response.status);
+  announceFrom(data);   // e.g. a post held for review
   return data as T;
 }
 

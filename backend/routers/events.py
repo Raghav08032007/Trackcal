@@ -36,6 +36,7 @@ WINDOW_SECONDS, EARLY_MINUTES, MAX_UPCOMING = 30, 30, 10
 # Signs that a location is someone's home rather than a public place. Events are visible to every signed-in member, so a
 # home address would be shared with strangers. Checked in English, the usual Indian address words and the app's languages.
 import re as _re
+from services import screening
 PRIVATE_PLACE = _re.compile(
     r"\b(flat|apartment|apt|house\s*(no|number)|h\.?\s*no|door\s*(no|number)|plot\s*(no|number)|"
     r"my\s+(home|house|place|flat|apartment|room)|our\s+(home|house|place|flat)|"
@@ -157,8 +158,11 @@ def create(data: EventInput, user=Depends(get_current_active_user), db: Session 
     event = models.Event(organizer_id=user.id, community_id=community_id, title=data.title, description=data.description, category=data.category,
                          location=data.location, starts_at=starts, ends_at=starts + timedelta(minutes=data.minutes), timezone=data.timezone,
                          capacity=data.capacity, checkin_key=secrets.token_hex(32))
-    db.add(event); db.commit()
-    return {'event': view(db, event, user.id)}
+    db.add(event); db.flush()
+    found = screening.screen(event.title, event.description, event.location)
+    extra = screening.hold(db, 'event', event, user.id, found) if found else {}
+    db.commit()
+    return {'event': view(db, event, user.id), **extra}
 
 
 def detail(event_id: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):

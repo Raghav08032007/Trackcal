@@ -1,4 +1,5 @@
 import { msg, t, localized, number } from "./i18n";
+import { announceFrom } from "@/lib/notice";
 // Verified challenges client (flags verified_challenges + social_feed).
 export type ChallengeView = {
   id: string; title: string; description: string; metric: string; metric_label: string; target: number; starts_on: string; ends_on: string; timezone: string;
@@ -37,6 +38,7 @@ export async function challenges<T>(path: string, method = "GET", body?: unknown
   const response = await fetch("/api/challenges" + path, { method, headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json();
   if (!response.ok) throw new ChallengeError(data.error || t("Challenges are unavailable right now. Nothing was changed."), response.status);
+  announceFrom(data);   // e.g. a post held for review
   return data as T;
 }
 

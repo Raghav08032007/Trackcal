@@ -1,6 +1,7 @@
 import { t } from "./i18n";
 // Verified events client (flags verified_events + social_feed).
 import qrcode from "qrcode-generator";
+import { announceFrom } from "@/lib/notice";
 
 export type EventView = {
   id: string; title: string; description: string; category: string; location: string; starts_at: string; ends_at: string; timezone: string;
@@ -15,6 +16,7 @@ export async function events<T>(path: string, method = "GET", body?: unknown): P
   const response = await fetch("/api/events" + path, { method, headers: body === undefined ? {} : { "Content-Type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(15000) });
   const data = await response.json();
   if (!response.ok) throw new EventError(data.error || t("Events are unavailable right now. Nothing was changed."), response.status);
+  announceFrom(data);   // e.g. a post held for review
   return data as T;
 }
 

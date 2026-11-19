@@ -21,6 +21,7 @@ from services import notifications
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
+from services import screening
 
 REACTIONS = ('like', 'cheer', 'clap', 'hug')
 RESERVED = {'admin', 'trackcal', 'support', 'help', 'moderator', 'official', 'root', 'system', 'me', 'settings'}
@@ -164,6 +165,7 @@ def save_profile(data: ProfileInput, user=Depends(get_current_active_user), db: 
     if clash: raise HTTPException(409, 'That handle is taken.')
     row = profile_of(db, user.id) or models.SocialProfile(user_id=user.id)
     was_private = bool(row.private)
+    screening.refuse_if_flagged(data.handle, data.display_name, data.bio)
     row.handle, row.display_name, row.bio, row.character_id, row.private = data.handle, data.display_name.strip(), data.bio.strip(), data.character_id, data.private
     db.add(row)
     if was_private and not data.private:  # going public approves everyone who asked
@@ -299,8 +301,10 @@ def create_post(data: PostInput, user=Depends(get_current_active_user), db: Sess
         if not match: raise HTTPException(422, "That milestone isn't yours to share.")
         snapshot = {'type': match['type'], 'title': match['title']}
     post = models.Post(author_id=user.id, body=data.body.strip(), visibility=data.visibility, milestone=snapshot)
-    db.add(post); db.commit()
-    return {'post': posts_view(db, [post], user.id)[0]}
+    db.add(post); db.flush()
+    found = screening.screen(post.body); extra = screening.hold(db, 'post', post, user.id, found) if found else {}
+    db.commit()
+    return {'post': posts_view(db, [post], user.id)[0], **extra}
 
 
 def delete_post(post_id: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
@@ -377,10 +381,11 @@ def add_comment(post_id: str, data: CommentInput, user=Depends(get_current_activ
     if author.posting_disabled: raise HTTPException(403, 'Commenting is paused on this account after a moderation review.')
     post = visible_post(db, user, post_id)
     if not data.body.strip(): raise HTTPException(422, 'Write a comment first.')
-    row = models.Comment(post_id=post.id, author_id=user.id, body=data.body.strip()); db.add(row)
-    notifications.notify_social(db, post.author_id, user.id)
+    row = models.Comment(post_id=post.id, author_id=user.id, body=data.body.strip()); db.add(row); db.flush()
+    found = screening.screen(row.body); extra = screening.hold(db, 'comment', row, user.id, found) if found else {}
+    if not found: notifications.notify_social(db, post.author_id, user.id)   # a held comment notifies nobody
     db.commit()
-    return {'comment': comment_view(row, author, user.id, post.author_id)}
+    return {'comment': comment_view(row, author, user.id, post.author_id), **extra}
 
 
 def delete_comment(comment_id: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):

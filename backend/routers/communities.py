@@ -22,6 +22,7 @@ from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
 from services.i18n import tr
+from services import screening
 
 CATEGORIES = ('running', 'walking', 'yoga', 'strength', 'cycling', 'sports', 'cooking', 'nutrition', 'mindfulness', 'college', 'other')
 MAX_OWNED = 5
@@ -105,6 +106,7 @@ def create(data: CommunityInput, user=Depends(get_current_active_user), db: Sess
         raise HTTPException(409, tr('You can run up to {n} communities. Archive one to start another.', n=MAX_OWNED))
     consume(db, 'community-create', str(user.id), 10, 86400)  # after the clear limit above, so its message wins
     if db.query(models.Community).filter_by(slug=data.slug).first(): raise HTTPException(409, 'That address is taken.')
+    screening.refuse_if_flagged(data.slug.replace('-', ' '), data.name, data.description, data.rules)
     community = models.Community(slug=data.slug, name=data.name.strip(), description=data.description.strip(), category=data.category, visibility=data.visibility, rules=data.rules.strip(), owner_id=user.id)
     db.add(community); db.flush()
     db.add(models.CommunityMember(community_id=community.id, user_id=user.id, role='owner', status='active'))
@@ -240,8 +242,10 @@ def create_post(slug: str, data: CommunityPost, user=Depends(get_current_active_
         if not match: raise HTTPException(422, "That milestone isn't yours to share.")
         snapshot = {'type': match['type'], 'title': match['title']}
     post = models.Post(author_id=user.id, body=data.body.strip(), milestone=snapshot, visibility='public', community_id=community.id)
-    db.add(post); db.commit()
-    return {'post': social.posts_view(db, [post], user.id)[0]}
+    db.add(post); db.flush()
+    found = screening.screen(post.body); extra = screening.hold(db, 'post', post, user.id, found) if found else {}
+    db.commit()
+    return {'post': social.posts_view(db, [post], user.id)[0], **extra}
 
 
 def moderation(slug: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):

@@ -24,6 +24,7 @@ from services.challenge_progress import KM_PER_DAY, METRICS, MINUTES_PER_DAY, RE
 from services.feature_flags import is_enabled
 from timeutil import utcnow
 from services.i18n import tr
+from services import screening
 
 MAX_RUNNING, MIN_DAYS, MAX_DAYS = 5, 3, 60
 
@@ -140,8 +141,10 @@ def create(data: ChallengeInput, user=Depends(get_current_active_user), db: Sess
     c = models.Challenge(creator_id=user.id, community_id=community_id, title=data.title, description=data.description, metric=data.metric,
                          target=data.target, starts_on=str(data.starts_on), ends_on=str(data.ends_on), timezone=data.timezone)
     db.add(c); db.flush()
-    db.add(models.ChallengeParticipant(challenge_id=c.id, user_id=user.id)); db.commit()  # creators take part too
-    return {'challenge': view(db, c, user.id)}
+    db.add(models.ChallengeParticipant(challenge_id=c.id, user_id=user.id))  # creators take part too
+    found = screening.screen(c.title, c.description); extra = screening.hold(db, 'challenge', c, user.id, found) if found else {}
+    db.commit()
+    return {'challenge': view(db, c, user.id), **extra}
 
 
 def detail(challenge_id: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):

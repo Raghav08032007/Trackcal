@@ -85,3 +85,9 @@ html body .site-footer { content-visibility: auto; contain-intrinsic-size: auto 
 html[dir="rtl"] body :is(.hub-card-arrow, .seg-row svg.lucide-arrow-right, .destination-card .lucide-arrow-right, .lucide-arrow-up-right, .lucide-chevron-right) { transform: scaleX(-1); }
 /* The brand name always reads left to right, even inside Arabic or Urdu text ("trackcal.", never ".trackcal"). */
 html body :is(.app-brand, .site-footer-logo, .home-page-header .brand) { direction: ltr; unicode-bidi: isolate; }
+
+/* A message about something just published (held for review; a helpline for self-harm words). */
+.held-notice{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;width:min(560px,calc(100vw - 32px));display:grid;gap:10px;padding:16px 18px;border-radius:16px;background:var(--surface,#fff);color:var(--ink,#1c1917);box-shadow:0 12px 32px rgba(0,0,0,.18);border:1px solid rgba(0,0,0,.08)}
+.held-notice p{margin:0;line-height:1.5}
+.held-notice button{justify-self:end}
+.held-notice-care{border-left:6px solid #2563eb}
