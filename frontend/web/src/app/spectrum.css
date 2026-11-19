@@ -109,15 +109,15 @@ html[data-theme="dark"] body .hub-group .hub-card.hub-card.hub-card.hub-card:nth
 
 /* ── Inner pages ─────────────────────────────────────────────────────────────────────────────────────────────── */
 /* Page titles: a soft tinted banner with a colour bar and a three-colour heading. */
-html body .account-page > .account-title.account-title { position: relative; padding: 20px 22px 18px 26px; border-radius: 22px; margin-bottom: 18px;
+html body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head) { position: relative; padding: 20px 22px 18px 26px; border-radius: 22px; margin-bottom: 18px;
   background: linear-gradient(120deg, color-mix(in srgb, var(--sx-glow) 18%, var(--ds-surface, #fff)), color-mix(in srgb, var(--sx-glow-2) 12%, var(--ds-surface, #fff)));
   border: 1px solid color-mix(in srgb, var(--sx-a) 18%, transparent); overflow: hidden; }
-html body .account-page > .account-title.account-title::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; background: linear-gradient(180deg, var(--sx-a), var(--sx-b), var(--sx-c)); }
-html body .account-page > .account-title.account-title h1 { background: linear-gradient(100deg, var(--sx-a), var(--sx-b) 55%, var(--sx-c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-html body .account-page > .account-title.account-title .eyebrow { color: var(--sx-a); }
-html[data-theme="dark"] body .account-page > .account-title.account-title { background: linear-gradient(120deg, color-mix(in srgb, var(--sx-glow) 18%, var(--ds-surface, #121c1d)), color-mix(in srgb, var(--sx-glow-2) 10%, var(--ds-surface, #121c1d))); }
-html[data-theme="dark"] body .account-page > .account-title.account-title h1 { background: linear-gradient(100deg, var(--sx-glow), var(--sx-glow-2)); -webkit-background-clip: text; background-clip: text; }
-html[data-theme="dark"] body .account-page > .account-title.account-title .eyebrow { color: var(--sx-glow); }
+html body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head)::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; background: linear-gradient(180deg, var(--sx-a), var(--sx-b), var(--sx-c)); }
+html body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head) h1 { background: linear-gradient(100deg, var(--sx-a), var(--sx-b) 55%, var(--sx-c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head) :is(.eyebrow, .page-head-eyebrow) { color: var(--sx-a); }
+html[data-theme="dark"] body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head) { background: linear-gradient(120deg, color-mix(in srgb, var(--sx-glow) 18%, var(--ds-surface, #121c1d)), color-mix(in srgb, var(--sx-glow-2) 10%, var(--ds-surface, #121c1d))); }
+html[data-theme="dark"] body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head) h1 { background: linear-gradient(100deg, var(--sx-glow), var(--sx-glow-2)); -webkit-background-clip: text; background-clip: text; }
+html[data-theme="dark"] body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head) :is(.eyebrow, .page-head-eyebrow) { color: var(--sx-glow); }
 
 /* Cards on inner pages take the three section colours in turn (strip and wash). */
 html body .account-page .account-card:nth-of-type(3n+1) { --card-tone: var(--sx-a); }
@@ -156,3 +156,12 @@ html body .photo-card .photo-art { display: grid; place-items: end center; heigh
   background: radial-gradient(60% 70% at 50% 100%, color-mix(in srgb, var(--sx-glow-2) 55%, transparent), transparent 70%), linear-gradient(135deg, var(--sx-a), var(--sx-b) 55%, var(--sx-c)); }
 html body .photo-card .photo-art-rio { background: radial-gradient(60% 70% at 50% 100%, color-mix(in srgb, var(--sx-glow) 55%, transparent), transparent 70%), linear-gradient(135deg, var(--sx-c), var(--sx-a) 60%, var(--sx-b)); }
 html body .photo-card .photo-art img { width: auto; height: 160px; object-fit: contain; filter: drop-shadow(0 10px 16px rgb(0 0 0 / .28)); }
+
+/* Dark mode: globals.css paints inner cards and headings with !important shorthands, so the spectrum layer restates
+   its images, sizes and text fill with !important at higher specificity. */
+html[data-theme="dark"] body .account-page :is(.account-card.account-card.account-card) {
+  background-image: linear-gradient(90deg, var(--card-tone, var(--sx-a)), color-mix(in srgb, var(--card-tone, var(--sx-a)) 55%, var(--sx-glow-2))),
+                    linear-gradient(160deg, color-mix(in srgb, var(--card-tone, var(--sx-a)) 22%, #16211f), #16211f 65%) !important;
+  background-size: 100% 4px, 100% 100% !important; background-repeat: no-repeat !important; background-color: #16211f !important; }
+html[data-theme="dark"] body :is(.account-page > .account-title.account-title, .page-head.page-head.page-head) h1 { -webkit-text-fill-color: transparent; }
+html[data-theme="dark"] body .account-page .account-card :is(h2) { -webkit-text-fill-color: color-mix(in srgb, var(--card-tone, var(--sx-a)) 30%, #fff); }
