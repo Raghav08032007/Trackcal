@@ -179,3 +179,7 @@ html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #d
 .moderation-table :is(th, td) { padding: 8px 10px; text-align: start; border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent); white-space: nowrap; }
 .moderation-table td { font-variant-numeric: tabular-nums; }
 .moderation-table thead th { font-size: .8rem; opacity: .8; }
+
+/* Dropdown options use the phone's own font, which already covers every script. Language names like हिन्दी or தமிழ்
+   in a picker would otherwise download the brand font's Devanagari/Tamil files on an English page (~40 kB each). */
+select option, select optgroup { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif; }

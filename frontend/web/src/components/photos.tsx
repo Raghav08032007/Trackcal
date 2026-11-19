@@ -17,7 +17,7 @@ export const PHOTOS = {
 export type PhotoId = keyof typeof PHOTOS;
 
 export function Photo({ id, className = "", eager = false, sizes = "(max-width: 700px) 100vw, 600px" }: { id: PhotoId; className?: string; eager?: boolean; sizes?: string }) {
-  return <img className={`photo ${className}`} src={`/photos/${id}-640.webp`} srcSet={`/photos/${id}-640.webp 640w, /photos/${id}-1200.webp 1200w`} sizes={sizes}
+  return <img className={`photo ${className}`} src={`/photos/${id}-640.webp`} srcSet={`/photos/${id}-640.webp 640w, /photos/${id}-800.webp 800w, /photos/${id}-1200.webp 1200w`} sizes={sizes}
     alt={t(PHOTOS[id])} loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : undefined} decoding="async" draggable={false} />;
 }
 

@@ -13,6 +13,8 @@ async function saveToAccount(code: LocaleCode) {
   await personalRequest("onboarding", { preferences: { ...state.preferences, ui_language: code }, step: Math.max(1, state.step), revision: state.revision, complete: false });
 }
 
+const SYSTEM_FONT = { fontFamily: "system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans\", sans-serif" };
+
 export function LanguagePicker() {
   const current = useSyncExternalStore(subscribe, locale, locale), { user } = useAccount(), [busy, setBusy] = useState(false);
   const chosen = LOCALES.find(l => l.code === current)!;
@@ -33,7 +35,9 @@ export function LanguagePicker() {
   }
   return <div className="language-picker">
     <label><Languages size={18} aria-hidden="true" /> <span>{t("Language")}</span>
-      <select value={current} disabled={busy} onChange={e => void change(e.target.value as LocaleCode)}>
+      {/* The system font already covers every script, so the brand font's Devanagari, Bengali, Tamil and Arabic files
+          (~40 kB each) are not downloaded just to list language names. */}
+      <select value={current} disabled={busy} style={SYSTEM_FONT} onChange={e => void change(e.target.value as LocaleCode)}>
         {LOCALES.map(l => <option key={l.code} value={l.code} lang={l.code}>{l.native}{l.code !== "en" ? ` · ${l.english}` : ""}</option>)}
       </select>
     </label>

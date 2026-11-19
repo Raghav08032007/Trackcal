@@ -5,6 +5,7 @@
 // so components call t() directly without subscribing to anything.
 import { DEFAULT_LOCALE, isLocale, localeOf, LOCALES, type LocaleCode } from "./locales";
 import { EN_PLURALS } from "./en-plurals";
+import { forgetInflight, shareGet } from "../request-share";
 
 export { LOCALES, type LocaleCode } from "./locales";
 type Forms = Partial<Record<Intl.LDMLPluralRule, string>>;
@@ -48,7 +49,8 @@ export async function setLocale(code: LocaleCode) {
 export const locale = () => current;
 
 /** Lets the server answer in the chosen language: same-origin /api requests carry it as Accept-Language (unless a caller set
- * one). Installed once at start-up, so the many plain fetch() calls need no change. */
+ * one). Installed once at start-up, so the many plain fetch() calls need no change. Also shares identical GETs
+ * that are in flight together (lib/request-share.ts). */
 export function sendLanguageToServer(target: { fetch: typeof fetch; location: { href: string; origin: string } } = window) {
   const original = target.fetch.bind(target) as typeof fetch & { trackcalLanguage?: true };
   if ((target.fetch as typeof original).trackcalLanguage) return;
@@ -58,7 +60,12 @@ export function sendLanguageToServer(target: { fetch: typeof fetch; location: { 
     if (url.origin !== target.location.origin || !url.pathname.startsWith("/api/")) return original(input, init);
     const headers = new Headers(init?.headers ?? (typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined));
     if (!headers.has("Accept-Language")) headers.set("Accept-Language", current);
-    return original(input, { ...init, headers });
+    const method = (init?.method ?? (typeof Request !== "undefined" && input instanceof Request ? input.method : "GET")).toUpperCase();
+    if (method !== "GET") { forgetInflight(); return original(input, { ...init, headers }); }
+    if (typeof Request !== "undefined" && input instanceof Request) return original(input, { ...init, headers });
+    // Identical GETs in flight at the same moment share one request (lib/request-share.ts).
+    const key = `${url.href}|${headers.get("Accept-Language")}|${headers.get("Authorization") ?? ""}`;
+    return shareGet(key, signal => original(input, { ...init, headers, signal }), init?.signal);
   }) as typeof original;
   wrapped.trackcalLanguage = true;
   target.fetch = wrapped;

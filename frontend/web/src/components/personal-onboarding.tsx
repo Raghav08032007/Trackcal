@@ -91,7 +91,7 @@ export function PersonalOnboarding() {
             <div className="onb-grid">
               <label className="onb-field">{t("Country")}<input maxLength={80} value={prefs.country} autoComplete="country-name" list="onb-countries" onChange={e => change("country", e.target.value)} /><datalist id="onb-countries"><option value="India" /><option value="United States" /><option value="United Kingdom" /><option value="United Arab Emirates" /><option value="Singapore" /><option value="Canada" /><option value="Australia" /></datalist></label>
               <label className="onb-field">{t("State or region")}{/^india$/i.test(prefs.country.trim()) ? <select value={prefs.state} onChange={e => change("state", e.target.value)}><option value="">{t("Choose…")}</option>{INDIA_STATES.map(s => <option key={s}>{s}</option>)}</select> : <input maxLength={80} value={prefs.state} onChange={e => change("state", e.target.value)} />}</label>
-              <label className="onb-field">{t("Language for food names")}<select value={prefs.language} onChange={e => change("language", e.target.value)}>{LANGUAGES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label>
+              <label className="onb-field">{t("Language for food names")}<select className="language-select" style={{ fontFamily: "system-ui, sans-serif" }} value={prefs.language} onChange={e => change("language", e.target.value)}>{LANGUAGES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select></label>
             </div>
             <Chips label={t("Units")} options={[["metric", msg("Metric (kg, cm)")], ["imperial", msg("Imperial (lb, in)")]]} value={prefs.units} onChange={v => change("units", v as Preferences["units"])} />
           </>}

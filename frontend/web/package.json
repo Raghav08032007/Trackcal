@@ -10,6 +10,7 @@
     "test": "vitest run",
     "prepare:pose": "node scripts/prepare-pose.mjs",
     "prebuild": "node scripts/prepare-pose.mjs",
+    "postbuild": "node scripts/size-budget.mjs",
     "predev": "node scripts/prepare-pose.mjs"
   },
   "dependencies": {
