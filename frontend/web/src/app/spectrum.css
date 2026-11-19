@@ -150,3 +150,9 @@ html body :is(.wellness-hero.wellness-hero, .wk-hero.wk-hero, .seg-hero.seg-hero
 /* The other page chips: tinted in the section colour instead of plain white. */
 html body .app-section-pages a:not([aria-current="page"]) { background: color-mix(in srgb, var(--sx-a) 7%, var(--ds-surface, #fff)); border-color: color-mix(in srgb, var(--sx-a) 22%, transparent); }
 html[data-theme="dark"] body .app-section-pages a:not([aria-current="page"]) { background: color-mix(in srgb, var(--sx-glow) 12%, var(--ds-surface, #121c1d)); }
+
+/* Illustrated idea cards: a character on the section's colours, in place of a photo of a person. */
+html body .photo-card .photo-art { display: grid; place-items: end center; height: 100%; min-height: 170px; overflow: hidden;
+  background: radial-gradient(60% 70% at 50% 100%, color-mix(in srgb, var(--sx-glow-2) 55%, transparent), transparent 70%), linear-gradient(135deg, var(--sx-a), var(--sx-b) 55%, var(--sx-c)); }
+html body .photo-card .photo-art-rio { background: radial-gradient(60% 70% at 50% 100%, color-mix(in srgb, var(--sx-glow) 55%, transparent), transparent 70%), linear-gradient(135deg, var(--sx-c), var(--sx-a) 60%, var(--sx-b)); }
+html body .photo-card .photo-art img { width: auto; height: 160px; object-fit: contain; filter: drop-shadow(0 10px 16px rgb(0 0 0 / .28)); }
