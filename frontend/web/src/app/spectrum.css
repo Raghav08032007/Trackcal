@@ -106,3 +106,47 @@ html[data-theme="dark"] body .coach-card.coach-card .destination-button { backgr
 html[data-theme="dark"] body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+1) { --tile: var(--sx-a); }
 html[data-theme="dark"] body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+2) { --tile: var(--sx-b); }
 html[data-theme="dark"] body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+3) { --tile: var(--sx-c); }
+
+/* ── Inner pages ─────────────────────────────────────────────────────────────────────────────────────────────── */
+/* Page titles: a soft tinted banner with a colour bar and a three-colour heading. */
+html body .account-page > .account-title.account-title { position: relative; padding: 20px 22px 18px 26px; border-radius: 22px; margin-bottom: 18px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--sx-glow) 18%, var(--ds-surface, #fff)), color-mix(in srgb, var(--sx-glow-2) 12%, var(--ds-surface, #fff)));
+  border: 1px solid color-mix(in srgb, var(--sx-a) 18%, transparent); overflow: hidden; }
+html body .account-page > .account-title.account-title::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; background: linear-gradient(180deg, var(--sx-a), var(--sx-b), var(--sx-c)); }
+html body .account-page > .account-title.account-title h1 { background: linear-gradient(100deg, var(--sx-a), var(--sx-b) 55%, var(--sx-c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html body .account-page > .account-title.account-title .eyebrow { color: var(--sx-a); }
+html[data-theme="dark"] body .account-page > .account-title.account-title { background: linear-gradient(120deg, color-mix(in srgb, var(--sx-glow) 18%, var(--ds-surface, #121c1d)), color-mix(in srgb, var(--sx-glow-2) 10%, var(--ds-surface, #121c1d))); }
+html[data-theme="dark"] body .account-page > .account-title.account-title h1 { background: linear-gradient(100deg, var(--sx-glow), var(--sx-glow-2)); -webkit-background-clip: text; background-clip: text; }
+html[data-theme="dark"] body .account-page > .account-title.account-title .eyebrow { color: var(--sx-glow); }
+
+/* Cards on inner pages take the three section colours in turn (strip and wash). */
+html body .account-page .account-card:nth-of-type(3n+1) { --card-tone: var(--sx-a); }
+html body .account-page .account-card:nth-of-type(3n+2) { --card-tone: var(--sx-b); }
+html body .account-page .account-card:nth-of-type(3n+3) { --card-tone: var(--sx-c); }
+html body .account-page :is(.account-card.account-card.account-card) {
+  background-image: linear-gradient(90deg, var(--card-tone, var(--sx-a)), color-mix(in srgb, var(--card-tone, var(--sx-a)) 55%, var(--sx-glow-2))),
+                    linear-gradient(160deg, color-mix(in srgb, var(--card-tone, var(--sx-a)) 9%, var(--ds-surface, #fff)), var(--ds-surface, #fff) 60%); }
+html[data-theme="dark"] body .account-page :is(.account-card.account-card.account-card) {
+  background-image: linear-gradient(90deg, var(--card-tone, var(--sx-a)), color-mix(in srgb, var(--card-tone, var(--sx-a)) 55%, var(--sx-glow-2))),
+                    linear-gradient(160deg, color-mix(in srgb, var(--card-tone, var(--sx-a)) 18%, var(--ds-surface, #121c1d)), var(--ds-surface, #121c1d) 65%); }
+html body .account-page .account-card h2 { color: color-mix(in srgb, var(--card-tone, var(--sx-a)) 70%, var(--ds-ink, #1c1917)); }
+html[data-theme="dark"] body .account-page .account-card h2 { color: color-mix(in srgb, var(--card-tone, var(--sx-a)) 35%, #fff); }
+html body .account-page .account-card > svg:first-child, html body .account-page .account-card > .health-icon { color: #fff; padding: 8px; border-radius: 12px; width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--card-tone, var(--sx-a)), color-mix(in srgb, var(--card-tone, var(--sx-a)) 65%, #000)); box-shadow: 0 6px 14px -6px var(--card-tone, var(--sx-a)); }
+
+/* Form fields: a coloured focus ring and a gentle tint. */
+html body .account-page :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) { border-color: color-mix(in srgb, var(--sx-a) 22%, var(--ds-line, #d6dedd)); }
+html body .account-page :is(input, select, textarea):focus-visible { outline: 3px solid color-mix(in srgb, var(--sx-a) 55%, transparent); outline-offset: 1px; border-color: var(--sx-a); }
+html body .account-page :is(input[type="checkbox"], input[type="radio"], input[type="range"]) { accent-color: var(--sx-a); }
+
+/* Big heroes on inner pages wear the section's colours (Play keeps its own). */
+html body :is(.ds-hero, .wellness-hero, .wk-hero, .seg-hero).ds-hero, html body :is(.wellness-hero.wellness-hero, .wk-hero.wk-hero, .seg-hero.seg-hero, .ds-hero.ds-hero) {
+  background: radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--sx-glow-2) 45%, transparent), transparent 60%),
+              linear-gradient(125deg, color-mix(in srgb, var(--sx-a) 92%, #000), var(--sx-b) 60%, color-mix(in srgb, var(--sx-c) 90%, #000)); color: #fff; }
+html body :is(.wellness-hero.wellness-hero, .wk-hero.wk-hero, .seg-hero.seg-hero, .ds-hero.ds-hero) :is(h1, h2) { color: #fff; }
+html body :is(.wellness-hero.wellness-hero, .wk-hero.wk-hero, .seg-hero.seg-hero, .ds-hero.ds-hero) p { color: rgba(255,255,255,.92); }
+html body :is(.wellness-hero.wellness-hero, .wk-hero.wk-hero, .seg-hero.seg-hero, .ds-hero.ds-hero) .eyebrow { color: #fff; opacity: .9; }
+
+/* The other page chips: tinted in the section colour instead of plain white. */
+html body .app-section-pages a:not([aria-current="page"]) { background: color-mix(in srgb, var(--sx-a) 7%, var(--ds-surface, #fff)); border-color: color-mix(in srgb, var(--sx-a) 22%, transparent); }
+html[data-theme="dark"] body .app-section-pages a:not([aria-current="page"]) { background: color-mix(in srgb, var(--sx-glow) 12%, var(--ds-surface, #121c1d)); }
