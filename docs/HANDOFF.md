@@ -23,7 +23,7 @@ need a writable temp folder on Windows (`pytest --basetemp=<folder>`). One meal-
 ## Next
 
 See README "What's next": owner tasks (keys, host, policies, under-18 rule, reviews), features still to build (event
-reports, moderation screen, the AI coach replying in the person's language, ...) and real-device checks.
+reports, moderation screen, ...) and real-device checks.
 
 ## House rules
 

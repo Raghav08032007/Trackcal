@@ -145,7 +145,6 @@ texts and legal review of the privacy notice and terms.
 - Ranking, paging and spam controls for the Discover feed as it grows.
 - A lighter pose model for low-end phones.
 - Faster first load on slow mobile connections (Lighthouse mobile is 62–82 today).
-- The AI coach replying in the person's language (today it answers in English).
 - Wave-2 languages (for example French, German, Turkish, Vietnamese, Japanese and Russian), once wave 1 is reviewed.
 
 ### 3. Checks on real devices and real services

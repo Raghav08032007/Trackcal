@@ -116,3 +116,9 @@ def test_numbers_are_written_like_the_browser_writes_them():
     for code, want in cases.items():
         assert [i18n.number(n, code) for n in (5, 1500, 15000, 150000, 2.5, 1234.5)] == want, code
     assert i18n.number(1500, 'en') == '1,500' and i18n.number(-1234, 'hi') == '-1,234' and i18n.number(3.0, 'es') == '3'
+
+
+def test_the_coach_is_asked_to_reply_in_the_persons_language():
+    from flask_app import web_gateway
+    assert web_gateway.reply_language('en') == '' and web_gateway.reply_language(None) == ''
+    assert 'Reply in Hindi' in web_gateway.reply_language('hi') and 'Reply in Arabic' in web_gateway.reply_language('ar')
