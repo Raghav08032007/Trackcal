@@ -69,7 +69,7 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-30 | 2 | No real Razorpay call has been made: checkout and cancel were tested with a simulated gateway (signatures checked for real). Request shapes follow the SDK and Razorpay's Subscriptions API but haven't met the real service | `TEST_REPORT_P5.md` | Owner: Test Mode keys + plans + webhook, then the manual checklist |
 | KI-31 | 2 | GST, terms of sale and a refund policy are not decided or published; Razorpay Live activation needs them | `BILLING.md` | Owner, before Live keys |
 | KI-32 | 3 | If the browser closes between Razorpay success and our verify call, Premium starts only when the webhook arrives (`subscription.authenticated`/`activated`), usually within seconds | `services/billing.py` | Accepted; the webhook is the source of truth |
-| KI-33 | 3 | The trial-end reminder is in-app (account page) plus Razorpay's own customer emails; no push notification for it yet | `premium-notice.tsx` | Add a `billing` notification type if beta users miss it |
+| KI-33 | ~~3~~ **Resolved (19 Nov 2026)** | A `trial_ending` push notification goes out two days before a Premium trial ends (on by default, switchable in Reminders), in the account's language | `services/notifications.py` `plan_reminders()`, `tests/test_push_social.py` | — |
 
 ## Found during Phase 6 (29 October 2026)
 
@@ -103,7 +103,7 @@ Severity, per the Phase 1 rules: **Sev-1** data loss, security or privacy; **Sev
 | KI-43 | 3 | `e2e-p6-hardening.mjs` still fails about 1 run in 9 (after fixing the companion-over-footer overlap that caused most failures) | Phase 9 runs | Same family as KI-14/KI-24; rerun before investigating |
 | KI-44 | ~~2~~ **Resolved (19 Nov 2026)** | Events have a report button (event page, same moderation queue as posts) and the server refuses locations that read like a home address (flat, apartment, house/door/plot number, "my place", in English, Indian languages, Spanish, Portuguese, Indonesian and Arabic) | `routers/events.py` `looks_private()`, `tests/test_events.py` | Moderators still review reports by hand; a free-text address that avoids these words can get through |
 | KI-45 | 3 | A QR code photographed and sent to someone outside works for up to about 60 seconds (current + previous 30 s window). Remote check-in remains possible within that minute | `routers/events.py` | Accepted for beta; tighten to the current window or add location only if abuse shows up |
-| KI-46 | 3 | No event reminder notifications yet (the push types don't include events) | `services/notifications.py` | Add an `event` type once events are on |
+| KI-46 | ~~3~~ **Resolved (19 Nov 2026)** | An `event_reminder` push notification goes out within the hour before an event you're going to, once per event; the event's name stays out of the message | `services/notifications.py` `plan_reminders()`, `tests/test_push_social.py` | — |
 | KI-47 | 3 | Another session's files (`Makefile`, `tools/`, `docs/bench/`) are untracked in this repo; one commit included `docs/bench/` by mistake and the next untracked it | `git log` | Owner: decide whether those belong in the repo |
 
 ## Found during Phase 10 (30 October 2026)

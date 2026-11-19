@@ -116,3 +116,22 @@ def test_every_kind_of_note_is_neutral():
         text = (spec['title'] + ' ' + (spec['body'] or '')).lower()
         assert not re.search(r'(kcal|calories?|weight|kg|bmi|streaks?|missed|lost|fail\w*)', text), name
         assert not any(ch.isdigit() for ch in text) and spec['url'].startswith('/'), name
+
+
+def test_event_and_trial_reminders_are_planned_once_in_their_window():
+    """KI-46 and KI-33: an hour before an event you're going to, and two days before a Premium trial ends."""
+    owner_id, _, _ = member(); going_id, _, _ = member()
+    subscribed(going_id, event_reminder=None, trial_ending=None)
+    now = push.utcnow()
+    with database.SessionLocal() as db:
+        soon = models.Event(organizer_id=owner_id, title='Run', location='Park', starts_at=now + timedelta(minutes=40), ends_at=now + timedelta(minutes=100),
+                            timezone='UTC', checkin_key='k' * 64)
+        later = models.Event(organizer_id=owner_id, title='Walk', location='Park', starts_at=now + timedelta(hours=5), ends_at=now + timedelta(hours=6),
+                             timezone='UTC', checkin_key='k' * 64)
+        db.add_all([soon, later]); db.flush()
+        db.add_all([models.EventRegistration(event_id=soon.id, user_id=going_id), models.EventRegistration(event_id=later.id, user_id=going_id)])
+        sub = db.query(models.Subscription).filter_by(user_id=going_id).first() or models.Subscription(user_id=going_id)
+        sub.status, sub.trial_ends_at, sub.cancelled_at = models.SubscriptionStatus.trialing, now + timedelta(hours=30), None
+        db.add(sub); db.commit()
+        push.plan_reminders(db, now); push.plan_reminders(db, now + timedelta(minutes=5)); db.commit()   # a second tick adds nothing
+    assert kinds(going_id).count('event_reminder') == 1 and kinds(going_id).count('trial_ending') == 1

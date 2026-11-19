@@ -41,10 +41,14 @@ TYPES = {
     'social': {'time': None, 'title': msg('Someone cheered you on'), 'body': msg('You have new kudos, comments or followers.'), 'url': '/feed'},
     'record': {'time': None, 'title': msg('A new personal best'), 'body': msg('You beat one of your own records. Take a look.'), 'url': '/activities'},
     'weekly_summary': {'time': '09:00', 'weekday': 0, 'title': msg('Your week in TrackCal'), 'body': msg('Your weekly summary is ready.'), 'url': '/weekly'},
+    # Reminders: the event's name stays out of the message, as with event updates.
+    'event_reminder': {'time': None, 'title': msg('Your event starts soon'), 'body': msg('An event you signed up for starts within the hour. Check the place and time.'), 'url': '/events'},
+    'trial_ending': {'time': None, 'title': msg('Your Premium trial ends soon'), 'body': msg('Your trial ends in two days. Keep Premium, or cancel any time in Me. Nothing is charged before the trial ends.'), 'url': '/premium'},
 }
 SOCIAL_BUNDLE_MINUTES = 30   # kudos, comments and follows within one half hour arrive as one notification
 SCHEDULED = [t for t, v in TYPES.items() if v['time']]
-DEFAULT_TYPES = {t: {'enabled': t in ('daily_plan', 'milestone', 'event_update', 'social', 'record', 'weekly_summary'), 'time': v['time']} for t, v in TYPES.items()}
+DEFAULT_TYPES = {t: {'enabled': t in ('daily_plan', 'milestone', 'event_update', 'social', 'record', 'weekly_summary', 'event_reminder', 'trial_ending'), 'time': v['time']} for t, v in TYPES.items()}
+EVENT_REMINDER_MINUTES, TRIAL_REMINDER_HOURS = 60, 48
 
 
 def utcnow():
@@ -125,8 +129,22 @@ def plan(db, now=None):
                     id=_uuid(), user_id=settings.user_id, type=kind, local_day=str(day), scheduled_for_utc=when,
                     idempotency_key=f'{settings.user_id}:{kind}:{day}:{choice["time"]}', status='pending', attempts=0, created_at=now))
                 created += result.rowcount
+    plan_reminders(db, now)
     db.commit()
     return created
+
+
+def plan_reminders(db, now=None):
+    """Once per event and per trial: events starting within the hour for everyone going, and trials ending within 2 days.
+    Settings, quiet hours and the daily cap apply as for every type (_enqueue_now and deliver)."""
+    now = now or utcnow()
+    soon = (db.query(models.EventRegistration.user_id, models.Event.id).join(models.Event, models.Event.id == models.EventRegistration.event_id)
+            .filter(models.EventRegistration.status == 'going', models.Event.status == 'scheduled',
+                    models.Event.starts_at > now, models.Event.starts_at <= now + timedelta(minutes=EVENT_REMINDER_MINUTES)).all())
+    for user_id, event_id in soon: _enqueue_now(db, user_id, 'event_reminder', f'remind:{event_id}', now)
+    ending = (db.query(models.Subscription).filter(models.Subscription.status == models.SubscriptionStatus.trialing, models.Subscription.cancelled_at.is_(None),
+              models.Subscription.trial_ends_at > now, models.Subscription.trial_ends_at <= now + timedelta(hours=TRIAL_REMINDER_HOURS)).all())
+    for sub in ending: _enqueue_now(db, sub.user_id, 'trial_ending', f'trial:{sub.id}:{sub.trial_ends_at.date()}', now)
 
 
 def enqueue_milestone(db, user_id, code, now=None):

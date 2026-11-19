@@ -1,6 +1,6 @@
 import { t, msg, localizedMap } from "@/lib/i18n";
 // Web push in the browser: support checks, the explicit (tap-only) permission flow and the settings API.
-export type PushType = "daily_plan" | "workout" | "meal_log" | "rest_day" | "motivation" | "milestone" | "event_update" | "social" | "record" | "weekly_summary";
+export type PushType = "daily_plan" | "workout" | "meal_log" | "rest_day" | "motivation" | "milestone" | "event_update" | "social" | "record" | "weekly_summary" | "event_reminder" | "trial_ending";
 export type PushSettings = {
   enabled: boolean; types: Record<PushType, { enabled: boolean; time: string | null }>; max_per_day: number; snooze_until: string | null;
   timezone: string; quiet_start: string; quiet_end: string; devices: { id: string; user_agent: string; created_at: string }[];
@@ -8,6 +8,7 @@ export type PushSettings = {
 export const TYPE_LABELS: Record<PushType, string> = {
   daily_plan: msg("Today's plan"), workout: msg("Activity reminder"), meal_log: msg("Meal check-in"), rest_day: msg("Rest-day note"), motivation: msg("A thought for today"), milestone: msg("Milestones"), event_update: msg("Changes to events you joined"),
   social: msg("Kudos, comments and new followers (one note per half hour at most)"), record: msg("New personal bests"), weekly_summary: msg("Weekly summary (Monday mornings)"),
+  event_reminder: msg("An hour before an event you signed up for"), trial_ending: msg("Two days before a Premium trial ends"),
 };
 localizedMap(TYPE_LABELS);
 

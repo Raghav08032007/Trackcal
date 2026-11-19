@@ -20,7 +20,7 @@ from services.feature_flags import is_enabled
 from services.personalization_inputs import Strict
 from services.i18n import tr
 
-TypeName = Literal['daily_plan', 'workout', 'meal_log', 'rest_day', 'motivation', 'milestone', 'event_update', 'social', 'record', 'weekly_summary']
+TypeName = Literal['daily_plan', 'workout', 'meal_log', 'rest_day', 'motivation', 'milestone', 'event_update', 'social', 'record', 'weekly_summary', 'event_reminder', 'trial_ending']
 
 
 class Keys(Strict):
