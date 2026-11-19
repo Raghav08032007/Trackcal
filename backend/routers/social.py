@@ -464,7 +464,38 @@ def moderation_queue(user=Depends(get_current_active_user), db: Session = Depend
         item['content'] = describe(kind, target) if target else '(deleted)'
         item['hidden'] = is_hidden(kind, target) if target else None
         out.append(item)
-    return {'queue': out}
+    return {'queue': out, 'flagged_entries': flagged_entries(db)}
+
+
+def flagged_entries(db):
+    """Challenge entries flagged for a large camera correction and not yet reviewed (never shown to other members)."""
+    rows = (db.query(models.ChallengeParticipant, models.Challenge).join(models.Challenge, models.Challenge.id == models.ChallengeParticipant.challenge_id)
+            .filter(models.ChallengeParticipant.flagged.is_(True), models.ChallengeParticipant.flag_reviewed_at.is_(None), models.ChallengeParticipant.left_at.is_(None))
+            .order_by(models.ChallengeParticipant.joined_at).limit(100).all())
+    out = []
+    for entry, challenge in rows:
+        person = profile_of(db, entry.user_id)
+        out.append({'challenge_id': challenge.id, 'challenge': challenge.title, 'user_id': entry.user_id,
+                    'handle': person.handle if person else None, 'joined_at': entry.joined_at.isoformat() + 'Z',
+                    'completed': bool(entry.completed_at)})
+    return out
+
+
+class EntryModeration(BaseModel):
+    challenge_id: str = Field(min_length=36, max_length=36)
+    user_id: str = Field(min_length=36, max_length=36)
+    action: Literal['clear', 'remove']
+
+
+def moderate_entry(data: EntryModeration, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Clear a flag (the entry stands) or remove the entry from the challenge. XP already earned is never taken back."""
+    require_flag(db); require_moderator(user)
+    entry = db.query(models.ChallengeParticipant).filter_by(challenge_id=data.challenge_id, user_id=data.user_id).with_for_update().first()
+    if not entry: raise HTTPException(404, 'Not found.')
+    entry.flagged, entry.flag_reviewed_at = False, utcnow()
+    if data.action == 'remove' and not entry.left_at: entry.left_at = utcnow()
+    db.commit()
+    return {'status': 'removed' if data.action == 'remove' else 'cleared'}
 
 
 class ModerationInput(BaseModel):

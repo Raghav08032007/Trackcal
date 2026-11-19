@@ -1197,6 +1197,7 @@ class ChallengeParticipant(Base):
     left_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     flagged = Column(Boolean, nullable=False, default=False)  # anti-fraud review signal, never shown publicly
+    flag_reviewed_at = Column(DateTime, nullable=True)  # a moderator looked at the flag; it is not raised again
 
 
 class SearchSynonym(Base):

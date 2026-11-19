@@ -57,7 +57,7 @@ def phase(c):
 def settle(db, c, row):
     """Compute progress; on reaching the target, complete and pay XP once. Returns (count, awarded_xp)."""
     count, flagged = progress(db, c, row); points = 0
-    if flagged and not row.flagged: row.flagged = True
+    if flagged and not row.flagged and not row.flag_reviewed_at: row.flagged = True   # a reviewed entry stays cleared
     if count >= c.target and not row.completed_at and not row.left_at and c.status == 'active':
         row.completed_at = utcnow()
         user = db.get(models.User, row.user_id); profile = db.get(models.AdventureProfile, row.user_id)

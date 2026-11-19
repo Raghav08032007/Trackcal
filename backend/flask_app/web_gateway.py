@@ -298,7 +298,7 @@ SOCIAL = [('GET', r'me'), ('PUT', r'me'), ('GET', r'profiles/[a-z0-9_.]{1,30}'),
           ('POST', r'block/[a-z0-9_.]{1,30}'), ('DELETE', r'block/[a-z0-9_.]{1,30}'), ('GET', r'milestones'), ('GET', r'feed'), ('POST', r'posts'),
           ('DELETE', r'posts/[0-9a-f-]{36}'), ('POST', r'posts/[0-9a-f-]{36}/reactions'), ('DELETE', r'posts/[0-9a-f-]{36}/reactions'),
           ('GET', r'posts/[0-9a-f-]{36}/comments'), ('POST', r'posts/[0-9a-f-]{36}/comments'), ('DELETE', r'comments/[0-9a-f-]{36}'),
-          ('POST', r'reports'), ('GET', r'moderation'), ('POST', r'moderation')]
+          ('POST', r'reports'), ('GET', r'moderation'), ('POST', r'moderation'), ('POST', r'moderation/entries')]
 
 
 @bp.route('/body-preview', methods=['GET', 'POST'])

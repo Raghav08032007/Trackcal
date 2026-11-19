@@ -159,3 +159,26 @@ def test_older_saved_settings_still_list_every_type(monkeypatch):
     uid, h = subscriber(monkeypatch, {'milestone': {'enabled': True, 'time': None}})
     types = client.get('/api/v1/push/settings', headers=h).json()['types']
     assert types['event_update']['enabled'] is True and types['milestone']['enabled'] is True
+
+
+def test_flagged_challenge_entries_can_be_cleared_or_removed_and_stay_decided():
+    """KI-49: moderators see flagged entries, clear or remove them, and a cleared entry is not flagged again. XP is never touched."""
+    _, owner, _ = member(); row = challenge(owner)
+    joiner, jh, _ = member(); assert client.post(f"{C}/{row['id']}/participation", headers=jh).status_code in (200, 201)
+    with database.SessionLocal() as db:
+        entry = db.query(models.ChallengeParticipant).filter_by(challenge_id=row['id'], user_id=joiner).one(); entry.flagged = True; db.commit()
+    mod = moderator()
+    assert client.get(M, headers=owner).status_code == 403   # members can't see the queue
+    queue = client.get(M, headers=mod).json()['flagged_entries']
+    assert any(e['challenge_id'] == row['id'] and e['user_id'] == joiner for e in queue)
+    assert client.post(M + '/entries', headers=jh, json={'challenge_id': row['id'], 'user_id': joiner, 'action': 'clear'}).status_code == 403
+    assert client.post(M + '/entries', headers=mod, json={'challenge_id': row['id'], 'user_id': joiner, 'action': 'clear'}).json() == {'status': 'cleared'}
+    client.get(f"{C}/{row['id']}", headers=jh)   # progress settles again on view: a reviewed entry stays cleared
+    with database.SessionLocal() as db:
+        entry = db.query(models.ChallengeParticipant).filter_by(challenge_id=row['id'], user_id=joiner).one()
+        assert entry.flagged is False and entry.flag_reviewed_at is not None and entry.left_at is None
+        entry.flagged = True; entry.flag_reviewed_at = None; db.commit()
+    assert client.post(M + '/entries', headers=mod, json={'challenge_id': row['id'], 'user_id': joiner, 'action': 'remove'}).json() == {'status': 'removed'}
+    with database.SessionLocal() as db:
+        assert db.query(models.ChallengeParticipant).filter_by(challenge_id=row['id'], user_id=joiner).one().left_at is not None
+    assert not any(e['user_id'] == joiner for e in client.get(M, headers=mod).json()['flagged_entries'])

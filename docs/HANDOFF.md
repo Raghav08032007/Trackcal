@@ -16,7 +16,7 @@ emails and push notifications) is translated: 1,005 texts per language. How it w
 table in `backend/i18n/tables/`, then run `backend/.venv/Scripts/python backend/i18n/build.py`; `backend/tests/test_i18n.py`
 fails until every language has it.
 
-Backend tests: about 40 fail until `alembic upgrade head` adds migration 0026 (segments) to the test database, and a few
+Backend tests: about 40 fail until `alembic upgrade head` adds migrations 0026-0027 (segments, challenge flag review) to the database the tests use, and a few
 need a writable temp folder on Windows (`pytest --basetemp=<folder>`). One meal-summary test fails between midnight and
 05:30 India time (UTC and local days differ).
 
