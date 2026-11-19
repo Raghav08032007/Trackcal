@@ -29,6 +29,7 @@ from services import gamification, notifications
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
+from services.i18n import tr
 
 WINDOW_SECONDS, EARLY_MINUTES, MAX_UPCOMING = 30, 30, 10
 CATEGORIES = communities.CATEGORIES
@@ -134,7 +135,7 @@ def create(data: EventInput, user=Depends(get_current_active_user), db: Session 
         community_id = c.id
     db.query(models.User).filter_by(id=user.id).with_for_update().one()
     if db.query(func.count(models.Event.id)).filter(models.Event.organizer_id == user.id, models.Event.ends_at >= now, models.Event.status == 'scheduled').scalar() >= MAX_UPCOMING:
-        raise HTTPException(409, f'You can have up to {MAX_UPCOMING} upcoming events.')
+        raise HTTPException(409, tr('You can have up to {n} upcoming events.', n=MAX_UPCOMING))
     consume(db, 'event-create', str(user.id), 20, 86400)
     event = models.Event(organizer_id=user.id, community_id=community_id, title=data.title, description=data.description, category=data.category,
                          location=data.location, starts_at=starts, ends_at=starts + timedelta(minutes=data.minutes), timezone=data.timezone,
@@ -198,7 +199,7 @@ def check_in_code(event_id: str, user=Depends(get_current_active_user), db: Sess
     """The organizer's screen polls this. The token in the QR code changes every 30 seconds."""
     require_flags(db); event = get_event(db, event_id, user.id)
     if event.organizer_id != user.id: raise HTTPException(403, 'Only the organizer can show the check-in code.')
-    if not check_in_open(event): raise HTTPException(409, f'Check-in opens {EARLY_MINUTES} minutes before the start and closes at the end.')
+    if not check_in_open(event): raise HTTPException(409, tr('Check-in opens {minutes} minutes before the start and closes at the end.', minutes=EARLY_MINUTES))
     window = current_window(); stamp = utcnow().replace(tzinfo=timezone.utc).timestamp()
     return {'token': token_for(event, window), 'path': f'/events/{event.id}/check-in', 'refresh_in': int(WINDOW_SECONDS - stamp % WINDOW_SECONDS) + 1,
             'checked_in': db.query(func.count()).select_from(models.EventRegistration).filter(models.EventRegistration.event_id == event.id, models.EventRegistration.checked_in_at.isnot(None)).scalar()}
@@ -225,7 +226,7 @@ def _verify(db, event, person_id, method, now):
 def check_in(event_id: str, data: CheckIn, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     require_flags(db); consume(db, 'event-check-in', str(user.id), 30, 3600)
     event = get_event(db, event_id, user.id, lock=True); now = utcnow()
-    if not check_in_open(event, now): raise HTTPException(409, f'Check-in opens {EARLY_MINUTES} minutes before the start and closes at the end.')
+    if not check_in_open(event, now): raise HTTPException(409, tr('Check-in opens {minutes} minutes before the start and closes at the end.', minutes=EARLY_MINUTES))
     if data.handle:  # organizer, by hand
         if event.organizer_id != user.id: raise HTTPException(403, 'Only the organizer can check people in.')
         target = db.query(models.SocialProfile).filter_by(handle=data.handle.lower()).first()

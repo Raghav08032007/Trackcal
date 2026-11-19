@@ -15,6 +15,7 @@ from services import activity_stats
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
+from services.i18n import tr
 
 Sport = Literal['walk', 'run', 'hike', 'ride']
 Visibility = Literal['private', 'followers', 'everyone']
@@ -337,7 +338,7 @@ def list_zones(user=Depends(get_current_active_user), db: Session = Depends(get_
 
 def add_zone(data: ZoneInput, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
     if len(zones_of(db, user.id)) >= MAX_ZONES:
-        raise HTTPException(status_code=422, detail=f'Up to {MAX_ZONES} privacy zones.')
+        raise HTTPException(status_code=422, detail=tr('Up to {n} privacy zones.', n=MAX_ZONES))
     zone = models.PrivacyZone(user_id=user.id, **data.model_dump())
     db.add(zone)
     db.commit()

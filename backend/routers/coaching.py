@@ -8,6 +8,7 @@ from database import get_db
 from routers.auth import get_current_active_user
 import models
 from timeutil import utcnow
+from services.i18n import tr
 
 def request_limit(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     if os.getenv("APP_ENV")=="production":
@@ -89,7 +90,7 @@ def reserve(data:Reserve,user=Depends(get_current_active_user),db:Session=Depend
     until=priority_until(slot,db)
     if until:
         from services.billing import entitlements
-        if not entitlements(db,user)["priority_booking"]: raise HTTPException(403,f"Premium members can book this new slot first. It opens to everyone at {until.isoformat()}Z.")
+        if not entitlements(db,user)["priority_booking"]: raise HTTPException(403,tr('Premium members can book this new slot first. It opens to everyone at {time}.', time=until.isoformat() + 'Z'))
     booking=models.CoachBooking(slot_id=slot.id,user_id=user.id);db.add(booking);db.flush();slot.reserved_booking_id=booking.id;db.commit();db.refresh(booking)
     return {**slot_data(slot),"id":booking.id,"status":booking.status,"slot_id":slot.id}
 

@@ -127,17 +127,11 @@ per language: `frontend/web/scripts/i18n/` for the web app and `backend/i18n/tab
 
 New to the project? Read [docs/HANDOFF.md](docs/HANDOFF.md) first. It gives the exact files and the order.
 
-### 1. In progress: the server's messages in your language (languages step 8)
+### 1. Languages
 
-The groundwork is done: `backend/services/i18n.py` (`tr()`, `tr_n()`, `msg()`, `number()`), central translation of error
-messages, server catalogs built by `backend/i18n/build.py`, and the web app sending the chosen language with each request.
-`backend/tests/test_i18n.py` fails on purpose until these are translated:
-
-1. Today: task titles and reasons, the Health Score note, the streak rule, target explanations, training trend notes and
-   the motivation quotes (`data/motivation.json`).
-2. Meal and exercise ideas, health plan advice, recovery and lab-report texts.
-3. About 300 error messages in `backend/routers/` and `backend/services/`.
-4. Emails and push notifications, in the language saved on the account.
+The web app and the server's messages, emails and notifications are translated into all 9 wave-1 languages (see
+[docs/LANGUAGES.md](docs/LANGUAGES.md)). What remains is review by native speakers, plus clinical review of the health
+texts and legal review of the privacy notice and terms.
 
 ### 2. Features still to build
 
@@ -151,6 +145,7 @@ messages, server catalogs built by `backend/i18n/build.py`, and the web app send
 - Ranking, paging and spam controls for the Discover feed as it grows.
 - A lighter pose model for low-end phones.
 - Faster first load on slow mobile connections (Lighthouse mobile is 62–82 today).
+- The AI coach replying in the person's language (today it answers in English).
 - Wave-2 languages (for example French, German, Turkish, Vietnamese, Japanese and Russian), once wave 1 is reviewed.
 
 ### 3. Checks on real devices and real services

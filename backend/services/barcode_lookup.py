@@ -19,6 +19,7 @@ from sqlalchemy.dialects.mysql import insert as mysql_insert
 import models
 from services import food_codes, nutrition_math
 from timeutil import utcnow
+from services.i18n import msg
 
 OFF_URL = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
 # Open Food Facts asks for "AppName/Version (contact)". Set OPEN_FOOD_FACTS_CONTACT to an operator email before launch.
@@ -51,8 +52,8 @@ def check_digit_ok(code):
 def normalize(code):
     """Digits only (spaces and dashes removed); EAN-8, UPC-A or EAN-13 with a valid check digit."""
     clean = re.sub(r"[\s-]", "", str(code or ""))
-    if not re.fullmatch(r"\d{8}|\d{12}|\d{13}", clean): raise LookupError_("invalid", "Enter an 8, 12 or 13 digit barcode (EAN-8, UPC-A or EAN-13).")
-    if not check_digit_ok(clean): raise LookupError_("invalid", "This barcode's check digit does not match. Re-scan or retype it.")
+    if not re.fullmatch(r"\d{8}|\d{12}|\d{13}", clean): raise LookupError_("invalid", msg("Enter an 8, 12 or 13 digit barcode (EAN-8, UPC-A or EAN-13)."))
+    if not check_digit_ok(clean): raise LookupError_("invalid", msg("This barcode's check digit does not match. Re-scan or retype it."))
     return clean
 
 
@@ -130,24 +131,24 @@ def _http_get(url):
 
 def fetch(code):
     """Returns the OFF product dict, or None when OFF says it does not exist. Raises LookupError_('unavailable')."""
-    if not breaker.allow(): raise LookupError_("unavailable", "Open Food Facts is temporarily unavailable. Enter nutrition from the label, or retry in a minute.")
+    if not breaker.allow(): raise LookupError_("unavailable", msg("Open Food Facts is temporarily unavailable. Enter nutrition from the label, or retry in a minute."))
     for attempt in range(2):
         try:
             response = _http_get(OFF_URL.format(code=code))
         except (httpx.TimeoutException, httpx.TransportError):
             if attempt == 0: continue
-            breaker.record(False); raise LookupError_("unavailable", "Open Food Facts did not respond. Enter nutrition from the label, or retry.")
+            breaker.record(False); raise LookupError_("unavailable", msg("Open Food Facts did not respond. Enter nutrition from the label, or retry."))
         if response.status_code == 404: breaker.record(True); return None
-        if response.status_code == 429: breaker.record(False); raise LookupError_("unavailable", "Open Food Facts is busy (rate limit). Retry shortly or enter nutrition from the label.")
+        if response.status_code == 429: breaker.record(False); raise LookupError_("unavailable", msg("Open Food Facts is busy (rate limit). Retry shortly or enter nutrition from the label."))
         if response.status_code >= 500:
             if attempt == 0: continue
-            breaker.record(False); raise LookupError_("unavailable", "Open Food Facts is unavailable. Enter nutrition from the label, or retry.")
-        if response.status_code != 200: breaker.record(False); raise LookupError_("unavailable", "Open Food Facts returned an unexpected answer. Retry or enter nutrition manually.")
+            breaker.record(False); raise LookupError_("unavailable", msg("Open Food Facts is unavailable. Enter nutrition from the label, or retry."))
+        if response.status_code != 200: breaker.record(False); raise LookupError_("unavailable", msg("Open Food Facts returned an unexpected answer. Retry or enter nutrition manually."))
         try: data = response.json()
-        except ValueError: breaker.record(False); raise LookupError_("unavailable", "Open Food Facts returned unreadable data. Retry or enter nutrition manually.")
+        except ValueError: breaker.record(False); raise LookupError_("unavailable", msg("Open Food Facts returned unreadable data. Retry or enter nutrition manually."))
         breaker.record(True)
         return data.get("product") if data.get("status") == 1 and isinstance(data.get("product"), dict) else None
-    raise LookupError_("unavailable", "Open Food Facts is unavailable.")  # not reached
+    raise LookupError_("unavailable", msg("Open Food Facts is unavailable."))  # not reached
 
 
 # ── Public entry point ────────────────────────────────────────────────────────
@@ -160,7 +161,7 @@ def lookup(db, raw_code, now=None):
     code, now = normalize(raw_code), now or utcnow()
     row = db.get(models.BarcodeCache, code)
     if row and row.expires_at > now:
-        if not row.found: raise LookupError_("not_found", "Product not found in Open Food Facts. Enter its nutrition from the label.")
+        if not row.found: raise LookupError_("not_found", msg("Product not found in Open Food Facts. Enter its nutrition from the label."))
         return {**row.product, "cached": True}
     with _inflight_lock: gate = _inflight.setdefault(code, threading.Lock())
     try:
@@ -168,7 +169,7 @@ def lookup(db, raw_code, now=None):
             # A locking read sees the latest committed row (a plain read would reuse this transaction's older snapshot).
             row = db.query(models.BarcodeCache).filter_by(barcode=code).populate_existing().with_for_update(read=True).first()
             if row and row.expires_at > now:
-                if not row.found: raise LookupError_("not_found", "Product not found in Open Food Facts. Enter its nutrition from the label.")
+                if not row.found: raise LookupError_("not_found", msg("Product not found in Open Food Facts. Enter its nutrition from the label."))
                 return {**row.product, "cached": True}
             product = fetch(code)
             mapped = map_product(code, product) if product else None
@@ -177,5 +178,5 @@ def lookup(db, raw_code, now=None):
             db.execute(mysql_insert(models.BarcodeCache).values(barcode=code, **values).on_duplicate_key_update(**values)); db.commit()
     finally:
         with _inflight_lock: _inflight.pop(code, None)
-    if mapped is None: raise LookupError_("not_found", "Product not found in Open Food Facts. Enter its nutrition from the label.")
+    if mapped is None: raise LookupError_("not_found", msg("Product not found in Open Food Facts. Enter its nutrition from the label."))
     return {**mapped, "cached": False}

@@ -22,6 +22,16 @@ def wrapped_texts():
         for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))):
             if not isinstance(node, ast.Call): continue
             name = getattr(node.func, 'id', None) or getattr(node.func, 'attr', None)
+            if name in ('HTTPException', 'ApiError'):   # error messages are translated centrally (flask_app/errors.py)
+                detail = node.args[1] if len(node.args) > 1 else next((k.value for k in node.keywords if k.arg == 'detail'), None)
+                assert not isinstance(detail, ast.JoinedStr), f'{path.name}:{node.lineno}: use tr("... {{name}}", name=...) for an error message with values'
+                if isinstance(detail, ast.Constant) and isinstance(detail.value, str): found.append((path.name, detail.value, False))
+                continue
+            if name == 'error' and path.name == 'web_gateway.py' and node.args:   # the web gateway's own errors, translated in error()
+                arg = node.args[0]
+                assert not isinstance(arg, ast.JoinedStr), f'{path.name}:{node.lineno}: use tr("... {{name}}", name=...) for an error message with values'
+                if isinstance(arg, ast.Constant) and isinstance(arg.value, str): found.append((path.name, arg.value, False))
+                continue
             if name not in ('tr', 'tr_n', 'msg'): continue
             args = node.args[1:2] if name == 'tr_n' else node.args[:1]   # tr_n: the 'other' text is the catalog key
             for arg in args:
@@ -105,4 +115,4 @@ def test_numbers_are_written_like_the_browser_writes_them():
              'id': ['5', '1.500', '15.000', '150.000', '2,5', '1.234,5']}
     for code, want in cases.items():
         assert [i18n.number(n, code) for n in (5, 1500, 15000, 150000, 2.5, 1234.5)] == want, code
-    assert i18n.number(1500, 'en') == '1500' and i18n.number(-1234, 'hi') == '-1,234' and i18n.number(3.0, 'es') == '3'
+    assert i18n.number(1500, 'en') == '1,500' and i18n.number(-1234, 'hi') == '-1,234' and i18n.number(3.0, 'es') == '3'

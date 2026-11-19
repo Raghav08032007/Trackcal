@@ -10,6 +10,7 @@ import io
 import re
 
 from services.lab_reference import TESTS, Test, to_canonical
+from services.i18n import msg
 
 UNITS = r'(ml/min/1\.73\s*m(?:2|²)?|ml/min|%|mg/dl|g/dl|g/l|ng/ml|pg/ml|ug/l|µg/l|miu/l|miu/ml|uiu/ml|µiu/ml|u/l|iu/l|mmol/l|umol/l|µmol/l|nmol/l|pmol/l|meq/l)'
 NUMBER = r'(\d+(?:\.\d+)?)'
@@ -26,7 +27,7 @@ def pdf_text(data: bytes) -> str:
         try:
             reader.decrypt('')
         except Exception:
-            raise ValueError('This PDF is password protected. Open it, save an unlocked copy and try again.')
+            raise ValueError(msg('This PDF is password protected. Open it, save an unlocked copy and try again.'))
     return '\n'.join((page.extract_text() or '') for page in reader.pages[:MAX_PAGES])
 
 

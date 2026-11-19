@@ -21,6 +21,7 @@ from routers.auth import get_current_active_user
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
+from services.i18n import tr
 
 CATEGORIES = ('running', 'walking', 'yoga', 'strength', 'cycling', 'sports', 'cooking', 'nutrition', 'mindfulness', 'college', 'other')
 MAX_OWNED = 5
@@ -101,7 +102,7 @@ def create(data: CommunityInput, user=Depends(get_current_active_user), db: Sess
     require_flags(db); social.my_profile(db, user)
     db.query(models.User).filter_by(id=user.id).with_for_update().one()
     if db.query(func.count(models.Community.id)).filter_by(owner_id=user.id, archived=False).scalar() >= MAX_OWNED:
-        raise HTTPException(409, f'You can run up to {MAX_OWNED} communities. Archive one to start another.')
+        raise HTTPException(409, tr('You can run up to {n} communities. Archive one to start another.', n=MAX_OWNED))
     consume(db, 'community-create', str(user.id), 10, 86400)  # after the clear limit above, so its message wins
     if db.query(models.Community).filter_by(slug=data.slug).first(): raise HTTPException(409, 'That address is taken.')
     community = models.Community(slug=data.slug, name=data.name.strip(), description=data.description.strip(), category=data.category, visibility=data.visibility, rules=data.rules.strip(), owner_id=user.id)

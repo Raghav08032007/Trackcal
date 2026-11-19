@@ -12,6 +12,8 @@ text unchanged and marks it for the coverage test) and translate them with tr() 
 Values the web app translates itself (roles, statuses, challenge goals) stay English here: only wrapped texts are translated.
 """
 import json
+from contextlib import contextmanager
+from contextvars import ContextVar
 from functools import lru_cache
 from pathlib import Path
 
@@ -51,9 +53,29 @@ def from_header(value):
     return None
 
 
+_FORCED = ContextVar('trackcal_language', default=None)
+
+
+@contextmanager
+def use(code):
+    """Within this block every tr() uses `code`: for work no request drives (the Monday email, push notifications)."""
+    token = _FORCED.set(supported(code) or 'en')
+    try:
+        yield
+    finally:
+        _FORCED.reset(token)
+
+
+def for_preferences(prefs):
+    """The language saved on an account: the interface language chosen in the app, else the food-name language when TrackCal
+    speaks it, else English."""
+    return supported(getattr(prefs, 'ui_language', '')) or supported(getattr(prefs, 'language', '')) or 'en'
+
+
 def current():
-    """The language of the request being handled, or English outside a request."""
+    """The language in use: a use() block, else the request's Accept-Language, else English."""
     from flask import g, has_request_context, request
+    if _FORCED.get(): return _FORCED.get()
     if not has_request_context(): return 'en'
     if 'lang' not in g: g.lang = from_header(request.headers.get('Accept-Language')) or 'en'
     return g.lang
@@ -68,7 +90,9 @@ def number(value, lang=None):
     """A number in the language's style, as the browser writes it: 1,50,000 in Indian languages (Bengali and Marathi digits for
     those two), 150.000 and 2,5 in Spanish, Portuguese and Indonesian (Spanish groups from 10.000). English stays as Python writes it."""
     code = supported(lang) or current()
-    if code == 'en': return str(int(value)) if isinstance(value, float) and value.is_integer() else str(value)
+    if code == 'en':   # as the browser writes English: 1,200 and 2.5
+        if isinstance(value, float) and value.is_integer(): value = int(value)
+        return f'{value:,}' if isinstance(value, int) else str(value)
     if isinstance(value, float) and value.is_integer(): value = int(value)
     text = f'{value:.3f}'.rstrip('0').rstrip('.') if isinstance(value, float) else str(int(value))
     sign = '-' if text.startswith('-') else ''

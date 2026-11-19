@@ -80,3 +80,19 @@ describe("switching language", () => {
     }
   });
 });
+
+describe("telling the server the language", () => {
+  it("adds the chosen language to same-origin /api requests only, and never overrides a caller's own header", async () => {
+    const { sendLanguageToServer } = await import("@/lib/i18n");
+    setCatalogForTests("hi", catalog("hi") as never);
+    const seen: Array<[string, string | null]> = [];
+    const target = { location: { href: "https://trackcal.test/today", origin: "https://trackcal.test" },
+      fetch: (async (input: RequestInfo | URL, init?: RequestInit) => { seen.push([String(input), new Headers(init?.headers).get("Accept-Language")]); return new Response("{}"); }) as typeof fetch };
+    sendLanguageToServer(target); sendLanguageToServer(target);   // installing twice wraps once
+    await target.fetch("/api/v1/today");
+    await target.fetch("https://other.example/api/v1/x");
+    await target.fetch("/assets/app.js");
+    await target.fetch("/api/v1/today", { headers: { "Accept-Language": "es" } });
+    expect(seen).toEqual([["/api/v1/today", "hi"], ["https://other.example/api/v1/x", null], ["/assets/app.js", null], ["/api/v1/today", "es"]]);
+  });
+});

@@ -23,23 +23,24 @@ from sqlalchemy.dialects.mysql import insert
 import models
 from services.feature_flags import is_enabled
 from services.personalization import quiet
+from services.i18n import msg, tr
 
 log = logging.getLogger('trackcal.push')
 MAX_ATTEMPTS, STALE_MINUTES, LATE_HOURS, TTL_SECONDS = 5, 10, 2, 4 * 3600
 
 # Copy reviewed against the engagement ethics: optional, no guilt, no streak pressure, no health details.
 TYPES = {
-    'daily_plan': {'time': '08:00', 'title': "Today's plan is ready", 'body': 'Open TrackCal whenever it suits you.', 'url': '/plan'},
-    'workout': {'time': '18:00', 'title': 'Your activity reminder', 'body': "The one you set. Skip or move it if today isn't the day.", 'url': '/workouts'},
-    'meal_log': {'time': '13:00', 'title': 'Meal check-in', 'body': 'Log a meal if you like. Missing one is fine.', 'url': '/nutrition'},
-    'rest_day': {'time': '20:00', 'title': 'Rest counts too', 'body': 'Recovery is part of every plan.', 'url': '/plan'},
-    'motivation': {'time': '09:00', 'title': 'A thought for today', 'body': None, 'url': '/'},
-    'milestone': {'time': None, 'title': 'Something to celebrate', 'body': "You've unlocked something new in TrackCal.", 'url': '/play'},
-    'event_update': {'time': None, 'title': 'An event you joined has changed', 'body': 'It may be cancelled or changed. Check your events.', 'url': '/events'},
+    'daily_plan': {'time': '08:00', 'title': msg("Today's plan is ready"), 'body': msg('Open TrackCal whenever it suits you.'), 'url': '/plan'},
+    'workout': {'time': '18:00', 'title': msg('Your activity reminder'), 'body': msg("The one you set. Skip or move it if today isn't the day."), 'url': '/workouts'},
+    'meal_log': {'time': '13:00', 'title': msg('Meal check-in'), 'body': msg('Log a meal if you like. Missing one is fine.'), 'url': '/nutrition'},
+    'rest_day': {'time': '20:00', 'title': msg('Rest counts too'), 'body': msg('Recovery is part of every plan.'), 'url': '/plan'},
+    'motivation': {'time': '09:00', 'title': msg('A thought for today'), 'body': None, 'url': '/'},
+    'milestone': {'time': None, 'title': msg('Something to celebrate'), 'body': msg("You've unlocked something new in TrackCal."), 'url': '/play'},
+    'event_update': {'time': None, 'title': msg('An event you joined has changed'), 'body': msg('It may be cancelled or changed. Check your events.'), 'url': '/events'},
     # Phase H: who and what stay out of the message; opening the app shows them.
-    'social': {'time': None, 'title': 'Someone cheered you on', 'body': 'You have new kudos, comments or followers.', 'url': '/feed'},
-    'record': {'time': None, 'title': 'A new personal best', 'body': 'You beat one of your own records. Take a look.', 'url': '/activities'},
-    'weekly_summary': {'time': '09:00', 'weekday': 0, 'title': 'Your week in TrackCal', 'body': 'Your weekly summary is ready.', 'url': '/weekly'},
+    'social': {'time': None, 'title': msg('Someone cheered you on'), 'body': msg('You have new kudos, comments or followers.'), 'url': '/feed'},
+    'record': {'time': None, 'title': msg('A new personal best'), 'body': msg('You beat one of your own records. Take a look.'), 'url': '/activities'},
+    'weekly_summary': {'time': '09:00', 'weekday': 0, 'title': msg('Your week in TrackCal'), 'body': msg('Your weekly summary is ready.'), 'url': '/weekly'},
 }
 SOCIAL_BUNDLE_MINUTES = 30   # kudos, comments and follows within one half hour arrive as one notification
 SCHEDULED = [t for t, v in TYPES.items() if v['time']]
@@ -89,10 +90,18 @@ def motivation_for(day: date) -> str:
     return messages[day.toordinal() % len(messages)]
 
 
-def payload(row) -> dict:
+def payload(row, lang='en') -> dict:
+    """What the phone shows, in the account's language (lang)."""
     spec = TYPES[row.type]
     body = spec['body'] or motivation_for(date.fromisoformat(row.local_day))
-    return {'id': row.id, 'type': row.type, 'title': spec['title'], 'body': body, 'url': spec['url']}
+    return {'id': row.id, 'type': row.type, 'title': tr(spec['title'], lang=lang), 'body': tr(body, lang=lang), 'url': spec['url']}
+
+
+def language(db, user_id):
+    """The language saved on this account (services.i18n.for_preferences)."""
+    from routers.personalization import prefs_for
+    from services.i18n import for_preferences
+    return for_preferences(prefs_for(db.get(models.PersonalizationProfile, user_id)))
 
 
 def plan(db, now=None):
@@ -197,7 +206,7 @@ def deliver(db, notification_id, send, now=None):
     if reason: _finish(row, 'skipped', reason); db.commit(); return 'skipped'
     devices = db.query(models.PushSubscription).filter_by(user_id=row.user_id).all()
     if not devices: _finish(row, 'skipped', 'no device'); db.commit(); return 'skipped'
-    body, delivered, transient, permanent = payload(row), 0, 0, None
+    body, delivered, transient, permanent = payload(row, language(db, row.user_id)), 0, 0, None
     for device in devices:
         status = send(device, body)
         if 200 <= status < 300: delivered += 1; device.last_success_at = now

@@ -23,6 +23,7 @@ from services.abuse_limits import consume
 from services.challenge_progress import KM_PER_DAY, METRICS, MINUTES_PER_DAY, REPS_PER_DAY, progress
 from services.feature_flags import is_enabled
 from timeutil import utcnow
+from services.i18n import tr
 
 MAX_RUNNING, MIN_DAYS, MAX_DAYS = 5, 3, 60
 
@@ -134,7 +135,7 @@ def create(data: ChallengeInput, user=Depends(get_current_active_user), db: Sess
         community_id = c.id
     db.query(models.User).filter_by(id=user.id).with_for_update().one()
     running = [x for x in db.query(models.Challenge).filter_by(creator_id=user.id, status='active').all() if phase(x) != 'ended']
-    if len(running) >= MAX_RUNNING: raise HTTPException(409, f'You can run up to {MAX_RUNNING} challenges at a time.')
+    if len(running) >= MAX_RUNNING: raise HTTPException(409, tr('You can run up to {n} challenges at a time.', n=MAX_RUNNING))
     consume(db, 'challenge-create', str(user.id), 20, 86400)
     c = models.Challenge(creator_id=user.id, community_id=community_id, title=data.title, description=data.description, metric=data.metric,
                          target=data.target, starts_on=str(data.starts_on), ends_on=str(data.ends_on), timezone=data.timezone)

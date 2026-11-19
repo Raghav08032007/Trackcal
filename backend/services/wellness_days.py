@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel, ConfigDict, Field
 
 import models
+from services.i18n import msg
 
 DAY = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 LIMITS = {'water_ml': 20000, 'steps': 150000, 'active_minutes': 1440, 'burn_kcal': 10000}
@@ -59,11 +60,11 @@ class DayImport(BaseModel):
 
 def check_day(text, tz):
     """A real calendar day, not before 2000 and not after tomorrow where the person is."""
-    if not isinstance(text, str) or not DAY.match(text): raise ValueError('Use a date like 2026-11-08.')
+    if not isinstance(text, str) or not DAY.match(text): raise ValueError(msg('Use a date like 2026-11-08.'))
     try: value = date.fromisoformat(text)
-    except ValueError: raise ValueError('That date does not exist.')
+    except ValueError: raise ValueError(msg('That date does not exist.'))
     today = datetime.now(timezone.utc).astimezone(ZoneInfo(tz)).date()
-    if value < date(2000, 1, 1) or value > today + timedelta(days=1): raise ValueError('That date is outside what can be logged.')
+    if value < date(2000, 1, 1) or value > today + timedelta(days=1): raise ValueError(msg('That date is outside what can be logged.'))
     return text
 
 

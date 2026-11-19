@@ -18,6 +18,7 @@ from routers.social import blocks_between, follows, profile_of
 from services import segments as seg
 from services.abuse_limits import consume
 from timeutil import utcnow
+from services.i18n import tr
 
 MAX_SEGMENTS = 50
 MATCH_LIMIT = 200
@@ -124,7 +125,7 @@ def create_segment(data: SegmentInput, user=Depends(get_current_active_user), db
     consume(db, 'segment-create', str(user.id), 20, 86400)
     activity = owned(db, user, data.activity_id)
     if db.query(models.Segment).filter_by(creator_id=user.id, is_deleted=False).count() >= MAX_SEGMENTS:
-        raise HTTPException(status_code=422, detail=f'Up to {MAX_SEGMENTS} segments each.')
+        raise HTTPException(status_code=422, detail=tr('Up to {n} segments each.', n=MAX_SEGMENTS))
     if data.end_m > activity.distance_m + 1 or data.end_m <= data.start_m:
         raise HTTPException(status_code=422, detail='Pick a stretch within this activity, with the end after the start.')
     points = seg.cut(activity.route or [], data.start_m, data.end_m)

@@ -10,8 +10,14 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from pathlib import Path
 from urllib.parse import urlsplit
+from services.i18n import msg, tr
 
 DEFAULT_FROM = "TrackCal <no-reply@localhost>"
+# The email bodies, sent in the language of the request that asked for them (sign-up, forgot password).
+RESET = msg("Use this one-time link to reset your password:{link}The link expires in 30 minutes. If you did not request this, ignore this email. "
+            "TrackCal will never ask you to reply with your password.")
+VERIFY = msg("Use this one-time link to verify your email:{link}The link expires in 24 hours. If you did not request this, ignore this email. "
+             "TrackCal will never ask you to reply with your password.")
 
 
 def configuration():
@@ -53,9 +59,10 @@ def deliver(address: str, purpose: str, token: str):
     base = configuration()
     reset = purpose == "reset"
     message = EmailMessage()
-    message["Subject"] = "Reset your TrackCal password" if reset else "Verify your TrackCal email"
+    message["Subject"] = tr("Reset your TrackCal password") if reset else tr("Verify your TrackCal email")
     message["From"] = os.getenv("SMTP_FROM") or DEFAULT_FROM
     message["To"] = address
     route = "reset-password" if reset else "verify-email"
-    message.set_content(f"Use this one-time link to {'reset your password' if reset else 'verify your email'}:\n\n{base}/{route}#token={token}\n\nThe link expires in {'30 minutes' if reset else '24 hours'}. If you did not request this, ignore this email. TrackCal will never ask you to reply with your password.")
+    link = f'{base}/{route}#token={token}'
+    message.set_content(tr(RESET if reset else VERIFY).replace('{link}', '\n\n' + link + '\n\n'))   # the link on its own lines, never translated
     send(message)

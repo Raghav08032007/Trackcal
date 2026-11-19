@@ -247,9 +247,9 @@ def generate(prefs,today,previous_feedback,report=None):
 def normalize_measurement(kind,value,unit):
  rules={'height':({'cm':1,'in':2.54},30,275),'weight':({'kg':1,'lb':0.45359237},1,500),'duration':({'minutes':1},0,180),'repetitions':({'reps':1},0,500),'frequency':({'days/week':1},0,7),'hydration':({'ml':1},0,10000),'sleep':({'hours':1},0,24)}
  factors,low,high=rules[kind]
- if unit not in factors:raise ValueError('Unit does not match measurement type.')
+ if unit not in factors:raise ValueError(msg('Unit does not match measurement type.'))
  result=value*factors[unit]
- if not low<=result<=high:raise ValueError('Measurement is outside the supported range.')
+ if not low<=result<=high:raise ValueError(msg('Measurement is outside the supported range.'))
  return result
 
 def bmi(height_cm,weight_kg,age_group):
@@ -265,5 +265,5 @@ def quiet(time,start,end):
 def convert_measurement(kind,value,from_unit,to_unit):
  canonical=normalize_measurement(kind,value,from_unit)
  factors={'height':{'cm':1,'in':2.54},'weight':{'kg':1,'lb':0.45359237}}
- if kind not in factors or to_unit not in factors[kind]:raise ValueError('Unsupported conversion.')
+ if kind not in factors or to_unit not in factors[kind]:raise ValueError(msg('Unsupported conversion.'))
  return canonical/factors[kind][to_unit]

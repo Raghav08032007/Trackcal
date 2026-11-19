@@ -18,6 +18,8 @@ from urllib.parse import urlencode, urlsplit
 import httpx
 from flask import Blueprint, current_app, g, jsonify, request
 
+from services.i18n import msg, tr
+
 from services.meal_analysis import ground_in_catalog, normalize_meal
 from services.openrouter_client import model_fields
 
@@ -36,7 +38,8 @@ def reply(value, status=200):
 
 
 def error(message, status):
-    return reply({'error': message}, status)
+    """An error for the web app, in the person's language when the message is in a server table (backend/i18n)."""
+    return reply({'error': tr(message) if isinstance(message, str) else message}, status)
 
 
 class Upstream:
@@ -52,6 +55,7 @@ def api(method, path, token=None, body=None, form=None):
     """Call the versioned API in-process, as the browser's client address."""
     headers = {'Authorization': f'Bearer {token}'} if token else {}
     if request.headers.get('User-Agent'): headers['User-Agent'] = request.headers['User-Agent'][:200]  # labels push devices
+    if request.headers.get('Accept-Language'): headers['Accept-Language'] = request.headers['Accept-Language'][:200]  # answers in the person's language
     kwargs = {'json': body} if body is not None else {'data': form} if form is not None else {}
     response = current_app.test_client().open('/api/v1' + path, method=method, headers=headers,
                                               environ_base={'REMOTE_ADDR': request.remote_addr or '127.0.0.1'}, **kwargs)
@@ -129,7 +133,7 @@ def pick(data, *names):
 
 ACCOUNT_READS = {'session': '/auth/me', 'profile': '/users/profile', 'backup': '/users/workspace', 'export': '/users/export', 'sync': '/users/sync'}
 ACCOUNT_WRITES = ['login', 'signup', 'profile', 'password', 'backup', 'sync', 'forgot-password', 'reset-password', 'verify-email', 'request-verification', 'close']
-ACCOUNT_DOWN = 'Account service is unavailable. Please try again shortly.'
+ACCOUNT_DOWN = msg('Account service is unavailable. Please try again shortly.')
 
 
 @bp.get('/account/<action>')
@@ -148,7 +152,7 @@ def account_write(action):
     if action == 'logout': clear_tokens(); return reply({'status': 'Signed out'})
     if action not in ACCOUNT_WRITES: return error('Not found', 404)
     try:
-        body, failed = json_object(1_000_000, ('Backup is too large.', 413), 'Invalid request.')
+        body, failed = json_object(1_000_000, (msg('Backup is too large.'), 413), msg('Invalid request.'))
         if failed: return failed
         if action in ('forgot-password', 'reset-password', 'verify-email'):
             fields = {'forgot-password': ('email',), 'reset-password': ('token', 'new_password'), 'verify-email': ('token',)}[action]
@@ -189,7 +193,7 @@ def adventure_write(action):
     if not same_origin(): return error('Origin rejected.', 403)
     if action not in ADVENTURE_WRITES: return error('Not found', 404)
     try:
-        body, failed = json_object(12000, ('Request too large', 413), 'Invalid JSON', 'Invalid input')
+        body, failed = json_object(12000, (msg('Request too large'), 413), msg('Invalid JSON'), msg('Invalid input'))
         return failed or forward(authenticated('POST', f'/adventure/{ADVENTURE_WRITES[action]}', body))
     except Exception:
         return error('Could not connect. Refresh before retrying; rewards are awarded only once.', 503)
@@ -197,7 +201,7 @@ def adventure_write(action):
 
 # ── Coaching ────────────────────────────────────────────────────────────────
 
-COACHING_DOWN = 'Scheduling service is unavailable. Please try again.'
+COACHING_DOWN = msg('Scheduling service is unavailable. Please try again.')
 
 
 @bp.get('/coaching/<action>')
@@ -213,7 +217,7 @@ def coaching_read(action):
 def coaching_write(action):
     if not same_origin(): return error('Request origin is not allowed.', 403)
     try:
-        data, failed = json_object(4000, ('Request is too large', 413), 'Invalid request')
+        data, failed = json_object(4000, (msg('Request is too large'), 413), msg('Invalid request'))
         if failed: return failed
         if action == 'publish': return forward(authenticated('POST', '/coaching/slots', pick(data, 'starts_at', 'minutes')))
         if action == 'reserve': return forward(authenticated('POST', '/coaching/bookings', pick(data, 'slot_id')))
@@ -250,7 +254,7 @@ def personalization(path):
     try:
         body = None
         if method in ('POST', 'PUT'):
-            body, failed = json_object(16000, ('Request too large', 413), 'Invalid input')
+            body, failed = json_object(16000, (msg('Request too large'), 413), msg('Invalid input'))
             if failed: return failed
         return forward(authenticated(method, '/personalization/' + path, body))
     except Exception:
@@ -279,7 +283,7 @@ def wellness(path):
     try:
         body = None
         if method in ('POST', 'PUT'):
-            body, failed = json_object(64000, ('Request too large', 413), 'Invalid JSON')
+            body, failed = json_object(64000, (msg('Request too large'), 413), msg('Invalid JSON'))
             if failed: return failed
         search = {key: request.args[key] for key in ('q', 'category', 'equipment', 'offset', 'limit', 'day', 'kind', 'weeks') if key in request.args}
         return forward(authenticated(method, '/wellness/' + path + (f'?{urlencode(search)}' if search else ''), body))
@@ -303,7 +307,7 @@ def body_preview():
         try: return forward(authenticated('GET', '/body-preview'))
         except Exception: return error(ACCOUNT_DOWN, 503)
     if not same_origin(): return error('Origin rejected', 403)
-    body, failed = json_object(15_000_000, ('Photo must be under 10 MB.', 413), 'Invalid JSON')
+    body, failed = json_object(15_000_000, (msg('Photo must be under 10 MB.'), 413), msg('Invalid JSON'))
     if failed: return failed
     try: return forward(authenticated('POST', '/body-preview', body))
     except Exception: return error(ACCOUNT_DOWN, 503)
@@ -319,7 +323,7 @@ def social_routes(path):
         if method in ('POST', 'PUT'):
             if not request.get_data(cache=True): body = {}  # follow, reactions removal etc. carry no body
             else:
-                body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+                body, failed = json_object(4000, (msg('Request too large'), 413), msg('Invalid JSON'))
                 if failed: return failed
         query = {k: request.args[k] for k in ('tab', 'before', 'kind') if k in request.args}
         return forward(authenticated(method, '/social/' + path + (f'?{urlencode(query)}' if query else ''), body))
@@ -346,7 +350,7 @@ def activity_routes(path):
         body = None
         if method in ('POST', 'PATCH'):
             # A long ride sends its raw GPS fixes: about 60 bytes each, up to 20,000 of them.
-            body, failed = json_object(2_000_000, ('This activity is too long to save in one piece.', 413), 'Invalid JSON')
+            body, failed = json_object(2_000_000, (msg('This activity is too long to save in one piece.'), 413), msg('Invalid JSON'))
             if failed: return failed
         query = {k: request.args[k] for k in ('sport', 'before', 'limit') if k in request.args}
         return forward(authenticated(method, '/activities' + ('/' + path if path else '') + (f'?{urlencode(query)}' if query else ''), body))
@@ -372,7 +376,7 @@ def health_routes(path):
     try:
         body = None
         if method == 'POST':
-            body, failed = json_object(12_500_000, ('Upload a report under 8 MB.', 413), 'Invalid JSON')
+            body, failed = json_object(12_500_000, (msg('Upload a report under 8 MB.'), 413), msg('Invalid JSON'))
             if failed: return failed
         return forward(authenticated(method, '/health/' + path, body))
     except Exception:
@@ -385,7 +389,7 @@ def health_photo():
     and are read by the same rules as a PDF; the photo is not stored."""
     from services import photo_prep
     if not same_origin(): return error('Origin rejected', 403)
-    body, failed = json_object(15_000_000, ('Photo must be under 10 MB.', 413), 'Invalid JSON')
+    body, failed = json_object(15_000_000, (msg('Photo must be under 10 MB.'), 413), msg('Invalid JSON'))
     if failed: return failed
     if body.get('ai_consent') is not True: return error('Allow the AI to read this photo, or type the values instead.', 422)
     image = body.get('image')
@@ -431,7 +435,7 @@ def community_routes(path):
         if method in ('POST', 'PUT'):
             if not request.get_data(cache=True): body = {}
             else:
-                body, failed = json_object(6000, ('Request too large', 413), 'Invalid JSON')
+                body, failed = json_object(6000, (msg('Request too large'), 413), msg('Invalid JSON'))
                 if failed: return failed
         query = {k: request.args[k] for k in ('q', 'category', 'mine', 'before', 'status') if k in request.args}
         return forward(authenticated(method, '/communities' + (f'/{path}' if path else '') + (f'?{urlencode(query)}' if query else ''), body))
@@ -457,7 +461,7 @@ def event_routes(path):
         if method == 'POST':
             if not request.get_data(cache=True): body = {}
             else:
-                body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+                body, failed = json_object(4000, (msg('Request too large'), 413), msg('Invalid JSON'))
                 if failed: return failed
         query = {k: request.args[k] for k in ('scope', 'community') if k in request.args}
         return forward(authenticated(method, '/events' + (f'/{path}' if path else '') + (f'?{urlencode(query)}' if query else ''), body))
@@ -481,7 +485,7 @@ def challenge_routes(path):
         if method == 'POST':
             if not request.get_data(cache=True): body = {}
             else:
-                body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+                body, failed = json_object(4000, (msg('Request too large'), 413), msg('Invalid JSON'))
                 if failed: return failed
         query = {k: request.args[k] for k in ('scope', 'community') if k in request.args}
         return forward(authenticated(method, '/challenges' + (f'/{path}' if path else '') + (f'?{urlencode(query)}' if query else ''), body))
@@ -495,7 +499,7 @@ def challenge_routes(path):
 def feedback():
     """In-app feedback, stored as a support ticket. Only what the person typed and the page path are sent."""
     if not same_origin(): return error('Origin rejected', 403)
-    body, failed = json_object(6000, ('Feedback is too long.', 413), 'Invalid JSON')
+    body, failed = json_object(6000, (msg('Feedback is too long.'), 413), msg('Invalid JSON'))
     if failed: return failed
     message, page = body.get('message'), body.get('page')
     if not isinstance(message, str) or not message.strip(): return error('Write a short message first.', 400)
@@ -517,7 +521,7 @@ def billing_routes(action):
         if action == 'plans': return forward(api('GET', '/subscriptions/plans'))
         body = None
         if request.method == 'POST':
-            body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+            body, failed = json_object(4000, (msg('Request too large'), 413), msg('Invalid JSON'))
             if failed: return failed
         return forward(authenticated(request.method, '/subscriptions/' + action, body))
     except Exception:
@@ -539,7 +543,7 @@ def push_routes(path):
         if path == 'config': return forward(api('GET', '/push/config'))
         body = None
         if method in ('PUT', 'POST', 'DELETE') and not opened:
-            body, failed = json_object(4000, ('Request too large', 413), 'Invalid JSON')
+            body, failed = json_object(4000, (msg('Request too large'), 413), msg('Invalid JSON'))
             if failed: return failed
         return forward(authenticated(method, '/push/' + path, body))
     except Exception:
@@ -573,7 +577,7 @@ def tools_write(action):
     if not same_origin(): return error('Request origin is not allowed.', 403)
     if action not in TOOL_WRITES: return error('Not found', 404)
     try:
-        body, failed = json_object(14000500 if action in ('label', 'transcribe') else 2000000, ('Request is too large.', 413), 'Invalid JSON', 'Invalid input')
+        body, failed = json_object(14000500 if action in ('label', 'transcribe') else 2000000, ('Request is too large.', 413), msg('Invalid JSON'), msg('Invalid input'))
         return failed or forward(authenticated('POST', f'/integrations/{action}', body))
     except Exception:
         return error('The integration request failed or timed out. Your saved data is unchanged.', 503)

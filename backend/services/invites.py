@@ -8,9 +8,10 @@ from flask_app.params import HTTPException
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
+from services.i18n import msg
 
 ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'  # no 0/O or 1/I, so codes read aloud correctly
-REFUSED = 'TrackCal is in a closed beta. Sign-up needs a valid invite code.'
+REFUSED = msg('TrackCal is in a closed beta. Sign-up needs a valid invite code.')
 
 
 def normalize(code):

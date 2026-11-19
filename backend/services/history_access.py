@@ -10,9 +10,10 @@ from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
+from services.i18n import msg
 
 FREE_DAYS = 7
-OLDER = ('Older detail is part of Premium. Nothing has been deleted: it is all still here and comes back the moment you upgrade. '
+OLDER = msg('Older detail is part of Premium. Nothing has been deleted: it is all still here and comes back the moment you upgrade. '
          'Your monthly summaries and your data export always include everything.')
 
 

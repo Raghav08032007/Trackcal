@@ -12,6 +12,7 @@ import base64
 import io
 
 from PIL import Image, ImageOps
+from services.i18n import msg
 
 MAX_SIDE = 1024
 MAX_PIXELS = 40_000_000  # ~8000 x 5000; larger is refused before decoding
@@ -28,12 +29,12 @@ def prepare(data_url: str) -> str:
         kind = data_url[len('data:image/'):data_url.index(';')]
         raw = base64.b64decode(data_url.split(',', 1)[1], validate=True)
     except (ValueError, IndexError):
-        raise PhotoError('The file is not a valid supported image under 10 MB.')
+        raise PhotoError(msg('The file is not a valid supported image under 10 MB.'))
     try:
         with Image.open(io.BytesIO(raw)) as image:
-            if image.format != FORMATS.get(kind): raise PhotoError('The file is not a valid supported image under 10 MB.')
+            if image.format != FORMATS.get(kind): raise PhotoError(msg('The file is not a valid supported image under 10 MB.'))
             width, height = image.size
-            if width * height > MAX_PIXELS: raise PhotoError('This photo has too many pixels. Use a normal phone photo.')
+            if width * height > MAX_PIXELS: raise PhotoError(msg('This photo has too many pixels. Use a normal phone photo.'))
             image = ImageOps.exif_transpose(image)
             image = image.convert('RGB')
             image.thumbnail((MAX_SIDE, MAX_SIDE), Image.Resampling.LANCZOS)
@@ -42,5 +43,5 @@ def prepare(data_url: str) -> str:
     except PhotoError:
         raise
     except Exception:
-        raise PhotoError('The file is not a valid supported image under 10 MB.')
+        raise PhotoError(msg('The file is not a valid supported image under 10 MB.'))
     return 'data:image/jpeg;base64,' + base64.b64encode(output.getvalue()).decode()

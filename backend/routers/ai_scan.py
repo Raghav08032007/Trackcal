@@ -20,6 +20,7 @@ from database import get_db
 import models
 from routers.auth import get_current_active_user
 from timeutil import utcnow
+from services.i18n import tr
 
 
 MOCK_MODE = os.getenv("AI_MOCK_MODE", "false").lower() == "true"
@@ -220,7 +221,7 @@ def _check_scan_quota(user: models.User, db: Session) -> None:
         sub.ai_scans_reset_at = utcnow()
     FREE_LIMIT = 5
     if sub.ai_scans_used_today >= FREE_LIMIT:
-        raise HTTPException(429, f"Daily scan limit ({FREE_LIMIT}) reached. Please try again tomorrow; manual logging remains available.")
+        raise HTTPException(429, tr('Daily scan limit ({limit}) reached. Please try again tomorrow; manual logging remains available.', limit=FREE_LIMIT))
     sub.ai_scans_used_today += 1
     db.add(sub)
 
@@ -237,7 +238,7 @@ async def scan_photo(
 ):
     """Upload a food photo and receive AI recognition results."""
     if file.content_type not in SUPPORTED_MIME:
-        raise HTTPException(400, f"Unsupported file type: {file.content_type}. Use JPEG, PNG, or WebP.")
+        raise HTTPException(400, tr('Unsupported file type: {type}. Use JPEG, PNG, or WebP.', type=str(file.content_type)))
 
     file_bytes = await file.read(MAX_FILE_SIZE + 1)
     if len(file_bytes) > MAX_FILE_SIZE:
@@ -521,7 +522,7 @@ async def scan_barcode(
             "nova_group": infer_nova_score(f.name)["nova_group"]
         }
 
-    raise HTTPException(404, f"Barcode '{barcode_value}' not found in global Open Food Facts registry or local database.")
+    raise HTTPException(404, tr("Barcode '{barcode}' not found in global Open Food Facts registry or local database.", barcode=str(barcode_value)))
 
 
 

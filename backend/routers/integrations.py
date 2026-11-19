@@ -16,6 +16,7 @@ from database import get_db
 from pydantic import BaseModel, Field
 from routers.auth import get_current_active_user
 from services.safe_recipe import fetch_recipe_html
+from services.i18n import tr
 
 def integration_limits(request: Request, user=Depends(get_current_active_user), db: Session=Depends(get_db)):
     if os.getenv("APP_ENV") == "production":
@@ -170,7 +171,7 @@ async def service_json(base: str, path: str, headers=None, params=None):
     try:
         async with httpx.AsyncClient(timeout=12, follow_redirects=False, trust_env=False) as client:
             response = await client.get(base.rstrip("/") + path, headers=headers, params=params)
-            if not response.is_success: raise HTTPException(502, f"The connected service returned HTTP {response.status_code}")
+            if not response.is_success: raise HTTPException(502, tr('The connected service returned HTTP {status}', status=str(response.status_code)))
             if len(response.content) > 4_000_000: raise HTTPException(502, "Connected service returned too much data")
             return response.json()
     except HTTPException: raise
@@ -178,7 +179,7 @@ async def service_json(base: str, path: str, headers=None, params=None):
 
 def private_service(name: str, user):
     if not os.getenv(name + "_URL") or not os.getenv(name + "_API_KEY"):
-        raise HTTPException(503, f"{name.title()} needs its service URL and API key configured on the server")
+        raise HTTPException(503, tr('{name} needs its service URL and API key configured on the server', name=name.title()))
     if user.role.value != "admin" and str(user.id) != os.getenv("INTEGRATION_OWNER_ID"):
         raise HTTPException(403, "This household connector is restricted to its configured owner")
     return os.environ[name + "_URL"], os.environ[name + "_API_KEY"]

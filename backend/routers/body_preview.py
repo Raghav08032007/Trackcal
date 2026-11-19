@@ -21,6 +21,7 @@ from routers.auth import get_current_active_user
 from services import photo_prep
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
+from services.i18n import msg
 
 ADULT_GROUPS = ('18_19', '20_64', '65plus')
 DAILY_PER_PERSON, DAILY_TOTAL = 3, 100
@@ -29,7 +30,7 @@ SAFETY_MODELS = ['google/gemini-2.5-flash-lite', 'google/gemini-2.5-flash']
 SAFETY_PROMPT = ('Check this image for a safety filter. Reply with JSON only: {"people": <number of people>, "clearly_adult": <true only if '
                  'every person is clearly 18 or older>, "clothed": <true if every person wears normal clothes or sportswear such as a t-shirt, leggings, shorts or a sports top; swimwear, underwear or bare chests are false>, '
                  '"sexual": <true if the image is sexual or suggestive>}. If you are unsure about any answer, answer the safe way.')
-UNSAFE = 'This photo couldn’t be used. Try a clear, clothed photo of one adult.'
+UNSAFE = msg('This photo couldn’t be used. Try a clear, clothed photo of one adult.')
 _RESULT = re.compile(r'^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$')
 GOALS = {
     'leaner': 'slightly leaner, as after a few months of regular activity and balanced eating, staying a healthy weight',

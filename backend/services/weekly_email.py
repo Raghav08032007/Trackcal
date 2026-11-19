@@ -20,6 +20,8 @@ from sqlalchemy.dialects.mysql import insert
 import models
 from services import account_mail
 from services import training_load as tl
+from services import i18n
+from services.i18n import current, number, tr
 
 log = logging.getLogger(__name__)
 SEND_HOUR = 9
@@ -43,30 +45,33 @@ def due(db, now: datetime):
 
 
 def compose(base: str, address: str, summary: dict) -> EmailMessage:
+    """The email in the language in use (run() wraps it in the account's language)."""
     week = summary['weeks'][-1]
     g = tl.guideline(week['met_minutes'], 7)
-    lines = [f"Your week of {week['start']}:", '',
-             f"  {week['met_minutes']:,} MET-minutes of effort", f"  {week['minutes']} active minutes over {week['active_days']} days"]
+    km = round(week['distance_m'] / 1000, 1)
+    lines = [tr('Your week of {date}:', date=week['start']), '',
+             '  ' + tr('{n} MET-minutes of effort', n=week['met_minutes']), '  ' + tr('{minutes} active minutes over {days} days', minutes=week['minutes'], days=week['active_days'])]
     if week['distance_m']:
-        lines.append(f"  {week['distance_m'] / 1000:.1f} km by GPS")
-    lines += ['', g['text'], summary['trend']['message'], '', f'See it all: {base}/weekly',
-              f'Turn this email off on the same page: {base}/weekly', '', 'Estimates to help you, never a medical assessment.']
+        lines.append('  ' + tr('{km} km by GPS', km=km))
+    lines += ['', g['text'], summary['trend']['message'], '', tr('See it all: {link}', link=f'{base}/weekly'),
+              tr('Turn this email off on the same page: {link}', link=f'{base}/weekly'), '', tr('Estimates to help you, never a medical assessment.')]
     message = EmailMessage()
-    message['Subject'] = 'Your week in TrackCal'
+    message['Subject'] = tr('Your week in TrackCal')
     message['To'] = address
     message.set_content('\n'.join(lines))
     rows = ''.join(f'<tr><td style="padding:6px 12px">{html.escape(label)}</td><td style="padding:6px 12px;text-align:right"><b>{html.escape(value)}</b></td></tr>'
-                   for label, value in [('Effort', f"{week['met_minutes']:,} MET-minutes"), ('Active time', f"{week['minutes']} minutes"),
-                                        ('Active days', str(week['active_days']))] + ([('GPS distance', f"{week['distance_m'] / 1000:.1f} km")] if week['distance_m'] else []))
+                   for label, value in [(tr('Effort'), tr('{n} MET-minutes', n=week['met_minutes'])), (tr('Active time'), tr('{n} minutes', n=week['minutes'])),
+                                        (tr('Active days'), number(week['active_days']))] + ([(tr('GPS distance'), tr('{km} km', km=km))] if week['distance_m'] else []))
+    rtl = current() == 'ar'
     message.add_alternative(
-        f'<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#1c1917">'
-        f'<div style="background:#6d28d9;color:#fff;padding:20px;border-radius:16px"><h1 style="margin:0;font-size:22px">Your week in TrackCal</h1>'
-        f'<p style="margin:6px 0 0">Week of {html.escape(week["start"])}</p></div>'
+        f'<div dir="{"rtl" if rtl else "ltr"}" lang="{current()}" style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#1c1917">'
+        f'<div style="background:#6d28d9;color:#fff;padding:20px;border-radius:16px"><h1 style="margin:0;font-size:22px">{html.escape(tr("Your week in TrackCal"))}</h1>'
+        f'<p style="margin:6px 0 0">{html.escape(tr("Week of {date}", date=week["start"]))}</p></div>'
         f'<table style="width:100%;margin:16px 0;border-collapse:collapse">{rows}</table>'
         f'<p>{html.escape(g["text"])}</p><p>{html.escape(summary["trend"]["message"])}</p>'
-        f'<p><a href="{html.escape(base)}/weekly" style="background:#6d28d9;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none">See your weeks</a></p>'
-        f'<p style="font-size:12px;color:#57534e">Estimates to help you, never a medical assessment. '
-        f'<a href="{html.escape(base)}/weekly" style="color:#57534e">Turn this email off</a>.</p></div>', subtype='html')
+        f'<p><a href="{html.escape(base)}/weekly" style="background:#6d28d9;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none">{html.escape(tr("See your weeks"))}</a></p>'
+        f'<p style="font-size:12px;color:#57534e">{html.escape(tr("Estimates to help you, never a medical assessment."))} '
+        f'<a href="{html.escape(base)}/weekly" style="color:#57534e">{html.escape(tr("Turn this email off"))}</a></p></div>', subtype='html')
     return message
 
 
@@ -88,9 +93,11 @@ def run(db, now: datetime | None = None) -> int:
         if not claimed:
             continue
         last_sunday = monday - timedelta(days=1)
-        summary = tl.summarise(collect(db, user.id, prefs, last_sunday, 4), last_sunday, 4)
         try:
-            account_mail.send(compose(base, user.email, summary))
+            with i18n.use(i18n.for_preferences(prefs)):   # the whole email, notes included, in the account's language
+                summary = tl.summarise(collect(db, user.id, prefs, last_sunday, 4), last_sunday, 4)
+                message = compose(base, user.email, summary)
+            account_mail.send(message)
             sent += 1
         except Exception:
             log.warning('weekly email failed')   # no address or content in logs

@@ -51,7 +51,7 @@ privacy texts. Keep the glossary consistent.
 
 ## Progress
 
-Wave 1, done (4,505 texts in each language):
+Wave 1, done (4,505 web texts and 1,005 server texts in each language):
 - the app frame: navigation, section pages, quick add, footer, appearance, sync status, feedback, the language picker;
 - sign-in, sign-up and account recovery;
 - Today: plan, tasks, Health Score, coach lines, recovery check-in, your day, daily progress and companions;
@@ -79,8 +79,27 @@ Left in English on purpose: food and product names from databases, photo file na
 the user's own email and entries, CSV column names, keyboard shortcuts, and saved source labels such as "Manual entry".
 The privacy notice and terms also need a legal review in each language before launch.
 
-Next: server messages (task titles, Health Score notes, meal ideas, advice, the activity guidance on Workouts, the weekly
-trend notes and the motivation quotes), emails and notifications.
+## Server messages (step 8, done)
+
+The server answers in the person's language too: 1,005 texts in each wave-1 language.
+- **How:** the web app sends the chosen language with every `/api` request (`sendLanguageToServer()` in
+  `src/lib/i18n/index.ts`). The server's `tr()` (`backend/services/i18n.py`) reads it; error messages are translated in one
+  place (`flask_app/errors.py`, and `error()` in `flask_app/web_gateway.py`, which also forwards the language).
+- **What:** Today's tasks, the Health Score, the streak rule, daily targets, training notes, the 40 motivation lines, plan
+  templates (114) and explanations, meal ideas, lessons, the blood report (test names, explanations, diet and activity
+  advice), recovery stages, the exercise catalogue, about 380 error messages, the account emails, the Monday summary email
+  and push notifications.
+- **Emails and notifications** sent by the scheduler use the language saved on the account (`for_preferences()`: the app's
+  interface language, else the food-name language when TrackCal speaks it, else English).
+- **Tables:** `backend/i18n/tables/*.py` (same format as the web app's), built with `backend/i18n/build.py`.
+  `backend/tests/test_i18n.py` fails if any wrapped text, error message or data-table text is missing in a language, or if
+  a translation drops a `{placeholder}`. Exercise names and some sentences are copied from the web app's catalogs
+  (`gen_exercise_names.py`, `*_shared.py`) so they read the same everywhere.
+- **Numbers** in server texts are written the way the browser writes them (1,50,000 in Hindi, Bengali digits in Bengali,
+  1.500 in Brazil).
+- **Kept in English:** names of guidelines and studies (WHO, ADA, KDIGO, Compendium of Physical Activities), stored
+  workout names in history, and plans saved before step 8 when a sentence held numbers.
+- The health texts need a clinical review in each language, as well as a native one.
 
 Counted texts: each language's catalog holds its own plural forms; English singulars live in `src/lib/i18n/en-plurals.ts`.
 A test fails if a text with plural forms is shown without a `count`.
