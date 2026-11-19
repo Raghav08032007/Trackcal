@@ -1,0 +1,108 @@
+/* Spectrum: the colour layer (loaded last). Every section keeps its identity colour and gains two partners, so pages,
+   headers, stat tiles, cards, buttons and tabs carry real colour instead of white-on-grey.
+   Fills that carry white text use deep shades (contrast 4.5:1 or more); bright shades are only for glows and tints.
+   Motion is gentle and switched off for people who reduce motion. */
+
+:root, :root[data-section="today"], :root[data-section="none"] { --sx-a: #0b7a6c; --sx-b: #0e7490; --sx-c: #b45309; --sx-glow: #14b8a6; --sx-glow-2: #fb923c; }
+:root[data-section="food"] { --sx-a: #c2410c; --sx-b: #be123c; --sx-c: #a16207; --sx-glow: #fb923c; --sx-glow-2: #facc15; }
+:root[data-section="move"] { --sx-a: #6d28d9; --sx-b: #4338ca; --sx-c: #0e7490; --sx-glow: #a78bfa; --sx-glow-2: #22d3ee; }
+:root[data-section="play"] { --sx-a: #be185d; --sx-b: #7e22ce; --sx-c: #c2410c; --sx-glow: #f472b6; --sx-glow-2: #fb923c; }
+:root[data-section="me"] { --sx-a: #1d4ed8; --sx-b: #0e7490; --sx-c: #6d28d9; --sx-glow: #60a5fa; --sx-glow-2: #a78bfa; }
+:root { --sx-spectrum: linear-gradient(90deg, #0b7a6c, #0e7490, #6d28d9, #be185d, #c2410c, #a16207); }
+
+/* Page: a soft three-colour wash behind everything, drifting slowly. */
+html body { background:
+  radial-gradient(60vmax 50vmax at 0% 0%, color-mix(in srgb, var(--sx-glow) 22%, transparent), transparent 60%),
+  radial-gradient(55vmax 45vmax at 100% 10%, color-mix(in srgb, var(--sx-glow-2) 20%, transparent), transparent 60%),
+  radial-gradient(60vmax 55vmax at 50% 100%, color-mix(in srgb, var(--sx-c) 12%, transparent), transparent 65%),
+  var(--ds-bg, #f3f6f6); background-attachment: fixed; }
+html[data-theme="dark"] body { background:
+  radial-gradient(60vmax 50vmax at 0% 0%, color-mix(in srgb, var(--sx-glow) 16%, transparent), transparent 60%),
+  radial-gradient(55vmax 45vmax at 100% 10%, color-mix(in srgb, var(--sx-glow-2) 12%, transparent), transparent 60%),
+  var(--ds-bg, #0b1314); background-attachment: fixed; }
+
+/* Section header: a full-colour banner with soft light blobs. */
+html body .hub-head.hub-head { position: relative; overflow: hidden; isolation: isolate; color: #fff; padding: 22px 24px; border-radius: 26px;
+  background: linear-gradient(125deg, var(--sx-a) 0%, var(--sx-b) 55%, var(--sx-c) 100%); box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--sx-a) 70%, transparent); }
+html body .hub-head.hub-head::before, html body .hub-head.hub-head::after { content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; }
+html body .hub-head.hub-head::before { width: 220px; height: 220px; right: -60px; top: -90px; background: radial-gradient(circle, rgba(255,255,255,.28), transparent 70%); }
+html body .hub-head.hub-head::after { width: 180px; height: 180px; left: 38%; bottom: -120px; background: radial-gradient(circle, color-mix(in srgb, var(--sx-glow-2) 55%, transparent), transparent 70%); }
+html body .hub-head.hub-head :is(h1, p) { color: #fff; }
+html body .hub-head.hub-head p { opacity: .92; }
+html body .hub-head.hub-head .hub-icon { background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.35); box-shadow: none; backdrop-filter: blur(6px); }
+
+/* Today's numbers: each stat its own colour tile. */
+html body .hub-stats.hub-stats > div { border-radius: 18px; padding: 14px 16px; color: #fff; background: linear-gradient(135deg, var(--tone), color-mix(in srgb, var(--tone) 70%, #000)); }
+html body .hub-stats.hub-stats > div:nth-child(3n+1) { --tone: var(--sx-a); }
+html body .hub-stats.hub-stats > div:nth-child(3n+2) { --tone: var(--sx-b); }
+html body .hub-stats.hub-stats > div:nth-child(3n+3) { --tone: var(--sx-c); }
+html body .hub-stats.hub-stats :is(dt, dd, small) { color: #fff; }
+html body .hub-stats.hub-stats :is(dt, small) { opacity: .9; }
+html body .hub-stats.hub-stats { gap: 10px; }
+
+/* Cards: a spectrum line on top and a tinted wash. */
+html body :is(.account-card.account-card.account-card, .ds-card.ds-card.ds-card, .today-tasks.today-tasks.today-tasks, .coach-card.coach-card.coach-card) {
+  background-image: linear-gradient(90deg, var(--sx-a), var(--sx-b), var(--sx-c)), linear-gradient(160deg, color-mix(in srgb, var(--sx-glow) 9%, var(--ds-surface, #fff)), var(--ds-surface, #fff) 55%);
+  background-size: 100% 4px, 100% 100%; background-repeat: no-repeat; background-position: top left, 0 0; }
+html[data-theme="dark"] body :is(.account-card.account-card.account-card, .ds-card.ds-card.ds-card, .today-tasks.today-tasks.today-tasks, .coach-card.coach-card.coach-card) { background-color: var(--ds-surface, #121c1d);
+  background-image: linear-gradient(90deg, var(--sx-a), var(--sx-b), var(--sx-c)), linear-gradient(160deg, color-mix(in srgb, var(--sx-glow) 12%, var(--ds-surface, #121c1d)), var(--ds-surface, #121c1d) 60%);
+  background-size: 100% 4px, 100% 100%; background-repeat: no-repeat; background-position: top left, 0 0; }
+html body .hub-stats.hub-stats { background: none; }
+
+/* Hub cards: three colours in turn, a solid colour chip for the icon, a lift on hover. */
+html body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+1) { --tile: var(--sx-a); }
+html body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+2) { --tile: var(--sx-b); }
+html body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+3) { --tile: var(--sx-c); }
+html body .hub-card.hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 16%, var(--ds-surface, #fff)) 0%, color-mix(in srgb, var(--tile) 4%, var(--ds-surface, #fff)) 75%);
+  border: 1px solid color-mix(in srgb, var(--tile) 30%, transparent); border-left: 5px solid var(--tile); }
+html[data-theme="dark"] body .hub-card.hub-card.hub-card.hub-card { background: linear-gradient(135deg, color-mix(in srgb, var(--tile) 24%, var(--ds-surface, #121c1d)) 0%, var(--ds-surface, #121c1d) 80%); }
+html body .hub-card .hub-card-icon.hub-card-icon { background: linear-gradient(135deg, var(--tile), color-mix(in srgb, var(--tile) 65%, #000)); color: #fff; border: 0; box-shadow: 0 6px 14px -6px var(--tile); }
+html body .hub-card .hub-card-arrow { color: var(--tile); }
+html body .hub-group > h2, html body .hub-group > header h2 { background: linear-gradient(90deg, var(--sx-a), var(--sx-c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="dark"] body .hub-group > h2, html[data-theme="dark"] body .hub-group > header h2 { background: linear-gradient(90deg, var(--sx-glow), var(--sx-glow-2)); -webkit-background-clip: text; background-clip: text; }
+
+/* Buttons: primary in the section's colours; secondary tinted. */
+html body :is(.account-primary, .destination-button.primary).account-primary, html body button.account-primary, html body a.account-primary {
+  background: linear-gradient(120deg, var(--sx-a), var(--sx-b)); color: #fff; border: 0; box-shadow: 0 10px 22px -12px color-mix(in srgb, var(--sx-a) 80%, transparent); }
+html body .account-secondary.account-secondary { background: color-mix(in srgb, var(--sx-a) 9%, var(--ds-surface, #fff)); border-color: color-mix(in srgb, var(--sx-a) 30%, transparent); color: var(--sec-ink, var(--sx-a)); }
+html[data-theme="dark"] body .account-secondary.account-secondary { background: color-mix(in srgb, var(--sx-glow) 14%, var(--ds-surface, #121c1d)); }
+
+/* Today: coach card, check-in chips and tasks in colour. */
+html body .coach-card.coach-card.coach-card { background-color: var(--ds-surface, #fff); background-image: linear-gradient(90deg, var(--sx-a), var(--sx-b), var(--sx-c)), linear-gradient(140deg, color-mix(in srgb, var(--sx-glow) 16%, var(--ds-surface, #fff)), color-mix(in srgb, var(--sx-glow-2) 11%, var(--ds-surface, #fff)));
+  background-size: 100% 5px, 100% 100%; background-repeat: no-repeat; background-position: top left, 0 0; }
+html[data-theme="dark"] body .coach-card.coach-card.coach-card { background-color: var(--ds-surface, #121c1d); background-image: linear-gradient(90deg, var(--sx-a), var(--sx-b), var(--sx-c)), linear-gradient(140deg, color-mix(in srgb, var(--sx-glow) 18%, var(--ds-surface, #121c1d)), color-mix(in srgb, var(--sx-glow-2) 10%, var(--ds-surface, #121c1d))); }
+html body .coach-card.coach-card .coach-checkin button:nth-child(3n+1) { --chip: #0e7490; }
+html body .coach-card.coach-card .coach-checkin button:nth-child(3n+2) { --chip: #92400e; }
+html body .coach-card.coach-card .coach-checkin button:nth-child(3n+3) { --chip: #166534; }
+html body .coach-card .coach-checkin button.coach-checkin-x, html body .coach-card.coach-card .coach-checkin button { background: color-mix(in srgb, var(--chip) 11%, var(--ds-surface, #fff)); border-color: color-mix(in srgb, var(--chip) 40%, transparent); color: var(--chip); }
+html[data-theme="dark"] body .coach-card.coach-card .coach-checkin button { color: color-mix(in srgb, var(--chip) 45%, #fff); background: color-mix(in srgb, var(--chip) 22%, var(--ds-surface, #121c1d)); }
+html body .task-list .task-row:nth-child(3n+1) { --task: var(--sx-a); }
+html body .task-list .task-row:nth-child(3n+2) { --task: #be185d; }
+html body .task-list .task-row:nth-child(3n+3) { --task: #6d28d9; }
+html body .task-row.task-row { border-left: 5px solid var(--task); background: linear-gradient(120deg, color-mix(in srgb, var(--task) 10%, var(--ds-surface, #fff)), var(--ds-surface, #fff) 70%); }
+html[data-theme="dark"] body .task-row.task-row { background: linear-gradient(120deg, color-mix(in srgb, var(--task) 22%, var(--ds-surface, #121c1d)), var(--ds-surface, #121c1d) 75%); }
+html body .task-row .task-check { border-color: var(--task); }
+html body .task-row .task-go.task-go { background: linear-gradient(120deg, var(--task), color-mix(in srgb, var(--task) 70%, #000)); color: #fff; border: 0; }
+
+/* Navigation: the current tab and page chip wear their colour as a gradient pill. */
+html body .app-tabbar a[aria-current="page"][data-sec] { background: linear-gradient(135deg, var(--tab-active, var(--sx-a)), color-mix(in srgb, var(--tab-active, var(--sx-a)) 65%, #000)); color: #fff; box-shadow: 0 8px 18px -10px var(--tab-active, var(--sx-a)); }
+html body .app-tabbar a[aria-current="page"][data-sec] svg { color: #fff; }
+html body .app-section-pages a[aria-current="page"] { background: linear-gradient(120deg, var(--sx-a), var(--sx-b)); border-color: transparent; color: #fff; }
+html body .app-topbar { border-image: var(--sx-spectrum) 1; }
+
+/* Gentle motion: cards lift, the header light drifts. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body .hub-card.hub-card.hub-card.hub-card { transition: transform .18s ease, box-shadow .18s ease; }
+  @media (hover: hover) { html:not([data-motion="reduced"]) body .hub-card.hub-card.hub-card.hub-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -16px var(--tile); } }
+  html:not([data-motion="reduced"]) body .hub-head.hub-head::before { animation: sx-drift 9s ease-in-out infinite alternate; }
+  @keyframes sx-drift { from { transform: translate(0, 0); } to { transform: translate(-40px, 30px); } }
+}
+@media (forced-colors: active) { html body .hub-head.hub-head, html body .hub-stats.hub-stats > div { background: Canvas; color: CanvasText; } html body .hub-head.hub-head :is(h1, p) { color: CanvasText; } }
+
+/* The coach's next-step buttons carry the section colour. */
+html body .coach-card.coach-card .destination-button { background: color-mix(in srgb, var(--sx-a) 10%, var(--ds-surface, #fff)); border-color: color-mix(in srgb, var(--sx-a) 35%, transparent); color: var(--sx-a); }
+html[data-theme="dark"] body .coach-card.coach-card .destination-button { background: color-mix(in srgb, var(--sx-glow) 18%, var(--ds-surface, #121c1d)); border-color: color-mix(in srgb, var(--sx-glow) 45%, transparent); color: color-mix(in srgb, var(--sx-glow) 35%, #fff); }
+/* Dark mode keeps the three-colour rotation on hub cards (older dark rules would otherwise win). */
+html[data-theme="dark"] body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+1) { --tile: var(--sx-a); }
+html[data-theme="dark"] body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+2) { --tile: var(--sx-b); }
+html[data-theme="dark"] body .hub-group .hub-card.hub-card.hub-card.hub-card:nth-of-type(3n+3) { --tile: var(--sx-c); }
