@@ -32,6 +32,21 @@ from timeutil import utcnow
 from services.i18n import tr
 
 WINDOW_SECONDS, EARLY_MINUTES, MAX_UPCOMING = 30, 30, 10
+
+# Signs that a location is someone's home rather than a public place. Events are visible to every signed-in member, so a
+# home address would be shared with strangers. Checked in English, the usual Indian address words and the app's languages.
+import re as _re
+PRIVATE_PLACE = _re.compile(
+    r"\b(flat|apartment|apt|house\s*(no|number)|h\.?\s*no|door\s*(no|number)|plot\s*(no|number)|"
+    r"my\s+(home|house|place|flat|apartment|room)|our\s+(home|house|place|flat)|"
+    r"apartamento|depto|departamento|mi\s+casa|minha\s+casa|rumah\s+saya|rumahku)\b|"
+    r"मेरा\s*घर|मेरे\s*घर|फ्लैट|আমার\s*বাড়ি|ফ্ল্যাট|माझे\s*घर|फ्लॅट|నా\s*ఇల్లు|ఫ్లాట్|என்\s*வீடு|பிளாட்|شقة|منزلي|بيتي",
+    _re.IGNORECASE)
+
+
+def looks_private(location: str) -> bool:
+    """True when the location reads like a home address (flat or house numbers, "my place")."""
+    return bool(PRIVATE_PLACE.search(location or ''))
 CATEGORIES = communities.CATEGORIES
 
 
@@ -134,6 +149,8 @@ def create(data: EventInput, user=Depends(get_current_active_user), db: Session 
         if not member or member.status != 'active' or member.role not in ('owner', 'moderator'): raise HTTPException(403, "Only the community's owner or moderators can add its events.")
         community_id = c.id
     db.query(models.User).filter_by(id=user.id).with_for_update().one()
+    if looks_private(data.location):
+        raise HTTPException(422, 'Use a public place such as a park, gym, café or community hall. Home addresses can’t be listed, because every member can see events.')
     if db.query(func.count(models.Event.id)).filter(models.Event.organizer_id == user.id, models.Event.ends_at >= now, models.Event.status == 'scheduled').scalar() >= MAX_UPCOMING:
         raise HTTPException(409, tr('You can have up to {n} upcoming events.', n=MAX_UPCOMING))
     consume(db, 'event-create', str(user.id), 20, 86400)

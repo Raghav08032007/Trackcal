@@ -150,3 +150,12 @@ def test_a_check_in_code_with_unusual_characters_is_refused_cleanly():
     e = event(org); client.post(f'{E}/{e["id"]}/registration', headers=guest)
     r = client.post(f'{E}/{e["id"]}/check-in', headers=guest, json={'token': 'कोड-कोड-कोड-कोड'})
     assert r.status_code == 403 and 'expired' in r.text
+
+
+def test_a_home_address_is_refused_as_an_event_location():
+    """Events are visible to every signed-in member, so a flat or house number is refused in favour of a public place."""
+    _, h, _ = member()
+    for place in ('Flat 4B, Green Towers', 'House no. 12, MG Road', 'my place', 'मेरा घर, सेक्टर 4'):
+        r = client.post(E, headers={**h, 'Accept-Language': 'hi'}, json={'title': 'Evening walk', 'location': place, 'starts_at': iso(120), 'minutes': 60})
+        assert r.status_code == 422 and 'सार्वजनिक' in r.json()['detail'], place
+    assert client.post(E, headers=h, json={'title': 'Evening walk', 'location': 'Gym, 2nd floor, City Centre', 'starts_at': iso(120), 'minutes': 60}).status_code == 201
