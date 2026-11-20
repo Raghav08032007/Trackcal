@@ -4,6 +4,7 @@ import { t, msg, date, number } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import Link from "@/lib/navigation";
 import { coachClients, CoachClientError, type ClientSummary } from "@/lib/coach-clients";
+import { billingRequest, rupees, subscribe, type PlanKey, type Plans } from "@/lib/billing";
 
 export const metadata = { title: msg("TrackCal — Your clients") };
 const day = (iso: string) => date(new Date(iso + "T12:00:00"), { weekday: "short", day: "numeric" });
@@ -25,10 +26,31 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
   </section>;
 }
 
+// Free coaches have 3 client places; the Coach plan (Premium included) opens 50. Shown only while billing is on.
+function CoachPlan({ onDone }: { onDone: () => void }) {
+  const [plans, setPlans] = useState<Plans | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  useEffect(() => { billingRequest<Plans>("plans").then(setPlans).catch(() => setPlans(null)); }, []);
+  const monthly = plans?.plans.coach_monthly, annual = plans?.plans.coach_annual;
+  if (!plans?.billing_enabled || !monthly || !annual) return null;
+  async function buy(plan: PlanKey) {
+    if (busy) return; setBusy(true); setError("");
+    try { if (await subscribe(plan)) onDone(); } catch (e) { setError(e instanceof Error ? e.message : t("Request failed.")); } finally { setBusy(false); }
+  }
+  return <section className="account-card" aria-labelledby="coach-plan">
+    <h2 id="coach-plan">{t("Coach plan")}</h2>
+    <p>{t("Free coach accounts can follow 3 clients. The Coach plan opens room for 50 and includes everything in Premium.")}</p>
+    <div className="account-actions">
+      <button className="account-primary" disabled={busy} onClick={() => void buy("coach_monthly")}>{t("{price} a month", { price: rupees(monthly.amount_paise ?? 0) })}</button>
+      <button disabled={busy} onClick={() => void buy("coach_annual")}>{t("{price} a year", { price: rupees(annual.amount_paise ?? 0) })}</button>
+    </div>
+    {error && <p role="alert">{error}</p>}
+  </section>;
+}
+
 export default function Page() {
-  const [rows, setRows] = useState<ClientSummary[] | null>(null), [open, setOpen] = useState(0), [state, setState] = useState<"loading" | "off" | "denied" | "ready">("loading");
+  const [rows, setRows] = useState<ClientSummary[] | null>(null), [open, setOpen] = useState(0), [places, setPlaces] = useState(0), [state, setState] = useState<"loading" | "off" | "denied" | "ready">("loading");
   const [code, setCode] = useState<{ code: string; expires_at: string } | null>(null), [error, setError] = useState(""), [selected, setSelected] = useState(""), [busy, setBusy] = useState(false);
-  const load = useCallback(() => coachClients<{ clients: ClientSummary[]; open_invites: number }>("").then(v => { setRows(v.clients); setOpen(v.open_invites); setState("ready"); },
+  const load = useCallback(() => coachClients<{ clients: ClientSummary[]; open_invites: number; max_clients: number }>("").then(v => { setRows(v.clients); setOpen(v.open_invites); setPlaces(v.max_clients); setState("ready"); },
     e => setState(e instanceof CoachClientError ? (e.status === 404 ? "off" : e.status === 403 ? "denied" : "ready") : "ready")), []);
   useEffect(() => { void load(); }, [load]);
   async function invite() {
@@ -45,10 +67,12 @@ export default function Page() {
     <section className="account-card">
       <h2>{t("Invite a client")}</h2>
       <p>{t("Give the code to one client. It works once and expires in 7 days. Open codes: {n}", { n: open })}</p>
+      <p>{t("Client places used: {used} of {places}", { used: rows?.length ?? 0, places })}</p>
       {code && <p className="invite-code" role="status"><strong>{code.code}</strong> · {t("expires {date}", { date: date(new Date(code.expires_at), { dateStyle: "medium" }) })}</p>}
       <div className="account-actions"><button className="account-primary" disabled={busy} onClick={() => void invite()}>{t("Create an invite code")}</button></div>
       {error && <p role="alert">{error}</p>}
     </section>
+    {places > 0 && places <= 3 && <CoachPlan onDone={() => void load()} />}
     {selected ? <Detail id={selected} onClose={() => setSelected("")} /> : <section className="account-card" aria-labelledby="clients-week">
       <h2 id="clients-week">{t("Last 7 days")}</h2>
       {!rows?.length ? <p>{t("No clients yet. Create an invite code and share it with a client.")}</p> :

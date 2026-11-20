@@ -24,7 +24,16 @@ TRIAL_DAYS, GRACE_DAYS, PRIORITY_HOURS = 7, 3, 24
 PLANS = {
     'premium_monthly': {'label': '₹99 a month', 'amount_paise': 9900, 'period': 'monthly', 'days': 30, 'total_count': 120, 'env': 'RAZORPAY_PLAN_MONTHLY'},
     'premium_annual': {'label': '₹799 a year', 'amount_paise': 79900, 'period': 'yearly', 'days': 365, 'total_count': 10, 'env': 'RAZORPAY_PLAN_ANNUAL'},
+    # Coach: everything in Premium, plus room for COACH_CLIENTS clients on the trainer dashboard (routers/coach_clients.py).
+    # Prices are placeholders for the owner to confirm (docs/BILLING.md); each needs its own Razorpay plan id.
+    'coach_monthly': {'label': '₹499 a month', 'amount_paise': 49900, 'period': 'monthly', 'days': 30, 'total_count': 120, 'env': 'RAZORPAY_PLAN_COACH_MONTHLY', 'tier': 'coach'},
+    'coach_annual': {'label': '₹4,999 a year', 'amount_paise': 499900, 'period': 'yearly', 'days': 365, 'total_count': 10, 'env': 'RAZORPAY_PLAN_COACH_ANNUAL', 'tier': 'coach'},
 }
+FREE_COACH_CLIENTS, COACH_CLIENTS = 3, 50
+
+
+def tier(plan_id):
+    return (PLANS.get(plan_id) or {}).get('tier', 'premium')
 PREMIUM_ACCESSORIES = ('star', 'heart', 'sparkle')
 FEATURES = ['Your full history in detail, however old (free keeps the last 7 days in detail plus monthly summaries)', 'More AI estimates (100 a day instead of 15)', 'Book new coach slots 24 hours before everyone else', 'Premium companion accessories']
 
@@ -56,8 +65,12 @@ def entitled(row, now=None):
 
 def entitlements(db, user, now=None):
     on = is_enabled(db, 'billing')
-    premium = on and entitled(subscription(db, user.id), now)
-    return {'premium': premium, 'ai_daily_limit': int(os.getenv('PREMIUM_DAILY_AI_LIMIT', '100')) if premium else free_ai_limit(),
+    row = subscription(db, user.id)
+    premium = on and entitled(row, now)
+    coach = premium and tier(row.plan_id) == 'coach'
+    # Without billing there is no way to pay, so coaches are not limited; with billing, the Coach plan unlocks the full list.
+    clients = COACH_CLIENTS if (not on or coach) else FREE_COACH_CLIENTS
+    return {'premium': premium, 'coach': coach, 'coach_clients': clients, 'ai_daily_limit': int(os.getenv('PREMIUM_DAILY_AI_LIMIT', '100')) if premium else free_ai_limit(),
             'priority_booking': premium, 'premium_accessories': list(PREMIUM_ACCESSORIES) if premium else []}
 
 

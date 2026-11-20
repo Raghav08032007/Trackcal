@@ -33,6 +33,7 @@ Follow `docs/BILLING.md` ("Setting up Razorpay"). In short:
 |---|---|
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Dashboard → Settings → API Keys (Test Mode: `rzp_test_…`) |
 | `RAZORPAY_PLAN_MONTHLY`, `RAZORPAY_PLAN_ANNUAL` | Dashboard → Subscriptions → Plans (₹99 monthly, ₹799 yearly) |
+| `RAZORPAY_PLAN_COACH_MONTHLY`, `RAZORPAY_PLAN_COACH_ANNUAL` | Same place (Coach plan: ₹499 monthly, ₹4,999 yearly; prices to confirm) |
 | `RAZORPAY_WEBHOOK_SECRET` | Dashboard → Webhooks, pointing at `https://your-domain/api/v1/billing/webhook` |
 | `FEATURE_BILLING=true` | turns the Premium page on |
 

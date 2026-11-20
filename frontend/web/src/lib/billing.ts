@@ -1,12 +1,12 @@
 import { t } from "@/lib/i18n";
 // Premium in the browser. The server decides entitlements; this only shows them and runs Razorpay Checkout.
-export type PlanKey = "premium_monthly" | "premium_annual";
+export type PlanKey = "premium_monthly" | "premium_annual" | "coach_monthly" | "coach_annual";
 export type Plans = {
   billing_enabled: boolean; currency: string; trial_days?: number; premium_features?: string[]; always_free?: string[]; note?: string;
   plans: Record<string, { name: string; label?: string; amount_paise?: number; period?: string }>;
 };
 export type BillingStatus = {
-  billing_enabled: boolean; premium: boolean; plan: string; status: string; ai_daily_limit: number; priority_booking: boolean; premium_accessories: string[];
+  billing_enabled: boolean; premium: boolean; coach?: boolean; coach_clients?: number; plan: string; status: string; ai_daily_limit: number; priority_booking: boolean; premium_accessories: string[];
   trial_ends_at: string | null; current_period_end: string | null; cancelled_at: string | null; trial_available: boolean; checkout_configured: boolean;
 };
 type Checkout = { subscription_id: string; key_id: string; trial_days: number; name: string; description: string; prefill: { email: string } };

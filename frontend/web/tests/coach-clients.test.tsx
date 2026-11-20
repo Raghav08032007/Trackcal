@@ -51,3 +51,16 @@ it('shows coaches figures only for what each client shares',async()=>{
  expect(cells[3]).toBe('not shared');
  expect(cells[4]).toBe('-0.8 kg');
 });
+
+it('offers the Coach plan only to a coach on the free 3 places, while billing is on',async()=>{
+ const plans={billing_enabled:true,currency:'INR',plans:{coach_monthly:{name:'Coach',amount_paise:49900,period:'monthly'},coach_annual:{name:'Coach',amount_paise:499900,period:'yearly'}}};
+ const run=async(max:number)=>{vi.stubGlobal('fetch',vi.fn(async(url:string)=>url.endsWith('/coach-clients')?Response.json({clients:[],open_invites:0,max_clients:max}):url.endsWith('/billing/plans')?Response.json(plans):Response.json({},{status:404})));
+  const view=render(<Clients/>);await screen.findByText(`Client places used: 0 of ${max}`);return view;};
+ const free=await run(3);
+ await screen.findByRole('heading',{name:'Coach plan'});
+ expect(screen.getByRole('button',{name:'₹499 a month'})).toBeTruthy();
+ free.unmount();
+ await run(50);
+ await new Promise(r=>setTimeout(r,50));
+ expect(screen.queryByRole('heading',{name:'Coach plan'})).toBeNull();
+});

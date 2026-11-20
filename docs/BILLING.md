@@ -36,6 +36,10 @@ One free trial per person. No card details ever reach TrackCal.
 1. In the Razorpay Dashboard (**Test Mode**): Subscriptions → Plans → create
    - Monthly: ₹99, period monthly, interval 1 → put its id in `RAZORPAY_PLAN_MONTHLY`
    - Yearly: ₹799, period yearly, interval 1 → `RAZORPAY_PLAN_ANNUAL`
+   - Coach monthly: ₹499 → `RAZORPAY_PLAN_COACH_MONTHLY`; Coach yearly: ₹4,999 → `RAZORPAY_PLAN_COACH_ANNUAL`.
+     **Placeholder prices: owner to confirm** (`services/billing.py` PLANS). The Coach plan includes everything in Premium
+     and opens 50 client places on the trainer dashboard; free verified coaches have 3. Only coach accounts can buy it,
+     and a Premium member cancels Premium first (no proration yet).
 2. Settings → API Keys → generate Test Mode keys → `RAZORPAY_KEY_ID` (`rzp_test_…`), `RAZORPAY_KEY_SECRET`.
    Outside `APP_ENV=production` the app refuses anything but `rzp_test_` keys.
 3. Settings → Webhooks → URL `https://<your-domain>/api/v1/billing/webhook`, a strong secret →

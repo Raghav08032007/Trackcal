@@ -64,4 +64,18 @@ T = {
  "Code from your coach": ["कोच से मिला कोड", "কোচের দেওয়া কোড", "कोचकडून मिळालेला कोड", "మీ కోచ్ ఇచ్చిన కోడ్", "பயிற்சியாளர் தந்த குறியீடு", "Código de tu entrenador", "Código do seu treinador", "Kode dari pelatih Anda", "الرمز من مدربك"],
  "Start sharing": ["साझा करना शुरू करें", "শেয়ার শুরু করুন", "शेअर करणे सुरू करा", "పంచుకోవడం ప్రారంభించండి", "பகிரத் தொடங்கு", "Empezar a compartir", "Começar a compartilhar", "Mulai berbagi", "ابدأ المشاركة"],
  "You are now sharing with your coach.": ["अब आप अपने कोच के साथ साझा कर रहे हैं।", "এখন আপনি আপনার কোচের সঙ্গে শেয়ার করছেন।", "आता तुम्ही तुमच्या कोचशी शेअर करत आहात.", "ఇప్పుడు మీరు మీ కోచ్‌తో పంచుకుంటున్నారు.", "இப்போது உங்கள் பயிற்சியாளருடன் பகிர்கிறீர்கள்.", "Ya compartes con tu entrenador.", "Agora você compartilha com seu treinador.", "Sekarang Anda berbagi dengan pelatih Anda.", "أنت الآن تشارك مع مدربك."],
+ "Client places used: {used} of {places}": ["उपयोग की गई क्लाइंट जगहें: {places} में से {used}", "ব্যবহৃত ক্লায়েন্ট জায়গা: {places}-এর মধ্যে {used}", "वापरलेल्या क्लायंट जागा: {places} पैकी {used}", "ఉపయోగించిన క్లయింట్ స్థానాలు: {places}లో {used}", "பயன்படுத்திய வாடிக்கையாளர் இடங்கள்: {places}-இல் {used}", "Plazas de clientes usadas: {used} de {places}", "Vagas de clientes usadas: {used} de {places}", "Slot klien terpakai: {used} dari {places}", "أماكن العملاء المستخدمة: {used} من {places}"],
+ "Coach plan": ["कोच प्लान", "কোচ প্ল্যান", "कोच प्लॅन", "కోచ్ ప్లాన్", "பயிற்சியாளர் திட்டம்", "Plan Coach", "Plano Coach", "Paket Coach", "خطة المدرب"],
+ "Free coach accounts can follow 3 clients. The Coach plan opens room for 50 and includes everything in Premium.": [
+  "मुफ़्त कोच खाते 3 क्लाइंट फ़ॉलो कर सकते हैं। कोच प्लान 50 तक की जगह देता है और इसमें प्रीमियम की सब सुविधाएँ हैं।",
+  "বিনামূল্যের কোচ অ্যাকাউন্ট ৩ জন ক্লায়েন্ট অনুসরণ করতে পারে। কোচ প্ল্যানে ৫০ জনের জায়গা এবং প্রিমিয়ামের সবকিছু আছে।",
+  "मोफत कोच खाती 3 क्लायंटना फॉलो करू शकतात. कोच प्लॅन 50 पर्यंत जागा देतो आणि त्यात प्रीमियममधील सर्व काही आहे.",
+  "ఉచిత కోచ్ ఖాతాలు 3 క్లయింట్లను అనుసరించగలవు. కోచ్ ప్లాన్ 50 వరకు స్థానం ఇస్తుంది, ప్రీమియంలోని అన్నీ కలిపి.",
+  "இலவச பயிற்சியாளர் கணக்குகள் 3 வாடிக்கையாளர்களைப் பின்தொடரலாம். பயிற்சியாளர் திட்டம் 50 பேருக்கு இடம் தருகிறது, பிரீமியத்தின் அனைத்துடனும்.",
+  "Las cuentas de entrenador gratuitas pueden seguir a 3 clientes. El plan Coach abre espacio para 50 e incluye todo lo de Premium.",
+  "Contas de treinador gratuitas podem acompanhar 3 clientes. O plano Coach abre espaço para 50 e inclui tudo do Premium.",
+  "Akun pelatih gratis bisa mengikuti 3 klien. Paket Coach membuka ruang untuk 50 dan mencakup semua fitur Premium.",
+  "يمكن لحسابات المدربين المجانية متابعة 3 عملاء. تفتح خطة المدرب المجال لـ 50 وتشمل كل ما في Premium."],
+ "{price} a month": ["{price} प्रति माह", "মাসে {price}", "दरमहा {price}", "నెలకు {price}", "மாதத்துக்கு {price}", "{price} al mes", "{price} por mês", "{price} per bulan", "{price} شهريًا"],
+ "{price} a year": ["{price} प्रति वर्ष", "বছরে {price}", "दरवर्षी {price}", "సంవత్సరానికి {price}", "ஆண்டுக்கு {price}", "{price} al año", "{price} por ano", "{price} per tahun", "{price} سنويًا"],
 }

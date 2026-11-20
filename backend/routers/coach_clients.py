@@ -36,6 +36,13 @@ class JoinInput(BaseModel):
     share: Share
 
 
+def client_limit(db, coach_id):
+    """How many active clients this coach may have: 3 free, 50 on the Coach plan (or when billing is off)."""
+    from services import billing
+    coach = db.get(models.User, coach_id)
+    return min(MAX_CLIENTS, billing.entitlements(db, coach)['coach_clients']) if coach else 0
+
+
 def require_flag(db):
     if not is_enabled(db, 'organizer_saas'): raise HTTPException(404, 'The trainer dashboard is not available yet.')
 
@@ -117,7 +124,7 @@ def clients(days: int = Query(7, ge=7, le=14), user=Depends(get_current_active_u
     links = db.query(models.CoachClient).filter_by(coach_id=user.id, status='active').order_by(models.CoachClient.accepted_at).all()
     open_invites = db.query(models.CoachClient).filter(models.CoachClient.coach_id == user.id, models.CoachClient.status == 'invited',
                                                        models.CoachClient.invite_expires_at > utcnow()).count()
-    return {'clients': [summary(db, link, days) for link in links], 'open_invites': open_invites, 'max_clients': MAX_CLIENTS}
+    return {'clients': [summary(db, link, days) for link in links], 'open_invites': open_invites, 'max_clients': client_limit(db, user.id)}
 
 
 def client_detail(link_id: str, user=Depends(get_current_active_user), db: Session = Depends(get_db)):
@@ -139,7 +146,7 @@ def join(data: JoinInput, user=Depends(get_current_active_user), db: Session = D
     if db.query(models.CoachClient).filter_by(coach_id=link.coach_id, client_id=user.id, status='active').first():
         raise HTTPException(409, 'You already share with this coach. Change what you share in the list below.')
     if db.query(models.CoachClient).filter_by(client_id=user.id, status='active').count() >= MAX_COACHES: raise HTTPException(409, 'You can share with up to 5 coaches. Stop sharing with one first.')
-    if db.query(models.CoachClient).filter_by(coach_id=link.coach_id, status='active').count() >= MAX_CLIENTS: raise HTTPException(409, 'This coach has no room for new clients right now.')
+    if db.query(models.CoachClient).filter_by(coach_id=link.coach_id, status='active').count() >= client_limit(db, link.coach_id): raise HTTPException(409, 'This coach has no room for new clients right now.')
     link.client_id, link.status, link.share, link.accepted_at, link.invite_hash = user.id, 'active', data.share.model_dump(), now, None
     db.commit()
     return {'coach': mine_view(db, link)}

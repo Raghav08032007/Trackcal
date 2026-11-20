@@ -32,7 +32,7 @@ def list_plans(db: Session = Depends(get_db)):
     """Return all available subscription plans."""
     if not is_enabled(db, "billing"):
         return {"plans": {"free": {**PLANS["free"], "ai_scans_per_day": daily_ai_limit()}}, "currency": "USD", "billing_enabled": False, "note": "TrackCal currently offers a free plan. Paid checkout is not connected; no unlimited AI usage is offered."}
-    premium = {key: {"name": "Premium", "label": spec["label"], "amount_paise": spec["amount_paise"], "period": spec["period"]} for key, spec in billing.PLANS.items()}
+    premium = {key: {"name": "Coach" if billing.tier(key) == "coach" else "Premium", "label": spec["label"], "amount_paise": spec["amount_paise"], "period": spec["period"]} for key, spec in billing.PLANS.items()}
     return {"plans": {"free": {**PLANS["free"], "ai_scans_per_day": billing.free_ai_limit()}, **premium}, "currency": "INR", "billing_enabled": True,
             "premium_features": billing.FEATURES, "always_free": ALWAYS_FREE, "trial_days": billing.TRIAL_DAYS,
             "note": "Cancel any time; Premium stays until the end of the period you paid for."}
@@ -90,12 +90,14 @@ def cancel_subscription(req: CancelRequest, user: models.User = Depends(get_curr
 
 
 class CheckoutRequest(BaseModel):
-    plan: Literal["premium_monthly", "premium_annual"]
+    plan: Literal["premium_monthly", "premium_annual", "coach_monthly", "coach_annual"]
 
 
 def checkout(data: CheckoutRequest, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     if not is_enabled(db, "billing"): raise HTTPException(404, "Premium isn't available yet.")
     if not user.email_verified and os.getenv("APP_ENV") == "production": raise HTTPException(403, "Verify your email before subscribing.")
+    coach_plan = billing.tier(data.plan) == "coach"
+    if coach_plan and user.role not in (models.UserRole.professional, models.UserRole.admin): raise HTTPException(403, "The Coach plan is for verified coach accounts.")
     from services.abuse_limits import consume
     consume(db, "billing-checkout", str(user.id), 10, 3600)
     gateway = billing.gateway()
@@ -103,7 +105,9 @@ def checkout(data: CheckoutRequest, user: models.User = Depends(get_current_acti
     if gateway is None or not plan_id: raise HTTPException(503, "Payments aren't configured yet. You haven't been charged.")
     db.query(models.User).filter_by(id=user.id).with_for_update().first()
     sub = billing.subscription(db, user.id, lock=True)
-    if sub and billing.entitled(sub): raise HTTPException(409, "You already have Premium.")
+    if sub and billing.entitled(sub):
+        if coach_plan and billing.tier(sub.plan_id) != "coach": raise HTTPException(409, "Cancel Premium first: the Coach plan includes everything in Premium. You keep Premium until the end of the period you paid for.")
+        raise HTTPException(409, "You already have Premium.")
     trial = not (sub and sub.trial_ends_at)  # one free trial per person
     now = billing.utcnow()
     try:
@@ -116,7 +120,7 @@ def checkout(data: CheckoutRequest, user: models.User = Depends(get_current_acti
     sub.trial_ends_at = sub.trial_ends_at if not trial else None  # set when the mandate is verified
     db.commit()
     return {"subscription_id": created["id"], "key_id": gateway.key_id, "trial_days": billing.TRIAL_DAYS if trial else 0,
-            "name": "TrackCal Premium", "description": billing.PLANS[data.plan]["label"] + (f" after a {billing.TRIAL_DAYS}-day free trial" if trial else ""),
+            "name": "TrackCal Coach" if coach_plan else "TrackCal Premium", "description": billing.PLANS[data.plan]["label"] + (f" after a {billing.TRIAL_DAYS}-day free trial" if trial else ""),
             "prefill": {"email": user.email}}
 
 
