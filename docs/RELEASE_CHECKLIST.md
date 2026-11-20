@@ -12,6 +12,8 @@ One page, in order. Details live in `infrastructure/OPERATIONS.md` (deploying, b
 - [ ] **Keys** (GO_LIVE_KEYS.md): SMTP, Razorpay **Test Mode** first, `TICK_SECRET`, VAPID (already generated).
 - [ ] **Never set in production**: `RAZORPAY_SIMULATED`, `MAIL_OUTBOX`, `DAILY_AI_LIMIT=100` (development value; production default is 15).
 - [ ] **Database**: take a backup, then apply migrations up to `0028` (challenge flag review, then accuracy samples).
+- [ ] **Food catalog**: run `scripts/seed_ifct.py` (applies the IFCT energy check) and then `scripts/seed_standard_recipes.py`
+  (90 cooked dishes). Both are safe to re-run. A dietitian has reviewed `backend/data/standard_recipes.py`.
 - [ ] **Backup drill**: `infrastructure/backup.sh`, then `restore-check.sh` on a test host; write down how long it took.
 
 ## Release

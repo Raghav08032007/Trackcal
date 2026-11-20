@@ -93,6 +93,14 @@ def seed(rows, db):
             if amounts.get("energy_kcal") is None or (amounts["energy_kcal"] == 0 and atwater >= 20):
                 amounts["energy_kcal"] = atwater
                 notes["energy_kcal"] = (True, "Calculated from protein, carbohydrate and fat (Atwater 4/4/9); IFCT 2017 lists no energy value")
+            # A published energy far above what the food's own protein, fat, carbohydrate and fibre can supply is a
+            # data error (chicken leg, skinless: 383.6 kcal listed, 191 kcal from its macronutrients). Use IFCT's own
+            # factors (17/37/17/8 kJ per g) instead, marked as an estimate. Only large excesses are corrected.
+            ifct_kcal = (17 * amounts["protein"] + 37 * amounts["fat"] + 17 * amounts["carbohydrates"] + 8 * (amounts.get("fiber") or 0)) / 4.184
+            stored = amounts.get("energy_kcal") or 0
+            if stored > 1.5 * ifct_kcal and stored - ifct_kcal > 100:
+                amounts["energy_kcal"] = ifct_kcal
+                notes["energy_kcal"] = (True, f"Calculated from protein, fat, carbohydrate and fibre with IFCT factors; IFCT 2017 lists {stored:.0f} kcal, which they do not support")
         wanted = {definitions[slug].id: (round(amount, 3), *notes[slug]) for slug, amount in amounts.items()}
         current = {n.nutrient_def_id: n for n in food.nutrients}
         for def_id, (amount, estimated, note) in wanted.items():

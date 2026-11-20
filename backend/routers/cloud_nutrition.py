@@ -10,6 +10,7 @@ from database import get_db
 from routers.auth import get_current_active_user
 from services import adventure,gamification,personalization as personal
 from services.personalization_inputs import Preferences
+from services.food_search import source_name
 from services.wellness_inputs import DiaryInput,DiaryItem,Nutrients,SaveMealInput,FavoriteInput
 from services.abuse_limits import consume
 import models
@@ -42,7 +43,7 @@ def award_meal(db,user,source):
 
 def food_view(food):
  nutrients={n.nutrient_def.slug:n.amount_per_100g for n in food.nutrients if n.nutrient_def}
- return {'id':food.id,'food_id':food.id,'name':food.name,'grams':food.serving_size_g or 100,'nutrients':{'calories':nutrients.get('energy_kcal'),'protein':nutrients.get('protein'),'carbs':nutrients.get('carbohydrates'),'fat':nutrients.get('fat')},'estimated':not food.is_verified or any(n.is_estimated for n in food.nutrients),'source':food.data_source.value if food.data_source else 'Catalog source unspecified','source_label':SOURCE_LABELS.get(food.data_source.value if food.data_source else '','Catalog'),'category':food.category,'cuisine':food.cuisine_region}
+ return {'id':food.id,'food_id':food.id,'name':food.name,'grams':food.serving_size_g or 100,'nutrients':{'calories':nutrients.get('energy_kcal'),'protein':nutrients.get('protein'),'carbs':nutrients.get('carbohydrates'),'fat':nutrients.get('fat')},'estimated':not food.is_verified or any(n.is_estimated for n in food.nutrients),'source':food.data_source.value if food.data_source else 'Catalog source unspecified','source_label':source_name(food,SOURCE_LABELS),'category':food.category,'cuisine':food.cuisine_region}
 
 def search(q:str=Query('',max_length=100),category:str=Query('',max_length=100),offset:int=Query(0,ge=0,le=10000),limit:int=Query(12,ge=1,le=50),user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  query=q.strip().lower()

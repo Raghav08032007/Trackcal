@@ -8,6 +8,7 @@ A value the source doesn't give is stored as unknown (no row, shown as blank or 
 | IFCT 2017, ICMR–National Institute of Nutrition, Hyderabad | Catalog of 542 Indian foods, with local names in 19 languages (including English) | Data © ICMR-NIN. Packaging (`@ifct2017/compositions` 2.0.9) is MIT | "IFCT 2017, National Institute of Nutrition, Hyderabad" on every result | **No.** Downloaded by `backend/scripts/seed_ifct.py` into `backend/runtime/ifct/` (git-ignored) |
 | Open Food Facts | Barcode lookups | Database: ODbL 1.0; images: CC BY-SA | "Data from Open Food Facts contributors (ODbL)." on every barcode result | No. Responses are cached in `barcode_cache` (30 days found, 24 h not found) |
 | USDA FoodData Central | "Search public sources" (live API) | Public domain (CC0) | "USDA FoodData Central" on every result | No |
+| TrackCal standard recipes | 90 everyday cooked Indian dishes (dal, roti, idli, biryani, chai...) | Our own recipe compositions; values calculated from the IFCT foods above, so IFCT's launch gate applies | "TrackCal recipe, calculated from IFCT 2017 ingredients" | Recipes yes (`backend/data/standard_recipes.py`); values no (calculated at seed time) |
 | User entries | Foods people add or correct themselves | Belongs to the user | "Your entry" / "Barcode <code>" | User data only |
 
 ## IFCT 2017: launch gate
@@ -28,6 +29,37 @@ A value the source doesn't give is stored as unknown (no row, shown as blank or 
     marked `is_estimated`, with a note saying how it was calculated. The UI shows "includes estimates".
   - Owner to do before launch: spot-check 20 foods against the printed tables.
 - Re-seed (idempotent; updates in place): `python scripts/seed_ifct.py`. It needs migration 0004 or later.
+
+### IFCT energy check
+
+- IFCT 2017 calculates energy as 17 kJ per g of protein and available carbohydrate, 37 kJ per g of fat and 8 kJ per g of
+  fibre. 531 of the 542 foods match that within 15%. The seed script replaces a listed energy that is more than 50% and
+  more than 100 kcal above what the food's own nutrients supply, and marks it as an estimate with the listed value in
+  the note. Today that is one food: **chicken leg, skinless** (listed 383.6 kcal; 191 kcal from its protein and fat).
+  Before this check, a logged chicken leg counted about twice its calories.
+- Left as listed: spices, curry leaves and dried chillies (15-29% below the formula, which is how their fibre is
+  counted; eaten in grams), lemon juice and crab (under 30 kcal apart).
+
+## TrackCal standard recipes
+
+- `backend/data/standard_recipes.py`: 90 dishes we wrote ourselves (rice dishes, breads, breakfast, dal, vegetables,
+  non-vegetarian, snacks, sweets, drinks), each with raw IFCT ingredients in grams, the cooked weight, everyday
+  portions (katori, roti, piece, glass) and local names and spellings for search.
+- `python scripts/seed_standard_recipes.py` (after `seed_ifct.py`) calculates per 100 g cooked from the ingredients and
+  saves them as IFCT-sourced foods with `external_id = recipe:<slug>`, so removing IFCT data removes them too.
+- Every value is marked as calculated (`is_estimated`), the dishes are not marked verified, and search shows
+  "TrackCal recipe, calculated from IFCT 2017 ingredients". Home recipes vary, often by 20-30% (mostly oil and ghee).
+- Stand-ins, stated in the file: sugar from USDA FoodData Central (public domain); curd and buttermilk as whole cow
+  milk; gram flour as Bengal gram dal. Salt and spices are not counted (under 1% of energy).
+- `tests/test_standard_recipes.py` checks the arithmetic and that 20 everyday portions fall in commonly published
+  calorie ranges. **Owner to do before launch:** a dietitian reviews the compositions.
+
+## Indian Nutrient Databank (INDB): not used
+
+- INDB (Vijayakumar et al., Curr Dev Nutr 2024) has 1,014 cooked recipes, but its GitHub repository has no licence and
+  the paper gives no terms for the data. Without a licence it cannot be bundled in a paid app.
+- **Owner to do:** ask the authors for permission (draft email in the 20 Nov 2026 session notes). Record the reply here.
+  INDB's raw-food values come from IFCT, so IFCT's permission is needed as well.
 
 ## Open Food Facts
 

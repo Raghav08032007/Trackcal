@@ -14,6 +14,8 @@ The web app is built with Vite, React 19 and React Router. The API runs on Flask
 - A Health Score, coach lines, a recovery check-in, water, sleep and calories burned.
 
 **Food**
+- 542 Indian foods from IFCT 2017 and 90 everyday cooked dishes (dal, roti, idli, biryani, chai...) calculated from them,
+  with katori and roti portions and local names.
 - A food diary, food search with real portions, an AI photo scanner and "describe a meal".
 - Barcode scanning with allergen warnings.
 - Recipes: import, studio and library. A menu picker, a meal planner, pantry, shopping lists and price checks.
@@ -82,6 +84,8 @@ python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 .venv\Scripts\python.exe -m alembic upgrade head
 .venv\Scripts\python.exe seed_data.py
+.venv\Scripts\python.exe scripts\seed_ifct.py               # 542 Indian foods (IFCT 2017)
+.venv\Scripts\python.exe scripts\seed_standard_recipes.py   # 90 cooked dishes calculated from them
 .venv\Scripts\python.exe -m flask --app "flask_app:create_app()" run --port 8000 --debug
 ```
 
