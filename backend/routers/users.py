@@ -239,6 +239,8 @@ ACCOUNT_RECORDS = [
     ('challenge_participation', models.ChallengeParticipant, ('flagged',)),  # internal review signal
     ('activities', models.Activity, ()),
     ('accuracy_samples', models.AccuracySample, ()),   # AI photo estimates next to what you kept
+    ('coaches_you_share_with', models.CoachClient, ('invite_hash',), 'client_id'),
+    ('clients_you_coach', models.CoachClient, ('invite_hash',), 'coach_id'),   # the links only, not the clients' data
     ('privacy_zones', models.PrivacyZone, ()),
     ('segments_you_made', models.Segment, (), 'creator_id'),
     ('segment_times', models.SegmentEffort, ()),

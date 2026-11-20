@@ -40,6 +40,8 @@ The web app is built with Vite, React 19 and React Router. The API runs on Flask
 - A blood-report reader that shapes the diet and exercise plan.
 - Progress and training load, push notifications and reminders, and an optional Monday summary email.
 - Premium through Razorpay (₹99 a month or ₹799 a year, with a free trial), coach booking, help and a guided test drive.
+- A trainer dashboard (`/coach/clients`, flag `organizer_saas`): a client enters a coach's one-time code and chooses what
+  to share (daily food totals, workouts, weight); the coach sees 7- and 14-day summaries of only that; either side can stop.
 
 **Everywhere**
 - Works on phone and laptop, with light and dark mode, Comfort mode and reduced motion.
@@ -153,7 +155,6 @@ texts and legal review of the privacy notice and terms.
 
 - A report button for events, and checks on event locations.
 - Event reminder notifications, and a billing reminder before a trial ends.
-- A trainer dashboard to manage several clients.
 - Ranking, paging and spam controls for the Discover feed as it grows.
 - A lighter pose model for low-end phones.
 - Faster first load on slow mobile connections (Lighthouse mobile is 62–82 today).

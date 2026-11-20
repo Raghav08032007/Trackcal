@@ -1119,6 +1119,25 @@ class AccuracySample(Base):
     updated_at = Column(DateTime, nullable=True)
 
 
+class CoachClient(Base):
+    """A client shares chosen progress with a coach (routers/coach_clients.py). status: invited (a code, no client
+    yet), active, ended. share: {diary, workouts, weight} booleans chosen by the client. invite_hash: SHA-256 of the
+    one-time code, cleared once used."""
+    __tablename__ = 'coach_clients'
+    __table_args__ = (UniqueConstraint('invite_hash', name='uq_coach_clients_invite'), Index('ix_coach_clients_coach', 'coach_id', 'status'),
+                      Index('ix_coach_clients_client', 'client_id', 'status'))
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    coach_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    client_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
+    status = Column(String(10), nullable=False)
+    invite_hash = Column(String(64), nullable=True)
+    invite_expires_at = Column(DateTime, nullable=True)
+    share = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+    accepted_at = Column(DateTime, nullable=True)
+    ended_at = Column(DateTime, nullable=True)
+
+
 class ContentReport(Base):
     __tablename__ = 'content_reports'
     id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))

@@ -2,7 +2,7 @@
 
 
 def register(app):
-    from flask_app.blueprints import body_preview, auth, users, foods, meal_logs, ai_scan, recipes, nutrition, subscriptions, support, community, integrations, adventure, coaching, personalization, cloud_nutrition, training, push, internal, billing_webhook, social, communities, events, challenges, activities, health, accuracy
+    from flask_app.blueprints import body_preview, auth, users, foods, meal_logs, ai_scan, recipes, nutrition, subscriptions, support, community, integrations, adventure, coaching, personalization, cloud_nutrition, training, push, internal, billing_webhook, social, communities, events, challenges, activities, health, accuracy, coach_clients
     app.register_blueprint(auth.bp)
     app.register_blueprint(activities.bp)
     app.register_blueprint(health.bp)
@@ -27,6 +27,7 @@ def register(app):
     app.register_blueprint(social.bp)
     app.register_blueprint(communities.bp)
     app.register_blueprint(accuracy.bp)
+    app.register_blueprint(coach_clients.bp)
     app.register_blueprint(events.bp)
     app.register_blueprint(challenges.bp)
     app.register_blueprint(body_preview.bp)

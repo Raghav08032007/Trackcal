@@ -301,6 +301,32 @@ SOCIAL = [('GET', r'me'), ('PUT', r'me'), ('GET', r'profiles/[a-z0-9_.]{1,30}'),
           ('POST', r'reports'), ('GET', r'moderation'), ('POST', r'moderation'), ('POST', r'moderation/entries')]
 
 
+# ── Trainer dashboard (flag organizer_saas) ───────────────────────────────
+
+LINK = r'[0-9a-f-]{36}'
+COACH_CLIENTS = [('GET', r''), ('POST', r'invites'), ('GET', r'mine'), ('POST', r'join'), ('GET', LINK), ('PUT', LINK + r'/share'), ('DELETE', LINK)]
+
+
+@bp.route('/coach-clients', defaults={'path': ''}, methods=['GET'])
+@bp.route('/coach-clients/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def coach_client_routes(path):
+    method = request.method
+    if not any(m == method and re.fullmatch(p, path) for m, p in COACH_CLIENTS): return error('Not found', 404)
+    if method != 'GET' and not same_origin(): return error('Origin rejected', 403)
+    try:
+        body = None
+        if method in ('POST', 'PUT'):
+            if not request.get_data(cache=True): body = {}
+            else:
+                body, failed = json_object(2000, (msg('Request too large'), 413), msg('Invalid JSON'))
+                if failed: return failed
+        days = request.args.get('days', '')
+        query = f'?days={days}' if path == '' and days.isdigit() else ''
+        return forward(authenticated(method, '/coach-clients' + (f'/{path}' if path else '') + query, body))
+    except Exception:
+        return error(ACCOUNT_DOWN, 503)
+
+
 @bp.route('/accuracy', methods=['GET'])
 def accuracy_report():
     """Site admins: how far estimates were from what people kept (routers/accuracy.py)."""

@@ -198,3 +198,10 @@ html[data-theme="dark"] :is(.accuracy-not_enough_data, .accuracy-measured) { col
 /* Volunteer rep recording: a mirrored preview so people can line themselves up. */
 .lab-video { width: 100%; max-width: 480px; aspect-ratio: 4 / 3; border-radius: 16px; background: #0f172a; transform: scaleX(-1); object-fit: cover; }
 .consent-row { display: flex; gap: 10px; align-items: flex-start; }
+
+/* Trainer dashboard: share choices, the invite code, client names as buttons, and "not shared" cells. */
+.share-choices { border: 0; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
+.share-choices legend { font-weight: 600; margin-bottom: 4px; }
+.invite-code strong { font-size: 1.5rem; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.link-button { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: inherit; text-decoration: underline; cursor: pointer; min-height: 44px; }
+.moderation-table .muted { opacity: .7; font-style: italic; }
