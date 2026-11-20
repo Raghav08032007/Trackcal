@@ -1,5 +1,6 @@
 import { msg } from "../i18n";
 import type {PoseFrame} from './types';
+import {chooseVariant,rememberLite,type PoseVariant} from './model-choice';
 /** Inference budget: when the recent average exceeds it, the frame rate steps down (24 → 20 → 15 fps). */
 export const BUDGET_MS=60;const RATES=[24,20,15],WINDOW=15;
 /** The model's first frame sets up the GPU and can take far longer than any later frame. */
@@ -28,13 +29,14 @@ export class PoseDetectionService{
    this.stream=stream;this.video=video;video.srcObject=stream;onCameraGranted?.();await video.play();if(version!==this.generation)return;
    stream.getTracks().forEach(track=>{track.onended=()=>{if(version===this.generation)this.fail(msg("The camera disconnected. Reconnect it or use manual logging."));};});
    const worker=new Worker('/pose-worker.js');this.worker=worker;
+   const startVariant:PoseVariant=chooseVariant();   // low-end phones, Data Saver and slow networks start with the 5.6 MB lite model
    await new Promise<void>((resolve,reject)=>{
     const timeout=setTimeout(()=>reject(Error(msg("Model loading timed out. Check local model assets, then retry."))),45000);
     this.cancelInit=()=>{clearTimeout(timeout);reject(Error(msg("Camera initialization cancelled.")));};
     worker.onerror=()=>{clearTimeout(timeout);reject(Error(msg("On-device worker unavailable. Try an updated browser or manual workouts.")));this.fail(msg("On-device worker unavailable. Use manual workouts or retry."));};
     worker.onmessage=({data})=>{
      if(version!==this.generation)return;
-     if(data.type==='ready'){clearTimeout(timeout);this.cancelInit=null;this.delegate=data.delegate==='GPU'?'GPU':'CPU';this.stats();resolve();}
+     if(data.type==='ready'){clearTimeout(timeout);this.cancelInit=null;this.delegate=data.delegate==='GPU'?'GPU':'CPU';if(startVariant==='full'&&data.variant==='lite')rememberLite();this.stats();resolve();}
      else if(data.type==='error'){clearTimeout(timeout);reject(Error(data.message));this.fail(data.message);}
      else if(data.type==='skip'){this.busy=false;if(this.watchdog)clearTimeout(this.watchdog);this.watchdog=null;}
      else if(data.type==='pose'){
@@ -48,7 +50,7 @@ export class PoseDetectionService{
       if(this.slow>=20){this.fail(msg("This device is struggling to track smoothly. Your counts are kept; switch to manual logging."));return;}
       this.onFrame(data as PoseFrame);
      }
-    };worker.postMessage({type:'init'});
+    };worker.postMessage({type:'init',variant:startVariant});
    });
    if(version!==this.generation)return;onReady();
    const sample=async()=>{
