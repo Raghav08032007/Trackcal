@@ -15,11 +15,19 @@ def flag_on(monkeypatch):
     monkeypatch.setenv('FEATURE_SOCIAL_FEED', 'true')
 
 
-def member(private=False, name=None):
+def member(private=False, name=None, new=False):
+    """A feed member. Established (profile 4 days old) unless new=True: new accounts post more slowly, can't share links
+    and don't reach Discover for a day (services/spam.py)."""
     user_id, h = account()
     handle = (name or 'qa' + uuid.uuid4().hex[:10])
     r = client.put(f'{S}/me', headers=h, json={'handle': handle, 'display_name': handle.title(), 'bio': 'QA', 'private': private})
     assert r.status_code == 200, r.text
+    if not new:
+        import database, models
+        from datetime import timedelta
+        from timeutil import utcnow
+        with database.SessionLocal() as db:
+            db.get(models.SocialProfile, user_id).created_at = utcnow() - timedelta(days=4); db.commit()
     return user_id, h, handle
 
 

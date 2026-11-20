@@ -21,7 +21,7 @@ from services import notifications
 from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
-from services import screening
+from services import screening, spam
 
 REACTIONS = ('like', 'cheer', 'clap', 'hug')
 RESERVED = {'admin', 'trackcal', 'support', 'help', 'moderator', 'official', 'root', 'system', 'me', 'settings', 'bans', 'appeals'}
@@ -128,9 +128,15 @@ def cursor_filter(query, before):
     return query.filter(or_(models.Post.created_at < when, (models.Post.created_at == when) & (models.Post.id < post_id)))
 
 
-def page(db, query, viewer_id, before, filter_visible=True):
+def page(db, query, viewer_id, before, filter_visible=True, per_author=None):
+    """One page, newest first. per_author: at most that many posts from one person on this page (Discover's fair share)."""
     rows = cursor_filter(query, before).order_by(models.Post.created_at.desc(), models.Post.id.desc()).limit(PAGE * 3).all()
-    visible = [p for p in rows if not filter_visible or can_view(db, viewer_id, p)][:PAGE]
+    shown, visible = {}, []
+    for p in rows:
+        if filter_visible and not can_view(db, viewer_id, p): continue
+        if per_author and shown.get(p.author_id, 0) >= per_author: continue
+        shown[p.author_id] = shown.get(p.author_id, 0) + 1; visible.append(p)
+        if len(visible) == PAGE: break
     last = visible[-1] if len(visible) == PAGE else None
     return {'posts': posts_view(db, visible, viewer_id), 'next': f"{last.created_at.isoformat()}|{last.id}" if last else None}
 
@@ -295,6 +301,7 @@ def create_post(data: PostInput, user=Depends(get_current_active_user), db: Sess
     require_flag(db); author = my_profile(db, user); consume(db, 'social-post', str(user.id), 20, 3600)
     if author.posting_disabled: raise HTTPException(403, 'Posting is paused on this account after a moderation review.')
     if not data.body.strip() and not data.milestone: raise HTTPException(422, 'Write something or share a milestone.')
+    spam.check_post(db, author, data.body)   # repeats, links, new-account pace (services/spam.py)
     snapshot = None
     if data.milestone:
         match = next((m for m in shareable(db, user) if m['type'] == data.milestone.type and m['ref'] == data.milestone.ref), None)
@@ -323,8 +330,10 @@ def feed(tab: Literal['following', 'discover'] = Query('following'), before: str
     if tab == 'following':
         followed = db.query(models.Follow.followee_id).filter_by(follower_id=user.id, status='active')
         query = query.filter(or_(models.Post.author_id.in_(followed), models.Post.author_id == user.id))
-    else:  # newest public posts from public accounts; no ranking algorithm
+    else:  # newest public posts from public accounts a day old or more; at most 2 per person a page; no ranking algorithm
         query = query.join(models.SocialProfile, models.SocialProfile.user_id == models.Post.author_id).filter(models.Post.visibility == 'public', models.SocialProfile.private.is_(False))
+        query = spam.discover_ready(query)
+        return page(db, query, user.id, before, per_author=spam.PER_AUTHOR)
     return page(db, query, user.id, before)
 
 
@@ -381,6 +390,7 @@ def add_comment(post_id: str, data: CommentInput, user=Depends(get_current_activ
     if author.posting_disabled: raise HTTPException(403, 'Commenting is paused on this account after a moderation review.')
     post = visible_post(db, user, post_id)
     if not data.body.strip(): raise HTTPException(422, 'Write a comment first.')
+    spam.check_comment(db, author, data.body)
     row = models.Comment(post_id=post.id, author_id=user.id, body=data.body.strip()); db.add(row); db.flush()
     found = screening.screen(row.body); extra = screening.hold(db, 'comment', row, user.id, found) if found else {}
     if not found: notifications.notify_social(db, post.author_id, user.id)   # a held comment notifies nobody

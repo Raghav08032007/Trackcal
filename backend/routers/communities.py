@@ -23,7 +23,7 @@ from services.abuse_limits import consume
 from services.feature_flags import is_enabled
 from timeutil import utcnow
 from services.i18n import tr
-from services import screening
+from services import screening, spam
 
 CATEGORIES = ('running', 'walking', 'yoga', 'strength', 'cycling', 'sports', 'cooking', 'nutrition', 'mindfulness', 'college', 'other')
 MAX_OWNED = 5
@@ -237,6 +237,7 @@ def create_post(slug: str, data: CommunityPost, user=Depends(get_current_active_
     if not m or m.status != 'active': raise HTTPException(403, 'Join this community to post.')
     if author.posting_disabled: raise HTTPException(403, 'Posting is paused on this account after a moderation review.')
     if not data.body.strip() and not data.milestone: raise HTTPException(422, 'Write something or share a milestone.')
+    spam.check_post(db, author, data.body, community.id)
     snapshot = None
     if data.milestone:
         match = next((x for x in social.shareable(db, user) if x['type'] == data.milestone.type and x['ref'] == data.milestone.ref), None)
