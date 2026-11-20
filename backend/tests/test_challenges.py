@@ -73,7 +73,7 @@ def test_backdated_meals_do_not_count_but_new_ones_do():
     assert detail(h, c['id'])['challenge']['mine']['progress'] == 0
     assert client.post('/api/v1/wellness/diary', headers=h, json=diary(h)).status_code == 200
     first = detail(h, c['id'])
-    assert first['challenge']['mine'] == {'progress': 1, 'completed': True} and first['awarded_xp'] == 40
+    assert first['challenge']['mine'] == {'progress': 1, 'completed': True} and first['awarded_xp'] == 0   # paid when the meal was saved (KI-48)
     assert detail(h, c['id'])['awarded_xp'] == 0     # paid once
     summary = client.get('/api/v1/adventure/summary', headers=h).json()
     assert any(a['code'] == 'challenge_finisher' and a['status'] == 'unlocked' for a in summary['achievements'])
@@ -94,7 +94,7 @@ def test_large_camera_corrections_flag_for_review_without_blocking():
     s = session(h, ['camera_squat'], tracking_method='camera')
     assert update(h, s, tracking=tracking(version=2, sets=[{'estimated_reps': 3, 'corrected_reps': None}]), exercises=records(15), minutes=12).status_code == 200
     got = detail(h, c['id'])
-    assert got['challenge']['mine']['completed'] is True and got['awarded_xp'] == 40
+    assert got['challenge']['mine']['completed'] is True and got['awarded_xp'] == 0   # paid when the workout was saved (KI-48)
     with database.SessionLocal() as db:
         assert db.get(models.ChallengeParticipant, (c['id'], owner)).flagged is True
     assert 'flagged' not in str(got)
@@ -231,3 +231,27 @@ def test_distance_and_minute_targets_have_believable_limits(metric, limit):
     body = {'title': 'QA distance week', 'metric': metric, 'starts_on': str(start), 'ends_on': str(start + timedelta(days=6)), 'timezone': 'UTC'}
     assert client.post(C, headers=h, json={**body, 'target': limit + 1}).status_code == 422
     assert client.post(C, headers=h, json={**body, 'target': limit}).status_code == 201
+
+
+def test_finishing_pays_xp_when_the_last_workout_is_saved_without_opening_the_challenge():
+    """KI-48: completion no longer waits for the next visit to the challenge page."""
+    uid, h, _ = member(); init(h)
+    c = challenge(h, 'workouts', target=1)
+    with database.SessionLocal() as db:
+        before = db.query(models.ChallengeParticipant).filter_by(challenge_id=c['id'], user_id=uid).one()
+        assert before.completed_at is None
+    workout(h)
+    with database.SessionLocal() as db:
+        row = db.query(models.ChallengeParticipant).filter_by(challenge_id=c['id'], user_id=uid).one()
+        assert row.completed_at is not None
+        assert db.query(models.ActivityRewardEvent).filter_by(user_id=uid, source_id=f"challenge:{c['id']}").count() == 1
+    got = detail(h, c['id'])
+    assert got['challenge']['mine'] == {'progress': 1, 'completed': True} and got['awarded_xp'] == 0   # not paid twice
+
+
+def test_an_upcoming_challenge_is_not_settled_on_save():
+    uid, h, _ = member(); init(h)
+    c = challenge(h, 'workouts', target=1, start=today() + timedelta(days=2))
+    workout(h)
+    with database.SessionLocal() as db:
+        assert db.query(models.ChallengeParticipant).filter_by(challenge_id=c['id'], user_id=uid).one().completed_at is None

@@ -21,8 +21,15 @@ export function deviceMeals(entries: Record<string, unknown>, today: string): De
   return Object.entries(entries).flatMap(([key, value]) => {
     const day = /^trackcal:journal:(\d{4}-\d{2}-\d{2})$/.exec(key)?.[1];
     if (!day || day > today || day < oldest || !Array.isArray(value)) return [];
+    // Two different meals with the same time, name and calories (and no id) are both kept (KI-17): the first keeps the
+    // original key, so meals copied before this change are still recognised; later twins get "#2", "#3".
+    const seen = new Map<string, number>();
     return (value as MealLog[]).filter(meal => meal && typeof meal.name === "string" && meal.name.trim())
-      .map(meal => ({ key: `${day}|${meal.id ?? ""}|${meal.time}|${meal.name}|${meal.calories}`, day, meal }));
+      .map(meal => {
+        const base = `${day}|${meal.id ?? ""}|${meal.time}|${meal.name}|${meal.calories}`, n = (seen.get(base) ?? 0) + 1;
+        seen.set(base, n);
+        return { key: n === 1 ? base : `${base}|#${n}`, day, meal };
+      });
   }).sort((a, b) => b.day.localeCompare(a.day) || a.meal.time.localeCompare(b.meal.time));
 }
 

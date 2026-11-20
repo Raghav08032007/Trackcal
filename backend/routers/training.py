@@ -149,6 +149,8 @@ def update(identifier:UUID,data:SessionUpdate,user=Depends(get_current_active_us
    profile=models.AdventureProfile(user_id=user.id,timezone=(personal.preferences or {}).get('timezone') or 'UTC' if personal else 'UTC');db.add(profile);db.flush()
   if profile:points=gamification.award(db,user,'recovery' if all(k=='recovery' for k in keys) else 'workout',adventure.local_day(profile),source_id=row.plan_activity_id or row.id,payload={'tracking_method':method,'exercise':keys[0]} if method=='camera' else {})
  elif data.action=='abandon':row.status='abandoned';row.running_since=None
+ if data.action=='complete':
+  from routers.challenges import settle_open; settle_open(db, user.id)   # KI-48: finishing a challenge pays XP now
  return finish(db,user,session=view(row),awarded_xp=points)
 def delete_session(identifier:UUID,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  lock(db,user);row=db.query(models.WorkoutSession).filter_by(id=str(identifier),user_id=user.id,is_deleted=False).first()

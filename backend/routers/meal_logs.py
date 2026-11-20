@@ -94,6 +94,7 @@ def create_meal_log(
         )
         db.add(meal_item)
 
+    db.flush(); from routers.challenges import settle_open; settle_open(db, user.id)   # KI-48: finishing a challenge pays XP now
     db.commit()
     db.refresh(log)
     return {"id": log.id, "logged_at": log.logged_at.isoformat(), "totals": totals, "item_count": len(data.items)}
@@ -243,6 +244,7 @@ def copy_meal_log(log_id: str, user: models.User = Depends(get_current_active_us
             is_ai_estimated=item.is_ai_estimated,
         )
         db.add(new_item)
+    db.flush(); from routers.challenges import settle_open; settle_open(db, user.id)   # KI-48: finishing a challenge pays XP now
     db.commit()
     return {"id": new_log.id, "status": "copied"}
 

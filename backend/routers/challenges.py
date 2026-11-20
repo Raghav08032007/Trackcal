@@ -5,6 +5,7 @@ moderator, and private-community challenges are visible to members only. A chall
 range (3–60 days) in a time zone. Progress comes from services/challenge_progress.py, never from the client.
 Reaching the target pays the `verified_challenge_completion` XP rule once per challenge. There is no leaderboard:
 people see their own progress and how many finished, not a ranking (wellness ethics)."""
+import logging
 from datetime import date, datetime, timedelta
 from typing import Literal
 from zoneinfo import ZoneInfo
@@ -66,6 +67,23 @@ def settle(db, c, row):
             day = datetime.now(ZoneInfo(profile.timezone)).date()
             points = gamification.award(db, user, 'verified_challenge_completion', day, source_id=f'challenge:{c.id}', payload={'metric': c.metric})
     return count, points
+
+
+def settle_open(db, user_id):
+    """Settle every running challenge this person is in. Called when a record that challenges count is saved (KI-48),
+    so reaching the target completes the challenge and pays XP straight away. Runs in a savepoint: a problem here is
+    logged and never fails the save that called it. Returns the XP awarded."""
+    if not (is_enabled(db, 'verified_challenges') and is_enabled(db, 'social_feed')): return 0
+    try:
+        with db.begin_nested():
+            rows = (db.query(models.ChallengeParticipant, models.Challenge)
+                    .join(models.Challenge, models.Challenge.id == models.ChallengeParticipant.challenge_id)
+                    .filter(models.ChallengeParticipant.user_id == str(user_id), models.ChallengeParticipant.left_at.is_(None),
+                            models.ChallengeParticipant.completed_at.is_(None), models.Challenge.status == 'active').all())
+            return sum(settle(db, c, row)[1] for row, c in rows if phase(c) == 'running')
+    except Exception:
+        logging.getLogger('trackcal').exception('challenge settle on save failed')
+        return 0
 
 
 def view(db, c, viewer_id, mine_progress=None):

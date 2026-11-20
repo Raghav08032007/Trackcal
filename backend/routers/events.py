@@ -5,7 +5,8 @@
 - Registration: 'going' up to capacity, then 'waitlist'; a cancellation promotes the oldest waitlisted person.
 - Check-in (from 30 minutes before the start until the end): the organizer shows a QR code that changes every
   30 seconds. It encodes /events/<id>/check-in?t=<token>; a token is an HMAC of the event's secret key and the
-  30-second window, accepted for the current or previous window only, so a forwarded screenshot soon stops working.
+  30-second window. The previous window's code is accepted only in the first GRACE_SECONDS of the next one (a scan
+  made just before the code changed), so a forwarded screenshot works for at most about 35 seconds (KI-45).
   The organizer can also check in a registered person by hand. Nobody can check themselves in as the organizer.
 - A verified check-in pays the `verified_event_attendance` XP rule once per event (ledger-idempotent).
 Attendee lists are visible to the organizer only; others see counts."""
@@ -32,6 +33,7 @@ from timeutil import utcnow
 from services.i18n import tr
 
 WINDOW_SECONDS, EARLY_MINUTES, MAX_UPCOMING = 30, 30, 10
+GRACE_SECONDS = 5
 
 # Signs that a location is someone's home rather than a public place. Events are visible to every signed-in member, so a
 # home address would be shared with strangers. Checked in English, the usual Indian address words and the app's languages.
@@ -62,6 +64,12 @@ def token_for(event, window):
 def current_window(now=None):
     stamp = (now or utcnow()).replace(tzinfo=timezone.utc).timestamp()
     return int(stamp // WINDOW_SECONDS)
+
+
+def accepted_windows(now=None):
+    """The current window, plus the previous one during the first GRACE_SECONDS of the current one."""
+    stamp = (now or utcnow()).replace(tzinfo=timezone.utc).timestamp(); window = int(stamp // WINDOW_SECONDS)
+    return (window, window - 1) if stamp % WINDOW_SECONDS < GRACE_SECONDS else (window,)
 
 
 def check_in_open(event, now=None):
@@ -241,6 +249,7 @@ def _verify(db, event, person_id, method, now):
     profile = db.get(models.AdventureProfile, person_id)
     day = now.replace(tzinfo=timezone.utc).astimezone(ZoneInfo(profile.timezone)).date() if profile else now.date()
     points = gamification.award(db, person, 'verified_event_attendance', day, source_id=f'event:{event.id}', payload={'method': method}) if profile else 0
+    db.flush(); from routers.challenges import settle_open; settle_open(db, person_id)   # KI-48: finishing a challenge pays XP now
     return row, points
 
 
@@ -256,8 +265,7 @@ def check_in(event_id: str, data: CheckIn, user=Depends(get_current_active_user)
         row, points = _verify(db, event, target.user_id, 'organizer', now)
     else:
         if event.organizer_id == user.id: raise HTTPException(409, "Organizers can't check themselves in.")
-        window = current_window(now)
-        if not data.token or not any(hmac.compare_digest(data.token.encode(), token_for(event, w).encode()) for w in (window, window - 1)):
+        if not data.token or not any(hmac.compare_digest(data.token.encode(), token_for(event, w).encode()) for w in accepted_windows(now)):
             raise HTTPException(403, 'This code has expired. Scan the code on the organizer\'s screen again.')
         row, points = _verify(db, event, user.id, 'qr', now)
     db.commit()

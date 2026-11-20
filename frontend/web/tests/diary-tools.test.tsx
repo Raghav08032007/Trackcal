@@ -70,3 +70,11 @@ it('shows "portion not recorded" for meals copied from the device journal, as th
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({...base,entries:[imported]})));render(<NutritionDashboard/>);
  expect(await screen.findByText(/portion not recorded/)).toBeTruthy();
 });
+
+it('keeps two identical meals on one day as two entries, and the first keeps its original key (KI-17)',async()=>{
+ const tea={time:'16:00',name:'Masala chai',calories:90,protein:2,carbs:12,fat:3,method:'Manual'};
+ const meals=deviceMeals({'trackcal:journal:2026-10-29':[tea,{...tea},{...tea}]},'2026-10-29');
+ expect(meals.map(m=>m.key)).toEqual(['2026-10-29||16:00|Masala chai|90','2026-10-29||16:00|Masala chai|90|#2','2026-10-29||16:00|Masala chai|90|#3']);
+ const ids=await Promise.all(meals.map(m=>stableId('p2-member',m.key)));
+ expect(new Set(ids).size).toBe(3);
+});

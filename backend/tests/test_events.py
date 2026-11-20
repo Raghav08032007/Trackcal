@@ -159,3 +159,15 @@ def test_a_home_address_is_refused_as_an_event_location():
         r = client.post(E, headers={**h, 'Accept-Language': 'hi'}, json={'title': 'Evening walk', 'location': place, 'starts_at': iso(120), 'minutes': 60})
         assert r.status_code == 422 and 'सार्वजनिक' in r.json()['detail'], place
     assert client.post(E, headers=h, json={'title': 'Evening walk', 'location': 'Gym, 2nd floor, City Centre', 'starts_at': iso(120), 'minutes': 60}).status_code == 201
+
+
+def test_the_previous_code_works_only_in_the_first_seconds_of_the_next_window():
+    """KI-45: a scan made just before the code changed still counts; a forwarded screenshot stops working soon after."""
+    from datetime import datetime
+    from routers.events import accepted_windows
+    start = datetime(2026, 11, 20, 10, 0, 0)   # 10:00:00 UTC is a window boundary (30 s windows)
+    window = accepted_windows(start)[0]
+    assert accepted_windows(start) == (window, window - 1)
+    assert accepted_windows(start.replace(second=4)) == (window, window - 1)
+    assert accepted_windows(start.replace(second=6)) == (window,)
+    assert accepted_windows(start.replace(second=29)) == (window,)
