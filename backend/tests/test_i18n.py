@@ -9,7 +9,7 @@ import pytest
 from services import i18n
 
 BACKEND = Path(__file__).resolve().parents[1]
-WAVE1 = [code for code in i18n.LANGS if code != 'en']
+WAVE1 = ['hi', 'bn', 'mr', 'te', 'ta', 'es', 'pt', 'id', 'ar']   # complete; wave 2 (kn, ml, ...) falls back to English for server texts for now
 SOURCE = ('routers', 'services', 'flask_app', 'schemas')   # the code that sends texts to people (not tests, tools or virtualenvs)
 
 

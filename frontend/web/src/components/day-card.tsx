@@ -1,11 +1,11 @@
 // Today at a glance: water, sleep and calories burned, kept in your account so every device shows the same.
-import { t } from "@/lib/i18n";
+import { t, msg } from "@/lib/i18n";
 import { useState } from "react";
 import { Droplets, Flame, Moon } from "lucide-react";
 import { useDay, useRecentDays, type Day } from "@/lib/days";
 
 const GLASS = 250;
-const QUALITY: [NonNullable<Day["sleep_quality"]>, string][] = [["poor", "Restless"], ["ok", "Okay"], ["good", "Rested"]];
+const QUALITY: [NonNullable<Day["sleep_quality"]>, string][] = [["poor", msg("Restless")], ["ok", msg("Okay")], ["good", msg("Rested")]];
 const weekday = (d: string) => new Date(d + "T12:00:00").toLocaleDateString([], { weekday: "narrow" });
 
 export function DayCard({ date }: { date: string }) {
@@ -33,7 +33,7 @@ export function DayCard({ date }: { date: string }) {
         <label className="day-hours">{t("Hours")}<input type="number" inputMode="decimal" min={0} max={24} step={0.5} value={shownHours} placeholder="—"
           onChange={e => setHours(e.target.value)} onBlur={saveHours} onKeyDown={e => { if (e.key === "Enter") saveHours(); }} /></label>
         <div className="day-choice" role="group" aria-label={t("How well you slept")}>{QUALITY.map(([k, label]) => <button key={k} type="button" aria-pressed={day.sleep_quality === k}
-          onClick={() => update({ set: { sleep_quality: day.sleep_quality === k ? null : k } })}>{label}</button>)}</div>
+          onClick={() => update({ set: { sleep_quality: day.sleep_quality === k ? null : k } })}>{t(label)}</button>)}</div>
         {week.some(d => d.sleep_hours != null) && <div className="day-week" aria-label={t("Sleep, last 7 days")}>{week.map(d => <span key={d.day} title={d.sleep_hours == null ? t("{day}: not logged", { day: d.day }) : t("{day}: {hours} h", { day: d.day, hours: d.sleep_hours })}>
           <i style={{ height: `${Math.min(100, (d.sleep_hours ?? 0) / 10 * 100)}%` }} data-empty={d.sleep_hours == null || undefined} /><b>{weekday(d.day)}</b></span>)}</div>}
       </div>

@@ -250,3 +250,13 @@ export const RUNTIME_KEYS = [
   "Numbness or tingling", "New swelling or warmth", "Pain that wakes you at night", "Weakness or giving way", "A new fall or injury", "Fever or feeling unwell",
 ];
 export const WAVE_1 = ["hi", "bn", "mr", "te", "ta", "es", "pt", "id", "ar"] as const;
+/** Wave 2 languages are added in phases: every text on these core screens first; the rest falls back to English. */
+export const WAVE_2 = ["kn", "ml"] as const;
+export const CORE_FILES = [
+  "src/lib/sections.ts", "src/components/app-navigation.tsx", "src/components/section-hub.tsx", "src/components/language-picker.tsx",
+  "src/app/root-layout.tsx", "src/components/auth-form.tsx", "src/components/account-session.tsx", "src/components/home-dashboard.tsx",
+  "src/components/coach-card.tsx", "src/components/quick-add.tsx", "src/components/command-search.tsx", "src/components/held-notice.tsx",
+  "src/components/today-tasks.tsx", "src/components/day-card.tsx", "src/components/daily-progress-hub.tsx", "src/components/recovery-checkin.tsx",
+  "src/components/retest-reminder.tsx", "src/components/first-steps.tsx", "src/components/photos.tsx", "src/components/quick-log.tsx",
+  "src/components/feature-companion.tsx", "src/lib/coach.ts", "src/components/targets-card.tsx",
+];

@@ -41,7 +41,7 @@ class Preferences(Strict):
     display_name:str=Field(default='',max_length=100)
     age_group:Literal['under18','18_19','20_64','65plus','unspecified']='unspecified'
     language:Literal[LANGUAGES]='en'
-    ui_language:Literal['','en','hi','bn','mr','te','ta','es','pt','id','ar']=''   # the app's interface language ('' = this device decides); language above is for food names
+    ui_language:Literal['','en','hi','bn','mr','te','ta','es','pt','id','ar','kn','ml']=''   # the app's interface language ('' = this device decides); language above is for food names
     state:str=Field(default='',max_length=80)
     country:str=Field(default='',max_length=80)
     timezone:str=Field(default='UTC',max_length=64)

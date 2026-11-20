@@ -79,6 +79,27 @@ Left in English on purpose: food and product names from databases, photo file na
 the user's own email and entries, CSV column names, keyboard shortcuts, and saved source labels such as "Manual entry".
 The privacy notice and terms also need a legal review in each language before launch.
 
+## Wave 2 (in phases)
+
+Owner's choice (20 Nov 2026): Kannada, Malayalam, Gujarati, Punjabi, Urdu, French, German, then the highest-demand
+international languages. Each language is added screen by screen; anything not yet translated shows in English, which
+the app already does safely. The picker marks every wave-2 language as a draft.
+
+| Phase | Kannada (kn) | Malayalam (ml) |
+|---|---|---|
+| 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done |
+| 2. Onboarding, food diary and search | Next | Next |
+| 3. Move (workouts, camera, exercise names), Play, Me | Later | Later |
+| Server messages | Today's texts (tasks, Health Score, targets, weekly effort) | Same |
+
+- How it is checked: `CORE_FILES` in `src/lib/i18n/coverage.ts` lists the screens a wave-2 language must cover
+  completely; `tests/i18n.test.ts` fails if any text on them is missing or loses a `{placeholder}`. Each phase adds
+  screens to that list. Server texts not yet translated are sent in English (the server test checks wave 1 only).
+- Still English on Today in phase 1: exercise names (they come with the Move phase).
+- Tables: `frontend/web/scripts/i18n/wave2_*.py` and `backend/i18n/tables/wave2_*.py`, one column per wave-2 language.
+- Fixed while doing this: the sleep-quality buttons (Restless / Okay / Rested) were shown untranslated in every
+  language; they are now translated in all 11.
+
 ## Server messages (step 8, done)
 
 The server answers in the person's language too: 1,005 texts in each wave-1 language.
