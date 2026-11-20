@@ -238,6 +238,7 @@ ACCOUNT_RECORDS = [
     ('challenges_you_started', models.Challenge, (), 'creator_id'),
     ('challenge_participation', models.ChallengeParticipant, ('flagged',)),  # internal review signal
     ('activities', models.Activity, ()),
+    ('accuracy_samples', models.AccuracySample, ()),   # AI photo estimates next to what you kept
     ('privacy_zones', models.PrivacyZone, ()),
     ('segments_you_made', models.Segment, (), 'creator_id'),
     ('segment_times', models.SegmentEffort, ()),

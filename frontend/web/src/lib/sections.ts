@@ -51,7 +51,7 @@ export const SECTIONS: Section[] = [
         { href: "/recovery", title: "Recovery", text: "Which muscles are rested and ready.", icon: Moon } ] } ] },
   { id: "play", label: "Play", href: "/play", icon: Sparkles,
     pages: [["/play", "Quests"], ["/challenges", "Challenges"], ["/feed", "Feed"], ["/communities", "Clubs"], ["/events", "Events"]],
-    also: ["/challenges/*", "/events/*", "/c/*", "/u/*", "/moderation"] },
+    also: ["/challenges/*", "/events/*", "/c/*", "/u/*", "/moderation", "/accuracy"] },
   { id: "me", label: "Me", href: "/me", icon: UserRound,
     pages: [["/me", "Overview"], ["/account", "Account"], ["/health", "My report"], ["/progress", "Progress"], ["/routine", "Reminders"]],
     also: ["/premium", "/help", "/onboarding", "/guide", "/privacy", "/terms", "/credits", "/body-preview", "/design"],
@@ -81,7 +81,7 @@ export function sectionFor(path: string): Section | null {
 export function pageTitle(path: string): string | null {
   for (const s of SECTIONS) for (const g of s.groups ?? []) for (const d of g.items) if (d.href === path) return d.title;
   const named: Record<string, string> = { "/coach": "Coach", "/journal": "On this device", "/workouts/holds": "Holds", "/premium": "Premium", "/help": "Help",
-    "/guide": "Test drive", "/terms": "Terms", "/credits": "Photo credits", "/body-preview": "Body preview", "/design": "Design", "/moderation": "Moderation" };
+    "/guide": "Test drive", "/terms": "Terms", "/credits": "Photo credits", "/body-preview": "Body preview", "/design": "Design", "/moderation": "Moderation", "/accuracy": "Accuracy" };
   return named[path] ?? null;
 }
 

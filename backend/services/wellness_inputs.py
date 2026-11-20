@@ -17,6 +17,10 @@ class DiaryItem(Strict):
     manual_override:bool=False
     estimated:bool=False
     source:str=Field(default='User reviewed input',max_length=90)
+class AIEstimate(Strict):
+    """What the AI estimated for a photo, before the person reviewed it (for the accuracy report)."""
+    calories:float=Field(ge=0,le=20000,allow_inf_nan=False)
+    grams:float=Field(gt=0,le=20000,allow_inf_nan=False)
 class DiaryInput(Strict):
     id:UUID
     day:date
@@ -24,6 +28,7 @@ class DiaryInput(Strict):
     items:list[DiaryItem]=Field(min_length=1,max_length=30)
     notes:str=Field(default='',max_length=1000)
     method:Literal['manual','photo','saved','copied']='manual'
+    ai_estimate:AIEstimate|None=None
 class SaveMealInput(Strict):
     id:UUID
     name:str=Field(min_length=1,max_length=120)

@@ -10,7 +10,7 @@ cd backend
 .venv/Scripts/python -m alembic upgrade head
 ```
 
-Applies migrations up to `0027` (segments, then challenge flag review). Restart the API on port 8000 afterwards.
+Applies migrations up to `0028` (segments, challenge flag review, then accuracy samples). Restart the API on port 8000 afterwards.
 
 ## 2. Email (password reset, email verification, Monday summary)
 

@@ -131,6 +131,9 @@ def write_diary(db,user,data,existing=None):
  log.logged_at=stamp;log.meal_type=models.MealType(data.meal_type);log.log_method=models.LogMethod(data.method);log.notes=data.notes
  items=[resolved(db,i) for i in data.items];db.add(log);db.flush();put_items(db,log,items);db.flush()
  points=award_meal(db,user,log.id) if not existing and data.day==today(db,user) else 0
+ from services import accuracy  # an AI photo estimate next to what was kept; an edit updates what was kept
+ if not existing and data.method=='photo' and data.ai_estimate:accuracy.record_food(db,user.id,log,data.ai_estimate)
+ elif existing:accuracy.update_food(db,log)
  from routers.challenges import settle_open; settle_open(db, user.id)   # KI-48: finishing a challenge pays XP now
  return complete(db,user,entry=diary_view(log,zone),awarded_xp=points)
 def edit_diary(identifier:UUID,data:DiaryInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):

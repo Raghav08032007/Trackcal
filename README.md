@@ -30,6 +30,7 @@ The web app is built with Vite, React 19 and React Router. The API runs on Flask
 - Quests, XP, levels, badges, Pip's garden and six companion characters.
 - Label Detective and camera sports games: skip rope, shadow boxing, cricket drive and badminton smash.
 - Challenges, a feed with posts, kudos and comments, communities, and events with QR-code check-in.
+- An accuracy report for the team (`/accuracy`): AI photo calories against what people kept, camera rep counts against corrections, and barcode coverage, from corrections people already make.
 - Reporting and moderation: a word screen that holds hurtful or self-harm posts for review (with a helpline), flagged challenge entries, ban appeals to TrackCal, and an overview of how each community is moderated. People get notified of new followers, comments and kudos (opt-in, bundled).
 
 **Me**

@@ -11,7 +11,7 @@ One page, in order. Details live in `infrastructure/OPERATIONS.md` (deploying, b
       Run `backend/.venv/Scripts/python backend/scripts/release_preflight.py --env-file .env.production` (it never prints values).
 - [ ] **Keys** (GO_LIVE_KEYS.md): SMTP, Razorpay **Test Mode** first, `TICK_SECRET`, VAPID (already generated).
 - [ ] **Never set in production**: `RAZORPAY_SIMULATED`, `MAIL_OUTBOX`, `DAILY_AI_LIMIT=100` (development value; production default is 15).
-- [ ] **Database**: take a backup, then apply migrations up to `0027` (challenge flag review).
+- [ ] **Database**: take a backup, then apply migrations up to `0028` (challenge flag review, then accuracy samples).
 - [ ] **Backup drill**: `infrastructure/backup.sh`, then `restore-check.sh` on a test host; write down how long it took.
 
 ## Release

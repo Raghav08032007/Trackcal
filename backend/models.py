@@ -1103,6 +1103,22 @@ class Comment(Base):
     created_at = Column(DateTime, nullable=False, default=utcnow)
 
 
+class AccuracySample(Base):
+    """An app estimate next to the value the person kept (services/accuracy.py). One per estimate (kind + source)."""
+    __tablename__ = 'accuracy_samples'
+    __table_args__ = (UniqueConstraint('kind', 'source_id', name='uq_accuracy_kind_source'), Index('ix_accuracy_samples_kind_created', 'kind', 'created_at'))
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(CHAR(36), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    kind = Column(String(20), nullable=False)          # food_photo
+    source_id = Column(CHAR(36), nullable=False)       # the meal log
+    estimate = Column(Float, nullable=False)           # food_photo: the AI's calories
+    final = Column(Float, nullable=False)              # the calories kept
+    estimate_aux = Column(Float, nullable=True)        # food_photo: the AI's grams
+    final_aux = Column(Float, nullable=True)           # the grams kept
+    created_at = Column(DateTime, nullable=False, default=utcnow)
+    updated_at = Column(DateTime, nullable=True)
+
+
 class ContentReport(Base):
     __tablename__ = 'content_reports'
     id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))

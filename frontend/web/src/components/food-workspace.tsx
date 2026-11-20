@@ -277,6 +277,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanView>(() => ({ ...SCAN_PRESETS[0], label: "", foodName: msg("Nothing scanned yet"), weight: "0g", confidence: 0, calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, items: [], allergens: [], method: msg("Snap or upload a meal to see its estimate.") } as ScanView));
   const [scanSource, setScanSource] = useState<ScanSource>("none");
+  // The AI's own numbers for the last photo, before any review: saved beside the logged meal for the accuracy report.
+  const [aiOriginal, setAiOriginal] = useState<{ calories: number; grams: number } | null>(null);
   const [portionGrams, setPortionGrams] = useState(0);
   const search = useSearch(), [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(search).get("q") ?? "");   // /food-library?q=dal opens with a search
   const [remoteFoods, setRemoteFoods] = useState<LibraryFood[]>([]);
@@ -343,6 +345,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         const result = await analyzeMealPhoto(file, photoNote);
         if (requestId !== photoRequest.current) return;
         const grams = Math.round(result.components.reduce((sum, item) => sum + item.quantity_g, 0));
+        setAiOriginal(Number.isFinite(result.total_nutrition.calories) && grams > 0 ? { calories: Math.round(result.total_nutrition.calories), grams } : null);
         setScanResult({
           label: "Uploaded Meal",
           foodName: result.dish_name,
@@ -477,7 +480,8 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
         carbs: scaledCarbs,
         fat: scaledFat,
         grams: portionGrams > 0 ? portionGrams : undefined,
-        method: msg("Photo scan (user reviewed)")
+        method: msg("Photo scan (user reviewed)"),
+        ...(scanSource === "photo" && aiOriginal ? { ai_estimate: aiOriginal } : {})
       }
     ]);
   };

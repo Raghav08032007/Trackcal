@@ -186,6 +186,7 @@ export const TRANSLATED_FILES = [
   "src/components/app-tour.tsx",
   "src/components/voice-recorder.tsx",
   "src/app/moderation/page.tsx",
+  "src/app/accuracy/page.tsx",
   "src/components/held-notice.tsx",
   "src/lib/photo-prep.ts",
   "src/app/credits/page.tsx",

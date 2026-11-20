@@ -11,7 +11,9 @@ import { wellnessRequest } from "@/lib/wellness";
 type Nutrients = { calories: number | null; protein: number | null; carbs: number | null; fat: number | null };
 export type DiaryItemInput = { name: string; grams: number; nutrients: Nutrients; food_id?: string | null; manual_override?: boolean; estimated?: boolean; source?: string };
 /** A meal in the diary. `items` (with grams) is sent when the screen knows them; otherwise the totals become one portion. */
-export type DiaryMeal = MealLog & { items?: DiaryItemInput[]; meal_type?: string; grams?: number };
+// ai_estimate: what the AI said for a photo before the person reviewed it; the server keeps it beside the saved values
+// for the accuracy report (backend services/accuracy.py).
+export type DiaryMeal = MealLog & { items?: DiaryItemInput[]; meal_type?: string; grams?: number; ai_estimate?: { calories: number; grams: number } };
 type ServerEntry = { id: string; day: string; time?: string; meal_type: string; method: string; notes: string; items: (DiaryItemInput & { nutrients: Nutrients })[]; totals: Record<string, number | null> };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,11 +28,13 @@ const mealType = (time: string) => { const h = Number(time.slice(0, 2)); return 
 const method = (m: string) => (/photo|scan|camera|image/i.test(m) ? "photo" : /saved|favou?rite|template|repeat|copy/i.test(m) ? "saved" : "manual");
 const per100 = (total: number | null | undefined, grams: number) => (typeof total === "number" && Number.isFinite(total) ? Math.round((total * 100 / grams) * 1000) / 1000 : null);
 
-function toServer(meal: DiaryMeal, day: string) {
+/** The request body for one meal (exported for tests). */
+export function toServer(meal: DiaryMeal, day: string) {
   const grams = meal.grams && meal.grams > 0 ? meal.grams : 100;
   const items = meal.items?.length ? meal.items.slice(0, 30).map(i => ({ food_id: null, manual_override: false, estimated: false, source: "User reviewed input", ...i, name: i.name.slice(0, 200) }))
     : [{ name: meal.name.slice(0, 200), grams, nutrients: { calories: per100(meal.calories, grams), protein: per100(meal.protein, grams), carbs: per100(meal.carbs, grams), fat: per100(meal.fat, grams) }, food_id: null, manual_override: true, estimated: /photo|scan|ai/i.test(meal.method), source: `${meal.method || "Logged"} · totals as logged`.slice(0, 90) }];
-  return { id: meal.id!, day, meal_type: meal.meal_type && ["breakfast", "lunch", "dinner", "snack", "drink", "other"].includes(meal.meal_type) ? meal.meal_type : mealType(meal.time), method: method(meal.method), notes: "", items };
+  const ai = meal.ai_estimate && method(meal.method) === "photo" && Number.isFinite(meal.ai_estimate.calories) && meal.ai_estimate.calories >= 0 && meal.ai_estimate.grams > 0 ? { ai_estimate: meal.ai_estimate } : {};
+  return { id: meal.id!, day, meal_type: meal.meal_type && ["breakfast", "lunch", "dinner", "snack", "drink", "other"].includes(meal.meal_type) ? meal.meal_type : mealType(meal.time), method: method(meal.method), notes: "", items, ...ai };
 }
 const same = (a: DiaryMeal, b: DiaryMeal) => a.name === b.name && a.calories === b.calories && a.protein === b.protein && a.carbs === b.carbs && a.fat === b.fat && JSON.stringify(a.items ?? null) === JSON.stringify(b.items ?? null);
 

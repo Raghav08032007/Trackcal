@@ -301,6 +301,15 @@ SOCIAL = [('GET', r'me'), ('PUT', r'me'), ('GET', r'profiles/[a-z0-9_.]{1,30}'),
           ('POST', r'reports'), ('GET', r'moderation'), ('POST', r'moderation'), ('POST', r'moderation/entries')]
 
 
+@bp.route('/accuracy', methods=['GET'])
+def accuracy_report():
+    """Site admins: how far estimates were from what people kept (routers/accuracy.py)."""
+    days = request.args.get('days', '90')
+    if not days.isdigit(): return error('Check the values and try again.', 422)
+    try: return forward(authenticated('GET', f'/accuracy?days={days}'))
+    except Exception: return error(ACCOUNT_DOWN, 503)
+
+
 @bp.route('/body-preview', methods=['GET', 'POST'])
 def body_preview():
     if request.method == 'GET':

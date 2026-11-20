@@ -183,3 +183,14 @@ html:not([data-theme="dark"]) .trackcal-app .bg-slate-800 { background-color: #d
 /* Dropdown options use the phone's own font, which already covers every script. Language names like हिन्दी or தமிழ்
    in a picker would otherwise download the brand font's Devanagari/Tamil files on an English page (~40 kB each). */
 select option, select optgroup { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif; }
+
+/* Accuracy report: big figures in a grid, and a status chip whose words carry the meaning (colour only supports them). */
+.accuracy-card { display: grid; gap: 12px; }
+.accuracy-figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 0; }
+.accuracy-figures div { padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, currentColor 5%, transparent); }
+.accuracy-figures dt { font-size: .8rem; opacity: .8; }
+.accuracy-figures dd { margin: 4px 0 0; font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.accuracy-status { justify-self: start; padding: 4px 12px; border-radius: 999px; font-size: .85rem; font-weight: 600; border: 1px solid currentColor; }
+.accuracy-meets_target { color: #166534; } .accuracy-below_target { color: #9a3412; } .accuracy-not_enough_data, .accuracy-measured { color: #475569; }
+html[data-theme="dark"] .accuracy-meets_target { color: #86efac; } html[data-theme="dark"] .accuracy-below_target { color: #fdba74; }
+html[data-theme="dark"] :is(.accuracy-not_enough_data, .accuracy-measured) { color: #cbd5e1; }

@@ -4,6 +4,7 @@ import { t, msg, date } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { REPORT_REASONS, social } from "@/lib/social";
 import { communities } from "@/lib/communities";
+import Link from "@/lib/navigation";
 
 export const metadata = { title:msg("TrackCal — Moderation") };
 type Kind = "post" | "comment" | "profile" | "event" | "challenge";
@@ -33,6 +34,7 @@ export default function Page() {
   }
   const decide = (entry: Entry, action: "clear" | "remove") => run("moderation/entries", { challenge_id: entry.challenge_id, user_id: entry.user_id, action });
   return <main className="account-page"><div className="account-title"><span className="eyebrow">{t("MODERATION")}</span><h1>{t("Reports to review")}</h1>
+    <p><Link href="/accuracy">{t("How close are our estimates?")}</Link></p>
     <p>{t("Content reported by 3 or more people is hidden until you decide. Act on the content, not the person; pause posting only for repeated or serious harm.")}</p></div>
     {error && <p role="alert">{error}</p>}
     {queue && !queue.length && <section className="account-card"><p>{t("Nothing to review.")}</p></section>}
