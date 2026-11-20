@@ -52,3 +52,6 @@ Thumbs.db
 # coverage data
 .coverage
 frontend/web/tests/tmp/
+
+# Volunteer pose recordings (body points only) for npm run rep-eval: personal data, never committed
+recordings/

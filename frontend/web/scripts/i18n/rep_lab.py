@@ -1,0 +1,68 @@
+"""Wave-1 translations: the volunteer rep-recording page (measuring camera counting on real people). Draft: native
+review needed. Columns: hi, bn, mr, te, ta, es, pt, id, ar."""
+
+LANGS = ['hi', 'bn', 'mr', 'te', 'ta', 'es', 'pt', 'id', 'ar']
+
+T = {
+ "TrackCal — Volunteer rep recording": ["TrackCal — स्वयंसेवक रेप रिकॉर्डिंग", "TrackCal — স্বেচ্ছাসেবক রেপ রেকর্ডিং", "TrackCal — स्वयंसेवक रेप रेकॉर्डिंग", "TrackCal — వాలంటీర్ రెప్ రికార్డింగ్", "TrackCal — தன்னார்வ ரெப் பதிவு", "TrackCal — Grabación voluntaria de repeticiones", "TrackCal — Gravação voluntária de repetições", "TrackCal — Rekaman repetisi sukarelawan", "TrackCal — تسجيل تطوعي للتكرارات"],
+ "VOLUNTEER": ["स्वयंसेवक", "স্বেচ্ছাসেবক", "स्वयंसेवक", "వాలంటీర్", "தன்னார்வலர்", "VOLUNTARIADO", "VOLUNTÁRIO", "SUKARELAWAN", "تطوّع"],
+ "Help us measure rep counting": ["रेप गिनती मापने में हमारी मदद करें", "রেপ গণনা মাপতে আমাদের সাহায্য করুন", "रेप मोजणी मोजण्यात आम्हाला मदत करा", "రెప్ లెక్కింపును కొలవడంలో మాకు సహాయం చేయండి", "ரெப் எண்ணிக்கையை அளக்க எங்களுக்கு உதவுங்கள்", "Ayúdanos a medir el conteo de repeticiones", "Ajude-nos a medir a contagem de repetições", "Bantu kami mengukur hitungan repetisi", "ساعدنا في قياس عدّ التكرارات"],
+ "Do one set while the camera follows you, then tell us how many reps you really did. We compare that with what the app counted.": [
+  "कैमरे के सामने एक सेट करें, फिर बताएँ कि आपने असल में कितने रेप किए। हम इसकी तुलना ऐप की गिनती से करते हैं।",
+  "ক্যামেরার সামনে একটি সেট করুন, তারপর বলুন আসলে কতটি রেপ করেছেন। আমরা তা অ্যাপের গণনার সঙ্গে মেলাই।",
+  "कॅमेऱ्यासमोर एक सेट करा, मग खरोखर किती रेप्स केले ते सांगा. आम्ही त्याची तुलना ॲपच्या मोजणीशी करतो.",
+  "కెమెరా ముందు ఒక సెట్ చేయండి, తర్వాత మీరు నిజంగా ఎన్ని రెప్స్ చేశారో చెప్పండి. దాన్ని యాప్ లెక్కతో పోలుస్తాం.",
+  "கேமரா முன் ஒரு செட் செய்யுங்கள், பிறகு உண்மையில் எத்தனை ரெப்கள் செய்தீர்கள் என்று சொல்லுங்கள். அதை ஆப் எண்ணிக்கையுடன் ஒப்பிடுவோம்.",
+  "Haz una serie mientras la cámara te sigue y luego dinos cuántas repeticiones hiciste de verdad. Lo comparamos con lo que contó la app.",
+  "Faça uma série enquanto a câmera acompanha você e depois diga quantas repetições fez de verdade. Comparamos com o que o app contou.",
+  "Lakukan satu set sambil kamera mengikuti Anda, lalu beri tahu berapa repetisi yang benar-benar Anda lakukan. Kami membandingkannya dengan hitungan aplikasi.",
+  "أدِّ مجموعة واحدة والكاميرا تتابعك، ثم أخبرنا كم تكرارًا أدّيت فعلًا. نقارن ذلك بما عدّه التطبيق."],
+ "What is recorded": ["क्या रिकॉर्ड होता है", "কী রেকর্ড হয়", "काय रेकॉर्ड होते", "ఏమి రికార్డ్ అవుతుంది", "என்ன பதிவாகிறது", "Qué se graba", "O que é gravado", "Apa yang direkam", "ما الذي يُسجَّل"],
+ "Only 33 body points per frame (positions of shoulders, elbows, knees and so on), the exercise, the reps you enter and your device type. No video, no photo, no name and no account. The file is saved on this device, and you decide whether to send it.": [
+  "हर फ़्रेम में सिर्फ़ शरीर के 33 बिंदु (कंधे, कोहनी, घुटने आदि की जगह), व्यायाम, आपके दर्ज रेप और डिवाइस का प्रकार। कोई वीडियो, फ़ोटो, नाम या खाता नहीं। फ़ाइल इसी डिवाइस पर सेव होती है, और भेजना है या नहीं, यह आप तय करते हैं।",
+  "প্রতি ফ্রেমে শুধু শরীরের ৩৩টি বিন্দু (কাঁধ, কনুই, হাঁটু ইত্যাদির অবস্থান), ব্যায়াম, আপনার লেখা রেপ ও ডিভাইসের ধরন। কোনো ভিডিও, ছবি, নাম বা অ্যাকাউন্ট নয়। ফাইলটি এই ডিভাইসে সেভ হয়, পাঠাবেন কি না আপনি ঠিক করবেন।",
+  "प्रत्येक फ्रेममध्ये फक्त शरीराचे 33 बिंदू (खांदे, कोपर, गुडघे इ. ची जागा), व्यायाम, तुम्ही नोंदवलेले रेप्स आणि डिव्हाइसचा प्रकार. व्हिडिओ, फोटो, नाव किंवा खाते नाही. फाइल याच डिव्हाइसवर सेव्ह होते, आणि पाठवायची की नाही ते तुम्ही ठरवता.",
+  "ప్రతి ఫ్రేమ్‌లో శరీరంలోని 33 బిందువులు మాత్రమే (భుజాలు, మోచేతులు, మోకాళ్ల స్థానాలు మొదలైనవి), వ్యాయామం, మీరు నమోదు చేసిన రెప్స్, మీ పరికరం రకం. వీడియో, ఫోటో, పేరు, ఖాతా ఏవీ ఉండవు. ఫైల్ ఈ పరికరంలోనే సేవ్ అవుతుంది, పంపాలో వద్దో మీరే నిర్ణయిస్తారు.",
+  "ஒவ்வொரு ஃப்ரேமிலும் உடலின் 33 புள்ளிகள் மட்டும் (தோள், முழங்கை, முழங்கால் போன்றவற்றின் இடம்), உடற்பயிற்சி, நீங்கள் உள்ளிடும் ரெப்கள், சாதன வகை. வீடியோ, புகைப்படம், பெயர், கணக்கு எதுவும் இல்லை. கோப்பு இந்தச் சாதனத்திலேயே சேமிக்கப்படும்; அனுப்புவதா என்பதை நீங்களே முடிவு செய்யுங்கள்.",
+  "Solo 33 puntos del cuerpo por fotograma (posición de hombros, codos, rodillas, etc.), el ejercicio, las repeticiones que indiques y el tipo de dispositivo. Ni vídeo, ni foto, ni nombre, ni cuenta. El archivo se guarda en este dispositivo y tú decides si lo envías.",
+  "Só 33 pontos do corpo por quadro (posição de ombros, cotovelos, joelhos etc.), o exercício, as repetições que você informar e o tipo de aparelho. Sem vídeo, foto, nome ou conta. O arquivo fica salvo neste aparelho, e você decide se quer enviá-lo.",
+  "Hanya 33 titik tubuh per frame (posisi bahu, siku, lutut, dan lainnya), latihannya, repetisi yang Anda isi, dan jenis perangkat. Tanpa video, foto, nama, atau akun. File disimpan di perangkat ini, dan Anda yang memutuskan apakah akan mengirimnya.",
+  "33 نقطة من الجسم فقط في كل إطار (مواضع الكتفين والمرفقين والركبتين وغيرها)، والتمرين، والتكرارات التي تدخلها، ونوع جهازك. لا فيديو ولا صورة ولا اسم ولا حساب. يُحفظ الملف على هذا الجهاز، وأنت تقرر إرساله أو لا."],
+ "I agree to record body points for this set and understand what the file contains.": [
+  "मैं इस सेट के लिए शरीर के बिंदु रिकॉर्ड करने के लिए सहमत हूँ और समझता/समझती हूँ कि फ़ाइल में क्या है।",
+  "এই সেটের জন্য শরীরের বিন্দু রেকর্ড করতে আমি রাজি এবং ফাইলে কী আছে তা বুঝেছি।",
+  "या सेटसाठी शरीराचे बिंदू रेकॉर्ड करण्यास मी सहमत आहे आणि फाइलमध्ये काय आहे ते मला समजले आहे.",
+  "ఈ సెట్ కోసం శరీర బిందువులను రికార్డ్ చేయడానికి నేను అంగీకరిస్తున్నాను, ఫైల్‌లో ఏముందో నాకు అర్థమైంది.",
+  "இந்த செட்டுக்கு உடல் புள்ளிகளைப் பதிவுசெய்ய ஒப்புக்கொள்கிறேன்; கோப்பில் என்ன உள்ளது என்பதைப் புரிந்துகொண்டேன்.",
+  "Acepto grabar los puntos del cuerpo de esta serie y entiendo qué contiene el archivo.",
+  "Concordo em gravar os pontos do corpo desta série e entendo o que o arquivo contém.",
+  "Saya setuju merekam titik tubuh untuk set ini dan memahami isi filenya.",
+  "أوافق على تسجيل نقاط الجسم لهذه المجموعة وأفهم ما يحتويه الملف."],
+ "Start recording": ["रिकॉर्डिंग शुरू करें", "রেকর্ডিং শুরু করুন", "रेकॉर्डिंग सुरू करा", "రికార్డింగ్ ప్రారంభించండి", "பதிவைத் தொடங்கு", "Empezar a grabar", "Começar a gravar", "Mulai merekam", "ابدأ التسجيل"],
+ "Stop recording": ["रिकॉर्डिंग रोकें", "রেকর্ডিং থামান", "रेकॉर्डिंग थांबवा", "రికార్డింగ్ ఆపండి", "பதிவை நிறுத்து", "Detener la grabación", "Parar a gravação", "Hentikan rekaman", "أوقف التسجيل"],
+ "Record another set": ["एक और सेट रिकॉर्ड करें", "আরেকটি সেট রেকর্ড করুন", "आणखी एक सेट रेकॉर्ड करा", "మరో సెట్ రికార్డ్ చేయండి", "இன்னொரு செட்டைப் பதிவுசெய்", "Grabar otra serie", "Gravar outra série", "Rekam set lain", "سجّل مجموعة أخرى"],
+ "Recording: {seconds} s of {max} s · the app has counted {reps}": ["रिकॉर्डिंग: {max} में से {seconds} से. · ऐप ने {reps} गिने", "রেকর্ডিং: {max} সে.-এর {seconds} সে. · অ্যাপ গুনেছে {reps}", "रेकॉर्डिंग: {max} पैकी {seconds} से. · ॲपने {reps} मोजले", "రికార్డింగ్: {max} సె.లో {seconds} సె. · యాప్ {reps} లెక్కించింది", "பதிவு: {max} வி.-இல் {seconds} வி. · ஆப் {reps} எண்ணியது", "Grabando: {seconds} s de {max} s · la app ha contado {reps}", "Gravando: {seconds} s de {max} s · o app contou {reps}", "Merekam: {seconds} dtk dari {max} dtk · aplikasi menghitung {reps}", "التسجيل: {seconds} ث من {max} ث · عدّ التطبيق {reps}"],
+ "How many reps did you really do?": ["आपने असल में कितने रेप किए?", "আপনি আসলে কতটি রেপ করেছেন?", "तुम्ही खरोखर किती रेप्स केले?", "మీరు నిజంగా ఎన్ని రెప్స్ చేశారు?", "நீங்கள் உண்மையில் எத்தனை ரெப்கள் செய்தீர்கள்?", "¿Cuántas repeticiones hiciste de verdad?", "Quantas repetições você fez de verdade?", "Berapa repetisi yang benar-benar Anda lakukan?", "كم تكرارًا أدّيت فعلًا؟"],
+ "Count them yourself, or ask someone watching. The app counted {reps}; please don't copy it.": [
+  "खुद गिनें, या देख रहे किसी व्यक्ति से पूछें। ऐप ने {reps} गिने; कृपया उसे न दोहराएँ।", "নিজে গুনুন, বা যিনি দেখছেন তাঁকে জিজ্ঞেস করুন। অ্যাপ {reps} গুনেছে; দয়া করে সেটি নকল করবেন না।",
+  "स्वतः मोजा, किंवा पाहणाऱ्या व्यक्तीला विचारा. ॲपने {reps} मोजले; कृपया ते जसेच्या तसे लिहू नका.", "మీరే లెక్కించండి, లేదా చూస్తున్నవారిని అడగండి. యాప్ {reps} లెక్కించింది; దయచేసి దాన్ని కాపీ చేయవద్దు.",
+  "நீங்களே எண்ணுங்கள், அல்லது பார்த்துக்கொண்டிருப்பவரிடம் கேளுங்கள். ஆப் {reps} எண்ணியது; தயவுசெய்து அதை அப்படியே எழுதாதீர்கள்.", "Cuéntalas tú o pregunta a quien te mire. La app contó {reps}; no lo copies, por favor.",
+  "Conte você mesmo ou pergunte a quem estava olhando. O app contou {reps}; por favor, não copie.", "Hitung sendiri, atau tanyakan orang yang melihat. Aplikasi menghitung {reps}; jangan disalin.",
+  "عُدّها بنفسك أو اسأل من كان يشاهد. عدّ التطبيق {reps}؛ من فضلك لا تنسخه."],
+ "Reps you really did": ["आपके असली रेप", "আপনার আসল রেপ", "तुमचे खरे रेप्स", "మీరు నిజంగా చేసిన రెప్స్", "நீங்கள் உண்மையில் செய்த ரெப்கள்", "Repeticiones que hiciste de verdad", "Repetições que você fez de verdade", "Repetisi yang benar-benar Anda lakukan", "التكرارات التي أدّيتها فعلًا"],
+ "Save the file to this device": ["फ़ाइल इस डिवाइस पर सेव करें", "ফাইলটি এই ডিভাইসে সেভ করুন", "फाइल या डिव्हाइसवर सेव्ह करा", "ఫైల్‌ను ఈ పరికరంలో సేవ్ చేయండి", "கோப்பை இந்தச் சாதனத்தில் சேமி", "Guardar el archivo en este dispositivo", "Salvar o arquivo neste aparelho", "Simpan file di perangkat ini", "احفظ الملف على هذا الجهاز"],
+ "Saved as {file}. Send it to the TrackCal team if you'd like to help.": ["{file} के रूप में सेव हुआ। मदद करना चाहें तो इसे TrackCal टीम को भेजें।", "{file} নামে সেভ হয়েছে। সাহায্য করতে চাইলে TrackCal দলকে পাঠান।", "{file} म्हणून सेव्ह झाले. मदत करायची असल्यास ते TrackCal टीमला पाठवा.", "{file}గా సేవ్ అయింది. సహాయం చేయాలనుకుంటే దాన్ని TrackCal బృందానికి పంపండి.", "{file} என்ற பெயரில் சேமிக்கப்பட்டது. உதவ விரும்பினால் TrackCal குழுவுக்கு அனுப்புங்கள்.", "Guardado como {file}. Envíalo al equipo de TrackCal si quieres ayudar.", "Salvo como {file}. Envie para a equipe do TrackCal se quiser ajudar.", "Disimpan sebagai {file}. Kirim ke tim TrackCal jika Anda ingin membantu.", "حُفظ باسم {file}. أرسله إلى فريق TrackCal إن أردت المساعدة."],
+ "Back to camera workouts": ["कैमरा वर्कआउट पर वापस", "ক্যামেরা ওয়ার্কআউটে ফিরুন", "कॅमेरा वर्कआउटकडे परत", "కెమెరా వ్యాయామాలకు తిరిగి", "கேமரா உடற்பயிற்சிக்குத் திரும்பு", "Volver a los entrenamientos con cámara", "Voltar aos treinos com câmera", "Kembali ke latihan kamera", "العودة إلى تمارين الكاميرا"],
+ "Volunteer recording page": ["स्वयंसेवक रिकॉर्डिंग पेज", "স্বেচ্ছাসেবক রেকর্ডিং পাতা", "स्वयंसेवक रेकॉर्डिंग पान", "వాలంటీర్ రికార్డింగ్ పేజీ", "தன்னார்வப் பதிவுப் பக்கம்", "Página de grabación voluntaria", "Página de gravação voluntária", "Halaman rekaman sukarelawan", "صفحة التسجيل التطوعي"],
+ "No body was seen": ["कोई शरीर नहीं दिखा", "কোনো শরীর দেখা যায়নি", "शरीर दिसले नाही", "శరీరం కనిపించలేదు", "உடல் தெரியவில்லை", "No se vio ningún cuerpo", "Nenhum corpo foi visto", "Tidak ada tubuh yang terlihat", "لم يُرَ أي جسم"],
+ "The camera did not see a whole body, so there is nothing to save. Step back until your shoulders, hips and knees are in view, then record again.": [
+  "कैमरे को पूरा शरीर नहीं दिखा, इसलिए सेव करने को कुछ नहीं है। पीछे हटें ताकि कंधे, कूल्हे और घुटने दिखें, फिर दोबारा रिकॉर्ड करें।",
+  "ক্যামেরা পুরো শরীর দেখেনি, তাই সেভ করার কিছু নেই। পিছিয়ে দাঁড়ান যাতে কাঁধ, কোমর ও হাঁটু দেখা যায়, তারপর আবার রেকর্ড করুন।",
+  "कॅमेऱ्याला पूर्ण शरीर दिसले नाही, त्यामुळे सेव्ह करण्यासारखे काही नाही. खांदे, कंबर आणि गुडघे दिसतील इतके मागे सरका, मग पुन्हा रेकॉर्ड करा.",
+  "కెమెరాకు పూర్తి శరీరం కనిపించలేదు, కాబట్టి సేవ్ చేయడానికి ఏమీ లేదు. భుజాలు, తుంటి, మోకాళ్లు కనిపించేలా వెనక్కి జరిగి మళ్లీ రికార్డ్ చేయండి.",
+  "கேமராவுக்கு முழு உடல் தெரியவில்லை, எனவே சேமிக்க எதுவும் இல்லை. தோள், இடுப்பு, முழங்கால் தெரியும்படி பின்னால் நகர்ந்து மீண்டும் பதிவுசெய்யுங்கள்.",
+  "La cámara no vio un cuerpo entero, así que no hay nada que guardar. Aléjate hasta que se vean hombros, caderas y rodillas, y vuelve a grabar.",
+  "A câmera não viu um corpo inteiro, então não há nada para salvar. Afaste-se até aparecerem ombros, quadris e joelhos e grave de novo.",
+  "Kamera tidak melihat seluruh tubuh, jadi tidak ada yang bisa disimpan. Mundurlah sampai bahu, pinggul, dan lutut terlihat, lalu rekam lagi.",
+  "لم ترَ الكاميرا جسمًا كاملًا، فلا يوجد ما يُحفظ. ابتعد حتى تظهر الكتفان والوركان والركبتان، ثم سجّل مرة أخرى."],
+}

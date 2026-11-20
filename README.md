@@ -118,6 +118,17 @@ cd frontend/web && npm test          # web tests (about 950)
 cd backend && .venv\Scripts\python.exe -m pytest tests -q   # API tests (rollback-only transactions on a test database)
 ```
 
+### Measuring rep counting on real people
+
+Volunteers open `/workouts/camera/lab`, record one set and enter how many reps they really did. The page saves a file
+with body points only (no video, no name) to their own device. Put the files you receive in `recordings/` at the repo
+root (git ignores it) and run:
+
+```bash
+cd frontend/web
+npm run rep-eval      # share of sets within ±1 rep per exercise; the target is 90%
+```
+
 ---
 
 ## Translations

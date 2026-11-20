@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "lint": "eslint",
     "test": "vitest run",
+    "rep-eval": "vitest run tests/rep-eval.test.ts --reporter=default --silent=false",
     "prepare:pose": "node scripts/prepare-pose.mjs",
     "prebuild": "node scripts/prepare-pose.mjs",
     "postbuild": "node scripts/size-budget.mjs",

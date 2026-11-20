@@ -62,7 +62,7 @@ export default function Page() {
         <div><dt>{t("Kept without changes")}</dt><dd>{pct(camera.kept_unchanged)}</dd></div>
         <div><dt>{t("Average miss")}</dt><dd>{camera.mean_abs_error_reps === null ? "—" : t("{n} reps", { n: number(camera.mean_abs_error_reps, { maximumFractionDigits: 2 }) })}</dd></div>
       </dl>
-      <p className="push-note">{t("Target: 90% of sets within ±1 rep before the camera loses its Experimental label.")}</p>
+      <p className="push-note">{t("Target: 90% of sets within ±1 rep before the camera loses its Experimental label.")} <Link href="/workouts/camera/lab">{t("Volunteer recording page")}</Link></p>
       {camera.by_exercise.length > 0 && <div className="table-scroll"><table className="moderation-table">
         <thead><tr><th scope="col">{t("Exercise")}</th><th scope="col">{t("Sets")}</th><th scope="col">{t("Within ±1 rep")}</th><th scope="col">{t("Average miss")}</th></tr></thead>
         <tbody>{camera.by_exercise.map(row => <tr key={row.exercise}><th scope="row">{row.exercise}</th><td>{number(row.sets)}</td><td>{pct(row.within_one_rep)}</td>
