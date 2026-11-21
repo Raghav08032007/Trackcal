@@ -87,4 +87,26 @@ T = {
  "Minutes × METs (Compendium of Physical Activities). WHO: 600–1,200 MET-minutes a week. Fitness and fatigue are 42- and 7-day weighted averages of daily effort. Estimates, not a medical assessment.": [
   "ನಿಮಿಷ × MET (Compendium of Physical Activities). WHO: ವಾರಕ್ಕೆ 600–1,200 MET-ನಿಮಿಷ. ಫಿಟ್‌ನೆಸ್ ಮತ್ತು ಆಯಾಸ ದೈನಂದಿನ ಪ್ರಯತ್ನದ 42 ಮತ್ತು 7 ದಿನಗಳ ತೂಕದ ಸರಾಸರಿಗಳು. ಅಂದಾಜುಗಳು, ವೈದ್ಯಕೀಯ ಮೌಲ್ಯಮಾಪನವಲ್ಲ.",
   "മിനിറ്റ് × MET (Compendium of Physical Activities). WHO: ആഴ്ചയിൽ 600–1,200 MET-മിനിറ്റ്. ഫിറ്റ്‌നസും ക്ഷീണവും ദൈനംദിന പരിശ്രമത്തിന്റെ 42, 7 ദിവസ ഭാരിത ശരാശരികളാണ്. ഏകദേശ കണക്കുകൾ, വൈദ്യപരിശോധനയല്ല."],
+ # Meal ideas shown in the food diary (services/personalization.py MEALS)
+ "Check every ingredient and cross-contact information. These ideas do not certify allergen safety. No calorie or water target is generated.": [
+  "ಪ್ರತಿ ಪದಾರ್ಥ ಮತ್ತು ಸಂಪರ್ಕ ಮಾಲಿನ್ಯದ ಮಾಹಿತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ. ಈ ಉಪಾಯಗಳು ಅಲರ್ಜಿ ಸುರಕ್ಷತೆಯನ್ನು ಖಚಿತಪಡಿಸುವುದಿಲ್ಲ. ಯಾವುದೇ ಕ್ಯಾಲೊರಿ ಅಥವಾ ನೀರಿನ ಗುರಿ ರಚಿಸಲಾಗುವುದಿಲ್ಲ.",
+  "ഓരോ ചേരുവയും സമ്പർക്ക മലിനീകരണ വിവരവും പരിശോധിക്കൂ. ഈ ആശയങ്ങൾ അലർജി സുരക്ഷ ഉറപ്പാക്കുന്നില്ല. കലോറിയോ വെള്ളമോ ലക്ഷ്യമൊന്നും ഉണ്ടാക്കുന്നില്ല."],
+ "Lentil, rice and vegetable bowl": ["ಬೇಳೆ, ಅನ್ನ ಮತ್ತು ತರಕಾರಿ ಬಟ್ಟಲು", "പരിപ്പ്, ചോറ്, പച്ചക്കറി പാത്രം"],
+ "Combine a grain, a protein food and vegetables in portions that suit you.": ["ನಿಮಗೆ ಹೊಂದುವ ಪ್ರಮಾಣದಲ್ಲಿ ಧಾನ್ಯ, ಪ್ರೋಟೀನ್ ಆಹಾರ ಮತ್ತು ತರಕಾರಿಗಳನ್ನು ಸೇರಿಸಿ.", "നിങ്ങൾക്ക് യോജിക്കുന്ന അളവിൽ ധാന്യം, പ്രോട്ടീൻ ഭക്ഷണം, പച്ചക്കറി എന്നിവ ചേർക്കൂ."],
+ "Swap rice for a familiar grain after checking allergens.": ["ಅಲರ್ಜಿ ಪರಿಶೀಲಿಸಿದ ನಂತರ ಅನ್ನದ ಬದಲು ಪರಿಚಿತ ಧಾನ್ಯ ಬಳಸಿ.", "അലർജി പരിശോധിച്ച ശേഷം ചോറിന് പകരം പരിചിതമായ ധാന്യം ഉപയോഗിക്കൂ."],
+ "Chickpea and vegetable salad": ["ಕಡಲೆ ಮತ್ತು ತರಕಾರಿ ಸಲಾಡ್", "കടലയും പച്ചക്കറിയും സാലഡ്"],
+ "Rinse cooked chickpeas, add vegetables and a dressing you enjoy.": ["ಬೇಯಿಸಿದ ಕಡಲೆ ತೊಳೆದು, ತರಕಾರಿ ಮತ್ತು ನಿಮಗಿಷ್ಟದ ಡ್ರೆಸ್ಸಿಂಗ್ ಸೇರಿಸಿ.", "വേവിച്ച കടല കഴുകി, പച്ചക്കറികളും ഇഷ്ടമുള്ള ഡ്രസ്സിംഗും ചേർക്കൂ."],
+ "Use lentils instead of chickpeas if suitable for your own needs.": ["ನಿಮಗೆ ಸೂಕ್ತವಾದರೆ ಕಡಲೆಯ ಬದಲು ಬೇಳೆ ಬಳಸಿ.", "നിങ്ങൾക്ക് അനുയോജ്യമെങ്കിൽ കടലയ്ക്ക് പകരം പരിപ്പ് ഉപയോഗിക്കൂ."],
+ "Tofu, rice and greens": ["ಟೋಫು, ಅನ್ನ ಮತ್ತು ಸೊಪ್ಪು", "ടോഫു, ചോറ്, ഇലക്കറി"],
+ "Include protein foods, grains and a variety of vegetables.": ["ಪ್ರೋಟೀನ್ ಆಹಾರ, ಧಾನ್ಯ ಮತ್ತು ವಿವಿಧ ತರಕಾರಿಗಳನ್ನು ಸೇರಿಸಿ.", "പ്രോട്ടീൻ ഭക്ഷണം, ധാന്യം, വിവിധ പച്ചക്കറികൾ എന്നിവ ഉൾപ്പെടുത്തൂ."],
+ "Lentils can replace tofu when soy is excluded; check all ingredients.": ["ಸೋಯಾ ಬೇಡವಾದರೆ ಟೋಫು ಬದಲು ಬೇಳೆ ಬಳಸಬಹುದು; ಎಲ್ಲ ಪದಾರ್ಥಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.", "സോയ ഒഴിവാക്കുമ്പോൾ ടോഫുവിന് പകരം പരിപ്പ് ഉപയോഗിക്കാം; എല്ലാ ചേരുവകളും പരിശോധിക്കൂ."],
+ "Yogurt, fruit and oats": ["ಮೊಸರು, ಹಣ್ಣು ಮತ್ತು ಓಟ್ಸ್", "തൈര്, പഴം, ഓട്സ്"],
+ "Choose fruit and a yogurt you enjoy; check packaging for allergens.": ["ನಿಮಗಿಷ್ಟದ ಹಣ್ಣು ಮತ್ತು ಮೊಸರು ಆರಿಸಿ; ಅಲರ್ಜಿಗಾಗಿ ಪ್ಯಾಕೇಜ್ ಪರಿಶೀಲಿಸಿ.", "ഇഷ്ടമുള്ള പഴവും തൈരും തിരഞ്ഞെടുക്കൂ; അലർജിക്കായി പാക്കേജ് പരിശോധിക്കൂ."],
+ "Use a suitable plant yogurt after checking soy, nut and other allergens.": ["ಸೋಯಾ, ಬೀಜ ಮತ್ತು ಇತರ ಅಲರ್ಜಿ ಪರಿಶೀಲಿಸಿದ ನಂತರ ಸೂಕ್ತ ಸಸ್ಯ ಮೊಸರು ಬಳಸಿ.", "സോയ, നട്ട്, മറ്റ് അലർജികൾ പരിശോധിച്ച ശേഷം അനുയോജ്യമായ സസ്യ തൈര് ഉപയോഗിക്കൂ."],
+ "Egg, wholegrain toast and vegetables": ["ಮೊಟ್ಟೆ, ಪೂರ್ಣಧಾನ್ಯ ಟೋಸ್ಟ್ ಮತ್ತು ತರಕಾರಿ", "മുട്ട, മുഴുധാന്യ ടോസ്റ്റ്, പച്ചക്കറി"],
+ "Review bread and toppings as well as the main ingredient.": ["ಮುಖ್ಯ ಪದಾರ್ಥದ ಜೊತೆಗೆ ಬ್ರೆಡ್ ಮತ್ತು ಮೇಲೋಗರಗಳನ್ನೂ ಪರಿಶೀಲಿಸಿ.", "പ്രധാന ചേരുവയ്ക്കൊപ്പം ബ്രെഡും ടോപ്പിംഗുകളും പരിശോധിക്കൂ."],
+ "Try lentils and rice as an alternative after reviewing ingredients.": ["ಪದಾರ್ಥಗಳನ್ನು ಪರಿಶೀಲಿಸಿದ ನಂತರ ಪರ್ಯಾಯವಾಗಿ ಬೇಳೆ ಮತ್ತು ಅನ್ನ ಪ್ರಯತ್ನಿಸಿ.", "ചേരുവകൾ പരിശോധിച്ച ശേഷം പകരമായി പരിപ്പും ചോറും പരീക്ഷിക്കൂ."],
+ "Fish, rice and vegetables": ["ಮೀನು, ಅನ್ನ ಮತ್ತು ತರಕಾರಿ", "മീൻ, ചോറ്, പച്ചക്കറി"],
+ "Use familiar preparation and food-safety practices.": ["ಪರಿಚಿತ ತಯಾರಿಕೆ ಮತ್ತು ಆಹಾರ ಸುರಕ್ಷತಾ ಕ್ರಮಗಳನ್ನು ಅನುಸರಿಸಿ.", "പരിചിതമായ പാചകരീതിയും ഭക്ഷ്യസുരക്ഷാ രീതികളും പിന്തുടരൂ."],
+ "Choose chickpeas as a plant protein alternative if appropriate.": ["ಸೂಕ್ತವಾದರೆ ಸಸ್ಯ ಪ್ರೋಟೀನ್ ಪರ್ಯಾಯವಾಗಿ ಕಡಲೆ ಆರಿಸಿ.", "അനുയോജ്യമെങ്കിൽ സസ്യ പ്രോട്ടീൻ പകരമായി കടല തിരഞ്ഞെടുക്കൂ."],
 }

@@ -15,7 +15,7 @@ const keys = [...new Set([...TRANSLATED_FILES.flatMap(f => keysOf(f, fs.readFile
 
 afterEach(() => { setCatalogForTests("en", {}); try { localStorage.clear(); } catch { /* none */ } });
 
-const coreKeys = [...new Set(CORE_FILES.flatMap(f => keysOf(f, fs.readFileSync(f, "utf8"))))];
+const coreKeys = [...new Set([...CORE_FILES.flatMap(f => keysOf(f, fs.readFileSync(f, "utf8"))), ...RUNTIME_KEYS])];
 describe("wave 2 languages: core screens first", () => {
   for (const code of WAVE_2) it(`every core-screen text is translated in ${code}, keeping its placeholders`, () => {
     const c = catalog(code), missing = coreKeys.filter(k => !(k in c));

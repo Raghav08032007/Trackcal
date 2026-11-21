@@ -259,4 +259,7 @@ export const CORE_FILES = [
   "src/components/today-tasks.tsx", "src/components/day-card.tsx", "src/components/daily-progress-hub.tsx", "src/components/recovery-checkin.tsx",
   "src/components/retest-reminder.tsx", "src/components/first-steps.tsx", "src/components/photos.tsx", "src/components/quick-log.tsx",
   "src/components/feature-companion.tsx", "src/lib/coach.ts", "src/components/targets-card.tsx",
+  // phase 2: onboarding, food diary and search
+  "src/app/food/page.tsx", "src/app/nutrition/page.tsx", "src/app/onboarding/page.tsx", "src/components/personal-onboarding.tsx",
+  "src/components/legacy-onboarding.tsx", "src/components/nutrition-dashboard.tsx", "src/components/device-journal-import.tsx",
 ];

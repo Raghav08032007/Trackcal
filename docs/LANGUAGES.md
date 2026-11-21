@@ -88,9 +88,9 @@ the app already does safely. The picker marks every wave-2 language as a draft.
 | Phase | Kannada (kn) | Malayalam (ml) |
 |---|---|---|
 | 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done |
-| 2. Onboarding, food diary and search | Next | Next |
-| 3. Move (workouts, camera, exercise names), Play, Me | Later | Later |
-| Server messages | Today's texts (tasks, Health Score, targets, weekly effort) | Same |
+| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done |
+| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next |
+| Server messages | Today's texts (tasks, Health Score, targets, weekly effort) and meal ideas | Same |
 
 - How it is checked: `CORE_FILES` in `src/lib/i18n/coverage.ts` lists the screens a wave-2 language must cover
   completely; `tests/i18n.test.ts` fails if any text on them is missing or loses a `{placeholder}`. Each phase adds
