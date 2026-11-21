@@ -267,7 +267,7 @@ export const CORE_PHASES = [
     "src/components/legacy-onboarding.tsx", "src/components/nutrition-dashboard.tsx", "src/components/device-journal-import.tsx",
   ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 2, ml: 2, gu: 1, pa: 1 };
+export const WAVE_2: Record<string, number> = { kn: 2, ml: 2, gu: 2, pa: 2 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);
