@@ -28,3 +28,16 @@ def table(code, lines):
         for ph in re.findall(r'\{\w+\}', k):
             assert ph in v, f'coach_{code}.py: "{k}" lost {ph}'
     return {k: [v] for k, v in zip(ks, lines)}
+
+
+def table_from(listname, code, lines):
+    """Like table(), for a saved list of English texts (coach/<listname>.json): used for the phase 3 batches, whose texts
+    are spread over many source files. The list is frozen, so a reordering in the source can't shift translations."""
+    ks = json.loads((Path(__file__).parent / f'{listname}.json').read_text(encoding='utf-8'))
+    assert len(lines) == len(ks), f'{listname}_{code}: {len(lines)} lines for {len(ks)} texts'
+    if code == 'fr':
+        lines = [re.sub(r' ([?!:;])', '\u202f\\1', x) for x in lines]
+    for k, v in zip(ks, lines):
+        for ph in re.findall(r'\{\w+\}', k):
+            assert ph in v, f'{listname}_{code}: "{k}" lost {ph}'
+    return {k: [v] for k, v in zip(ks, lines)}
