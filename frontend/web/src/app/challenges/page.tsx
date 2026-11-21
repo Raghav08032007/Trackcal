@@ -1,5 +1,6 @@
 // Challenges: open ones to join, yours, and starting a new one. Progress always comes from what you actually log.
 import { t, msg } from "@/lib/i18n";
+import { CommunityStrip } from "@/components/community-strip";
 import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
@@ -15,11 +16,11 @@ export default function Page() {
   useEffect(() => { if (user) social<{ profile: unknown }>("me").then(v => setState(v.profile ? "ready" : "no-profile"), (e: { status?: number }) => setState(e?.status === 404 ? "off" : "failed")); }, [user, attempt]);
   useEffect(() => { if (state === "ready") void load(); }, [state, load]);
   if (!ready || state === "loading") return <main className="account-loading">{t("Opening challenges…")}</main>;
-  if (!user) return <main className="account-page"><section className="account-card"><h1>{t("Challenges")}</h1><p>{t("Sign in to take on a challenge with friends.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
-  if (state === "failed") return <main className="account-page"><section className="account-card" role="alert"><h1>{t("We couldn't load challenges")}</h1><p>{t("This is usually temporary. Nothing was changed.")}</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>{t("Try again")}</button></section></main>;
-  if (state === "off") return <main className="account-page"><section className="account-card"><h1>{t("Challenges aren't available yet")}</h1><p>{t("They're coming soon.")}</p></section></main>;
-  if (state === "no-profile") return <main className="account-page"><section className="account-card"><h1>{t("Pick a handle first")}</h1><p>{t("Challenges use your feed profile.")}</p><Link className="account-primary" href="/feed">{t("Set up my profile")}</Link></section></main>;
-  return <main className="account-page social-page">
+  if (!user) return <main className="account-page"><CommunityStrip current="challenges" /><section className="account-card"><h1>{t("Challenges")}</h1><p>{t("Sign in to take on a challenge with friends.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
+  if (state === "failed") return <main className="account-page"><CommunityStrip current="challenges" /><section className="account-card" role="alert"><h1>{t("We couldn't load challenges")}</h1><p>{t("This is usually temporary. Nothing was changed.")}</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>{t("Try again")}</button></section></main>;
+  if (state === "off") return <main className="account-page"><CommunityStrip current="challenges" /><section className="account-card"><h1>{t("Challenges aren't available yet")}</h1><p>{t("They're coming soon.")}</p></section></main>;
+  if (state === "no-profile") return <main className="account-page"><CommunityStrip current="challenges" /><section className="account-card"><h1>{t("Pick a handle first")}</h1><p>{t("Challenges use your feed profile.")}</p><Link className="account-primary" href="/feed">{t("Set up my profile")}</Link></section></main>;
+  return <main className="account-page social-page"><CommunityStrip current="challenges" />
     <div className="account-title"><span className="eyebrow">{t("CHALLENGES")}</span><h1>{t("Small goals, together.")}</h1><p>{t("Progress counts only what you actually log (workouts, meals, events), so everyone's wins are real. No leaderboards, no ranking.")}</p></div>
     {creating ? <CreateChallenge onCreated={id => router.push(`/challenges/${id}`)} onCancel={() => setCreating(false)} /> : <button className="account-primary" onClick={() => setCreating(true)}>{t("Start a challenge")}</button>}
     <div className="social-tabs" role="tablist" aria-label={t("Challenges")}>{(["open", "mine"] as const).map(tab => <button key={tab} role="tab" aria-selected={scope === tab} onClick={() => setScope(tab)}>{tab === "open" ? t("Open") : t("Yours")}</button>)}</div>

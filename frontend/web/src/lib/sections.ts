@@ -50,7 +50,7 @@ export const SECTIONS: Section[] = [
         { href: "/plan", title: "My 7-day plan", text: "A week of workouts that protects any injuries.", icon: CalendarDays },
         { href: "/recovery", title: "Recovery", text: "Which muscles are rested and ready.", icon: Moon } ] } ] },
   { id: "play", label: "Play", href: "/play", icon: Sparkles,
-    pages: [["/play", "Quests"], ["/challenges", "Challenges"], ["/feed", "Feed"], ["/communities", "Clubs"], ["/events", "Events"]],
+    pages: [["/play", "Quests"], ["/communities", "Community"], ["/feed", "Feed"], ["/events", "Events"], ["/challenges", "Challenges"]],
     also: ["/challenges/*", "/events/*", "/c/*", "/u/*", "/moderation", "/accuracy"] },
   { id: "me", label: "Me", href: "/me", icon: UserRound,
     pages: [["/me", "Overview"], ["/progress", "Progress"], ["/account", "Account"], ["/health", "My report"], ["/routine", "Reminders"]],

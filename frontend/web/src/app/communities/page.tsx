@@ -1,5 +1,6 @@
 // Communities directory: discover (search, category), your communities, and starting a new one.
 import { t, msg, date } from "@/lib/i18n";
+import { CommunityStrip } from "@/components/community-strip";
 import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
@@ -25,12 +26,12 @@ export default function Page() {
   }, [user, attempt]);
   useEffect(() => { if (state === "ready") void load(); }, [state, load]);
   if (!ready || state === "loading") return <main className="account-loading">{t("Opening communities…")}</main>;
-  if (!user) return <main className="account-page"><section className="account-card"><h1>{t("Communities")}</h1><p>{t("Sign in to find your people.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
-  if (state === "failed") return <main className="account-page"><section className="account-card" role="alert"><h1>{t("We couldn't load communities")}</h1><p>{t("This is usually temporary. Nothing was changed.")}</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>{t("Try again")}</button></section></main>;
-  if (state === "off") return <main className="account-page"><section className="account-card"><h1>{t("Communities aren't available yet")}</h1><p>{t("They're coming soon.")}</p></section></main>;
-  if (state === "no-profile") return <main className="account-page"><section className="account-card"><h1>{t("Pick a handle first")}</h1><p>{t("Communities use your feed profile, so people know who's posting.")}</p><Link className="account-primary" href="/feed">{t("Set up my profile")}</Link></section></main>;
-  return <main className="account-page social-page">
-    <div className="account-title"><span className="eyebrow">{t("COMMUNITIES")}</span><h1>{t("Find your people.")}</h1><p>{t("Groups for running, yoga, cooking, college and more. Every community follows TrackCal's kindness rules.")}</p></div>
+  if (!user) return <main className="account-page"><CommunityStrip current="clubs" /><section className="account-card"><h1>{t("Communities")}</h1><p>{t("Sign in to find your people.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
+  if (state === "failed") return <main className="account-page"><CommunityStrip current="clubs" /><section className="account-card" role="alert"><h1>{t("We couldn't load communities")}</h1><p>{t("This is usually temporary. Nothing was changed.")}</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>{t("Try again")}</button></section></main>;
+  if (state === "off") return <main className="account-page"><CommunityStrip current="clubs" /><section className="account-card"><h1>{t("Communities aren't available yet")}</h1><p>{t("They're coming soon.")}</p></section></main>;
+  if (state === "no-profile") return <main className="account-page"><CommunityStrip current="clubs" /><section className="account-card"><h1>{t("Pick a handle first")}</h1><p>{t("Communities use your feed profile, so people know who's posting.")}</p><Link className="account-primary" href="/feed">{t("Set up my profile")}</Link></section></main>;
+  return <main className="account-page social-page"><CommunityStrip current="clubs" />
+    <div className="account-title"><span className="eyebrow">{t("COMMUNITY")}</span><h1>{t("Find your people.")}</h1><p>{t("Groups for running, yoga, cooking, college and more. Every community follows TrackCal's kindness rules.")}</p></div>
     {creating ? <CreateCommunity onCreated={slug => router.push(`/c/${slug}`)} onCancel={() => setCreating(false)} /> : <button className="account-primary" onClick={() => setCreating(true)}>{t("Start a community")}</button>}
     <div className="social-tabs" role="tablist" aria-label={t("Communities")}>{(["discover", "mine"] as const).map(option => <button key={option} role="tab" aria-selected={tab === option} onClick={() => setTab(option)}>{option === "discover" ? t("Discover") : t("Your communities")}</button>)}</div>
     <form className="community-search" role="search" onSubmit={e => { e.preventDefault(); void load(); }}>

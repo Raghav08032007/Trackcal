@@ -1,5 +1,6 @@
 // The TrackCal feed (flag social_feed): pick a handle, then Following / Discover, share text or an app milestone.
 import { t, msg } from "@/lib/i18n";
+import { CommunityStrip } from "@/components/community-strip";
 import { useCallback, useEffect, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
@@ -15,10 +16,10 @@ export default function Page() {
   const reload = useCallback(() => social<Me>("me").then(setMe).catch(e => { if (e instanceof SocialError && e.status === 404) setOff(true); else setError(e instanceof Error ? e.message : t("Unavailable.")); }), []);
   useEffect(() => { if (user) void reload(); }, [user, reload]);
   if (!ready) return <main className="account-loading">{t("Opening the feed…")}</main>;
-  if (!user) return <main className="account-page"><section className="account-card"><h1>{t("The TrackCal feed")}</h1><p>{t("Sign in to see what people are celebrating.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
-  if (off) return <main className="account-page"><section className="account-card"><h1>{t("The feed isn't available yet")}</h1><p>{t("It's coming soon.")}</p></section></main>;
+  if (!user) return <main className="account-page"><CommunityStrip current="feed" /><section className="account-card"><h1>{t("The TrackCal feed")}</h1><p>{t("Sign in to see what people are celebrating.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
+  if (off) return <main className="account-page"><CommunityStrip current="feed" /><section className="account-card"><h1>{t("The feed isn't available yet")}</h1><p>{t("It's coming soon.")}</p></section></main>;
   if (!me) return <main className="account-loading">{error || t("Opening the feed…")}</main>;
-  return <main className="account-page social-page">{me.profile ? <Feed profile={me.profile} requests={me.requests} /> : <ProfileSetup onDone={() => void reload()} />}</main>;
+  return <main className="account-page social-page"><CommunityStrip current="feed" />{me.profile ? <Feed profile={me.profile} requests={me.requests} /> : <ProfileSetup onDone={() => void reload()} />}</main>;
 }
 
 export function ProfileSetup({ onDone, current }: { onDone: () => void; current?: Profile }) {

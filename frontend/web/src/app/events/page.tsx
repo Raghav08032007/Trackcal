@@ -1,5 +1,6 @@
 // Events: what's coming up, what you're going to or organizing, and creating a new one.
 import { t, msg } from "@/lib/i18n";
+import { CommunityStrip } from "@/components/community-strip";
 import { useCallback, useEffect, useState } from "react";
 import Link, { useRouter } from "@/lib/navigation";
 import { useAccount } from "@/components/account-session";
@@ -16,11 +17,11 @@ export default function Page() {
   useEffect(() => { if (user) social<{ profile: unknown }>("me").then(v => setState(v.profile ? "ready" : "no-profile"), (e: { status?: number }) => setState(e?.status === 404 ? "off" : "failed")); }, [user, attempt]);
   useEffect(() => { if (state === "ready") void load(); }, [state, load]);
   if (!ready || state === "loading") return <main className="account-loading">{t("Opening events…")}</main>;
-  if (!user) return <main className="account-page"><section className="account-card"><h1>{t("Events")}</h1><p>{t("Sign in to find runs, walks and classes near you.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
-  if (state === "failed") return <main className="account-page"><section className="account-card" role="alert"><h1>{t("We couldn't load events")}</h1><p>{t("This is usually temporary. Nothing was changed.")}</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>{t("Try again")}</button></section></main>;
-  if (state === "off") return <main className="account-page"><section className="account-card"><h1>{t("Events aren't available yet")}</h1><p>{t("They're coming soon.")}</p></section></main>;
-  if (state === "no-profile") return <main className="account-page"><section className="account-card"><h1>{t("Pick a handle first")}</h1><p>{t("Events use your feed profile so organizers know who's coming.")}</p><Link className="account-primary" href="/feed">{t("Set up my profile")}</Link></section></main>;
-  return <main className="account-page social-page">
+  if (!user) return <main className="account-page"><CommunityStrip current="events" /><section className="account-card"><h1>{t("Events")}</h1><p>{t("Sign in to find runs, walks and classes near you.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
+  if (state === "failed") return <main className="account-page"><CommunityStrip current="events" /><section className="account-card" role="alert"><h1>{t("We couldn't load events")}</h1><p>{t("This is usually temporary. Nothing was changed.")}</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>{t("Try again")}</button></section></main>;
+  if (state === "off") return <main className="account-page"><CommunityStrip current="events" /><section className="account-card"><h1>{t("Events aren't available yet")}</h1><p>{t("They're coming soon.")}</p></section></main>;
+  if (state === "no-profile") return <main className="account-page"><CommunityStrip current="events" /><section className="account-card"><h1>{t("Pick a handle first")}</h1><p>{t("Events use your feed profile so organizers know who's coming.")}</p><Link className="account-primary" href="/feed">{t("Set up my profile")}</Link></section></main>;
+  return <main className="account-page social-page"><CommunityStrip current="events" />
     <div className="account-title"><span className="eyebrow">{t("EVENTS")}</span><h1>{t("Show up together.")}</h1><p>{t("Runs, walks, classes and cook-alongs. Check in with the organizer's QR code to earn a verified-event badge.")}</p></div>
     {creating ? <CreateEvent onCreated={id => router.push(`/events/${id}`)} onCancel={() => setCreating(false)} /> : <button className="account-primary" onClick={() => setCreating(true)}>{t("Organize an event")}</button>}
     <div className="social-tabs" role="tablist" aria-label={t("Events")}>{(["upcoming", "mine"] as const).map(tab => <button key={tab} role="tab" aria-selected={scope === tab} onClick={() => setScope(tab)}>{tab === "upcoming" ? t("Upcoming") : t("Your events")}</button>)}</div>

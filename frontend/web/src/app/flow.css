@@ -29,13 +29,15 @@ html body .companion-help-button { max-width: 100%; overflow: hidden; }
 
 /* ── Page links on phones: one segmented bar, every link visible, Overview always first ─────────────────────── */
 @media (max-width: 859px) {
-  html body nav.app-section-pages { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; overflow: visible;
+  /* Flexible widths: each link gets at least its longest word, longer labels take more room, and the bar wraps to a
+     second row only when the words truly don't fit (never breaking inside a word). */
+  html body nav.app-section-pages { display: flex; flex-wrap: wrap; gap: 4px; overflow: visible;
     margin: 8px 0 4px; padding: 4px; border-radius: 18px;
     background: color-mix(in srgb, var(--sx-a, #0b7a6c) 9%, var(--ds-surface, #fff));
     border: 1px solid color-mix(in srgb, var(--sx-a, #0b7a6c) 18%, transparent); }
   html body nav.app-section-pages a:not([aria-current="page"]),
   html body nav.app-section-pages a[aria-current="page"] { min-width: 0; min-height: 42px; padding: 4px 4px; justify-content: center; text-align: center;
-    white-space: normal; overflow-wrap: anywhere; hyphens: auto; font-size: .75rem; line-height: 1.15; border: 0; border-radius: 14px; }
+    flex: 1 1 0; min-width: min-content; white-space: normal; overflow-wrap: normal; word-break: keep-all; hyphens: manual; font-size: .75rem; line-height: 1.15; border: 0; border-radius: 14px; }
   html body nav.app-section-pages a:not([aria-current="page"]) { background: transparent; color: var(--ds-ink, #1c1917); }
   html body nav.app-section-pages a[aria-current="page"] { background: linear-gradient(120deg, var(--sx-a, #0b7a6c), var(--sx-b, #0e7490)); color: #fff;
     box-shadow: 0 8px 16px -10px var(--sx-a, #0b7a6c); }
@@ -252,3 +254,33 @@ html body .set-breath { display: flex; gap: 8px; align-items: center; margin: 8p
 html[data-theme="dark"] body .coach-guide, html[data-theme="dark"] body .coach-guide .coach-levels .coach-level { background: #161a2b; }
 html[data-theme="dark"] body .coach-wrong { color: #fca5a5; }
 html[data-theme="dark"] body .set-reasons li { background: #78350f; color: #fef3c7; }
+
+/* ── Community: the four places side by side (components/community-strip.tsx) ──────────────────────────────── */
+html body .community-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 4px 0 18px; }
+html body .community-strip a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border-radius: 18px; text-decoration: none;
+  font-weight: 700; font-size: .8125rem; text-align: center; color: var(--ds-ink, #1c1917); background: var(--ds-surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--cs, #db2777) 22%, transparent); }
+html body :is(.community-strip, .community-card-links) a span { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--cs, #db2777), var(--cs-2, #f97316)); box-shadow: 0 8px 14px -9px var(--cs, #db2777); }
+html body :is(.community-strip, .community-card-links) a[data-place="clubs"] { --cs: #db2777; --cs-2: #f472b6; }
+html body :is(.community-strip, .community-card-links) a[data-place="feed"] { --cs: #7c3aed; --cs-2: #a855f7; }
+html body :is(.community-strip, .community-card-links) a[data-place="events"] { --cs: #0d9488; --cs-2: #06b6d4; }
+html body :is(.community-strip, .community-card-links) a[data-place="challenges"] { --cs: #ea580c; --cs-2: #f59e0b; }
+html body .community-strip a[aria-current="page"] { background: linear-gradient(135deg, var(--cs), var(--cs-2)); color: #fff; border-color: transparent; }
+html body .community-strip a[aria-current="page"] span { background: #ffffff33; box-shadow: none; }
+html body .community-card { display: grid; gap: 12px; margin: 14px 0; padding: 16px 18px; border-radius: 22px;
+  background: linear-gradient(120deg, color-mix(in srgb, #db2777 10%, var(--ds-surface, #fff)), color-mix(in srgb, #f97316 10%, var(--ds-surface, #fff)));
+  border: 1px solid color-mix(in srgb, #db2777 20%, transparent); }
+html body .community-card h2 { margin: 2px 0 4px; font-size: 1.125rem; }
+html body .community-card p { margin: 0; font-size: .875rem; color: var(--ds-muted, #57534e); }
+html body .community-card-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+html body .community-card-links a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 16px; text-decoration: none;
+  font-weight: 700; font-size: .75rem; text-align: center; color: var(--ds-ink, #1c1917); background: var(--ds-surface, #fff); }
+@media (hover: hover) and (pointer: fine) { html body :is(.community-strip, .community-card-links) a:hover { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) body :is(.community-strip, .community-card-links) a { transition: transform .18s, background .2s; } }
+html[data-theme="dark"] body :is(.community-strip a:not([aria-current="page"]), .community-card-links a) { background: #1b1730; color: #f5f3ff; }
+html[data-theme="dark"] body .community-card { background: linear-gradient(120deg, #2a1424, #2a1a10); }
+/* Languages with long single words (German, Malayalam, Tamil…): page links one step smaller, so they keep to one row. */
+@media (max-width: 859px) {
+  html:is(:lang(de), :lang(fr), :lang(ta), :lang(ml), :lang(te), :lang(kn)) body nav.app-section-pages a:is([aria-current], :not([aria-current])) { font-size: .6875rem; padding-inline: 3px; letter-spacing: -.01em; }
+}
