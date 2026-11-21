@@ -4,7 +4,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import fs from "node:fs";
 import { keysOf } from "@/lib/i18n/keys";
-import { CORE_FILES, RUNTIME_KEYS, TRANSLATED_FILES, WAVE_1, WAVE_2 } from "@/lib/i18n/coverage";
+import { RUNTIME_KEYS, TRANSLATED_FILES, WAVE_1, WAVE_2, coreFiles } from "@/lib/i18n/coverage";
 import { LOCALES } from "@/lib/i18n/locales";
 import { EN_PLURALS } from "@/lib/i18n/en-plurals";
 import { detectLocale, locale, number, setCatalogForTests, setLocale, t } from "@/lib/i18n";
@@ -15,10 +15,10 @@ const keys = [...new Set([...TRANSLATED_FILES.flatMap(f => keysOf(f, fs.readFile
 
 afterEach(() => { setCatalogForTests("en", {}); try { localStorage.clear(); } catch { /* none */ } });
 
-const coreKeys = [...new Set([...CORE_FILES.flatMap(f => keysOf(f, fs.readFileSync(f, "utf8"))), ...RUNTIME_KEYS])];
+const coreKeys = (phase: number) => [...new Set([...coreFiles(phase).flatMap(f => keysOf(f, fs.readFileSync(f, "utf8"))), ...RUNTIME_KEYS])];
 describe("wave 2 languages: core screens first", () => {
-  for (const code of WAVE_2) it(`every core-screen text is translated in ${code}, keeping its placeholders`, () => {
-    const c = catalog(code), missing = coreKeys.filter(k => !(k in c));
+  for (const [code, phase] of Object.entries(WAVE_2)) it(`every phase-${phase} core-screen text is translated in ${code}, keeping its placeholders`, () => {
+    const c = catalog(code), missing = coreKeys(phase).filter(k => !(k in c));
     expect(missing, `${code} is missing`).toEqual([]);
     for (const [key, value] of Object.entries(c)) if (typeof value === "string") expect(placeholders(value), `${code}: "${key}"`).toEqual(placeholders(key));
   });
@@ -26,7 +26,7 @@ describe("wave 2 languages: core screens first", () => {
 
 describe("translated screens", () => {
   it("cover every wave-1 language and are listed in the picker", () => {
-    expect(new Set(LOCALES.map(l => l.code))).toEqual(new Set(["en", ...WAVE_1, ...WAVE_2]));
+    expect(new Set(LOCALES.map(l => l.code))).toEqual(new Set(["en", ...WAVE_1, ...Object.keys(WAVE_2)]));
     expect(keys.length).toBeGreaterThan(100);
   });
   for (const code of WAVE_1) it(`every text is translated in ${code}, keeping its placeholders`, () => {

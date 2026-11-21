@@ -251,15 +251,23 @@ export const RUNTIME_KEYS = [
 ];
 export const WAVE_1 = ["hi", "bn", "mr", "te", "ta", "es", "pt", "id", "ar"] as const;
 /** Wave 2 languages are added in phases: every text on these core screens first; the rest falls back to English. */
-export const WAVE_2 = ["kn", "ml"] as const;
-export const CORE_FILES = [
-  "src/lib/sections.ts", "src/components/app-navigation.tsx", "src/components/section-hub.tsx", "src/components/language-picker.tsx",
-  "src/app/root-layout.tsx", "src/components/auth-form.tsx", "src/components/account-session.tsx", "src/components/home-dashboard.tsx",
-  "src/components/coach-card.tsx", "src/components/quick-add.tsx", "src/components/command-search.tsx", "src/components/held-notice.tsx",
-  "src/components/today-tasks.tsx", "src/components/day-card.tsx", "src/components/daily-progress-hub.tsx", "src/components/recovery-checkin.tsx",
-  "src/components/retest-reminder.tsx", "src/components/first-steps.tsx", "src/components/photos.tsx", "src/components/quick-log.tsx",
-  "src/components/feature-companion.tsx", "src/lib/coach.ts", "src/components/targets-card.tsx",
-  // phase 2: onboarding, food diary and search
-  "src/app/food/page.tsx", "src/app/nutrition/page.tsx", "src/app/onboarding/page.tsx", "src/components/personal-onboarding.tsx",
-  "src/components/legacy-onboarding.tsx", "src/components/nutrition-dashboard.tsx", "src/components/device-journal-import.tsx",
+/** Wave 2 languages are added in phases: every text on a phase's screens (plus RUNTIME_KEYS); the rest falls back to
+ *  English. WAVE_2 records how far each language has got; tests/i18n.test.ts requires every screen up to that phase. */
+export const CORE_PHASES = [
+  [ // 1: navigation, sign-in, Today, quick add, search
+    "src/lib/sections.ts", "src/components/app-navigation.tsx", "src/components/section-hub.tsx", "src/components/language-picker.tsx",
+    "src/app/root-layout.tsx", "src/components/auth-form.tsx", "src/components/account-session.tsx", "src/components/home-dashboard.tsx",
+    "src/components/coach-card.tsx", "src/components/quick-add.tsx", "src/components/command-search.tsx", "src/components/held-notice.tsx",
+    "src/components/today-tasks.tsx", "src/components/day-card.tsx", "src/components/daily-progress-hub.tsx", "src/components/recovery-checkin.tsx",
+    "src/components/retest-reminder.tsx", "src/components/first-steps.tsx", "src/components/photos.tsx", "src/components/quick-log.tsx",
+    "src/components/feature-companion.tsx", "src/lib/coach.ts", "src/components/targets-card.tsx",
+  ],
+  [ // 2: onboarding, food diary and search, Food hub
+    "src/app/food/page.tsx", "src/app/nutrition/page.tsx", "src/app/onboarding/page.tsx", "src/components/personal-onboarding.tsx",
+    "src/components/legacy-onboarding.tsx", "src/components/nutrition-dashboard.tsx", "src/components/device-journal-import.tsx",
+  ],
 ];
+export const WAVE_2: Record<string, number> = { kn: 2, ml: 2, gu: 1, pa: 1 };
+/** Every core file a wave-2 language must cover at its phase. */
+export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
+export const CORE_FILES = coreFiles(CORE_PHASES.length);

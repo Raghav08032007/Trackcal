@@ -85,20 +85,23 @@ Owner's choice (20 Nov 2026): Kannada, Malayalam, Gujarati, Punjabi, Urdu, Frenc
 international languages. Each language is added screen by screen; anything not yet translated shows in English, which
 the app already does safely. The picker marks every wave-2 language as a draft.
 
-| Phase | Kannada (kn) | Malayalam (ml) |
-|---|---|---|
-| 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done |
-| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done |
-| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next |
-| Server messages | Today's texts (tasks, Health Score, targets, weekly effort) and meal ideas | Same |
+| Phase | Kannada (kn) | Malayalam (ml) | Gujarati (gu) | Punjabi (pa) |
+|---|---|---|---|---|
+| 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done | Done | Done |
+| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done | Next | Next |
+| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next | Later | Later |
+| Server messages | Today's texts and meal ideas | Same | Same | Same |
 
-- How it is checked: `CORE_FILES` in `src/lib/i18n/coverage.ts` lists the screens a wave-2 language must cover
-  completely; `tests/i18n.test.ts` fails if any text on them is missing or loses a `{placeholder}`. Each phase adds
+- How it is checked: `CORE_PHASES` in `src/lib/i18n/coverage.ts` groups the core screens by phase and `WAVE_2` records
+  each language's phase; a language must cover every screen up to its phase completely; `tests/i18n.test.ts` fails if any text on them is missing or loses a `{placeholder}`. Each phase adds
   screens to that list. Server texts not yet translated are sent in English (the server test checks wave 1 only).
 - Still English on Today in phase 1: exercise names (they come with the Move phase).
 - Tables: `frontend/web/scripts/i18n/wave2_*.py` and `backend/i18n/tables/wave2_*.py`, one column per wave-2 language.
 - Fixed while doing this: the sleep-quality buttons (Restless / Okay / Rested) were shown untranslated in every
   language; they are now translated in all 11.
+- Fixed 21 Nov 2026, for every language: the nutrient names on Today's targets (Protein, Carbs, Fat) and the streak
+  badge's unit (day/days) were built from code words instead of translated. The coverage extractor now also reads
+  single-quoted t('...') texts, which it skipped before (5 texts; wave 1 already had them).
 
 ## Server messages (step 8, done)
 

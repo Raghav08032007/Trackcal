@@ -243,4 +243,10 @@ T = {
  "Your daily targets": ["ನಿಮ್ಮ ದೈನಂದಿನ ಗುರಿಗಳು", "നിങ്ങളുടെ ദിവസ ലക്ഷ്യങ്ങൾ"],
  "set by you": ["ನೀವು ನಿಗದಿಪಡಿಸಿದ್ದು", "നിങ്ങൾ നിശ്ചയിച്ചത്"],
  "under {added_sugar_max}": ["{added_sugar_max} ಕ್ಕಿಂತ ಕಡಿಮೆ", "{added_sugar_max}-ൽ താഴെ"],
+ # Single-quoted texts the extractor now finds too (first steps, feature companion)
+ "Recovery map": ["ಚೇತರಿಕೆ ನಕ್ಷೆ", "വീണ്ടെടുപ്പ് മാപ്പ്"],
+ "Menu picker": ["ಮೆನು ಆಯ್ಕೆ", "മെനു തിരഞ്ഞെടുപ്പ്"],
+ "Feature guidance": ["ವೈಶಿಷ್ಟ್ಯ ಮಾರ್ಗದರ್ಶನ", "ഫീച്ചർ മാർഗനിർദേശം"],
+ "day": ["ದಿನ", "ദിവസം"],
+ "days": ["ದಿನಗಳು", "ദിവസം"],
 }

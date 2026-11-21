@@ -1,7 +1,7 @@
 // The languages TrackCal speaks, in the order the picker shows them. Wave 1 (launch): the largest Indian-language groups and the
 // biggest non-English fitness-app markets (India, Brazil, Mexico and Latin America, Indonesia, the Gulf). See docs/LANGUAGES.md.
 // reviewed: a native speaker has checked the translation. Until then the picker says "draft".
-export type LocaleCode = "en" | "hi" | "bn" | "mr" | "te" | "ta" | "es" | "pt" | "id" | "ar" | "kn" | "ml";
+export type LocaleCode = "en" | "hi" | "bn" | "mr" | "te" | "ta" | "es" | "pt" | "id" | "ar" | "kn" | "ml" | "gu" | "pa";
 export type Locale = { code: LocaleCode; native: string; english: string; dir: "ltr" | "rtl"; reviewed: boolean;
   /** For numbers and dates: Indian grouping (1,00,000) for Indian languages, regional styles elsewhere. */
   format: string };
@@ -15,6 +15,8 @@ export const LOCALES: Locale[] = [
   // Wave 2: the core screens are translated; anything else shows in English until its phase (docs/LANGUAGES.md).
   { code: "kn", native: "ಕನ್ನಡ", english: "Kannada", dir: "ltr", reviewed: false, format: "kn-IN" },
   { code: "ml", native: "മലയാളം", english: "Malayalam", dir: "ltr", reviewed: false, format: "ml-IN" },
+  { code: "gu", native: "ગુજરાતી", english: "Gujarati", dir: "ltr", reviewed: false, format: "gu-IN" },
+  { code: "pa", native: "ਪੰਜਾਬੀ", english: "Punjabi", dir: "ltr", reviewed: false, format: "pa-IN" },
   { code: "es", native: "Español", english: "Spanish", dir: "ltr", reviewed: false, format: "es" },
   { code: "pt", native: "Português (Brasil)", english: "Portuguese (Brazil)", dir: "ltr", reviewed: false, format: "pt-BR" },
   { code: "id", native: "Bahasa Indonesia", english: "Indonesian", dir: "ltr", reviewed: false, format: "id-ID" },

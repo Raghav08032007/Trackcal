@@ -55,7 +55,7 @@ export function TodayTasks() {
   return <section className="ds-card today-tasks" aria-labelledby="today-tasks-title">
     <div className="today-tasks-head">
       <div><h2 id="today-tasks-title">{t("Today's 3 tasks")}</h2><p className="ds-sub">{data.done === 3 ? t("All done. Lovely work.") : t("{done} of 3 done", { done: data.done })}</p></div>
-      <div className="streak-pill" title={data.streak.rule}><Flame size={18} aria-hidden="true" /><strong>{data.streak.current}</strong><span>day{data.streak.current === 1 ? "" : "s"}</span></div>
+      <div className="streak-pill" title={data.streak.rule}><Flame size={18} aria-hidden="true" /><strong>{data.streak.current}</strong><span>{data.streak.current === 1 ? t("day") : t("days")}</span></div>
     </div>
     <ol className="task-list">{data.tasks.map(task => <li key={task.id} className="task-row" data-done={task.done || undefined}>
       {task.tick
