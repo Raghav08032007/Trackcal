@@ -88,8 +88,8 @@ the app already does safely. The picker marks every wave-2 language as a draft.
 | Phase | Kannada (kn) | Malayalam (ml) | Gujarati (gu) | Punjabi (pa) | Urdu (ur), right to left | French (fr) | German (de) |
 |---|---|---|---|---|---|---|---|
 | 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done | Done | Done | Done | Done | Done |
-| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done | Done | Done | Next | Next | Next |
-| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next | Next | Next | Later | Later | Later |
+| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done | Done | Done | Done | Done | Done |
+| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next | Next | Next | Next | Next | Next |
 | Server messages | Today's texts and meal ideas | Same | Same | Same | Same | Same | Same |
 
 - How it is checked: `CORE_PHASES` in `src/lib/i18n/coverage.ts` groups the core screens by phase and `WAVE_2` records
@@ -108,6 +108,11 @@ the app already does safely. The picker marks every wave-2 language as a draft.
 - Fixed 21 Nov 2026, for every language: the nutrient names on Today's targets (Protein, Carbs, Fat) and the streak
   badge's unit (day/days) were built from code words instead of translated. The coverage extractor now also reads
   single-quoted t('...') texts, which it skipped before (5 texts; wave 1 already had them).
+- Fixed 21 Nov 2026, for every wave-2 language: the parts the root layout shows on every page (update prompt,
+  journey companion, feedback button, appearance and motion settings, celebration bubbles, in-app reminders) were not
+  in the phase-1 file list, so they stayed English on every page. They are now in phase 1 (81 texts,
+  `wave2_shell.py`). The exact browser check (`still English`) can't see texts a catalog lacks, so look at
+  screenshots too.
 
 ## Server messages (step 8, done)
 

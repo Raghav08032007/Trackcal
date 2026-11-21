@@ -261,13 +261,16 @@ export const CORE_PHASES = [
     "src/components/today-tasks.tsx", "src/components/day-card.tsx", "src/components/daily-progress-hub.tsx", "src/components/recovery-checkin.tsx",
     "src/components/retest-reminder.tsx", "src/components/first-steps.tsx", "src/components/photos.tsx", "src/components/quick-log.tsx",
     "src/components/feature-companion.tsx", "src/lib/coach.ts", "src/components/targets-card.tsx",
+    // shown on every page from the root layout: update prompt, companion tips, feedback, theme control, reminders
+    "src/components/app-updates.tsx", "src/components/journey-companion.tsx", "src/components/beta-feedback.tsx",
+    "src/components/theme-control.tsx", "src/components/living-characters.tsx", "src/components/personal-reminder-inbox.tsx",
   ],
   [ // 2: onboarding, food diary and search, Food hub
     "src/app/food/page.tsx", "src/app/nutrition/page.tsx", "src/app/onboarding/page.tsx", "src/components/personal-onboarding.tsx",
     "src/components/legacy-onboarding.tsx", "src/components/nutrition-dashboard.tsx", "src/components/device-journal-import.tsx",
   ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 2, ml: 2, gu: 2, pa: 2, ur: 1, fr: 1, de: 1 };
+export const WAVE_2: Record<string, number> = { kn: 2, ml: 2, gu: 2, pa: 2, ur: 2, fr: 2, de: 2 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);
