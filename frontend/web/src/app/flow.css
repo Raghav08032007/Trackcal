@@ -190,3 +190,65 @@ html body .pa-summary-icons i { position: absolute; right: -4px; bottom: -4px; f
 html body .pa-summary-icons [data-change="worse"] i { background: #d97706; }
 html body .pa-summary-go { font-weight: 700; font-size: .875rem; color: #0f766e; white-space: nowrap; }
 html[data-theme="dark"] body .pa-summary { background: linear-gradient(120deg, #10231f, #1e1b3a); color: #ecfdf5; }
+
+/* ── Coach guide for camera exercises and sports (components/coach-guide.tsx) ───────────────────────────────── */
+html body .coach-guide { --cg: #7c3aed; --cg-2: #db2777; margin: 16px 0; padding: 18px; border-radius: 24px; background: var(--ds-surface, #fff); color: var(--ds-ink, #1c1917);   /* own colour: the sport panel sets white text */
+  border: 1px solid color-mix(in srgb, var(--cg) 22%, transparent); box-shadow: 0 18px 34px -28px var(--cg); }
+html body .coach-guide:is([data-pattern="squat"], [data-pattern="lunge"], [data-pattern="legiso"]) { --cg: #ea580c; --cg-2: #f59e0b; }
+html body .coach-guide:is([data-pattern="hinge"], [data-pattern="glute"]) { --cg: #db2777; --cg-2: #f43f5e; }
+html body .coach-guide:is([data-pattern="push"], [data-pattern="press"], [data-pattern="raise"], [data-pattern="triceps"]) { --cg: #2563eb; --cg-2: #0891b2; }
+html body .coach-guide:is([data-pattern="pull"], [data-pattern="curl"]) { --cg: #0d9488; --cg-2: #10b981; }
+html body .coach-guide:is([data-pattern="core"], [data-pattern="stability"]) { --cg: #7c3aed; --cg-2: #c026d3; }
+html body .coach-guide[data-pattern="cardio"], html body .coach-guide.coach-sport { --cg: #dc2626; --cg-2: #f97316; }
+html body .coach-head { display: flex; gap: 14px; align-items: flex-start; }
+html body .coach-badge { width: 44px; height: 44px; flex: 0 0 auto; border-radius: 14px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--cg), var(--cg-2)); box-shadow: 0 10px 18px -10px var(--cg); }
+html body .coach-head h3 { margin: 2px 0 4px; font-size: 1.25rem; }
+html body .coach-trains { margin: 0; display: flex; align-items: center; gap: 6px; font-size: .875rem; color: var(--ds-muted, #57534e); }
+html body .coach-tabs { display: flex; gap: 6px; margin: 14px 0 12px; padding: 4px; border-radius: 16px; overflow-x: auto; scrollbar-width: none;
+  background: color-mix(in srgb, var(--cg) 8%, var(--ds-surface, #fff)); }
+html body .coach-guide .coach-tabs button[role="tab"] { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 12px;
+  border: 0; border-radius: 12px; background: transparent; color: var(--ds-ink, #1c1917); font-weight: 650; font-size: .8125rem; white-space: nowrap; }
+html body .coach-guide .coach-tabs button[role="tab"][aria-selected="true"] { background: linear-gradient(120deg, var(--cg), var(--cg-2)); color: #fff; box-shadow: 0 8px 14px -10px var(--cg); }
+@media (max-width: 600px) { html body .coach-guide .coach-tabs { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; } html body .coach-guide .coach-tabs button[role="tab"] { white-space: normal; text-align: center; } }
+html body .coach-panel { animation: coach-in .25s ease-out both; }
+@keyframes coach-in { from { opacity: 0; translate: 0 4px; } }
+html body .coach-steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: grid; gap: 10px; }
+html body .coach-steps li { counter-increment: step; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; font-size: .9375rem; line-height: 1.5; }
+html body .coach-steps li::before { content: counter(step); width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, var(--cg), var(--cg-2)); }
+html body .coach-cues, html body .coach-breath, html body .coach-setup { margin: 12px 0 0; padding: 10px 12px; border-radius: 14px; font-size: .875rem; line-height: 1.5;
+  background: color-mix(in srgb, var(--cg) 7%, var(--ds-surface, #fff)); }
+html body .coach-breath { display: flex; gap: 8px; align-items: center; }
+html body .coach-mistakes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+html body .coach-mistakes li { display: grid; gap: 6px; padding: 12px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--cg) 16%, transparent); }
+html body .coach-mistakes p { margin: 0; display: flex; gap: 8px; align-items: flex-start; font-size: .875rem; line-height: 1.45; }
+html body .coach-wrong { color: #b91c1c; font-weight: 650; } html body .coach-wrong svg { color: #dc2626; flex: 0 0 auto; }
+html body .coach-right svg { color: #16a34a; flex: 0 0 auto; }
+html body .coach-levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; }
+html body .coach-levels h4 { margin: 0 0 8px; font-size: .875rem; text-transform: uppercase; letter-spacing: .04em; color: color-mix(in srgb, var(--cg) 75%, #000); }
+html body .coach-levels p { margin: 0; font-size: .875rem; color: var(--ds-muted, #57534e); }
+html body .coach-guide .coach-levels .coach-level { display: flex; width: 100%; align-items: center; gap: 8px; margin: 0 0 8px; min-height: 44px; padding: 8px 12px; border-radius: 14px; text-align: left;
+  border: 1px solid color-mix(in srgb, var(--cg) 25%, transparent); background: var(--ds-surface, #fff); color: var(--ds-ink, #1c1917); font-weight: 650; font-size: .875rem; }
+html body .coach-level small { margin-left: auto; font-weight: 600; font-size: .75rem; color: var(--ds-muted, #57534e); }
+html body .coach-easier svg { color: #16a34a; } html body .coach-harder svg { color: #dc2626; }
+html body .coach-guide .coach-levels button.coach-level:hover { border-color: var(--cg); }
+html body .coach-safety, html body .coach-tips { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: .875rem; line-height: 1.5; }
+html body .coach-tips { margin-top: 10px; color: var(--ds-muted, #57534e); }
+
+/* Set report after a camera set */
+html body .set-report-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+html body .set-report-stats > div { display: grid; gap: 2px; padding: 12px; border-radius: 16px; text-align: center; color: #fff; }
+html body .set-report-stats strong { font-size: 1.5rem; line-height: 1.1; } html body .set-report-stats span { font-size: .75rem; opacity: .95; }
+html body .set-good { background: linear-gradient(135deg, #16a34a, #0d9488); }
+html body .set-missed { background: linear-gradient(135deg, #d97706, #ea580c); } html body .set-missed.is-zero { background: linear-gradient(135deg, #64748b, #94a3b8); }
+html body .set-share { background: linear-gradient(135deg, #7c3aed, #2563eb); }
+html body .set-reasons { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+html body .set-reasons li { display: inline-flex; gap: 6px; align-items: center; padding: 5px 10px; border-radius: 999px; font-size: .8125rem; background: #fef3c7; color: #92400e; }
+html body .set-reasons b { font-weight: 800; }
+html body .set-fix { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 12px; border-radius: 14px; background: color-mix(in srgb, #7c3aed 8%, var(--ds-surface, #fff)); font-size: .875rem; line-height: 1.5; }
+html body .set-fix svg { color: #7c3aed; flex: 0 0 auto; margin-top: 2px; }
+html body .set-breath { display: flex; gap: 8px; align-items: center; margin: 8px 0 0; font-size: .8125rem; color: var(--ds-muted, #57534e); }
+html[data-theme="dark"] body .coach-guide, html[data-theme="dark"] body .coach-guide .coach-levels .coach-level { background: #161a2b; }
+html[data-theme="dark"] body .coach-wrong { color: #fca5a5; }
+html[data-theme="dark"] body .set-reasons li { background: #78350f; color: #fef3c7; }

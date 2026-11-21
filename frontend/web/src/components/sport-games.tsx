@@ -9,6 +9,7 @@ import type {PoseFrame} from '@/lib/pose/types';
 import {ROUND_SECONDS,SPORTS,multiplier,readBests,saveBest,scoreCount,starGoals,stars,startScore,type GameScore,type RoundSeconds} from '@/lib/sport-game';
 import {useLocalState} from '@/lib/use-local-state';
 import {MoveDemo,MoveThumb} from './exercise-demo';
+import {SportCoachGuide} from './coach-guide';
 import {Celebration} from './celebration';
 import '@/app/play/sports.css';
 
@@ -83,7 +84,7 @@ export function SportGames({calm}:{calm:boolean}){
     <button type="button" className="play-small" aria-pressed={sound} onClick={()=>setSound(v=>!v)} aria-label={sound?t("Sound on"):t("Sound off")}>{sound?<Volume2 size={16}/>:<VolumeX size={16}/>}</button>
     <button type="button" className="play-small" onClick={camera?finish:close}>{camera?t("End round"):<><X size={16}/> {t("All games")}</>}</button></div></div>
    {phase==='ready'&&<div className="sport-ready">
-    <MoveDemo move={SPORT_MOVES[kind]} gear="body" title={sport.title} cues={sport.cues}/>
+    <MoveDemo move={SPORT_MOVES[kind]} gear="body" title={sport.title} cues={sport.cues}/><SportCoachGuide kind={kind}/>
     <div className="sport-ready-side">
      <p className="sport-tip"><Camera size={18}/>{sport.camera}</p>
      <p>{sport.tip}</p>
