@@ -1,7 +1,7 @@
 // The languages TrackCal speaks, in the order the picker shows them. Wave 1 (launch): the largest Indian-language groups and the
 // biggest non-English fitness-app markets (India, Brazil, Mexico and Latin America, Indonesia, the Gulf). See docs/LANGUAGES.md.
 // reviewed: a native speaker has checked the translation. Until then the picker says "draft".
-export type LocaleCode = "en" | "hi" | "bn" | "mr" | "te" | "ta" | "es" | "pt" | "id" | "ar" | "kn" | "ml" | "gu" | "pa";
+export type LocaleCode = "en" | "hi" | "bn" | "mr" | "te" | "ta" | "es" | "pt" | "id" | "ar" | "kn" | "ml" | "gu" | "pa" | "ur";
 export type Locale = { code: LocaleCode; native: string; english: string; dir: "ltr" | "rtl"; reviewed: boolean;
   /** For numbers and dates: Indian grouping (1,00,000) for Indian languages, regional styles elsewhere. */
   format: string };
@@ -21,6 +21,9 @@ export const LOCALES: Locale[] = [
   { code: "pt", native: "Português (Brasil)", english: "Portuguese (Brazil)", dir: "ltr", reviewed: false, format: "pt-BR" },
   { code: "id", native: "Bahasa Indonesia", english: "Indonesian", dir: "ltr", reviewed: false, format: "id-ID" },
   { code: "ar", native: "العربية", english: "Arabic", dir: "rtl", reviewed: false, format: "ar" },
+  // Wave 2, right to left like Arabic. Format "ur": Western digits (123,456), as Urdu apps in Pakistan and India use and as
+  // the server texts write them; "ur-IN" would switch to Urdu digits and mix the two on one screen.
+  { code: "ur", native: "اردو", english: "Urdu", dir: "rtl", reviewed: false, format: "ur" },
 ];
 export const DEFAULT_LOCALE: LocaleCode = "en";
 export const isLocale = (value: unknown): value is LocaleCode => LOCALES.some(l => l.code === value);

@@ -85,12 +85,12 @@ Owner's choice (20 Nov 2026): Kannada, Malayalam, Gujarati, Punjabi, Urdu, Frenc
 international languages. Each language is added screen by screen; anything not yet translated shows in English, which
 the app already does safely. The picker marks every wave-2 language as a draft.
 
-| Phase | Kannada (kn) | Malayalam (ml) | Gujarati (gu) | Punjabi (pa) |
-|---|---|---|---|---|
-| 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done | Done | Done |
-| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done | Done | Done |
-| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next | Next | Next |
-| Server messages | Today's texts and meal ideas | Same | Same | Same |
+| Phase | Kannada (kn) | Malayalam (ml) | Gujarati (gu) | Punjabi (pa) | Urdu (ur), right to left |
+|---|---|---|---|---|---|
+| 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done | Done | Done | Done |
+| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done | Done | Done | Next |
+| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next | Next | Next | Later |
+| Server messages | Today's texts and meal ideas | Same | Same | Same | Same |
 
 - How it is checked: `CORE_PHASES` in `src/lib/i18n/coverage.ts` groups the core screens by phase and `WAVE_2` records
   each language's phase; a language must cover every screen up to its phase completely; `tests/i18n.test.ts` fails if any text on them is missing or loses a `{placeholder}`. Each phase adds
