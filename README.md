@@ -46,7 +46,7 @@ The web app is built with Vite, React 19 and React Router. The API runs on Flask
 **Everywhere**
 - Works on phone and laptop, with light and dark mode, Comfort mode and reduced motion.
 - Languages: English, हिन्दी, বাংলা, मराठी, తెలుగు, தமிழ், Español, Português (Brasil), Bahasa Indonesia and العربية
-  (right to left), plus ಕನ್ನಡ, മലയാളം, ગુજરાતી, ਪੰਜਾਬੀ and اردو (right to left) for the main screens (wave 2, in phases). The translations are drafts waiting
+  (right to left), plus ಕನ್ನಡ, മലയാളം, ગુજરાતી, ਪੰਜਾਬੀ, اردو (right to left), Français and Deutsch for the main screens (wave 2, in phases). The translations are drafts waiting
   for review by native speakers.
 - Ctrl+K search, a "+" quick add from anywhere, and account sync.
 

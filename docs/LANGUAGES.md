@@ -85,18 +85,24 @@ Owner's choice (20 Nov 2026): Kannada, Malayalam, Gujarati, Punjabi, Urdu, Frenc
 international languages. Each language is added screen by screen; anything not yet translated shows in English, which
 the app already does safely. The picker marks every wave-2 language as a draft.
 
-| Phase | Kannada (kn) | Malayalam (ml) | Gujarati (gu) | Punjabi (pa) | Urdu (ur), right to left |
-|---|---|---|---|---|---|
-| 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done | Done | Done | Done |
-| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done | Done | Done | Next |
-| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next | Next | Next | Later |
-| Server messages | Today's texts and meal ideas | Same | Same | Same | Same |
+| Phase | Kannada (kn) | Malayalam (ml) | Gujarati (gu) | Punjabi (pa) | Urdu (ur), right to left | French (fr) | German (de) |
+|---|---|---|---|---|---|---|---|
+| 1. Navigation, sign-in, Today (tasks, Health Score, check-ins, targets, coach lines), quick add, search, offline journal | Done | Done | Done | Done | Done | Done | Done |
+| 2. Onboarding, food diary and search, Food hub, meal ideas | Done | Done | Done | Done | Next | Next | Next |
+| 3. Move (workouts, camera, exercise names), Play, Me | Next | Next | Next | Next | Later | Later | Later |
+| Server messages | Today's texts and meal ideas | Same | Same | Same | Same | Same | Same |
 
 - How it is checked: `CORE_PHASES` in `src/lib/i18n/coverage.ts` groups the core screens by phase and `WAVE_2` records
   each language's phase; a language must cover every screen up to its phase completely; `tests/i18n.test.ts` fails if any text on them is missing or loses a `{placeholder}`. Each phase adds
   screens to that list. Server texts not yet translated are sent in English (the server test checks wave 1 only).
 - Still English on Today in phase 1: exercise names (they come with the Move phase).
 - Tables: `frontend/web/scripts/i18n/wave2_*.py` and `backend/i18n/tables/wave2_*.py`, one column per wave-2 language.
+- Phone tab bar (Today, Food, Move, Add, Play, Me): each label gets one sixth of a 360 px screen. A label may use two
+  lines but breaks only where its translation allows, so a long single word carries an invisible break mark: a soft
+  hyphen (U+00AD) in German "Hinzu­fügen", a zero-width space (U+200B) in French "Aujourd'hui" and Tamil
+  "விளையாட்டு". The mark is invisible wherever the same text appears elsewhere. Anything still too long ends in "…"
+  (`foundation.css`). French uses a narrow no-break space before ? ! : ; (added by its tables).
+- Urdu uses Western digits (format "ur"); "ur-IN" would show Urdu digits beside the server's Western ones.
 - Fixed while doing this: the sleep-quality buttons (Restless / Okay / Rested) were shown untranslated in every
   language; they are now translated in all 11.
 - Fixed 21 Nov 2026, for every language: the nutrient names on Today's targets (Protein, Carbs, Fat) and the streak

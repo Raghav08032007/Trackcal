@@ -7,7 +7,7 @@ T = {
  "Today": ["आज", "আজ", "आज", "ఈరోజు", "இன்று", "Hoy", "Hoje", "Hari ini", "اليوم"],
  "Food": ["खाना", "খাবার", "अन्न", "ఆహారం", "உணவு", "Comida", "Comida", "Makanan", "الطعام"],
  "Move": ["व्यायाम", "নড়াচড়া", "हालचाल", "కదలిక", "இயக்கம்", "Moverse", "Movimento", "Gerak", "الحركة"],
- "Play": ["खेल", "খেলা", "खेळ", "ఆట", "விளையாட்டு", "Jugar", "Jogar", "Main", "اللعب"],
+ "Play": ["खेल", "খেলা", "खेळ", "ఆట", "விளை​யாட்டு", "Jugar", "Jogar", "Main", "اللعب"],
  "Me": ["मैं", "আমি", "मी", "నేను", "நான்", "Yo", "Eu", "Saya", "أنا"],
  "Main": ["मुख्य", "প্রধান", "मुख्य", "ప్రధాన", "முதன்மை", "Principal", "Principal", "Utama", "الرئيسية"],
  "TrackCal home": ["TrackCal होम", "TrackCal হোম", "TrackCal मुख्यपृष्ठ", "TrackCal హోమ్", "TrackCal முகப்பு", "Inicio de TrackCal", "Início do TrackCal", "Beranda TrackCal", "صفحة TrackCal الرئيسية"],

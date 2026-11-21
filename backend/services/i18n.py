@@ -18,7 +18,7 @@ from functools import lru_cache
 from pathlib import Path
 
 LANGS = ('en', 'hi', 'bn', 'mr', 'te', 'ta', 'es', 'pt', 'id', 'ar',
-         'kn', 'ml', 'gu', 'pa', 'ur')   # wave 2: screens first (docs/LANGUAGES.md); a server text not yet translated is sent in English
+         'kn', 'ml', 'gu', 'pa', 'ur', 'fr', 'de')   # wave 2: screens first (docs/LANGUAGES.md); a server text not yet translated is sent in English
 MESSAGES = Path(__file__).resolve().parents[1] / 'i18n' / 'messages'
 
 

@@ -73,6 +73,16 @@ html body .gate-primary.gate-primary.gate-primary { border-radius: 14px; font-we
 /* ── Tab bar labels: readable at every age ────────────────────────────────────────────────── */
 html body .app-tabbar a, html body .qa-button { font-size: .75rem; }
 @media (min-width: 900px) { html body .app-tabbar a, html body .qa-button { font-size: .875rem; } }
+/* Phone bar: long words (German, French, Tamil…) must stay inside their own column. Grid items don't shrink below their
+   text, so let them; a label may take two lines, breaking only where its translation marks a break (a soft hyphen in
+   "Hinzu-fügen", an invisible break in "Aujourd'hui"); anything still too long ends with "…" instead of overlapping. */
+@media (max-width: 899px) {
+  html body .app-tabbar > * { min-width: 0; }
+  html body :is(.app-tabbar a, .qa-button) > span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; word-break: keep-all; hyphens: manual; line-height: 1.25; text-align: center; }
+  html:is(:lang(de), :lang(fr), :lang(ta), :lang(ml), :lang(te), :lang(kn)) body :is(.app-tabbar a, .qa-button) > span { letter-spacing: -.02em; font-size: .6875rem; }
+  /* Malayalam is the widest script here: one step smaller still, so "ഭക്ഷണം" fits a 360 px phone. */
+  html:lang(ml) body :is(.app-tabbar a, .qa-button) > span { font-size: .625rem; letter-spacing: -.03em; }
+}
 
 /* Camera mode switch: the chosen mode uses the deep fill, and its small print stays fully readable on it. */
 html body .camera-mode-switch a[aria-current="page"] { background: var(--ds-fill); color: #fff; }

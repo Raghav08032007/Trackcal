@@ -89,8 +89,9 @@ def test_every_server_text_is_translated(code):
 
 def test_header_parsing_picks_the_first_language_trackcal_speaks():
     assert i18n.from_header('hi-IN,hi;q=0.9,en;q=0.8') == 'hi'
-    assert i18n.from_header('fr-FR,fr;q=0.9,ar;q=0.8,en;q=0.5') == 'ar'
-    assert i18n.from_header('de, en;q=0') is None
+    assert i18n.from_header('ja-JP,ja;q=0.9,ar;q=0.8,en;q=0.5') == 'ar'   # Japanese isn't offered yet: next choice
+    assert i18n.from_header('fr-FR,fr;q=0.9,en;q=0.5') == 'fr' and i18n.from_header('de-AT,de;q=0.9') == 'de'
+    assert i18n.from_header('ja, en;q=0') is None
     assert i18n.from_header('') is None and i18n.from_header(None) is None
 
 
