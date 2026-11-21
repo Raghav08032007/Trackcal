@@ -53,7 +53,7 @@ export const SECTIONS: Section[] = [
     pages: [["/play", "Quests"], ["/challenges", "Challenges"], ["/feed", "Feed"], ["/communities", "Clubs"], ["/events", "Events"]],
     also: ["/challenges/*", "/events/*", "/c/*", "/u/*", "/moderation", "/accuracy"] },
   { id: "me", label: "Me", href: "/me", icon: UserRound,
-    pages: [["/me", "Overview"], ["/account", "Account"], ["/health", "My report"], ["/progress", "Progress"], ["/routine", "Reminders"]],
+    pages: [["/me", "Overview"], ["/progress", "Progress"], ["/account", "Account"], ["/health", "My report"], ["/routine", "Reminders"]],
     also: ["/premium", "/help", "/onboarding", "/guide", "/privacy", "/terms", "/credits", "/body-preview", "/design", "/coach/clients"],
     groups: [
       { title: "You", items: [

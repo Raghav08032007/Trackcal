@@ -264,6 +264,8 @@ export const CORE_PHASES = [
     // shown on every page from the root layout: update prompt, companion tips, feedback, theme control, reminders
     "src/components/app-updates.tsx", "src/components/journey-companion.tsx", "src/components/beta-feedback.tsx",
     "src/components/theme-control.tsx", "src/components/living-characters.tsx", "src/components/personal-reminder-inbox.tsx",
+    // the Progress page's area cards (every area, this week against last)
+    "src/components/progress-areas.tsx",
   ],
   [ // 2: onboarding, food diary and search, Food hub
     "src/app/food/page.tsx", "src/app/nutrition/page.tsx", "src/app/onboarding/page.tsx", "src/components/personal-onboarding.tsx",

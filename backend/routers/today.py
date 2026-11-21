@@ -147,3 +147,14 @@ def history_summary(user=Depends(get_current_active_user), db: Session = Depends
     for d in days.values():
         d['active_min'] = max(d['active_min'], d.pop('logged_min'))   # the same walk is often in both: count it once, as the Health Score does
     return {'history': access(db, user, today), 'months': monthly(list(days.values()))}
+
+
+def progress_view(user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Every area the person tracks, this week against last week (services/progress_areas.py), for the Progress page."""
+    from services import progress_areas
+    from services import wellness_days as wd
+    prefs = prefs_for(db.get(models.PersonalizationProfile, user.id))
+    today = local_now(prefs).date()
+    targets = targets_view(user, db)
+    return progress_areas.collect(db, user, prefs.timezone, today, {'calories': targets.get('calories'), 'protein': targets.get('protein')},
+                                  wd.water_goal(latest_weight(db, user)), getattr(prefs, 'goal', None))
