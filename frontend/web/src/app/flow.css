@@ -1,0 +1,115 @@
+/* Flow: loaded last. Page transitions, a page that never slides sideways, the page links on phones, the floating
+   reminder and the exercise library cards. */
+
+/* ── No sideways scrolling ──────────────────────────────────────────────────────────────────────────────────────
+   "clip" (unlike "hidden") can't be scrolled by code either, so a link row calling scrollIntoView can no longer push
+   the whole page sideways. The page helper's hidden label stuck out ~20 px on laptops; keep it inside its button. */
+html, body { overflow-x: clip; }
+html body .companion-help-button { max-width: 100%; overflow: hidden; }
+
+/* ── Page transitions ───────────────────────────────────────────────────────────────────────────────────────────
+   Only the content changes: a quick fade out, then the new page fades in with a small upward glide (no zoom, which
+   made the whole screen wobble). The top bar and tab bar stay still, and the highlight on the current tab and page
+   link slides to its new place. */
+@keyframes flow-out { to { opacity: 0; } }
+@keyframes flow-in { from { opacity: 0; translate: 0 10px; } }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"])::view-transition-old(root) { animation: flow-out .12s ease-out both; }
+  html:not([data-motion="reduced"])::view-transition-new(root) { animation: flow-in .28s cubic-bezier(.2, .8, .2, 1) .04s both; }
+  html:not([data-motion="reduced"]) body .app-tabbar a[aria-current="page"] { view-transition-name: tab-current; }
+  html:not([data-motion="reduced"]) body .app-section-pages a[aria-current="page"] { view-transition-name: page-current; }
+  html:not([data-motion="reduced"])::view-transition-group(tab-current),
+  html:not([data-motion="reduced"])::view-transition-group(page-current) { animation-duration: .34s; animation-timing-function: cubic-bezier(.3, 1.25, .45, 1); }
+  html:not([data-motion="reduced"])::view-transition-old(tab-current),
+  html:not([data-motion="reduced"])::view-transition-old(page-current) { animation: flow-out .16s ease-out both; }
+  html:not([data-motion="reduced"])::view-transition-new(tab-current),
+  html:not([data-motion="reduced"])::view-transition-new(page-current) { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+
+/* ── Page links on phones: one segmented bar, every link visible, Overview always first ─────────────────────── */
+@media (max-width: 859px) {
+  html body nav.app-section-pages { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; overflow: visible;
+    margin: 8px 0 4px; padding: 4px; border-radius: 18px;
+    background: color-mix(in srgb, var(--sx-a, #0b7a6c) 9%, var(--ds-surface, #fff));
+    border: 1px solid color-mix(in srgb, var(--sx-a, #0b7a6c) 18%, transparent); }
+  html body nav.app-section-pages a:not([aria-current="page"]),
+  html body nav.app-section-pages a[aria-current="page"] { min-width: 0; min-height: 42px; padding: 4px 4px; justify-content: center; text-align: center;
+    white-space: normal; overflow-wrap: anywhere; hyphens: auto; font-size: .75rem; line-height: 1.15; border: 0; border-radius: 14px; }
+  html body nav.app-section-pages a:not([aria-current="page"]) { background: transparent; color: var(--ds-ink, #1c1917); }
+  html body nav.app-section-pages a[aria-current="page"] { background: linear-gradient(120deg, var(--sx-a, #0b7a6c), var(--sx-b, #0e7490)); color: #fff;
+    box-shadow: 0 8px 16px -10px var(--sx-a, #0b7a6c); }
+}
+
+/* ── Reminder: a floating card at the bottom left ─────────────────────────────────────────────────────────────
+   Phones: just above the tab bar. Laptops: bottom-left corner. If the companion sits on the left, it moves right. */
+@keyframes reminder-in { from { opacity: 0; translate: -24px 12px; scale: .96; } }
+@keyframes reminder-out { to { opacity: 0; translate: -24px 0; scale: .96; } }
+html body .personal-reminder-inbox { position: fixed; inset: auto auto calc(var(--tabbar-offset, 0px) + 20px) 16px; margin: 0; z-index: 65;
+  width: min(360px, calc(100vw - 32px)); max-width: none; align-self: auto;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 12px; padding: 14px;
+  border-radius: 20px; border: 1px solid color-mix(in srgb, #0d9488 26%, transparent);
+  background: linear-gradient(135deg, var(--ds-surface, #fff) 55%, color-mix(in srgb, #14b8a6 12%, var(--ds-surface, #fff)));
+  color: var(--ds-ink, #1c1917); box-shadow: 0 18px 40px -18px #0f766e88, 0 2px 6px #0000000f;
+  animation: reminder-in .4s cubic-bezier(.2, .9, .3, 1.15) both; }
+html body .personal-reminder-inbox.is-leaving { animation: reminder-out .22s ease-in both; }
+html body:has(.journey-left) .personal-reminder-inbox { inset-inline: auto 16px; }
+@media (min-width: 860px) { html body .personal-reminder-inbox { inset: auto auto 24px 24px; } html body:has(.journey-left) .personal-reminder-inbox { inset-inline: auto 24px; } }
+html body .personal-reminder-inbox .reminder-icon { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, #0d9488, #06b6d4); box-shadow: 0 8px 14px -8px #0d9488; }
+html body .personal-reminder-inbox > .reminder-body { display: block; min-width: 0; margin: 0; }   /* an older rule made every inner div a row */
+html body .personal-reminder-inbox strong { display: block; font-size: .9375rem; line-height: 1.3; }
+html body .personal-reminder-inbox strong::first-letter { text-transform: uppercase; }
+html body .personal-reminder-inbox p { margin: 4px 0 2px; font-size: .8125rem; line-height: 1.45; color: inherit; }
+html body .personal-reminder-inbox small { display: block; font-size: .6875rem; opacity: .7; }
+html body .personal-reminder-inbox .reminder-actions { display: flex; gap: 8px; margin-top: 10px; }
+html body .personal-reminder-inbox .reminder-actions button { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 0; font-weight: 700; font-size: .8125rem;
+  background: linear-gradient(120deg, #0d9488, #0891b2); color: #fff; }
+html body .personal-reminder-inbox .reminder-close { width: 32px; min-width: 32px; height: 32px; min-height: 32px; padding: 0; display: grid; place-items: center;
+  border-radius: 10px; border: 0; background: transparent; color: inherit; opacity: .6; }
+html body .personal-reminder-inbox .reminder-close:hover { opacity: 1; background: #0000000d; }
+
+/* ── Exercise library cards: colour by category, even heights, actions on one line at the bottom ──────────────── */
+html body .wellness-card-grid:has(> .ex-card) { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; align-items: stretch; }
+html body .wellness-card-grid > article.ex-card { --ex: #db2777; --ex-2: #f43f5e; --stripe: var(--ex);
+  display: flex; flex-direction: column; gap: 10px; padding: 0 18px 16px; border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--ex) 22%, transparent); background: var(--ds-surface, #fff);
+  box-shadow: 0 14px 28px -22px color-mix(in srgb, var(--ex) 80%, transparent); }
+html body .wellness-card-grid > article.ex-card[data-cat="endurance"] { --ex: #ea580c; --ex-2: #f59e0b; }
+html body .wellness-card-grid > article.ex-card[data-cat="mobility"] { --ex: #0d9488; --ex-2: #06b6d4; }
+html body .wellness-card-grid > article.ex-card[data-cat="yoga"] { --ex: #7c3aed; --ex-2: #c026d3; }
+html body .wellness-card-grid > article.ex-card[data-cat="recovery"] { --ex: #4f46e5; --ex-2: #3b82f6; }
+html body .wellness-card-grid > article.ex-card[data-cat="camera"] { --ex: #2563eb; --ex-2: #0891b2; }
+html body .ex-card .ex-card-top { margin: 0 -18px; padding: 16px 18px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--ex) 14%, transparent), color-mix(in srgb, var(--ex-2) 6%, transparent)); }
+html body .ex-card .ex-card-icon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--ex), var(--ex-2)); box-shadow: 0 8px 14px -8px var(--ex); margin-right: 2px; }
+html body .ex-card .ex-chip { font: 700 .6875rem/1 var(--ds-font, inherit); letter-spacing: .04em; text-transform: uppercase; padding: 6px 9px; border-radius: 999px;
+  background: color-mix(in srgb, var(--ex) 14%, var(--ds-surface, #fff)); color: color-mix(in srgb, var(--ex) 78%, #000); }
+html body .ex-card .ex-level { background: var(--ds-surface, #fff); border: 1px solid color-mix(in srgb, var(--ex) 30%, transparent); }
+html body .wellness-card-grid .ex-card h3 { margin: 2px 0 0; font-size: 1.0625rem; line-height: 1.3; }
+html body .wellness-card-grid .ex-card .ex-card-text { margin: 0; font-size: .875rem; line-height: 1.5; color: var(--ds-muted, #57534e);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+html body .ex-card details { font-size: .8125rem; }
+html body .ex-card details > summary { cursor: pointer; font-weight: 650; color: color-mix(in srgb, var(--ex) 75%, #000); }
+html body .ex-card details p { margin: 8px 0; }
+html body .ex-card .ex-card-actions { margin-top: auto; display: flex; gap: 8px; padding-top: 6px; }
+html body .wellness-card-grid .ex-card .ex-card-actions button { margin: 0; }
+html body .ex-card .ex-card-actions button.ex-add { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border-radius: 14px; border: 0;
+  background: linear-gradient(120deg, var(--ex), var(--ex-2)); color: #fff; font-weight: 700; box-shadow: 0 10px 18px -12px var(--ex); }
+html body .ex-card .ex-card-actions button.ex-add[aria-pressed="true"] { background: var(--ds-surface, #fff); color: var(--ex); box-shadow: inset 0 0 0 2px var(--ex); }
+html body .ex-card .ex-card-actions button.ex-fav { width: 44px; min-width: 44px; min-height: 44px; padding: 0; display: grid; place-items: center; border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--ex) 30%, transparent); background: var(--ds-surface, #fff); color: var(--ex); }
+html body .ex-card .ex-card-actions button.ex-fav[aria-pressed="true"] { color: #e11d48; border-color: #e11d4855; }
+html body .ex-card .ex-card-actions button.ex-fav[aria-pressed="true"] svg { fill: currentColor; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body .ex-card { transition: transform .22s cubic-bezier(.2, .8, .2, 1), box-shadow .22s; }
+  html:not([data-motion="reduced"]) body .ex-card .ex-card-actions button.ex-add, html:not([data-motion="reduced"]) body .ex-card .ex-card-actions button.ex-fav { transition: transform .15s, background .2s, color .2s; }
+  html:not([data-motion="reduced"]) body .ex-card .ex-card-actions button.ex-add:active, html:not([data-motion="reduced"]) body .ex-card .ex-card-actions button.ex-fav:active { transform: scale(.94); }
+}
+@media (hover: hover) and (pointer: fine) {
+  html body .wellness-card-grid > article.ex-card:hover { transform: translateY(-4px); box-shadow: 0 22px 36px -24px color-mix(in srgb, var(--ex) 90%, transparent); }
+}
+html[data-theme="dark"] body .wellness-card-grid > article.ex-card { background: #13201d; }
+html[data-theme="dark"] body .ex-card .ex-chip { background: color-mix(in srgb, var(--ex) 28%, #13201d); color: #fff; }
+html[data-theme="dark"] body .personal-reminder-inbox { background: linear-gradient(135deg, #10231f 55%, #0f3b36); color: #ecfdf5; }

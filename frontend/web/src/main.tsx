@@ -22,6 +22,7 @@ import "@/app/vivid.css";        // section colours and the type pair
 import "@/app/motion.css";       // last: colour transitions, presses, depth and the footer
 import "@/app/joy.css";          // after motion: a colour for every tab and card, rewarding feedback
 import "@/app/spectrum.css";     // last: three colours per section on pages, headers, tiles, cards, buttons and tabs
+import "@/app/flow.css";         // very last: page transitions, no sideways scroll, phone page links, reminder card, library cards
 import { createRouter } from "@/routes";
 import { initI18n, locale, sendLanguageToServer, subscribe } from "@/lib/i18n";
 

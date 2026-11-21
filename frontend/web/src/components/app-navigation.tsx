@@ -16,7 +16,10 @@ const BARE = ["/login", "/signup", "/forgot-password", "/reset-password", "/veri
 /** A section's main pages. On any other page of the section, that page is added at the end so you can see where you are. */
 function SectionPages({ label, pages, path }: { label: string; pages: [string, string][]; path: string }) {
   const current = useRef<HTMLAnchorElement>(null);
-  useEffect(() => { current.current?.scrollIntoView?.({ block: "nearest", inline: "center" }); }, [path]);
+  // Bring the current page link into view by scrolling this row only. scrollIntoView also scrolled the page itself
+  // sideways whenever anything stuck out, which clipped whole pages on laptops.
+  useEffect(() => { const link = current.current, row = link?.parentElement; if (!link || !row || row.scrollWidth <= row.clientWidth) return;
+    row.scrollLeft = Math.max(0, link.offsetLeft - row.offsetLeft - (row.clientWidth - link.offsetWidth) / 2); }, [path]);
   const here = pages.some(([href]) => href === path) ? null : pageTitle(path);
   const shown: [string, string][] = here ? [...pages, [path, here]] : pages;
   return <nav className="app-section-pages" aria-label={t("{section} pages", { section: t(label) })}>
