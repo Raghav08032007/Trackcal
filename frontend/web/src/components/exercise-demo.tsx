@@ -5,9 +5,12 @@ import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
 import {MOVES,blend,full,layout,placement,type Move} from '@/lib/pose/exercise-motions';
 import {EXERCISES,gearOf,type ExerciseGear,type ExerciseKind} from '@/lib/pose/types';
 import {formPoints} from '@/lib/pose/posture-match';
+import {useLocalState} from '@/lib/use-local-state';
+import type {AvatarModel} from './avatar-3d';
 
 const LEG_MS=1300,HEAD=.058;
 const Athlete3D=lazy(()=>import('./athlete-3d').then(module=>({default:module.Athlete3D})));
+const Avatar3D=lazy(()=>import('./avatar-3d').then(module=>({default:module.Avatar3D})));
 const canDraw3d=()=>{try{const c=document.createElement('canvas');return !!(c.getContext('webgl2')||c.getContext('webgl'));}catch{return false;}};
 type Point=[number,number];
 const lerp=(a:Point,b:Point,k:number):Point=>[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k];
@@ -58,16 +61,26 @@ export function ExerciseDemo({kind}:{kind:ExerciseKind}){
  const points=formPoints(kind);
  return <section className="exercise-sample" aria-label={t("How to do {n}", { n: EXERCISES[kind].title.toLowerCase() })}>
   <h3>{t("How to do it")}</h3>
-  <MoveDemo move={MOVES[kind]} gear={gearOf(kind)} title={EXERCISES[kind].title} cues={EXERCISE_CONFIG[kind].cues}/>
+  <MoveDemo move={MOVES[kind]} gear={gearOf(kind)} title={EXERCISES[kind].title} cues={EXERCISE_CONFIG[kind].cues} joint={EXERCISE_CONFIG[kind].joints[0]}/>
   {points.length>0&&<><p className="exercise-sample-lead">{t("The camera watches for:")}</p><ul className="exercise-points">{points.map(point=><li key={point}>{t(point)}</li>)}</ul></>}
  </section>;
 }
-export function MoveDemo({move,gear,title,cues}:{move:Move;gear:ExerciseGear;title:string;cues:readonly string[]}){
+/** The moving example: a realistic 3D person where the device can draw it (falling back to the simpler 3D figure, then
+ *  to the drawing), with slow motion, a choice of model and, for camera exercises, the joint angle the camera checks. */
+export function MoveDemo({move,gear,title,cues,joint,fists}:{move:Move;gear:ExerciseGear;title:string;cues:readonly string[];joint?:readonly [number,number,number];fists?:boolean}){
  const still=useMemo(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,[]);
- const [mode,setMode]=useState<'3d'|'flat'>(()=>typeof window!=='undefined'&&canDraw3d()?'3d':'flat'),[playing,setPlaying]=useState(!still),[slow,setSlow]=useState(false),failed=useCallback(()=>setMode('flat'),[]);
+ const [mode,setMode]=useState<'avatar'|'3d'|'flat'>(()=>typeof window!=='undefined'&&canDraw3d()?'avatar':'flat'),[playing,setPlaying]=useState(!still),[slow,setSlow]=useState(false);
+ const [model,setModel]=useLocalState<AvatarModel>('trackcal:demo:model','f'),[angles,setAngles]=useLocalState('trackcal:demo:angles',true);
+ const avatarFailed=useCallback(()=>setMode('3d'),[]),failed=useCallback(()=>setMode('flat'),[]);
  const speed=slow?.5:1,slowButton=<button type="button" aria-pressed={slow} onClick={()=>setSlow(v=>!v)}>{slow?t("Normal speed"):t("Slow motion")}</button>;
  if(mode==='flat')return <FlatDemo move={move} weights={['dumbbell','barbell','kettlebell'].includes(gear)} title={title} cues={cues} playing={playing} setPlaying={setPlaying} speed={speed} extra={slowButton}/>;
- return <figure className="exercise-demo exercise-demo-3d"><Suspense fallback={<div className="athlete-3d" aria-busy="true"/>}><Athlete3D move={move} gear={gear} title={title} playing={playing} onFail={failed} speed={speed}/></Suspense><figcaption><span>{t("Example: {n}", { n: cues.join(' · ') })}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?t("Pause"):t("Play")}</button>{slowButton}<button type="button" onClick={()=>setMode('flat')}>{t("Simple view")}</button></figcaption></figure>;
+ return <figure className="exercise-demo exercise-demo-3d"><Suspense fallback={<div className="athlete-3d" aria-busy="true"/>}>{mode==='avatar'
+  ?<Avatar3D move={move} gear={gear} title={title} playing={playing} onFail={avatarFailed} speed={speed} model={model} joint={joint} showAngle={angles} fists={fists}/>
+  :<Athlete3D move={move} gear={gear} title={title} playing={playing} onFail={failed} speed={speed}/>}</Suspense>
+  <figcaption><span>{t("Example: {n}", { n: cues.join(' · ') })}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?t("Pause"):t("Play")}</button>{slowButton}
+   {mode==='avatar'&&<button type="button" onClick={()=>setModel(m=>m==='f'?'m':'f')}>{t("Change model")}</button>}
+   {mode==='avatar'&&joint&&<button type="button" aria-pressed={angles} onClick={()=>setAngles(v=>!v)}>{t("Joint angle")}</button>}
+   <button type="button" onClick={()=>setMode('flat')}>{t("Simple view")}</button></figcaption></figure>;
 }
 function FlatDemo({move,weights,title,cues,playing,setPlaying,speed=1,extra}:{move:Move;weights:boolean;title:string;cues:readonly string[];playing:boolean;setPlaying:(update:(value:boolean)=>boolean)=>void;speed?:number;extra?:React.ReactNode}){
  const svg=useRef<SVGSVGElement>(null),pace=useRef(speed);pace.current=speed;

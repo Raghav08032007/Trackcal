@@ -15,6 +15,7 @@ export default function Page() {
     <ul className="credits-list">
       <li>{t("react-body-highlighter by GV79 (MIT): muscle maps.")}</li>
       <li>{t("three.js by mrdoob and contributors (MIT): the 3D athlete.")}</li>
+      <li>{t("MakeHuman and MPFB (CC0 body assets): the realistic 3D coach, built in Blender. No real person is depicted.")}</li>
       <li>{t("Exercise-Correction by Ngô Hồng Quốc Bảo (MIT): form-check rules for squats, curls and lunges.")}</li>
       <li>{t("workout-cool by Snouzy (MIT): the build-a-workout flow.")}</li>
       <li>{t("mhabit by FriesI23 (Apache-2.0): the habit strength idea.")}</li>

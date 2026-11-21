@@ -268,6 +268,7 @@ export const CORE_PHASES = [
     "src/components/progress-areas.tsx",
     // the coach for every camera exercise and sport, and the set report
     "src/lib/pose/coach.ts", "src/components/coach-guide.tsx",
+    "src/components/avatar-3d.tsx", "src/components/exercise-demo.tsx",
   ],
   [ // 2: onboarding, food diary and search, Food hub
     "src/app/food/page.tsx", "src/app/nutrition/page.tsx", "src/app/onboarding/page.tsx", "src/components/personal-onboarding.tsx",
