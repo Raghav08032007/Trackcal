@@ -2,6 +2,7 @@ import { t } from "@/lib/i18n";
 import { useCircuits } from "@/lib/workouts";
 import {useState} from 'react';
 import {EXERCISES,EXERCISE_GEAR,EXERCISE_GROUPS,GEAR_CHOICES,type ExerciseDifficulty,type ExerciseGear,type ExerciseKind} from '@/lib/pose/types';
+import {WatchHow} from './exercise-demo';
 import {generateWorkout,shuffleStep,type GeneratorInput,type Group} from '@/lib/workout-generator';
 import {CIRCUIT_PRESETS,MAX_REST,MAX_STEPS,MIN_REST,type Circuit,type CircuitStep} from '@/lib/workout-coach';
 
@@ -17,7 +18,7 @@ export function CircuitBuilder({disabled,onStart}:{disabled:boolean;onStart:(cir
   <label>{t("Add exercise")}<select aria-label={t("Add exercise")} value={kind} onChange={e=>setKind(e.target.value as ExerciseKind)}>{Object.entries(EXERCISES).map(([id,e])=><option key={id} value={id}>{e.title}</option>)}</select></label>
   <label>{t("Reps for this exercise")}<input type="number" min="1" max="100" value={reps} onChange={e=>setReps(clamp(Number(e.target.value),1,100))}/></label>
   <button type="button" disabled={steps.length>=MAX_STEPS} onClick={()=>setSteps(all=>[...all,{kind,target:reps}])}>{t("Add to workout")}</button>
-  {steps.map((s,i)=><div className="library-row" key={i}><div><strong>{i+1}. {EXERCISES[s.kind].title}</strong><small>{t("{target} reps", { target: s.target })}</small></div><button type="button" className="account-secondary" onClick={()=>setSteps(all=>all.filter((_,at)=>at!==i))}>{t("Remove step {n}", { n: i+1 })}</button></div>)}
+  {steps.map((s,i)=><div className="library-row" key={i}><div><strong>{i+1}. {EXERCISES[s.kind].title}</strong><small>{t("{target} reps", { target: s.target })}</small></div><button type="button" className="account-secondary" onClick={()=>setSteps(all=>all.filter((_,at)=>at!==i))}>{t("Remove step {n}", { n: i+1 })}</button><WatchHow kind={s.kind}/></div>)}
   <label>{t("Workout name")}<input value={name} maxLength={60} onChange={e=>setName(e.target.value)}/></label>
   <label>{t("Rest between exercises (seconds)")}<input type="number" min={MIN_REST} max={MAX_REST} value={rest} onChange={e=>setRest(clamp(Number(e.target.value),MIN_REST,MAX_REST))}/></label>
   <button type="button" disabled={!steps.length||!name.trim()} onClick={()=>{setSaved(all=>[...all,{id:crypto.randomUUID(),name:name.trim(),rest,steps}]);setSteps([]);setName('');}}>{t("Save workout")}</button>
@@ -36,6 +37,6 @@ function MakeForMe({disabled,onStart}:{disabled:boolean;onStart:(circuit:Circuit
   <label>{t("Level")}<select value={level} onChange={e=>setLevel(e.target.value as ExerciseDifficulty)}><option value="easy">{t("Easy")}</option><option value="medium">{t("Up to medium")}</option><option value="hard">{t("Up to hard")}</option></select></label>
   <label>{t("Time")}<select value={minutes} onChange={e=>setMinutes(Number(e.target.value))}>{[10,15,20,30,45].map(m=><option key={m} value={m}>{t("{m} minutes", { m })}</option>)}</select></label>
   <button type="button" disabled={!groups.length} onClick={()=>setMade(generateWorkout(input))}>{t("Make my workout")}</button>
-  {made===null?null:made.steps.length?<div className="made-workout">{made.steps.map((step,i)=><div className="library-row" key={step.kind+i}><div><strong>{i+1}. {EXERCISES[step.kind].title}</strong><small>{t("{target} reps", { target: step.target })}</small></div><button type="button" className="account-secondary" aria-label={t("Swap {title}", { title: EXERCISES[step.kind].title })} onClick={()=>setMade(shuffleStep(made,i,input))}>{t("Swap")}</button></div>)}<button type="button" className="account-primary" disabled={disabled} onClick={()=>onStart(made)}>{t("Start this workout")}</button></div>:<p>{t("Nothing matches. Try more muscles or other equipment.")}</p>}
+  {made===null?null:made.steps.length?<div className="made-workout">{made.steps.map((step,i)=><div className="library-row" key={step.kind+i}><div><strong>{i+1}. {EXERCISES[step.kind].title}</strong><small>{t("{target} reps", { target: step.target })}</small></div><button type="button" className="account-secondary" aria-label={t("Swap {title}", { title: EXERCISES[step.kind].title })} onClick={()=>setMade(shuffleStep(made,i,input))}>{t("Swap")}</button><WatchHow kind={step.kind}/></div>)}<button type="button" className="account-primary" disabled={disabled} onClick={()=>onStart(made)}>{t("Start this workout")}</button></div>:<p>{t("Nothing matches. Try more muscles or other equipment.")}</p>}
  </section>;
 }

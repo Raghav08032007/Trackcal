@@ -284,3 +284,21 @@ html[data-theme="dark"] body .community-card { background: linear-gradient(120de
 @media (max-width: 859px) {
   html:is(:lang(de), :lang(fr), :lang(ta), :lang(ml), :lang(te), :lang(kn)) body nav.app-section-pages a:is([aria-current], :not([aria-current])) { font-size: .6875rem; padding-inline: 3px; letter-spacing: -.01em; }
 }
+
+/* "Watch how to do it": opens the moving 3D example inside any exercise list (library cards, plan, circuits, recovery). */
+html body .watch-how { flex-basis: 100%; width: 100%; margin: 8px 0 2px; }
+html body .watch-how > button.watch-how-toggle:not(.x-a):not(.x-b) { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; margin: 0;
+  border-radius: 999px; border: 0; font-weight: 700; color: #fff; cursor: pointer;
+  background: linear-gradient(120deg, #7c3aed, #db2777); box-shadow: 0 6px 16px #7c3aed33; }
+html body .watch-how > button.watch-how-toggle[aria-expanded="true"]:not(.x-a):not(.x-b) { background: var(--ds-surface, #fff); color: #7c3aed; box-shadow: inset 0 0 0 2px #7c3aed; }
+html body .watch-how > button.watch-how-toggle:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+html body .watch-how .exercise-sample { margin-top: 10px; }
+html body .library-row:has(.watch-how) { flex-wrap: wrap; }
+html[data-theme="dark"] body .watch-how > button.watch-how-toggle[aria-expanded="true"]:not(.x-a):not(.x-b) { background: #1e1b2e; color: #c4b5fd; box-shadow: inset 0 0 0 2px #a78bfa; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body .watch-how > button.watch-how-toggle { transition: transform .15s, background .2s; }
+  html:not([data-motion="reduced"]) body .watch-how > button.watch-how-toggle:active { transform: scale(.96); }
+}
+html body .watch-how .exercise-demo figcaption:not(.x-a) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+html body .watch-how .exercise-demo figcaption:not(.x-a) > span { flex-basis: 100%; }
+html body .watch-how .exercise-demo figcaption > button:not(.x-a):not(.x-b) { width: auto; flex: 0 0 auto; min-height: 40px; margin: 0; padding: 0 12px; }

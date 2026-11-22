@@ -65,6 +65,22 @@ export function ExerciseDemo({kind}:{kind:ExerciseKind}){
   {points.length>0&&<><p className="exercise-sample-lead">{t("The camera watches for:")}</p><ul className="exercise-points">{points.map(point=><li key={point}>{t(point)}</li>)}</ul></>}
  </section>;
 }
+/** Library exercises without a camera exercise of their own that still have a matching moving example. */
+const SAME_MOVE:Record<string,ExerciseKind>={strength:'wallpush',gym:'curl'};
+/** The camera exercise whose moving example shows a library or plan exercise (by its template id), if there is one. */
+export function kindForTemplate(id:string):ExerciseKind|undefined{
+ if(id in EXERCISES)return id as ExerciseKind;
+ return SAME_MOVE[id]??(Object.keys(EXERCISES) as ExerciseKind[]).find(kind=>EXERCISES[kind].template===id);
+}
+/** A "Watch how to do it" button that opens the moving 3D example in place, for lists of exercises. The 3D scene loads
+ *  only when someone opens it, so long lists stay fast. */
+export function WatchHow({kind}:{kind:ExerciseKind}){
+ const [open,setOpen]=useState(false);
+ return <div className="watch-how">
+  <button type="button" className="watch-how-toggle" aria-expanded={open} onClick={()=>setOpen(v=>!v)}><span aria-hidden="true">{open?'✕':'▶'}</span> {open?t("Hide demo"):t("Watch how to do it")}</button>
+  {open&&<ExerciseDemo kind={kind}/>}
+ </div>;
+}
 /** The moving example: a realistic 3D person where the device can draw it (falling back to the simpler 3D figure, then
  *  to the drawing), with slow motion, a choice of model and, for camera exercises, the joint angle the camera checks. */
 export function MoveDemo({move,gear,title,cues,joint,fists}:{move:Move;gear:ExerciseGear;title:string;cues:readonly string[];joint?:readonly [number,number,number];fists?:boolean}){

@@ -6,6 +6,7 @@ import Link from '@/lib/navigation';
 import {useAccount} from './account-session';
 import {CoachLine} from './coach-card';
 import {EXERCISES} from '@/lib/pose/types';
+import {WatchHow} from './exercise-demo';
 import {MUSCLE_LABELS,movesFrom,muscleStates,readyToProgress,restedChoice,type MapMuscle,type MuscleState} from '@/lib/training-insights';
 import {wellnessRequest,type TrainingData} from '@/lib/wellness';
 
@@ -29,8 +30,8 @@ function Map(){
    <section className="account-card"><div className="recovery-bodies" aria-hidden="true"><Model data={data} type="anterior" highlightedColors={COLORS} bodyColor="#c5dede"/><Model data={data} type="posterior" highlightedColors={COLORS} bodyColor="#c5dede"/></div>
     {moves.length===0?<p>{t("Nothing here yet. Save a camera workout and your muscles light up by themselves.")}</p>:<ul className="recovery-legend">{LEVELS.map(({state,label},index)=>{const list=names(state);return <li key={state}><span style={{background:COLORS[2-index]}}/><strong>{t(label)}</strong> {list.length?list.map(muscle=>MUSCLE_LABELS[muscle as MapMuscle]).join(', '):t("None")}</li>;})}</ul>}
    </section>
-   {choice&&<section className="account-card"><h2>{t("Good for today")}</h2><p>{states.size?t("{title} works {muscles} and leaves your tired muscles alone.",{title:EXERCISES[choice].title,muscles:EXERCISES[choice].muscles.toLowerCase()}):t("{title} works {muscles}.",{title:EXERCISES[choice].title,muscles:EXERCISES[choice].muscles.toLowerCase()})}</p><Link className="destination-button" href={`/workouts/camera?exercise=${choice}`}>{t("Start {title}", { title: EXERCISES[choice].title })}</Link></section>}
-   {steps.length>0&&<section className="account-card"><h2>{t("Ready for harder")}</h2>{steps.map(step=><div className="library-row" key={step.from}><div><strong>{EXERCISES[step.to].title}</strong><small>{t("You did {reps} {n} the camera saw.", { reps: step.reps, n: EXERCISES[step.from].title.toLowerCase() })}</small></div><Link className="destination-button" href={`/workouts/camera?exercise=${step.to}`}>{t("Try {title}", { title: EXERCISES[step.to].title })}</Link></div>)}</section>}
+   {choice&&<section className="account-card"><h2>{t("Good for today")}</h2><p>{states.size?t("{title} works {muscles} and leaves your tired muscles alone.",{title:EXERCISES[choice].title,muscles:EXERCISES[choice].muscles.toLowerCase()}):t("{title} works {muscles}.",{title:EXERCISES[choice].title,muscles:EXERCISES[choice].muscles.toLowerCase()})}</p><Link className="destination-button" href={`/workouts/camera?exercise=${choice}`}>{t("Start {title}", { title: EXERCISES[choice].title })}</Link><WatchHow kind={choice}/></section>}
+   {steps.length>0&&<section className="account-card"><h2>{t("Ready for harder")}</h2>{steps.map(step=><div className="library-row" key={step.from}><div><strong>{EXERCISES[step.to].title}</strong><small>{t("You did {reps} {n} the camera saw.", { reps: step.reps, n: EXERCISES[step.from].title.toLowerCase() })}</small></div><Link className="destination-button" href={`/workouts/camera?exercise=${step.to}`}>{t("Try {title}", { title: EXERCISES[step.to].title })}</Link><WatchHow kind={step.to}/></div>)}</section>}
   </>}
  </main>;
 }
