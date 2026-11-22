@@ -15,9 +15,22 @@ const DEPTH:Record<number,number>={11:.1,13:.11,15:.11,23:.07,25:.07,27:.07,29:.
 
 /** One moment of a move as 3D points: the same joint layout the rep counter is tested on, with depth added. */
 export const pose3d=(kind:ExerciseKind,progress:number)=>pose3dOf(MOVES[kind],progress);
+type FullPose=ReturnType<typeof full>;
+/** The same sum over every number in a pose (for a spline through several key poses). */
+const mapPose=(f:(...x:number[])=>number,ps:FullPose[]):FullPose=>{const g=(pick:(p:FullPose)=>number)=>f(...ps.map(pick));
+ return {torso:g(p=>p.torso),heel:g(p=>p.heel),lift:Math.max(0,g(p=>p.lift)),back:g(p=>p.back),arm:[g(p=>p.arm[0]),g(p=>p.arm[1])],fore:[g(p=>p.fore[0]),g(p=>p.fore[1])],thigh:[g(p=>p.thigh[0]),g(p=>p.thigh[1])],shin:[g(p=>p.shin[0]),g(p=>p.shin[1])]};};
+const catmull=(a:number,b:number,c:number,d:number,t:number)=>.5*(2*b+(c-a)*t+(2*a-5*b+4*c-d)*t*t+(3*b-a-3*c+d)*t*t*t);
+/** Moves that leave the floor between key poses although the key poses themselves are grounded. */
+const HOP=new Set<Move>([MOVES.jack]);
+/** A short pause at each end of a two-pose rep, as a coach holds the top and the bottom. */
+const HOLD=.07;
 export function pose3dOf(m:Move,progress:number){
- const keys=m.keys.map(full),at=(progress%keys.length+keys.length)%keys.length,i=Math.floor(at),k=(1-Math.cos(Math.PI*(at-i)))/2;
- const p=layout(m,blend(keys[i],keys[(i+1)%keys.length],k),placement(m)) as P2,out:Record<number,[number,number,number]>={};
+ const keys=m.keys.map(full),n=keys.length,at=(progress%n+n)%n,i=Math.floor(at),f=at-i;
+ // Two poses: ease out and in with a brief hold. More: a smooth path through every pose, so the body never stops half-way.
+ const u=n===2?Math.min(1,Math.max(0,(f-HOLD)/(1-2*HOLD))):f;
+ let pose=n===2?blend(keys[i],keys[(i+1)%n],(1-Math.cos(Math.PI*u))/2):mapPose((a,b,c,d)=>catmull(a,b,c,d,f),[keys[(i+n-1)%n],keys[i],keys[(i+1)%n],keys[(i+2)%n]]);
+ if(HOP.has(m))pose={...pose,lift:pose.lift+Math.sin(Math.PI*u)*.06};
+ const p=layout(m,pose,placement(m)) as P2,out:Record<number,[number,number,number]>={};
  for(const [id,[x,y]] of Object.entries(p)){const n=Number(id),side=n%2===1?1:-1,base=DEPTH[n-(n%2===0?1:0)]??.07;out[n]=[x,-y,m.view==='side'?side*base:0];}
  return out;
 }

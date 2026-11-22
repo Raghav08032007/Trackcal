@@ -10,6 +10,10 @@ import type {ExerciseGear} from '@/lib/pose/types';
 import {pose3dOf} from './athlete-3d';
 
 const LEG_MS=1300,FINGER_CURL=1.25;   // radians per finger joint for a grip
+/** Each body point's partner on the other side (MediaPipe's 33 points: eyes, ears, mouth corners, then odd = left from 11). */
+const PARTNER=(id:number)=>id>=11?(id%2?id+1:id-1):({1:4,2:5,3:6,4:1,5:2,6:3,7:8,8:7,9:10,10:9} as Record<number,number>)[id]??id;
+/** The same moment with left and right swapped: the person seen turned round, every limb still on its own side. */
+function mirrorSides<T>(p:Record<number,T>){const out:Record<number,T>={};for(const id of Object.keys(p))out[Number(id)]=p[PARTNER(Number(id))]??p[Number(id)];return out;}
 export type AvatarModel='f'|'m';
 /** Each limb bone and the two landmarks it points between. */
 const CHAINS:[bone:string,from:number,to:number][]=[['thigh_l',23,25],['calf_l',25,27],['foot_l',27,31],['thigh_r',24,26],['calf_r',26,28],['foot_r',28,32],
@@ -58,6 +62,7 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
    body.updateMatrixWorld(true);
    const allBones:Three.Bone[]=[];body.traverse(o=>{if((o as Three.Bone).isBone)allBones.push(o as Three.Bone);});
    const bindLocal=new Map(allBones.map(b=>[b,b.quaternion.clone()]));
+   const chest=bone('spine_03'),head=bone('head');
    /** Holding weights or boxing: fingers curled into a grip (each finger joint turned about its own side axis). */
    const grip=fists||['dumbbell','kettlebell','barbell','band'].includes(gear);
    const fingers=allBones.filter(b=>/^(index|middle|ring|pinky)_0[123]_[lr]$/.test(b.name)),thumbs=allBones.filter(b=>/^thumb_0[23]_[lr]$/.test(b.name));
@@ -92,15 +97,23 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
    const parentQ=new THREE.Quaternion(),cur=new THREE.Quaternion(),delta=new THREE.Quaternion();
 
    const render=(progress:number,now:number)=>{
-    const p=pose3dOf(move,progress),q=(id:number)=>v(p[id]);
+    const raw=pose3dOf(move,progress);
     for(const b of allBones)b.quaternion.copy(bindLocal.get(b)!);
     if(grip){for(const b of fingers)curl(b,FINGER_CURL);for(const b of thumbs)curl(b,FINGER_CURL*.5);}
     // Whole body: face where the torso faces (as the simpler figure), then put the hips where the keyframes put them.
-    const sm=q(11).add(q(12)).multiplyScalar(.5),hm=q(23).add(q(24)).multiplyScalar(.5),dirUp=sm.clone().sub(hm).normalize();
-    const across=q(11).sub(q(12));if(across.length()<.05)across.set(0,0,1);across.normalize();
-    const forward=new THREE.Vector3().crossVectors(across,dirUp).normalize();
-    const toes=q(31).add(q(32)).multiplyScalar(.5).sub(q(27).add(q(28)).multiplyScalar(.5));if(view==='side'?forward.dot(toes)<0:forward.z<0)forward.negate();
-    if(Math.abs(dirUp.y)<.6){const hands=q(15).add(q(16)).multiplyScalar(.5),prone=hands.y<sm.y-.05;if(prone?forward.y>0:forward.y<0)forward.negate();}
+    // When the body has to turn round to face the camera (or the floor), its left and right are swapped by swapping the
+    // keyframe sides, never by flipping the facing direction alone: that mirrored the body while each limb still followed
+    // its own side, so legs crossed over in jumping jacks and other front-view moves.
+    const facing=(src:typeof raw)=>{const g=(id:number)=>v(src[id]);
+     const sm=g(11).add(g(12)).multiplyScalar(.5),hm=g(23).add(g(24)).multiplyScalar(.5),up=sm.clone().sub(hm).normalize();
+     const across=g(11).sub(g(12));if(across.length()<.05)across.set(0,0,1);across.normalize();
+     const fwd=new THREE.Vector3().crossVectors(across,up).normalize();
+     const toes=g(31).add(g(32)).multiplyScalar(.5).sub(g(27).add(g(28)).multiplyScalar(.5));let flip=view==='side'?fwd.dot(toes)<0:fwd.z<0;
+     if(Math.abs(up.y)<.6){const hands=g(15).add(g(16)).multiplyScalar(.5),prone=hands.y<sm.y-.05,f=flip?fwd.clone().negate():fwd;if(prone?f.y>0:f.y<0)flip=!flip;}
+     return {sm,hm,up,fwd,flip};};
+    const first=facing(raw),p=first.flip?mirrorSides(raw):raw,q=(id:number)=>v(p[id]);
+    const turned=first.flip?facing(p):first,hm=turned.hm,dirUp=turned.up,forward=turned.fwd;
+    if(turned.flip)forward.negate();   // only if swapping sides didn't settle it (never seen in the keyframes)
     const side=new THREE.Vector3().crossVectors(dirUp,forward).normalize();
     body.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(side,dirUp,forward));body.position.set(0,0,0);body.updateMatrixWorld(true);
     body.position.add(hm.clone().sub(wp(bones.pelvis!)));body.updateMatrixWorld(true);
@@ -109,13 +122,20 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
      b.parent!.getWorldQuaternion(parentQ);cur.copy(parentQ).multiply(b.quaternion);
      delta.setFromUnitVectors(dirLocal.get(name)!.clone().applyQuaternion(cur),target);
      b.quaternion.copy(parentQ.clone().invert().multiply(delta.multiply(cur)));b.updateMatrixWorld(true);}
+    // Alive, not a mannequin: the chest rises with each breath, and the head stays level so the eyes look ahead
+    // (chest up, eyes forward) whenever the body is upright or leaning, and in line with the spine when lying down.
+    if(chest&&playing){chest.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.sin(now/1500)*.018));chest.updateMatrixWorld(true);}
+    if(head){const w=.55*Math.min(1,Math.max(0,(dirUp.y-.2)/.4));
+     if(w>0){const target=dirUp.clone().lerp(new THREE.Vector3(0,1,0),w).normalize(),turn=new THREE.Quaternion().setFromUnitVectors(dirUp,target);
+      head.parent!.getWorldQuaternion(parentQ);head.quaternion.copy(parentQ.invert().multiply(turn.multiply(wq(head))));head.updateMatrixWorld(true);}}
     for(const s of [0,1] as const){const hand=bones[s?'hand_r':'hand_l'];if(bells[s]&&hand){const fore=bones[s?'lowerarm_r':'lowerarm_l']!,g=bells[s],at=wp(hand),dir=at.clone().sub(wp(fore)).normalize();g.position.copy(at).addScaledVector(dir,.03);g.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),view==='side'?new THREE.Vector3(0,0,1):dir.clone().cross(new THREE.Vector3(0,0,1)).normalize());}}
     if(barbell){const mid=wp(bones.hand_l!).add(wp(bones.hand_r!)).multiplyScalar(.5);barbell.position.copy(mid);barbell.rotation.set(0,view==='side'?0:Math.PI/2,0);}
     if(joint&&angleOn.current&&AT[joint[1]]&&bones[AT[joint[1]]]){
      const a=q(joint[0]).sub(q(joint[1])),c=q(joint[2]).sub(q(joint[1])),deg=Math.round(a.angleTo(c)*180/Math.PI),at=wp(bones[AT[joint[1]]]!);
-     writeAngle(deg);dot.position.copy(at);label.position.copy(at).addScaledVector(new THREE.Vector3().subVectors(camera.position,at).cross(new THREE.Vector3(0,1,0)).normalize(),-.11).add(new THREE.Vector3(0,.03,0));   // beside the joint, not over the limblabel.visible=dot.visible=true;
+     writeAngle(deg);dot.position.copy(at);label.position.copy(at).addScaledVector(new THREE.Vector3().subVectors(camera.position,at).cross(new THREE.Vector3(0,1,0)).normalize(),-.11).add(new THREE.Vector3(0,.03,0));   // beside the joint, not over the limb
+     label.visible=dot.visible=true;
     }else label.visible=dot.visible=false;
-    const turn=drag.current.turn+(playing?Math.sin(now/2600)*.22:0),angle=(view==='side'?.42:.32)+turn,distance=Math.max(size.x,size.y)*1.8+.6;   // closer than the simpler figure: the body fills the frame
+    const turn=drag.current.turn+(playing?Math.sin(now/2600)*.22:0),angle=(view==='side'?.42:.32)+turn,distance=Math.max(size.x,size.y)*1.9+.62;   // closer than the simpler figure: the body fills the frame
     camera.position.set(centre.x+Math.sin(angle)*distance,centre.y+distance*.24,Math.cos(angle)*distance);camera.lookAt(centre.x,centre.y-.02,0);
     renderer.render(scene,camera);
    };
