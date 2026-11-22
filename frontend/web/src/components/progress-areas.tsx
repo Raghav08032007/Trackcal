@@ -1,5 +1,6 @@
+import { localeOf } from "@/lib/i18n/locales";
 // Every area the person tracks, this week against last week, with one plain suggestion each (server: services/progress_areas.py).
-import { t, msg, number, date as formatDate } from "@/lib/i18n";
+import { locale, t, msg, number, date as formatDate } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Activity, BedDouble, Droplets, Dumbbell, FileHeart, Flame, MapPin, Scale, Sparkles, TrendingDown, TrendingUp, Minus, Utensils, type LucideIcon } from "lucide-react";
 import Link from "@/lib/navigation";
@@ -102,10 +103,18 @@ function suggestion(a: Area): string {
   return "";
 }
 
+/** The last seven days as slim bars: the value above each active day, the weekday below, today highlighted. Empty days
+ *  keep a short stub so the week reads as a week, not as one big block. */
 function Spark({ values, id }: { values: number[]; id: AreaId }) {
   if (!values.length) return null;
-  const max = Math.max(1, ...values);
-  return <div className="pa-spark" aria-hidden="true">{values.map((v, i) => <span key={i} data-area={id} style={{ height: `${Math.max(8, Math.round(v / max * 100))}%` }} className={v > 0 ? "on" : ""} />)}</div>;
+  const max = Math.max(1, ...values), lang = localeOf(locale()).format;
+  const day = new Intl.DateTimeFormat(lang, { weekday: "narrow" }), short = new Intl.NumberFormat(lang, { notation: "compact", maximumFractionDigits: 1 });
+  return <div className="pa-spark pa-week" aria-hidden="true">{values.map((v, i) => {
+    const date = new Date(); date.setDate(date.getDate() - (values.length - 1 - i));
+    return <div key={i} className={`pa-col${i === values.length - 1 ? " today" : ""}`}>
+      <small className="pa-num">{v > 0 ? short.format(v) : ""}</small>
+      <div className="pa-barbox"><i data-area={id} className={v > 0 ? "on" : ""} style={{ height: v > 0 ? `${Math.max(14, Math.round(v / max * 100))}%` : undefined }} /></div>
+      <small className="pa-day">{day.format(date)}</small></div>; })}</div>;
 }
 
 export function ProgressAreas() {

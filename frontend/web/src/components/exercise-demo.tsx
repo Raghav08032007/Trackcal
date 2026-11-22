@@ -1,9 +1,10 @@
 'use client';
 import { t } from "@/lib/i18n";
 import {lazy,Suspense,useCallback,useEffect,useMemo,useRef,useState} from 'react';
+import {createPortal} from 'react-dom';
 import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
 import {MOVES,blend,full,layout,placement,type Move} from '@/lib/pose/exercise-motions';
-import {EXERCISES,gearOf,type ExerciseGear,type ExerciseKind} from '@/lib/pose/types';
+import {EXERCISES,EXERCISE_GEAR,gearOf,type ExerciseGear,type ExerciseKind} from '@/lib/pose/types';
 import {formPoints} from '@/lib/pose/posture-match';
 import {useLocalState} from '@/lib/use-local-state';
 import type {AvatarModel} from './avatar-3d';
@@ -73,10 +74,34 @@ export function CameraAngle({kind}:{kind:ExerciseKind}){
  const label=c.bothAngles?(front?t("Facing the camera is best · side-on also counts"):t("Side-on is best · facing the camera also counts")):(front?t("Facing the camera"):t("Side-on to the camera"));
  return <p className="camera-angle" data-view={front?'front':'side'}><AngleIcon front={front}/><span><strong>{t("Camera angle")}</strong> {label}</span></p>;
 }
+/** The moving example lifted out of its card: a large view on top of the page, with everything the exercise needs beside
+ *  it (camera angle, muscles, equipment, set-up, what the camera checks). Escape, the close button or the backdrop close it. */
+function DemoSpotlight({kind,onClose}:{kind:ExerciseKind;onClose:()=>void}){
+ const close=useRef<HTMLButtonElement>(null),e=EXERCISES[kind],points=formPoints(kind);
+ useEffect(()=>{const before=document.activeElement as HTMLElement|null;close.current?.focus();const key=(ev:KeyboardEvent)=>{if(ev.key==='Escape')onClose();};
+  document.addEventListener('keydown',key);document.documentElement.classList.add('spotlight-open');
+  return ()=>{document.removeEventListener('keydown',key);document.documentElement.classList.remove('spotlight-open');before?.focus?.();};},[onClose]);
+ return createPortal(<div className="demo-spotlight" onClick={ev=>{if(ev.target===ev.currentTarget)onClose();}}>
+  <div className="demo-spotlight-card" role="dialog" aria-modal="true" aria-label={t("How to do {n}", { n: e.title.toLowerCase() })}>
+   <header><h2>{e.title}</h2><button ref={close} type="button" className="demo-spotlight-close" aria-label={t("Close bigger view")} onClick={onClose}>✕</button></header>
+   <div className="demo-spotlight-body">
+    <div className="demo-spotlight-stage"><MoveDemo move={MOVES[kind]} gear={gearOf(kind)} title={e.title} cues={EXERCISE_CONFIG[kind].cues} joint={EXERCISE_CONFIG[kind].joints[0]}/></div>
+    <aside className="demo-spotlight-needs">
+     <CameraAngle kind={kind}/>
+     <p><strong>{t("Works:")}</strong> {e.muscles}</p>
+     <p><strong>{t("Equipment:")}</strong> {EXERCISE_GEAR[gearOf(kind)]}</p>
+     <p><strong>{t("Set up:")}</strong> {e.setup}</p>
+     {points.length>0&&<><p className="exercise-sample-lead">{t("The camera watches for:")}</p><ul className="exercise-points">{points.map(point=><li key={point}>{t(point)}</li>)}</ul></>}
+    </aside>
+   </div>
+  </div>
+ </div>,document.body);
+}
 export function ExerciseDemo({kind}:{kind:ExerciseKind}){
- const points=formPoints(kind);
+ const points=formPoints(kind),[big,setBig]=useState(false),shut=useCallback(()=>setBig(false),[]);
  return <section className="exercise-sample" aria-label={t("How to do {n}", { n: EXERCISES[kind].title.toLowerCase() })}>
-  <h3>{t("How to do it")}</h3>
+  <div className="exercise-sample-head"><h3>{t("How to do it")}</h3><button type="button" className="demo-bigger" onClick={()=>setBig(true)}><span aria-hidden="true">⤢</span> {t("Bigger view")}</button></div>
+  {big&&<DemoSpotlight kind={kind} onClose={shut}/>}
   <CameraAngle kind={kind}/>
   <MoveDemo move={MOVES[kind]} gear={gearOf(kind)} title={EXERCISES[kind].title} cues={EXERCISE_CONFIG[kind].cues} joint={EXERCISE_CONFIG[kind].joints[0]}/>
   {points.length>0&&<><p className="exercise-sample-lead">{t("The camera watches for:")}</p><ul className="exercise-points">{points.map(point=><li key={point}>{t(point)}</li>)}</ul></>}

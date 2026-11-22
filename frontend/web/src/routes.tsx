@@ -24,6 +24,7 @@ const pages: Record<string, () => Promise<PageModule>> = {
   "/onboarding": () => import("@/app/onboarding/page"),
   "/plan": () => import("@/app/plan/page"),
   "/play": () => import("@/app/play/page"),
+  "/play/sports": () => import("@/app/play/sports/page"),
   "/privacy": () => import("@/app/privacy/page"),
   "/progress": () => import("@/app/progress/page"),
   "/recipes": () => import("@/app/recipes/page"),

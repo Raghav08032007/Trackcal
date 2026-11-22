@@ -5,7 +5,7 @@
    "clip" (unlike "hidden") can't be scrolled by code either, so a link row calling scrollIntoView can no longer push
    the whole page sideways. The page helper's hidden label stuck out ~20 px on laptops; keep it inside its button. */
 html, body { overflow-x: clip; }
-html body .companion-help-button { max-width: 100%; overflow: hidden; }
+html body .companion-help-button { max-width: 100%; position: relative; overflow: visible; }
 
 /* ── Page transitions ───────────────────────────────────────────────────────────────────────────────────────────
    Only the content changes: a quick fade out, then the new page fades in with a small upward glide (no zoom, which
@@ -328,3 +328,83 @@ html[data-theme="dark"] body .camera-angle { background: #0c2a3d; border-color: 
 html[data-theme="dark"] body .camera-angle[data-view="front"] { background: #3a2a08; border-color: #b45309; color: #fef3c7; }
 html[data-theme="dark"] body .camera-angle strong { color: #7dd3fc; }
 html[data-theme="dark"] body .camera-angle[data-view="front"] strong { color: #fcd34d; }
+
+/* Level picker: three buttons with signal bars instead of a plain dropdown. */
+html body .level-picker { margin: 10px 0 14px; }
+html body .level-picker-label { display: block; margin-bottom: 6px; font-weight: 700; font-size: .875rem; }
+html body .level-picker-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px; border-radius: 16px; background: #f1f5f9; }
+html body .level-picker-row > button:not(.x-a):not(.x-b) { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin: 0; padding: 0 8px;
+  border: 0; border-radius: 12px; background: transparent; color: var(--ds-ink, #1c1917); font-weight: 650; font-size: .875rem; box-shadow: none; }
+html body .level-picker-row > button[aria-checked="true"]:not(.x-a):not(.x-b) { background: #fff; color: #6d28d9; box-shadow: 0 2px 8px #0f172a1f, inset 0 0 0 2px #8b5cf6; }
+html body .level-picker-row > button:disabled { opacity: .55; }
+html body .level-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+html body .level-bars i { width: 4px; border-radius: 2px; background: #cbd5e1; }
+html body .level-bars i:nth-child(1) { height: 6px; } html body .level-bars i:nth-child(2) { height: 10px; } html body .level-bars i:nth-child(3) { height: 14px; }
+html body .level-bars i[data-on="true"] { background: linear-gradient(#a855f7, #6d28d9); }
+html[data-theme="dark"] body .level-picker-row { background: #1e2235; }
+html[data-theme="dark"] body .level-picker-row > button[aria-checked="true"]:not(.x-a):not(.x-b) { background: #2a2f4a; color: #c4b5fd; }
+html body .sports-back { margin: 4px 0 12px; }
+
+/* Progress cards: a readable 7-day chart (value on top, weekday below, today marked) instead of bare blocks. */
+html body .pa-card .pa-spark.pa-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; height: 96px; align-items: stretch; margin: 10px 0 6px; }
+html body .pa-week .pa-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+html body .pa-week .pa-num { height: 14px; font-size: .6875rem; font-weight: 700; line-height: 14px; color: var(--pa, #7c3aed); }
+html body .pa-week .pa-barbox { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid color-mix(in srgb, var(--pa, #7c3aed) 22%, transparent); }
+html body .pa-week .pa-barbox i { display: block; width: min(16px, 62%); height: 4px; border-radius: 6px 6px 2px 2px; background: color-mix(in srgb, var(--pa, #7c3aed) 16%, transparent); }
+html body .pa-week .pa-barbox i.on { background: linear-gradient(180deg, var(--pa-2, #c084fc), var(--pa, #7c3aed)); box-shadow: 0 4px 10px -6px var(--pa, #7c3aed); }
+html body .pa-week .pa-day { margin-top: 4px; font-size: .6875rem; font-weight: 600; color: var(--ds-muted, #78716c); }
+html body .pa-week .pa-col.today .pa-day { color: #fff; background: var(--pa, #7c3aed); border-radius: 999px; padding: 0 6px; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body .pa-week .pa-barbox i.on { transform-origin: bottom; animation: pa-grow .6s cubic-bezier(.2, .8, .2, 1) both; }
+}
+
+/* The page companion stands out of its button like a sticker (it was cropped), and the top bar breathes: more room
+   between the brand row, the main menu and the page links. */
+html body .companion-help-button > img { width: 56px; height: 56px; margin: -14px -4px -6px; object-fit: contain; filter: drop-shadow(0 6px 8px #0f172a33); position: relative; z-index: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body .companion-help-button > img { transition: transform .2s; }
+  html:not([data-motion="reduced"]) body .companion-help-button:hover > img { transform: translateY(-3px) rotate(-4deg); }
+}
+html body .app-topbar > nav.app-section-pages { margin-top: 14px; padding-top: 6px; padding-bottom: 10px; row-gap: 8px; }
+@media (min-width: 860px) { html body .app-topbar > nav.app-section-pages { column-gap: 12px; margin-top: 18px; } }
+
+/* "Bigger view": the moving example comes out of its card into a large view, with the exercise's needs beside it. */
+html body .exercise-sample-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+html body .exercise-sample-head h3 { margin: 0; }
+html body .exercise-sample-head > button.demo-bigger:not(.x-a):not(.x-b) { min-height: 40px; margin: 0; padding: 0 14px; border-radius: 999px; border: 0; font-weight: 700; color: #fff;
+  background: linear-gradient(120deg, #0ea5e9, #6366f1); box-shadow: 0 6px 14px -8px #6366f1; display: inline-flex; align-items: center; gap: 6px; }
+html.spotlight-open, html.spotlight-open body { overflow: hidden; }
+html body .demo-spotlight { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 16px; background: #0f172acc; backdrop-filter: blur(6px); }
+html body .demo-spotlight-card { width: min(1080px, 100%); max-height: calc(100dvh - 32px); overflow: auto; border-radius: 24px; padding: 18px 20px 22px;
+  background: var(--ds-surface, #fff); color: var(--ds-ink, #1c1917); box-shadow: 0 30px 80px -20px #000a; }
+html body .demo-spotlight-card > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+html body .demo-spotlight-card > header h2 { margin: 0; font-size: 1.375rem; }
+html body .demo-spotlight-card > header > button.demo-spotlight-close:not(.x-a):not(.x-b) { width: 44px; height: 44px; min-height: 44px; margin: 0; padding: 0; border-radius: 50%; border: 0; font-size: 1.1rem; background: #f1f5f9; color: inherit; }
+html body .demo-spotlight-body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+html body .demo-spotlight-stage .exercise-demo { margin: 0; }
+html body .demo-spotlight-stage :is(.athlete-3d, .avatar-3d) { height: min(62dvh, 560px) !important; aspect-ratio: auto; }
+html body .demo-spotlight-needs p { margin: 0 0 10px; line-height: 1.45; }
+@media (max-width: 760px) { html body .demo-spotlight-body { grid-template-columns: 1fr; } html body .demo-spotlight-stage :is(.athlete-3d, .avatar-3d) { height: 46dvh !important; } }
+html[data-theme="dark"] body .demo-spotlight-card > header > button.demo-spotlight-close:not(.x-a):not(.x-b) { background: #2a2f4a; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduced"]) body .demo-spotlight { animation: spot-fade .2s ease-out; }
+  html:not([data-motion="reduced"]) body .demo-spotlight-card { animation: spot-pop .28s cubic-bezier(.2, .9, .25, 1.1); }
+}
+@keyframes spot-fade { from { opacity: 0; } }
+@keyframes spot-pop { from { opacity: 0; transform: translateY(18px) scale(.96); } }
+
+/* G1 fixes after the browser check. Level buttons shrink to fit a phone column; the bigger view's controls look like
+   buttons; more air under the main menu on laptops. */
+html body .level-picker { container-type: inline-size; }
+html body .level-picker-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html body .level-picker-row > button:not(.x-a):not(.x-b) { min-width: 0; white-space: normal; line-height: 1.15; text-align: center; }
+@container (max-width: 380px) {
+  html body .level-picker-row > button:not(.x-a):not(.x-b) { flex-direction: column; gap: 3px; padding: 6px 4px; font-size: .75rem; min-height: 52px; }
+}
+html body .demo-spotlight .exercise-demo figcaption:not(.x-a) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+html body .demo-spotlight .exercise-demo figcaption:not(.x-a) > span { flex-basis: 100%; }
+html body .demo-spotlight .exercise-demo figcaption > button:not(.x-a):not(.x-b) { width: auto; flex: 0 0 auto; min-height: 40px; margin: 0; padding: 0 14px;
+  border-radius: 999px; border: 1px solid #c7d2fe; background: #eef2ff; color: #3730a3; font-weight: 650; }
+html body .demo-spotlight .exercise-demo figcaption > button[aria-pressed="true"]:not(.x-a):not(.x-b) { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+@media (min-width: 860px) { html body header.app-topbar > nav.app-section-pages:not(.x-a) { margin-top: 30px; } }
+@media (max-width: 760px) { html body .demo-spotlight .demo-spotlight-stage :is(.athlete-3d, .avatar-3d):not(.x-a) { height: auto !important; aspect-ratio: 1 / 1; } }
