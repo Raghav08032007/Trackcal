@@ -26,14 +26,20 @@ VARIANT = {'dried', 'dehydrated', 'powder', 'powdered', 'oil', 'flour', 'juice',
            'nfs', 'added', 'mix', 'prepared', 'baby', 'infant', 'sauce', 'soup', 'instant', 'concentrate', 'syrup', 'candied', 'salted', 'smoked',
            'stuffed', 'breaded', 'paste', 'chips', 'pickle', 'pickled', 'desiccated', 'imitation', 'substitute', 'formula', 'drink', 'beverage',
            'dessert', 'frosted', 'pie', 'cake', 'cookie', 'candy', 'farmer', 'farmers', 'paneer', 'paratha', 'curry', 'masala', 'cup',
-           'light', 'ready', 'heat', 'ns', 'sliced', 'butter', 'margarine', 'made', 'duck', 'goose', 'quail', 'emu', 'ostrich', 'deli', 'luncheon', 'nonfat', 'lowfat', 'reduced', 'lite', 'turkey'}
+           'light', 'ready', 'heat', 'ns', 'sliced', 'butter', 'margarine', 'made', 'duck', 'goose', 'quail', 'emu', 'ostrich', 'deli', 'luncheon', 'nonfat', 'lowfat', 'reduced', 'lite', 'turkey',
+           'quial', 'yolk'}   # 'quial': IFCT's spelling of quail
 COOKING = {'cooked', 'boiled', 'baked', 'roasted', 'fried', 'steamed', 'grilled', 'raw', 'fresh', 'roast', 'boil'}
 POOL = 400
+# Foods people eat cooked, never as bought: with no cooking word typed, the cooked food is the one they mean
+# ("rice" is a plate of cooked rice at ~130 kcal per 100 g, not raw grain at ~350).
+EATEN_COOKED = {'rice', 'dal', 'daal', 'rajma', 'rajmah', 'oat', 'oatmeal', 'pasta', 'spaghetti', 'macaroni', 'noodle', 'quinoa', 'lentil', 'chickpea',
+                'chana', 'moong', 'masoor', 'toor', 'urad', 'barley', 'millet', 'couscous', 'bulgur', 'bean', 'pea', 'chole', 'khichdi', 'porridge'}
+COOKED_WORDS = {'cooked', 'boiled', 'steamed', 'baked', 'roasted', 'grilled', 'curry', 'dal', 'plain'}
 
 
 def rank_columns():
     """Only what ranking reads: id, name, normalised name and whether the values are verified."""
-    return load_only(models.Food.id, models.Food.name, models.Food.name_normalized, models.Food.is_verified)
+    return load_only(models.Food.id, models.Food.name, models.Food.name_normalized, models.Food.is_verified, models.Food.external_id)
 
 
 def canonical_term(db, query):
@@ -122,9 +128,19 @@ def relevance(food, phrase, words, alias_names, favourite=False, recent=False):
     for w in asked:
         s += 20 if any(t.startswith(w[:4]) for t in name_words) else -12
     extra = [t for t in name_words if not any(t.startswith(stem(w)) or w.startswith(t) for w in words)]
-    if not asked and 'raw' in name_words and len(extra) <= 3:
+    eaten_cooked = not asked and any(stem(w) in EATEN_COOKED for w in words)
+    if eaten_cooked:
+        dish = (getattr(food, 'external_id', None) or '').startswith('recipe:')   # TrackCal recipes are cooked as served
+        if dish or (any(t in COOKED_WORDS for t in name_words) and 'raw' not in name_words): s += 12
+        else: s -= 10                                  # dry grain or pulse as bought (IFCT doesn't say "raw" for these)
+    elif not asked and 'raw' in name_words and len(extra) <= 3:
         s += 8                                         # nothing about cooking typed: the plain food as bought
-    s -= min(45, 15 * sum(1 for t in extra if t in VARIANT and t not in words))
+    if 'ripe' in name_words and not {'raw', 'green', 'unripe'} & set(words):
+        s += 9                                         # fruit as eaten; IFCT's "Mango, green, raw" is the unripe fruit
+    if 'whole' in name_words and 'whole' not in words:
+        s += 3                                         # "egg" and "milk" mean the whole food, not the white or the skimmed
+    negated = {name_words[i + 1] for i, t in enumerate(name_words[:-1]) if t in ('no', 'without')}   # "(no oil)" is not an oil
+    s -= min(45, 15 * sum(1 for t in extra if t in VARIANT and t not in words and t not in negated and not (eaten_cooked and t in COOKED_WORDS)))
     s -= min(20, 2 * len(extra))
     s -= .02 * len(name)
     if food.is_verified:

@@ -122,7 +122,7 @@ RECIPES = [
     R('dal-makhani', 'Dal makhani', 'Dal and curries', [('B004', 70), ('B020', 30), ('D076', 60), ('T013', 20), ('L001', 50)], 450, [KATORI, CUP],
       {'hi': 'दाल मखनी'}, ['maa ki dal', 'dal makhni']),
     R('rajma', 'Rajma (kidney bean curry)', 'Dal and curries', [('B020', 100), ('G017', 60), ('D076', 80), ('T012', 15)], 450, [KATORI, CUP],
-      {'hi': 'राजमा'}, ['rajmah', 'rajma masala', 'rajma curry']),
+      {'hi': 'राजमा'}, ['rajma', 'rajmah', 'rajma masala', 'rajma curry', 'kidney beans', 'rajma chawal']),
     R('chole', 'Chole (chickpea curry)', 'Dal and curries', [('B002', 100), ('G017', 60), ('D076', 80), ('T012', 15)], 450, [KATORI, CUP],
       {'hi': 'छोले', 'mr': 'छोले'}, ['chana masala', 'chhole', 'channa masala', 'chickpea curry']),
     R('kadhi', 'Kadhi', 'Dal and curries', [('B001', 30), ('L002', 300), ('T005', 10)], 400, [KATORI, CUP],
@@ -199,6 +199,11 @@ RECIPES = [
       {'ta': 'ஃபில்டர் காபி', 'te': 'ఫిల్టర్ కాఫీ'}, ['kaapi', 'coffee', 'south indian coffee']),
     R('sweet-lassi', 'Lassi (sweet)', 'Drinks', [('L002', 200), (SUGAR, 20)], 220, [('1 glass (250 g)', 250)], {'hi': 'लस्सी'}, ['lassi', 'meethi lassi']),
     R('mango-lassi', 'Mango lassi', 'Drinks', [('L002', 150), ('E039', 100), (SUGAR, 15)], 265, [('1 glass (250 g)', 250)], {'hi': 'मैंगो लस्सी'}, ['aam lassi']),
+    # ── Basics people log on their own ──────────────────────────────────────────
+    R('curd', 'Curd (dahi, plain)', 'Dairy', [('L002', 100)], 100, [('1 katori (100 g)', 100), ('1 tablespoon (15 g)', 15)],
+      {'hi': 'दही', 'ta': 'தயிர்', 'te': 'పెరుగు', 'bn': 'দই', 'mr': 'दही'}, ['curd', 'dahi', 'yogurt', 'yoghurt', 'plain yogurt', 'thayir', 'perugu', 'mosaru', 'doi']),
+    R('sugar', 'Sugar (white)', 'Sweeteners', [(SUGAR, 100)], 100, [('1 teaspoon (4 g)', 4), ('1 tablespoon (12 g)', 12)],
+      {'hi': 'चीनी', 'ta': 'சர்க்கரை', 'te': 'చక్కెర', 'bn': 'চিনি', 'mr': 'साखर'}, ['sugar', 'cheeni', 'chini', 'white sugar', 'table sugar', 'sakkarai']),
     R('buttermilk', 'Buttermilk (chaas)', 'Drinks', [('L002', 100)], 300, [('1 glass (250 g)', 250)],
       {'hi': 'छाछ', 'ta': 'மோர்', 'te': 'మజ్జిగ', 'mr': 'ताक'}, ['chaas', 'chhachh', 'mor', 'majjige', 'taak', 'masala chaas']),
 ]

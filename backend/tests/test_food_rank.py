@@ -77,3 +77,24 @@ def test_the_cache_is_off_in_tests_unless_asked_for(monkeypatch):
     assert food_rank.cache_seconds() == 0
     monkeypatch.setenv('APP_ENV', 'production')
     assert food_rank.cache_seconds() == 600
+
+
+def test_rice_and_pulses_mean_the_cooked_food_unless_raw_is_asked_for():
+    """'rice' is a plate of cooked rice (~130 kcal/100 g), not the raw grain (~350): a 3x error on the most logged food."""
+    _, h = account()
+    with database.SessionLocal() as db:
+        add_food(db, 'Rice, raw, qzmilled'); add_food(db, 'Rice, qzparboiled'); add_food(db, 'Rice, cooked, qzplain'); db.commit()
+    ours = lambda q: [n for n in names(h, q) if 'qz' in n]   # the real catalog's rice may also be here
+    assert ours('rice')[0] == 'Rice, cooked, qzplain'
+    assert ours('raw rice')[0] == 'Rice, raw, qzmilled'
+
+
+def test_whole_ripe_and_no_oil_mean_what_people_expect():
+    _, h = account()
+    with database.SessionLocal() as db:
+        add_food(db, 'Qzegg, quial, whole'); add_food(db, 'Qzegg, poultry, yolk'); add_food(db, 'Qzegg, poultry, whole')
+        add_food(db, 'Qzmango, green, raw'); add_food(db, 'Qzmango, ripe, kesar')
+        add_food(db, 'Qzroti / chapati (no oil)', aliases=['qzroti']); add_food(db, 'Qzbajra qzroti'); db.commit()
+    assert names(h, 'qzegg')[0] == 'Qzegg, poultry, whole'
+    assert names(h, 'qzmango')[0] == 'Qzmango, ripe, kesar'
+    assert names(h, 'qzroti')[0] == 'Qzroti / chapati (no oil)'
