@@ -6,6 +6,8 @@ import {EXERCISE_CONFIG} from './exercise-config';
 import {readBody} from './body-shape';
 import {normalize} from './landmarks';
 import {personalConfig,MARGIN} from './personal-range';
+import {SessionTracker} from './session-tracker';
+import type {ExerciseKind} from './types';
 /** Sports games in Play (Phase F4): skipping, shadow boxing and racket or bat swings, counted from the camera.
  *  Everything is measured in torso lengths (shoulders to hips in the picture), so it works at any distance, on a phone or a laptop.
  *  Each detector counts only its own movement: the tests film squats, jacks, punches, raises and more and expect zero. */
@@ -133,5 +135,23 @@ export class SwingCounter implements SportCounter{
 }
 
 export function sportCounter(kind:SportKind):SportCounter{return kind==='skip'?new SkipCounter():kind==='box'?new BoxCounter():new SwingCounter(kind);}
+/** A drill game (football footwork, a jump shot, raider steps, a sprint drill): counted by that camera exercise's own rules,
+ *  so it is exactly as strict as the exercise in Move, and counts nothing else. */
+export class DrillCounter implements SportCounter{
+ private tracker:SessionTracker;private last:SportEvent|null=null;private seen=0;
+ constructor(readonly exercise:ExerciseKind){this.tracker=new SessionTracker(exercise);}
+ get count(){return this.tracker.counter.reps;}
+ reset(){this.tracker=new SessionTracker(this.exercise);this.last=null;this.seen=0;}
+ frame(f:PoseFrame):SportState{
+  const r=this.tracker.frame(f),count=this.count;
+  if(count>this.seen){this.seen=count;this.last={at:f.timestamp};}
+  return {count,paused:!!r?.paused,message:r?.message??'',last:this.last};
+ }
+}
+/** The counter for any game: its own sport detector, or the one it is built on (sport-game.ts GAMES). */
+export function gameCounter(game:{base?:SportKind;drill?:ExerciseKind},id:string):SportCounter{
+ if(game.drill)return new DrillCounter(game.drill);
+ return sportCounter(game.base??id as SportKind);
+}
 /** Hand speed from torso lengths a second, using an average 0.5 m torso. An estimate, shown as one. */
 export const handKmh=(torsoPerS:number)=>Math.round(torsoPerS*.5*3.6);

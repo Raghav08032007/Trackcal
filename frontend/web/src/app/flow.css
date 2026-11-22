@@ -468,3 +468,10 @@ html body .journal-error { color: #b91c1c; } html body .journal-empty { color: v
 html[data-theme="dark"] body :is(.journal-best, .journal-strip-wrap) { background: #1c1f33; border-color: #3b3366; }
 html[data-theme="dark"] body .journal-best[data-tone="food"] { background: #2a1f14; border-color: #7c2d12; }
 html[data-theme="dark"] body .journal-day time { background: #2a2350; color: #ddd6fe; } html[data-theme="dark"] body .journal-strip span { background: #262a40; }
+
+/* Sports: the games in three groups. */
+html body .sport-group { margin-top: 18px; }
+html body .sport-group-title { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.05rem; font-weight: 800; letter-spacing: .01em; }
+html body .sport-group-title::after { content: ""; flex: 1; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #f97316, #db2777, transparent); }
+html body .sport-group[data-group="fight"] .sport-group-title::after { background: linear-gradient(90deg, #dc2626, #7c3aed, transparent); }
+html body .sport-group[data-group="move"] .sport-group-title::after { background: linear-gradient(90deg, #0d9488, #2563eb, transparent); }

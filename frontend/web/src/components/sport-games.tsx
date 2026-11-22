@@ -4,16 +4,22 @@ import {Camera,Flame,Play,RotateCcw,Star,Timer,Trophy,Volume2,VolumeX,X,Zap} fro
 import type {PoseDetectionService} from '@/lib/pose/detection-service';
 import {focusPerson} from '@/lib/pose/landmarks';
 import {SPORT_MOVES} from '@/lib/pose/sport-motions';
-import {handKmh,sportCounter,type SportCounter,type SportKind} from '@/lib/pose/sports';
+import {gameCounter,handKmh,type SportCounter,type SportKind} from '@/lib/pose/sports';
+import {MOVES,type Move} from '@/lib/pose/exercise-motions';
+import {EXERCISES} from '@/lib/pose/types';
 import type {PoseFrame} from '@/lib/pose/types';
-import {ROUND_SECONDS,SPORTS,multiplier,readBests,saveBest,scoreCount,starGoals,stars,startScore,type GameScore,type RoundSeconds} from '@/lib/sport-game';
+import {GAME_GROUPS,ROUND_SECONDS,SPORTS,type GameId,multiplier,readBests,saveBest,scoreCount,starGoals,stars,startScore,type GameScore,type RoundSeconds} from '@/lib/sport-game';
 import {useLocalState} from '@/lib/use-local-state';
 import {MoveDemo,MoveThumb} from './exercise-demo';
-import {SportCoachGuide} from './coach-guide';
+import {CoachGuide,SportCoachGuide} from './coach-guide';
 import {Celebration} from './celebration';
 import '@/app/play/sports.css';
 
-const KINDS:SportKind[]=['skip','box','cricket','badminton'];
+/** The motion shown for a game: its sport's own, or the camera exercise a drill is built on. */
+const moveOf=(id:GameId):Move=>{const g=SPORTS[id];return g.drill?MOVES[g.drill]:SPORT_MOVES[(g.base??id) as SportKind];};
+/** Where to stand: a drill uses its camera exercise's own set-up text. */
+const cameraOf=(id:GameId)=>{const g=SPORTS[id];return g.drill?EXERCISES[g.drill].setup:g.camera;};
+const baseOf=(id:GameId)=>(SPORTS[id].base??id) as SportKind;
 type Phase='pick'|'ready'|'loading'|'countdown'|'live'|'done';
 type Result={points:number;count:number;bestCombo:number;stars:number;best:number;isNew:boolean};
 
@@ -23,7 +29,7 @@ function ping(level:number){try{const Ctx=window.AudioContext||(window as unknow
 /** Sports games in Play: skip rope, shadow boxing, a cricket drive and a badminton smash, counted by the camera on this device.
  *  Points come only from counted movements. Video never leaves the device and nothing from a round is saved except a personal best. */
 export function SportGames({calm}:{calm:boolean}){
- const [kind,setKind]=useState<SportKind|null>(null),[phase,setPhase]=useState<Phase>('pick'),[seconds,setSeconds]=useLocalState<RoundSeconds>('trackcal:play:sport-seconds',60);
+ const [kind,setKind]=useState<GameId|null>(null),[phase,setPhase]=useState<Phase>('pick'),[seconds,setSeconds]=useLocalState<RoundSeconds>('trackcal:play:sport-seconds',60);
  const [sound,setSound]=useLocalState('trackcal:play:sport-sound',true);
  const [score,setScore]=useState<GameScore>(startScore),[left,setLeft]=useState(0),[count3,setCount3]=useState(3),[message,setMessage]=useState(''),[paused,setPaused]=useState(false);
  const [speed,setSpeed]=useState<number|null>(null),[bursts,setBursts]=useState<{id:number;points:number}[]>([]),[error,setError]=useState(''),[result,setResult]=useState<Result|null>(null),[bests,setBests]=useState(readBests);
@@ -34,7 +40,7 @@ export function SportGames({calm}:{calm:boolean}){
  function stopCamera(){request.current++;live.current=false;clearTimers();service.current?.stop(video.current||undefined);service.current=null;}
  useEffect(()=>stopCamera,[]);
 
- function choose(k:SportKind){stopCamera();setKind(k);setPhase('ready');setError('');setResult(null);}
+ function choose(k:GameId){stopCamera();setKind(k);setPhase('ready');setError('');setResult(null);}
  function close(){stopCamera();setKind(null);setPhase('pick');setResult(null);}
 
  function receive(raw:PoseFrame){
@@ -52,7 +58,7 @@ export function SportGames({calm}:{calm:boolean}){
  async function start(){
   if(!kind||!video.current)return;
   const token=++request.current;setError('');setPhase('loading');setScore(startScore());scoreRef.current=startScore();setSpeed(null);setResult(null);setMessage('');
-  counter.current=sportCounter(kind);
+  counter.current=gameCounter(SPORTS[kind],kind);
   try{
    const {PoseDetectionService}=await import('@/lib/pose/detection-service');if(token!==request.current)return;
    const controller=new PoseDetectionService(receive,reason=>{if(token===request.current){stopCamera();setError(reason);setPhase('ready');}});service.current=controller;
@@ -74,19 +80,19 @@ export function SportGames({calm}:{calm:boolean}){
  const sport=kind?SPORTS[kind]:null,camera=phase==='loading'||phase==='countdown'||phase==='live';
  return <section className={`play-section sport-games${calm?' sport-calm':''}`} id="move-games" aria-labelledby="move-games-title">
   <div className="play-section-head"><div><span className="play-stat-label">{t("MOVE GAMES · CAMERA")}</span><h2 id="move-games-title">{t("Play a sport.")}</h2><p className="play-daily-goal">{t("Skip, box, drive or smash in your living room. The camera counts every move on this device.")}</p></div><span>{t("No equipment needed · Video never leaves your device")}</span></div>
-  {!kind&&<div className="sport-grid">{KINDS.map(k=>{const s=SPORTS[k],best=bests[`${k}:${seconds}`];return <article key={k} className={`sport-card sport-${k}`}>
-   <div className="sport-card-art"><MoveThumb move={SPORT_MOVES[k]} weights={false} title={s.title}/></div>
+  {!kind&&GAME_GROUPS.map(([group,label,ids])=><div key={group} className="sport-group" data-group={group}><h3 className="sport-group-title">{t(label)}</h3><div className="sport-grid">{ids.map(k=>{const s=SPORTS[k],best=bests[`${k}:${seconds}`];return <article key={k} className={`sport-card sport-${s.hue}`}>
+   <div className="sport-card-art"><MoveThumb move={moveOf(k)} weights={false} title={s.title}/></div>
    <h3>{s.title}</h3><p>{s.tip}</p>
    <div className="sport-card-foot"><span className="sport-best"><Trophy size={14}/>{best?t("Best {best} pts", { best }):t("No score yet")}</span><button className="play-button sport-go" onClick={()=>choose(k)}>{t("Play")}{" "}<Play size={16}/></button></div>
-  </article>;})}</div>}
-  {kind&&sport&&<div className={`sport-panel sport-${kind}`}>
+  </article>;})}</div></div>)}
+  {kind&&sport&&<div className={`sport-panel sport-${sport.hue}`}>
    <div className="sport-panel-top"><h3>{sport.title}</h3><div className="sport-tools">
     <button type="button" className="play-small" aria-pressed={sound} onClick={()=>setSound(v=>!v)} aria-label={sound?t("Sound on"):t("Sound off")}>{sound?<Volume2 size={16}/>:<VolumeX size={16}/>}</button>
     <button type="button" className="play-small" onClick={camera?finish:close}>{camera?t("End round"):<><X size={16}/> {t("All games")}</>}</button></div></div>
    {phase==='ready'&&<div className="sport-ready">
-    <MoveDemo move={SPORT_MOVES[kind]} gear="body" title={sport.title} cues={sport.cues} fists={kind==='box'}/><SportCoachGuide kind={kind}/>
+    <MoveDemo move={moveOf(kind)} gear="body" title={sport.title} cues={sport.cues} fists={baseOf(kind)==='box'}/>{sport.drill?<CoachGuide kind={sport.drill}/>:<SportCoachGuide kind={baseOf(kind)}/>}
     <div className="sport-ready-side">
-     <p className="sport-tip"><Camera size={18}/>{sport.camera}</p>
+     <p className="sport-tip"><Camera size={18}/>{cameraOf(kind)}</p>
      <p>{sport.tip}</p>
      <fieldset className="sport-length"><legend>{t("Round")}</legend>{ROUND_SECONDS.map(n=><label key={n}><input type="radio" name="sport-length" checked={seconds===n} onChange={()=>setSeconds(n)}/>{n} s</label>)}</fieldset>
      <ol className="sport-goals" aria-label={t("Star goals")}>{starGoals(kind,seconds).map((n,i)=><li key={i}><span aria-hidden="true">{'★'.repeat(i+1)}</span>{n} {sport.units}</li>)}</ol>
@@ -97,7 +103,7 @@ export function SportGames({calm}:{calm:boolean}){
    <div className="sport-stage" hidden={!camera}>
     <video ref={video} playsInline muted aria-label={t("Your camera, mirrored")}/>
     {phase==='loading'&&<div className="sport-overlay"><p>{t("Starting the camera…")}</p></div>}
-    {phase==='countdown'&&<div className="sport-overlay sport-count" aria-live="assertive"><span key={count3}>{count3}</span><p>{sport.camera}</p></div>}
+    {phase==='countdown'&&<div className="sport-overlay sport-count" aria-live="assertive"><span key={count3}>{count3}</span><p>{cameraOf(kind)}</p></div>}
     {phase==='live'&&<>
      <div className="sport-hud" aria-live="polite">
       <div className="sport-clock" style={{'--left':`${left/(seconds*10)}%`} as React.CSSProperties}><Timer size={14}/><strong>{Math.ceil(left/1000)}</strong></div>
@@ -105,7 +111,7 @@ export function SportGames({calm}:{calm:boolean}){
       <div className="sport-points"><b>{score.points}</b> {t("pts")}{score.combo>1&&<span className={`sport-combo combo-${multiplier(score.combo)}`}><Flame size={14}/>{t("{combo} in a row · ×{n}", { combo: score.combo, n: multiplier(score.combo) })}</span>}</div>
      </div>
      {bursts.map(b=><span key={b.id} className="sport-burst" aria-hidden="true">+{b.points}</span>)}
-     <p className={`sport-message${paused?' is-paused':''}`}>{message?t(message):sport.tip}{speed!==null&&(kind==='cricket'||kind==='badminton')&&<b>{" "}{t("· hand speed about {n} km/h (estimate)", { n: handKmh(speed) })}</b>}</p>
+     <p className={`sport-message${paused?' is-paused':''}`}>{message?t(message):sport.tip}{speed!==null&&(baseOf(kind)==='cricket'||baseOf(kind)==='badminton')&&<b>{" "}{t("· hand speed about {n} km/h (estimate)", { n: handKmh(speed) })}</b>}</p>
     </>}
    </div>
    {phase==='done'&&result&&<div className="sport-done" role="status">
@@ -113,7 +119,7 @@ export function SportGames({calm}:{calm:boolean}){
     <div className="sport-stars" role="img" aria-label={t("{stars} of 3 stars", { stars: result.stars })}>{[0,1,2].map(i=><Star key={i} size={44} className={i<result.stars?'on':''} style={{'--i':i} as React.CSSProperties}/>)}</div>
     <h3>{result.isNew?t("New personal best!"):result.stars===3?t("Three stars!"):result.count?t("Round complete."):t("No moves counted this time.")}</h3>
     <dl className="sport-results"><div><dt>{t("Points")}</dt><dd>{result.points}</dd></div><div><dt>{sport.units[0].toUpperCase()+sport.units.slice(1)}</dt><dd>{result.count}</dd></div><div><dt>{t("Best run")}</dt><dd>{result.bestCombo}</dd></div><div><dt>{t("Your best")}</dt><dd>{result.best}</dd></div></dl>
-    {!result.count&&<p>{t("Check the camera tip: {camera}", { camera: sport.camera })}</p>}
+    {!result.count&&<p>{t("Check the camera tip: {camera}", { camera: cameraOf(kind) })}</p>}
     <div className="play-hero-actions"><button className="play-button" onClick={()=>void start()}>{t("Play again")}{" "}<RotateCcw size={17}/></button><button className="play-button play-button-white" onClick={close}>{t("Choose another game")}</button></div>
    </div>}
   </div>}
