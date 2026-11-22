@@ -52,7 +52,9 @@ describe('a person who moves less, filmed',()=>{
  it('gets most of their honest reps counted once their range is learned',()=>{
   let before=0,after=0,real=0;
   for(const k of KINDS){const reach=learnFrom(k,[.45,.6]);for(let s=1;s<=4;s++){const a=run(k,800+s,[.45,.6]),b=run(k,800+s,[.45,.6],reach);before+=a.got;after+=b.got;real+=a.real;}}
-  expect(before/real).toBeLessThan(.25);expect(after/real).toBeGreaterThan(.6);
+  // The standard depth now counts a 60% rep (G3 calibration), so some of these already count before learning; learning
+  // their range must still add a clear share on top.
+  expect(before/real).toBeLessThan(.5);expect(after/real).toBeGreaterThan(.6);expect((after-before)/real).toBeGreaterThan(.15);
  },120000);
  it('still has half reps rejected',()=>{
   let got=0,real=0;
