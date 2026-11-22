@@ -6,7 +6,7 @@ import Link from '@/lib/navigation';
 import {useAccount} from './account-session';
 import {Celebration} from './celebration';
 import {CoachLine} from './coach-card';
-import {MoveDemo,MoveThumb} from './exercise-demo';
+import {CameraAngle,MoveDemo,MoveThumb} from './exercise-demo';
 import {FINISHER,HOLD_SECONDS,MUSCLE_CATEGORIES,PLAN_SIZE,cameraLink,dailyPackage,exercisesFor,fromDiagram,mobilityPlan,todaysCategory,type FinderFilters,type Found,type MuscleCategory} from '@/lib/muscle-finder';
 import {MOVES} from '@/lib/pose/exercise-motions';
 import {EXERCISE_CONFIG} from '@/lib/pose/exercise-config';
@@ -80,7 +80,7 @@ function Finder(){
      <div className="exercise-cards">{found.map(row=><article className="exercise-card" key={row.id} data-primary={row.primary||undefined}>
       <div className="exercise-card-picture"><Thumb row={row}/></div>
       <div className="exercise-card-body"><h3>{row.title}</h3><div className="exercise-card-tags">{row.kind&&safety.adviceFor(row.kind)&&<span className={`muscle-badge safety-badge-${safety.adviceFor(row.kind)!.level}`} title={safety.adviceFor(row.kind)!.reasons.join(' ')}>{safety.adviceFor(row.kind)!.level==='avoid'?t("Not suitable for you"):t("Take care")}</span>}{row.primary&&<span className="muscle-badge">{t("Main target")}</span>}{row.difficulty==='easy'&&<span className="muscle-badge muscle-badge-easy">{t("Beginner")}</span>}{row.hold&&<span className="muscle-badge muscle-badge-hold">{t("Hold")}</span>}</div><small>{t("Works {n}", { n: row.muscles.toLowerCase() })}</small><small>{EXERCISE_EQUIPMENT[row.equipment]} · {EXERCISE_DIFFICULTY[row.difficulty]}</small></div>
-      {watching===row.id&&<div className="exercise-card-3d">{row.kind?<MoveDemo move={MOVES[row.kind]} gear={gearOf(row.kind)} title={row.title} cues={EXERCISE_CONFIG[row.kind].cues}/>:<MoveDemo move={HOLDS[row.hold!].move} gear="body" title={row.title} cues={[HOLDS[row.hold!].cue]}/>}</div>}
+      {watching===row.id&&<div className="exercise-card-3d">{row.kind&&<CameraAngle kind={row.kind}/>}{row.kind?<MoveDemo move={MOVES[row.kind]} gear={gearOf(row.kind)} title={row.title} cues={EXERCISE_CONFIG[row.kind].cues}/>:<MoveDemo move={HOLDS[row.hold!].move} gear="body" title={row.title} cues={[HOLDS[row.hold!].cue]}/>}</div>}
       <div className="exercise-card-actions">
        <Link className="account-primary" href={row.kind?`/workouts/camera?exercise=${row.kind}`:`/workouts/camera?mode=hold&hold=${row.hold}`}>{t("Track with camera")}</Link>
        <button type="button" className="account-secondary" aria-expanded={watching===row.id} onClick={()=>setWatching(value=>value===row.id?null:row.id)}>{watching===row.id?t("Hide 3D"):t("Watch in 3D")}</button>

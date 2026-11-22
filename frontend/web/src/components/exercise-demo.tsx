@@ -57,10 +57,27 @@ function floorOf(m:Move){const at=placement(m);let low=0;for(const key of m.keys
 /** The example for each exercise: an illustrated athlete on a loop, stopped at any time, and still for people who ask for less motion. */
 /** The 3D athlete where the device can draw it, and the flat drawing otherwise. */
 /** The sample for a camera exercise: the example on a loop (slow motion on request) and the form points the camera watches for. */
+/** A camera, a dotted line of sight and a person seen from the front (shoulders square) or from the side (in profile). */
+function AngleIcon({front}:{front:boolean}){
+ return <svg className="camera-angle-icon" viewBox="0 0 64 32" aria-hidden="true">
+  <rect x="2" y="9" width="14" height="14" rx="3" fill="currentColor"/><circle cx="9" cy="16" r="3.4" fill="#fff"/>
+  <path d="M19 16H38" stroke="currentColor" strokeWidth="2" strokeDasharray="2 3" fill="none"/>
+  {front
+   ?<g fill="currentColor"><circle cx="50" cy="7" r="4.5"/><rect x="42" y="13" width="16" height="4" rx="2"/><rect x="47" y="13" width="6" height="16" rx="3"/></g>
+   :<g fill="currentColor"><circle cx="50" cy="7" r="4.5"/><path d="M45.2 7.5 42.6 8.6 45.4 9.6Z"/><rect x="47" y="13" width="6" height="16" rx="3"/><rect x="45" y="14" width="4" height="9" rx="2"/></g>}
+ </svg>;
+}
+/** Which way to stand (or lie) for the camera: side-on or facing it, and whether the other angle also counts. */
+export function CameraAngle({kind}:{kind:ExerciseKind}){
+ const c=EXERCISE_CONFIG[kind],front=c.plane==='front';
+ const label=c.bothAngles?(front?t("Facing the camera is best · side-on also counts"):t("Side-on is best · facing the camera also counts")):(front?t("Facing the camera"):t("Side-on to the camera"));
+ return <p className="camera-angle" data-view={front?'front':'side'}><AngleIcon front={front}/><span><strong>{t("Camera angle")}</strong> {label}</span></p>;
+}
 export function ExerciseDemo({kind}:{kind:ExerciseKind}){
  const points=formPoints(kind);
  return <section className="exercise-sample" aria-label={t("How to do {n}", { n: EXERCISES[kind].title.toLowerCase() })}>
   <h3>{t("How to do it")}</h3>
+  <CameraAngle kind={kind}/>
   <MoveDemo move={MOVES[kind]} gear={gearOf(kind)} title={EXERCISES[kind].title} cues={EXERCISE_CONFIG[kind].cues} joint={EXERCISE_CONFIG[kind].joints[0]}/>
   {points.length>0&&<><p className="exercise-sample-lead">{t("The camera watches for:")}</p><ul className="exercise-points">{points.map(point=><li key={point}>{t(point)}</li>)}</ul></>}
  </section>;

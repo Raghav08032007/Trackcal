@@ -302,3 +302,29 @@ html[data-theme="dark"] body .watch-how > button.watch-how-toggle[aria-expanded=
 html body .watch-how .exercise-demo figcaption:not(.x-a) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 html body .watch-how .exercise-demo figcaption:not(.x-a) > span { flex-basis: 100%; }
 html body .watch-how .exercise-demo figcaption > button:not(.x-a):not(.x-b) { width: auto; flex: 0 0 auto; min-height: 40px; margin: 0; padding: 0 12px; }
+
+/* Coach tabs follow the width of the coach panel, not the screen: in the narrow side column on a laptop they sit 2 × 2
+   instead of running off the edge. */
+html body .coach-guide { container-type: inline-size; container-name: coach; }
+@container coach (max-width: 560px) {
+  html body .coach-guide .coach-tabs { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+  html body .coach-guide .coach-tabs button[role="tab"] { white-space: normal; text-align: center; min-width: 0; padding: 6px 8px; line-height: 1.2; }
+}
+/* The coach voice picker under the voice switch. */
+html body .voice-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 4px 0 10px; }
+html body .voice-picker label { flex: 1 1 200px; display: grid; gap: 4px; font-size: .875rem; font-weight: 600; }
+html body .voice-picker select { min-height: 44px; }
+html body .voice-picker > button:not(.x-a) { min-height: 44px; margin: 0; padding: 0 16px; border-radius: 12px; }
+
+/* Camera angle: side-on or facing the camera, shown with a small picture above every moving example. */
+html body .camera-angle { display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; padding: 8px 12px; border-radius: 14px;
+  font-size: .875rem; line-height: 1.35; color: var(--ds-ink, #1c1917); background: #e0f2fe; border: 1px solid #7dd3fc; }
+html body .camera-angle[data-view="front"] { background: #fef3c7; border-color: #fcd34d; }
+html body .camera-angle strong { display: block; font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase; color: #0369a1; }
+html body .camera-angle[data-view="front"] strong { color: #b45309; }
+html body .camera-angle-icon { width: 64px; height: 32px; flex: 0 0 auto; color: #0284c7; }
+html body .camera-angle[data-view="front"] .camera-angle-icon { color: #d97706; }
+html[data-theme="dark"] body .camera-angle { background: #0c2a3d; border-color: #0369a1; color: #e0f2fe; }
+html[data-theme="dark"] body .camera-angle[data-view="front"] { background: #3a2a08; border-color: #b45309; color: #fef3c7; }
+html[data-theme="dark"] body .camera-angle strong { color: #7dd3fc; }
+html[data-theme="dark"] body .camera-angle[data-view="front"] strong { color: #fcd34d; }

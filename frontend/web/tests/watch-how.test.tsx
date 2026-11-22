@@ -1,6 +1,18 @@
 import {describe,expect,it} from 'vitest';
 import {fireEvent,render,screen} from '@testing-library/react';
-import {WatchHow,kindForTemplate} from '@/components/exercise-demo';
+import {CameraAngle,WatchHow,kindForTemplate} from '@/components/exercise-demo';
+
+describe('CameraAngle', () => {
+  it('says which way to face the camera for each exercise', () => {
+    const {container, unmount} = render(<CameraAngle kind="pushup"/>);
+    expect(container.textContent).toMatch(/side-on/i);
+    expect(container.querySelector('[data-view="side"]')).toBeTruthy();
+    unmount();
+    const jack = render(<CameraAngle kind="jack"/>);
+    expect(jack.container.querySelector('[data-view="front"]')).toBeTruthy();
+    expect(jack.container.textContent).toMatch(/facing the camera/i);
+  });
+});
 
 describe('kindForTemplate', () => {
   it('finds the camera exercise behind a library or plan template', () => {
