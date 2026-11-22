@@ -13,7 +13,7 @@ export type Section = { id: "today" | "food" | "move" | "play" | "me"; label: st
   groups?: Group[] };                 // the overview page, when the section has one
 
 export const SECTIONS: Section[] = [
-  { id: "today", label: "Today", href: "/", icon: House, pages: [["/", "Today"], ["/coach", "Coach"]], also: [] },
+  { id: "today", label: "Today", href: "/", icon: House, pages: [["/", "Today"], ["/tracker", "Journal"], ["/coach", "Coach"]], also: [] },
   { id: "food", label: "Food", href: "/food", icon: Utensils,
     pages: [["/food", "Overview"], ["/nutrition", "Diary"], ["/scanner", "Log food"], ["/meal-plans", "Meal plans"], ["/recipes", "Recipes"]],
     also: ["/barcode", "/describe", "/food-library", "/fasting", "/journal", "/tools", "/menu"],
@@ -40,6 +40,7 @@ export const SECTIONS: Section[] = [
         { href: "/workouts/muscles", title: "Plan by muscle", text: "Pick the muscles to train; get a plan that leaves out anything not suitable for your injuries.", icon: Search },
         { href: "/workouts/camera", title: "Camera workout and posture check", text: "Counts your reps and tells you, as you move, how to keep good posture.", icon: Camera },
         { href: "/workouts", title: "Your workouts", text: "Your sessions, sets and every workout you've done.", icon: Dumbbell },
+        { href: "/tracker", title: "Journal", text: "Every workout and meal by day, month and year; add gym sessions and plan ahead.", icon: CalendarDays },
         { href: "/programs", title: "Programs", text: "Step-by-step plans that grow with you.", icon: ListChecks } ] },
       { title: "Outdoors", items: [
         { href: "/workouts/gps", title: "Record a route", text: "Run, walk, hike or ride with GPS.", icon: MapPin },
@@ -60,6 +61,7 @@ export const SECTIONS: Section[] = [
         { href: "/account", title: "Account and profile", text: "Your name, password and what's saved to your account.", icon: UserRound },
         { href: "/health", title: "My report", text: "Your blood report, turned into food and exercise advice.", icon: FileHeart },
         { href: "/progress", title: "Progress", text: "Habits, training load and how each exercise is going.", icon: Trophy },
+        { href: "/tracker", title: "Journal", text: "Every workout and meal by day, month and year, with your best days.", icon: CalendarDays },
         { href: "/onboarding", title: "About you", text: "Age, goals, injuries and food you eat. Change any time.", icon: ClipboardList } ] },
       { title: "Settings", items: [
         { href: "/routine", title: "Reminders", text: "Gentle nudges for water, meals, workouts and sleep.", icon: Bell },

@@ -5,6 +5,7 @@ from flask_app import before_each, retry_deadlocks, route
 from routers import training as handlers
 from routers import workout_history as history
 from routers import training_trend
+from routers import journal
 
 bp = Blueprint('training', __name__, url_prefix='/api/v1/wellness')
 retry_deadlocks(bp)  # XP awards; handlers make no external calls before committing
@@ -28,3 +29,7 @@ route(bp, 'POST', '/entries/<identifier>/restore', history.restore_entry)
 route(bp, 'GET', '/library', history.get_library)
 route(bp, 'POST', '/library', history.change_library)
 route(bp, 'POST', '/library/import', history.import_library)
+route(bp, 'GET', '/journal', journal.journal)
+route(bp, 'POST', '/plans', journal.add_plan, status=201)
+route(bp, 'DELETE', '/plans/<identifier>', journal.remove_plan)
+route(bp, 'POST', '/plans/<identifier>/done', journal.done_plan)

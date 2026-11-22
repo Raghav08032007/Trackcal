@@ -1427,6 +1427,23 @@ class WorkoutEntry(Base):
     __table_args__=(Index('ix_workout_entries_user_day','user_id','day'),)
 
 
+class PlannedWorkout(Base):
+    """A workout planned for a coming day (gym session, class, run…). Marking it done saves a WorkoutEntry for that day."""
+    __tablename__='planned_workouts'
+    id=Column(CHAR(36),primary_key=True)                # made by the device, so a retried save is the same plan
+    user_id=Column(CHAR(36),ForeignKey('users.id',ondelete='CASCADE'),nullable=False)
+    day=Column(String(10),nullable=False)
+    name=Column(String(120),nullable=False)
+    minutes=Column(Integer,nullable=False,default=0)
+    sets=Column(Integer,nullable=False,default=0)
+    reps=Column(Integer,nullable=False,default=0)
+    load_kg=Column(Float,nullable=False,default=0)
+    notes=Column(String(300),nullable=False,default='')
+    done_entry_id=Column(CHAR(36),nullable=True)
+    created_at=Column(DateTime,nullable=False,default=_now)
+    __table_args__=(Index('ix_planned_workouts_user_day','user_id','day'),)
+
+
 class TrainingLibrary(Base):
     """Your circuits, program progress and next rep targets, one per person."""
     __tablename__='training_libraries'
