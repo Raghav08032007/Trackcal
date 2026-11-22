@@ -28,7 +28,7 @@ export type Run = { kind: ExerciseKind; seed: number; reps: number; counted: num
 /** One set of an exercise, filmed from near the angle the app recommends for it. */
 /** labels: for each frame, -1 while holding the start position, otherwise the rep it belongs to. Each rep goes to its own depth
  *  (65-100% of the full movement), as real people do. */
-export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: number; spread?: number; depth?: [number, number]; distort?: (p: ReturnType<typeof full>, key: number) => ReturnType<typeof full>; move?: Move; timing?: number[]; per?: [number, number]; rest?: [number, number] } = {}): { frames: PoseFrame[]; reps: number; labels: number[]; meta: Run["meta"] } {
+export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: number; spread?: number; depth?: [number, number]; distort?: (p: ReturnType<typeof full>, key: number) => ReturnType<typeof full>; move?: Move; timing?: number[]; per?: [number, number]; rest?: [number, number]; yaw?: number } = {}): { frames: PoseFrame[]; reps: number; labels: number[]; meta: Run["meta"] } {
   const r = rng(seed * 7919 + kind.length * 104729), m = opts.move ?? MOVES[kind], keys = m.keys.map(full).map((k, i) => opts.distort ? opts.distort(k, i) : k), start = placement(m), size = r.range(.88, 1.1);
   // Stand the body on the floor: its lowest point in the starting pose goes to just above it.
   const lowest = Math.min(...pose3d(m, keys[0], start, size, 0).map(v => v[1])), floor = .03 - lowest;
@@ -37,7 +37,7 @@ export function exerciseSet(kind: ExerciseKind, seed: number, opts: { reps?: num
   const place = (p: ReturnType<typeof full>) => pose3d(m, p, start, size, floor).map(v => [v[0] - cx, v[1], v[2] - cz] as Vec);
   // The angle the app asks for: side-on for a move forward and back, head-on for one out to the sides.
   const best = m.view === "side" ? 90 : 0;
-  const laptop = r.next() < .5, yaw = best + r.range(-(opts.spread ?? 25), opts.spread ?? 25) * (r.next() < .5 ? -1 : 1);
+  const laptop = r.next() < .5, aimed = best + r.range(-(opts.spread ?? 25), opts.spread ?? 25) * (r.next() < .5 ? -1 : 1), yaw = opts.yaw ?? aimed;  // yaw: film from another angle on purpose
   const lying = keys.some(k => Math.abs(k.torso) > 60);
   const cam: Camera = laptop
     ? { yaw, height: lying ? r.range(.3, .8) : r.range(.72, 1.05), distance: r.range(2.2, 3.4), fov: r.range(62, 78), width: 1280, height_px: 720, roll: r.range(-2, 2) }

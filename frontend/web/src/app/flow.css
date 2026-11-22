@@ -475,3 +475,28 @@ html body .sport-group-title { display: flex; align-items: center; gap: 10px; ma
 html body .sport-group-title::after { content: ""; flex: 1; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #f97316, #db2777, transparent); }
 html body .sport-group[data-group="fight"] .sport-group-title::after { background: linear-gradient(90deg, #dc2626, #7c3aed, transparent); }
 html body .sport-group[data-group="move"] .sport-group-title::after { background: linear-gradient(90deg, #0d9488, #2563eb, transparent); }
+
+/* Camera side panel: grouped, compact, nothing cut off. */
+html body .camera-page .camera-metrics{gap:14px}
+html body .camera-page label.camera-record{flex-direction:row;align-items:flex-start;gap:12px;margin:0;line-height:1.45;font-weight:600}
+html body .camera-page label.camera-record input[type=checkbox]{flex:0 0 auto;margin-top:2px;accent-color:var(--clay-violet-deep,#6d28d9)}
+html body .camera-page .voice-picker{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+html body .camera-page .voice-picker select{width:100%;min-width:0;text-overflow:ellipsis}
+html body .camera-page .voice-picker button{justify-self:start}
+html body .camera-page .camera-filters{border:1px solid var(--tc-line,#e5e7eb);border-radius:16px;padding:4px 14px}
+html body .camera-page .camera-filters[open]{padding-bottom:14px;display:flex;flex-direction:column;gap:12px}
+html body .camera-page .camera-filters>summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center;list-style-position:inside}
+html body .camera-page .camera-facts{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+html body .camera-page .camera-facts li{padding:5px 10px;border-radius:999px;background:var(--tc-soft,#f3f0ff);font-size:.8rem;line-height:1.3;max-width:100%;overflow-wrap:anywhere}
+html body .camera-page .camera-metrics .muscle-map,html body .camera-page .camera-metrics svg{max-width:100%;height:auto}
+html body .camera-page .camera-tips{margin:0;padding-left:18px;line-height:1.5;overflow-wrap:anywhere}
+html body .camera-page .camera-experimental{margin:0}
+/* Live coach line on the camera: amber for a fix, green for praise. */
+html body .camera-live-coach[data-tone=fix] span{background:#f59e0b;color:#1f1300;padding:6px 10px;border-radius:10px;font-weight:700}
+html body .camera-live-coach[data-tone=good] span{background:#16a34a;color:#fff;padding:6px 10px;border-radius:10px;font-weight:700}
+html body .camera-page .camera-filters .camera-equipment:not(.x-a){display:flex;flex-wrap:wrap;gap:8px;grid-template-columns:none}
+html body .camera-page .camera-filters .camera-equipment:not(.x-a) button{flex:0 0 auto;width:auto;min-height:40px;padding:8px 14px;border-radius:999px;font-size:.85rem}
+html body .camera-page .camera-filters .camera-equipment:not(.x-a) button::after{display:none}
+html body .camera-page .camera-filters>summary::-webkit-details-marker{display:none}
+html body .camera-page .camera-filters>summary::before{content:"▸";display:inline-block;margin-right:10px;transition:transform .2s}
+html body .camera-page .camera-filters[open]>summary::before{transform:rotate(90deg)}

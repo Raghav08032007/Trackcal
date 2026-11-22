@@ -56,6 +56,7 @@ export const TRANSLATED_FILES = [
   "src/components/muscle-finder.tsx",
   "src/lib/pose/rep-counter.ts",
   "src/lib/pose/posture-match.ts",
+  "src/lib/pose/live-coach.ts",
   "src/components/exercise-demo.tsx",
   "src/components/hold-studio.tsx",
   "src/components/route-map.tsx",
