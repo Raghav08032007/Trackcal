@@ -59,6 +59,7 @@ export const TRANSLATED_FILES = [
   "src/lib/pose/live-coach.ts",
   "src/lib/avatar-look.ts",
   "src/components/avatar-studio.tsx",
+  "src/components/character-card.tsx",
   "src/app/me/character/page.tsx",
   "src/components/exercise-demo.tsx",
   "src/components/hold-studio.tsx",

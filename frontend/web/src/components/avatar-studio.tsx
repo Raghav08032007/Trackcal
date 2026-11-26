@@ -3,9 +3,9 @@
  * Outfit colours and accessories unlock as you train: a new level every 4 active days. Optionally the exercise demos
  * show your character instead of the coach. */
 import { t } from "@/lib/i18n";
-import {lazy,Suspense,useRef,useState} from 'react';
+import {lazy,Suspense,useCallback,useRef,useState} from 'react';
 import {Lock,Sparkles,Camera,RotateCcw} from 'lucide-react';
-import {ACCESSORIES,DEFAULT_LOOK,HAIR,OUTFIT,SKIN,avatarLevel,clearLook,saveLook,unlocked,useAvatarLook,type AvatarLook} from '@/lib/avatar-look';
+import {ACCESSORIES,DEFAULT_LOOK,HAIR,OUTFIT,SKIN,avatarLevel,clearLook,saveLook,saveSnapshot,unlocked,useAvatarLook,type AvatarLook} from '@/lib/avatar-look';
 import {MOVES} from '@/lib/pose/exercise-motions';
 import {useActiveDays} from '@/lib/workouts';
 
@@ -24,6 +24,7 @@ export function AvatarStudio(){
  const saved=useAvatarLook(),look=saved??DEFAULT_LOOK,days=useActiveDays(),{level,next}=avatarLevel(days.length);
  const [move,setMove]=useState<(typeof PREVIEW)[number][0]>('squat'),[failed,setFailed]=useState(false),[status,setStatus]=useState(''),[busy,setBusy]=useState(false);
  const file=useRef<HTMLInputElement>(null);
+ const failed3d=useCallback(()=>setFailed(true),[]);   // stable, so a colour change never rebuilds the 3D scene
  const set=(patch:Partial<AvatarLook>)=>saveLook({...look,...patch});
  const plain=(list:string[])=>list.map(color=>({color,level:1}));
  const nextUnlock=[...OUTFIT.map(o=>({level:o.level,name:o.name})),...ACCESSORIES.map(a=>({level:a.level,name:a.name}))].filter(u=>u.level===level+1);
@@ -47,7 +48,7 @@ export function AvatarStudio(){
      <small>{next===null?t("Top level: everything is unlocked."):t("{n} more active days to level {level}.",{n:next-days.length,level:level+1})}{nextUnlock.length>0&&next!==null?' '+t("Unlocks: {list}.",{list:nextUnlock.map(u=>t(u.name)).join(', ')}):''}</small></div>
     <div className="studio-preview">
      {failed?<p className="studio-fallback">{t("3D preview isn't available on this device. Your choices are still saved.")}</p>
-      :<Suspense fallback={<div className="studio-loading">{t("Loading your character…")}</div>}><Avatar3D key={look.model} move={MOVES[move]} gear={move==='curl'?'dumbbell':'body'} title={t("Your character")} playing onFail={()=>setFailed(true)} model={look.model} showAngle={false} look={look}/></Suspense>}
+      :<Suspense fallback={<div className="studio-loading">{t("Loading your character…")}</div>}><Avatar3D key={look.model} move={MOVES[move]} gear={move==='curl'?'dumbbell':'body'} title={t("Your character")} playing onFail={failed3d} model={look.model} showAngle={false} look={look} snapshotKey={saved?JSON.stringify(saved)+move:undefined} onSnapshot={saveSnapshot}/></Suspense>}
     </div>
     <div className="studio-moves" role="group" aria-label={t("Preview move")}>{PREVIEW.map(([id,label])=><button key={id} type="button" aria-pressed={move===id} onClick={()=>setMove(id)}>{t(label)}</button>)}</div>
    </div>

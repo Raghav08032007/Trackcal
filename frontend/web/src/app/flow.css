@@ -534,3 +534,20 @@ html body .avatar-studio .studio-reset{align-self:flex-start;display:inline-flex
 html body .avatar-studio .studio-swatches button:not(.x-a):not(.x-b):not(.x-c){background:var(--swatch);color:#fff}
 html body .avatar-studio .studio-accessories button:not(.x-a):not(.x-b){display:inline-flex;align-items:center;gap:6px}
 html body .avatar-studio .studio-accessories button small{font-weight:500;opacity:.8}
+
+/* Character card on Today and Progress */
+html body .character-card{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;overflow:hidden;background:linear-gradient(120deg,#f5f3ff,#ecfeff)}
+html body .character-card-picture{width:120px;height:150px;border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#fff,#e9e4ff 60%,#d6f3f1);display:grid;place-items:center}
+html body .character-card-picture img{width:100%;height:100%;object-fit:cover}
+html body .character-card-placeholder{color:#7c3aed}
+html body .character-card-body{display:flex;flex-direction:column;gap:6px;min-width:0}
+html body .character-card-body .eyebrow{display:flex;align-items:center;gap:6px;margin:0}
+html body .character-card-body h2{margin:0;font-size:1.3rem}
+html body .character-card-meter{display:grid;gap:4px}
+html body .character-card-meter progress{width:100%;height:10px;accent-color:#7c3aed}
+html body .character-card-meter span,html body .character-card-next,html body .character-card-new{font-size:.85rem;margin:0;line-height:1.4}
+html body .character-card-new{font-weight:700;color:#6d28d9}
+html body .character-card-link{align-self:flex-start;margin-top:4px}
+html body .character-card .celebration-host{position:absolute;inset:0;pointer-events:none}
+html[data-theme=dark] body .character-card{background:linear-gradient(120deg,#1e1b4b,#083344)}
+@media (max-width:480px){html body .character-card{grid-template-columns:88px minmax(0,1fr);gap:12px}html body .character-card-picture{width:88px;height:110px}}

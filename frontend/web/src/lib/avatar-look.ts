@@ -33,7 +33,17 @@ function read():AvatarLook|null{
  return null;
 }
 export function saveLook(look:AvatarLook){cached=look;try{localStorage.setItem(KEY,JSON.stringify(look));}catch{/* kept for this visit */}listeners.forEach(f=>f());}
-export function clearLook(){cached=null;try{localStorage.removeItem(KEY);}catch{/* nothing stored */}listeners.forEach(f=>f());}
+export function clearLook(){cached=null;snap=null;try{localStorage.removeItem(KEY);localStorage.removeItem(SNAP);}catch{/* nothing stored */}listeners.forEach(f=>f());}
+/** A small still of your character (about 15 KB), taken in the studio, so other pages show it without loading 3D. */
+const SNAP='trackcal:avatar-snapshot';let snap:string|null=null;
+export function saveSnapshot(url:string){if(!url.startsWith('data:image/'))return;snap=url;try{localStorage.setItem(SNAP,url);}catch{/* too big or private mode: this visit only */}listeners.forEach(f=>f());}
+export function useSnapshot():string|null{return useSyncExternalStore(f=>{listeners.add(f);return()=>listeners.delete(f);},()=>{if(snap)return snap;try{snap=localStorage.getItem(SNAP);}catch{snap=null;}return snap;},()=>null);}
+/** The highest level already celebrated, so each level-up is cheered once. */
+const SEEN='trackcal:avatar-seen-level';
+export function seenLevel(){try{return Number(localStorage.getItem(SEEN))||0;}catch{return 0;}}
+export function markLevelSeen(level:number){try{localStorage.setItem(SEEN,String(level));}catch{/* cheered again next visit */}}
+/** What a level unlocks, for the card and the studio. */
+export const unlocksAt=(level:number)=>[...OUTFIT.filter(o=>o.level===level).map(o=>o.name),...ACCESSORIES.filter(a=>a.level===level).map(a=>a.name)];
 /** Your saved look, or null when you haven't made one. */
 export function useAvatarLook():AvatarLook|null{return useSyncExternalStore(f=>{listeners.add(f);return()=>listeners.delete(f);},read,()=>null);}
 

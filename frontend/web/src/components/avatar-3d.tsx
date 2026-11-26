@@ -22,9 +22,9 @@ const CHAINS:[bone:string,from:number,to:number][]=[['thigh_l',23,25],['calf_l',
 /** Where a landmark sits on the avatar, for the angle label and equipment. */
 const AT:Record<number,string>={11:'upperarm_l',12:'upperarm_r',13:'lowerarm_l',14:'lowerarm_r',15:'hand_l',16:'hand_r',23:'thigh_l',24:'thigh_r',25:'calf_l',26:'calf_r',27:'foot_l',28:'foot_r'};
 
-export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint,showAngle=true,fists=false,turn=0,sway=true,look=null}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void;speed?:number;model?:AvatarModel;joint?:readonly [number,number,number];showAngle?:boolean;fists?:boolean;/** Extra camera turn in radians (the video bench films from other angles). */turn?:number;/** The gentle camera orbit while playing; off for recordings, which film like a phone on a stand. */sway?:boolean;/** Your character's colours and accessory; null shows the coach as designed. */look?:AvatarLook|null}){
+export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint,showAngle=true,fists=false,turn=0,sway=true,look=null,snapshotKey,onSnapshot}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void;speed?:number;model?:AvatarModel;joint?:readonly [number,number,number];showAngle?:boolean;fists?:boolean;/** Extra camera turn in radians (the video bench films from other angles). */turn?:number;/** The gentle camera orbit while playing; off for recordings, which film like a phone on a stand. */sway?:boolean;/** Your character's colours and accessory; null shows the coach as designed. */look?:AvatarLook|null;/** When this changes, a still picture of the scene is handed to onSnapshot (for the character card). */snapshotKey?:string;onSnapshot?:(url:string)=>void}){
  const pace=useRef(speed);pace.current=speed;
- const angleOn=useRef(showAngle);angleOn.current=showAngle;const turnRef=useRef(turn);turnRef.current=turn;const swayRef=useRef(sway);swayRef.current=sway;const lookRef=useRef(look);lookRef.current=look;
+ const angleOn=useRef(showAngle);angleOn.current=showAngle;const turnRef=useRef(turn);turnRef.current=turn;const swayRef=useRef(sway);swayRef.current=sway;const lookRef=useRef(look);lookRef.current=look;const snap=useRef({key:snapshotKey,done:'' as string|undefined,frames:0,cb:onSnapshot});snap.current.key=snapshotKey;snap.current.cb=onSnapshot;
  const host=useRef<HTMLDivElement>(null),clock=useRef(0),drag=useRef({turn:0,down:false,x:0}),[ready,setReady]=useState(false);
  useEffect(()=>{
   const el=host.current;if(!el)return;
@@ -166,6 +166,8 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
     const turn=turnRef.current+drag.current.turn+(playing&&swayRef.current?Math.sin(now/2600)*.22:0),angle=(view==='side'?.42:.32)+turn,distance=Math.max(size.x,size.y)*1.9+.62;   // closer than the simpler figure: the body fills the frame
     camera.position.set(centre.x+Math.sin(angle)*distance,centre.y+distance*.24,Math.cos(angle)*distance);camera.lookAt(centre.x,centre.y-.02,0);
     renderer.render(scene,camera);
+    // A still for the character card: taken right after drawing (the buffer is still there), a few frames after a look change.
+    const sn=snap.current;if(sn.key!==undefined&&sn.cb&&sn.key!==sn.done){if(++sn.frames>8){sn.frames=0;sn.done=sn.key;try{const src=renderer.domElement,sw=Math.min(src.width,src.height*.8),sx=(src.width-sw)/2,w=240,h=300,c=document.createElement('canvas');c.width=w;c.height=h;/* the middle of the stage, where the character stands, at the card's 4:5 */c.getContext('2d')?.drawImage(src,sx,0,sw,src.height,0,0,w,h);sn.cb(c.toDataURL('image/webp',.86));}catch{/* no picture: the card shows an icon */}}}
    };
    clock.current=playing?clock.current:Math.max(clock.current,1);render(clock.current,0);setReady(true);
    let last=performance.now();
