@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrackCal video bench (developer tool)</title>
+</head>
+<body>
+<!-- Developer tool only, served by the Vite dev server; not part of the production build (vite build uses index.html).
+     Runs recorded exercise videos through the same pose model, rep counter and live coach as the camera page. -->
+<p id="status">Video bench ready.</p>
+<video id="clip" muted playsinline style="max-width:480px"></video>
+<script type="module" src="/src/dev/video-bench.ts"></script>
+</body>
+</html>

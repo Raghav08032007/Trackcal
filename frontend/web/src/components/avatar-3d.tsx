@@ -21,9 +21,9 @@ const CHAINS:[bone:string,from:number,to:number][]=[['thigh_l',23,25],['calf_l',
 /** Where a landmark sits on the avatar, for the angle label and equipment. */
 const AT:Record<number,string>={11:'upperarm_l',12:'upperarm_r',13:'lowerarm_l',14:'lowerarm_r',15:'hand_l',16:'hand_r',23:'thigh_l',24:'thigh_r',25:'calf_l',26:'calf_r',27:'foot_l',28:'foot_r'};
 
-export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint,showAngle=true,fists=false}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void;speed?:number;model?:AvatarModel;joint?:readonly [number,number,number];showAngle?:boolean;fists?:boolean}){
+export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint,showAngle=true,fists=false,turn=0,sway=true}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void;speed?:number;model?:AvatarModel;joint?:readonly [number,number,number];showAngle?:boolean;fists?:boolean;/** Extra camera turn in radians (the video bench films from other angles). */turn?:number;/** The gentle camera orbit while playing; off for recordings, which film like a phone on a stand. */sway?:boolean}){
  const pace=useRef(speed);pace.current=speed;
- const angleOn=useRef(showAngle);angleOn.current=showAngle;
+ const angleOn=useRef(showAngle);angleOn.current=showAngle;const turnRef=useRef(turn);turnRef.current=turn;const swayRef=useRef(sway);swayRef.current=sway;
  const host=useRef<HTMLDivElement>(null),clock=useRef(0),drag=useRef({turn:0,down:false,x:0}),[ready,setReady]=useState(false);
  useEffect(()=>{
   const el=host.current;if(!el)return;
@@ -135,7 +135,7 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
      writeAngle(deg);dot.position.copy(at);label.position.copy(at).addScaledVector(new THREE.Vector3().subVectors(camera.position,at).cross(new THREE.Vector3(0,1,0)).normalize(),-.11).add(new THREE.Vector3(0,.03,0));   // beside the joint, not over the limb
      label.visible=dot.visible=true;
     }else label.visible=dot.visible=false;
-    const turn=drag.current.turn+(playing?Math.sin(now/2600)*.22:0),angle=(view==='side'?.42:.32)+turn,distance=Math.max(size.x,size.y)*1.9+.62;   // closer than the simpler figure: the body fills the frame
+    const turn=turnRef.current+drag.current.turn+(playing&&swayRef.current?Math.sin(now/2600)*.22:0),angle=(view==='side'?.42:.32)+turn,distance=Math.max(size.x,size.y)*1.9+.62;   // closer than the simpler figure: the body fills the frame
     camera.position.set(centre.x+Math.sin(angle)*distance,centre.y+distance*.24,Math.cos(angle)*distance);camera.lookAt(centre.x,centre.y-.02,0);
     renderer.render(scene,camera);
    };

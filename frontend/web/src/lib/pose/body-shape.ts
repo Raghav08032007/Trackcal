@@ -73,5 +73,5 @@ export class Travel{
  }
  /** The steadier side: side-on the far joint is half hidden, and its jitter alone shouldn't count as moving. */
  least(part:BodyPart){let few=NaN;for(const i of [0,1]){const r=this.box[part+i];if(r){const d=Math.hypot(r.x1-r.x0,r.y1-r.y0)/this.scale;few=Number.isNaN(few)?d:Math.min(few,d);}}return few;}
- of(part:BodyPart){let most=NaN;for(const i of [0,1]){const r=this.box[part+i];if(r)most=high(most,Math.hypot(r.x1-r.x0,r.y1-r.y0)/this.scale);}return most;}
+ of(part:BodyPart,side?:0|1){if(side!==undefined&&this.box[part+side]){const r=this.box[part+side]!;return Math.hypot(r.x1-r.x0,r.y1-r.y0)/this.scale;}let most=NaN;for(const i of [0,1]){const r=this.box[part+i];if(r)most=high(most,Math.hypot(r.x1-r.x0,r.y1-r.y0)/this.scale);}return most;}
 }

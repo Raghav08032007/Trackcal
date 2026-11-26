@@ -154,7 +154,7 @@ export const EXERCISE_CONFIG={
   up:148,down:123,hysteresis:8,minRangeDeg:25,minRepMs:250,maxRepMs:10000,minDwellMs:40,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:msg("2–3 m away, laptop at table height")},tips:[msg("Face the camera or stand side-on."),msg("Each knee lift counts.")],experimental:true},
  burpee:{id:'burpee',title:msg("Burpees"),template:'camera_burpee',kcalPerRep:0.8,joints:[[23,25,27],[24,26,28]],span:[[23,27],[24,28]],optional:pick(L.hip,L.knee,L.ankle),drop:true,cues:[msg("Stand tall"),msg("Drop to the floor"),msg("Jump back up")],required:pick(L.shoulder),
-  up:150,down:120,hysteresis:8,minRangeDeg:37,minRepMs:950,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
+  up:150,down:120,hysteresis:8,minRangeDeg:37,minRepMs:750,maxRepMs:10000,minDwellMs:100,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},
   camera:{view:'side',distance:msg("2–3 m away, laptop at table height")},tips:[msg("Stand far back so your whole body stays in frame on the floor."),msg("Stand fully up between reps.")],experimental:true},
  climber:{id:'climber',title:msg("Mountain climbers"),template:'camera_climber',kcalPerRep:0.2,joints:[[11,23,25],[12,24,26]],span:[[11,25],[12,26]],either:true,cues:[msg("Push-up position"),msg("Drive one knee in"),msg("Switch legs")],required:pick(L.shoulder,L.hip,L.knee),
   up:155,down:115,hysteresis:8,minRangeDeg:30,minRepMs:250,maxRepMs:10000,minDwellMs:40,minVisibility:.5,smoothing:{minCutoff:2.5,beta:.02},

@@ -1,3 +1,4 @@
+import type {Observation} from './types';
 import {EitherSideAnalyzer,JointAnalyzer,type ExerciseAnalyzer} from './analyzers';import {RepCounter} from './rep-counter';import {EXERCISE_CONFIG,withLevel} from './exercise-config';
 import {readBody,type Body} from './body-shape';import {personalConfig} from './personal-range';import {normalize} from './landmarks';
 import type {ExerciseKind,ExerciseLevel,PoseFrame,TrackingResult} from './types';
@@ -8,10 +9,12 @@ export class SessionTracker{
  readonly config;readonly analyzer:ExerciseAnalyzer;readonly counter;private quality=0;private samples=0;private low=0;private last=-Infinity;private first=-Infinity;private longest=0;private trail:{t:number;pose:number[]}[]=[];private best:RepReplay|null=null;private worst:RepReplay|null=null;paused=false;
  /** The whole body in the latest frame, for posture tips. Kept for one frame only. */
  lastBody:Body|undefined;
+ /** The joint reading of the latest frame (for the video bench). Kept for one frame only. */
+ lastObservation:Observation|undefined;
  /** How far the bottom target was moved to this person's learned range (0 = the standard target). */
  readonly eased:number;
  constructor(readonly exercise:ExerciseKind,level:ExerciseLevel='beginner',reach?:number|null){const own=personalConfig(withLevel(EXERCISE_CONFIG[exercise],level),reach);this.config=own.config;this.eased=own.eased;this.analyzer=this.config.either?new EitherSideAnalyzer(this.config):new JointAnalyzer(this.config);this.counter=new RepCounter(this.config);}
- frame(frame:PoseFrame):TrackingResult|null{if(this.paused||frame.timestamp<=this.last)return null;this.last=frame.timestamp;if(this.first===-Infinity)this.first=frame.timestamp;const before=this.counter.reps,observation=this.analyzer.observe(frame);this.lastBody=this.body(frame);const r=this.counter.update(observation,frame.timestamp,this.lastBody);this.remember(frame,before);this.samples++;this.quality+=observation.confidence;if(!r.accepted)this.low++;return r;}
+ frame(frame:PoseFrame):TrackingResult|null{if(this.paused||frame.timestamp<=this.last)return null;this.last=frame.timestamp;if(this.first===-Infinity)this.first=frame.timestamp;const before=this.counter.reps,observation=this.analyzer.observe(frame);this.lastObservation=observation;this.lastBody=this.body(frame);const r=this.counter.update(observation,frame.timestamp,this.lastBody);this.remember(frame,before);this.samples++;this.quality+=observation.confidence;if(!r.accepted)this.low++;return r;}
  /** The outline of the rep just counted. Held in memory for this set: never saved or sent. */
  private remember(frame:PoseFrame,before:number){
   const joints=frame.landmarks[0],at=frame.timestamp,last=this.trail[this.trail.length-1];

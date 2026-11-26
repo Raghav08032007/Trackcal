@@ -100,7 +100,7 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   const reading=c.invert?180-degrees:degrees;
   if(c.rise&&Number.isNaN(reading))return bad(msg("That looked like a jump. Rise onto your toes and keep them on the floor."),quality);
   const restart=this.restarted;this.restarted=false;
-  return Number.isFinite(reading)?{angle:reading,confidence:quality,valid:true,reason:'',...(restart?{restart}:{})}:bad(msg("The movement was not detected clearly."),quality);
+  return Number.isFinite(reading)?{angle:reading,confidence:quality,valid:true,reason:'',...(restart?{restart}:{}),...(this.side!==null?{side:this.side}:{})}:bad(msg("The movement was not detected clearly."),quality);
  }
  /** Rising onto the toes lifts everything above the ankles by the heel height, from any camera angle. The lift is measured from the
   *  standing level (the lowest the body has been lately) in leg lengths, so it fits any height and distance, and read in the same

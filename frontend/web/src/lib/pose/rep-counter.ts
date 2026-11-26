@@ -20,8 +20,10 @@ function unseen(b:Body,plane:'side'|'front'):Body{
  return plane==='side'?{...b,tilt:NaN,knee:NaN,kneeWide:NaN,kneeGap:NaN,hip:NaN,hipWide:NaN,hipGap:NaN,elbow:NaN,elbowWide:NaN,facing:NaN}
   :{...b,facing:NaN,stance:NaN,kneeGap:NaN,hipGap:NaN};
 }
+/** The left-side landmark of each body part, to tell whether a part belongs to the measured limb. */
+const FIRST_ID:Record<BodyPart,number>={shoulders:11,elbows:13,wrists:15,hips:23,knees:25,ankles:27};
 export class RepCounter{
- reps=0;phase:Phase='SETUP';mismatches:string[]=[];repLog:{ms:number;range:number}[]=[];
+ reps=0;phase:Phase='SETUP';private side:0|1|null=null;mismatches:string[]=[];repLog:{ms:number;range:number}[]=[];
  /** The bottom of each honest attempt this set (counted, or not deep enough), for learning the person's own range. */
  attempts:number[]=[];rejections:Record<RejectionReason,number>={too_shallow:0,too_fast:0,too_slow:0,lost_tracking:0,wrong_exercise:0};
  private last=-Infinity;private held:{key:string;since:number;frames:number}|null=null;
@@ -62,11 +64,16 @@ export class RepCounter{
  }
  private travelled(form:ExerciseForm,share=1){
   const y=this.cycle!;
-  for(const [part,most] of Object.entries(form.still??{}))if((form.planted&&part==='wrists'?y.travel.least(part as BodyPart):y.travel.of(part as BodyPart))>most)return "moved "+part;
+  // A joint of the limb being counted is judged on the side the angle is read from: from the side or three-quarters, the far
+  // one is half hidden behind the body and its point jitters (video bench: 0.5 torso lengths of jitter on a still far elbow).
+  // Only for a joint of the limb being measured (the elbow of a curl): another limb on the far side must still be watched (bird dog vs donkey kick).
+  const near=this.side!==null?this.side:undefined,own=new Set(this.config.joints[0]);
+  for(const [part,most] of Object.entries(form.still??{}))if((form.planted&&part==='wrists'?y.travel.least(part as BodyPart):y.travel.of(part as BodyPart,own.has(FIRST_ID[part as BodyPart])?near:undefined))>most)return "moved "+part;
   for(const [part,least] of Object.entries(form.moves??{}))if(y.travel.of(part as BodyPart)<least*share)return "still "+part;
   return '';
  }
  update(o:Observation,t:number,body?:Body):TrackingResult{
+  if(o.valid&&o.side!==undefined)this.side=o.side;
   const c=this.config,inCycle=()=>this.phase==='GOING_DOWN'||this.phase==='DOWN'||this.phase==='GOING_UP';
   const out=(accepted:boolean,message:string,paused=false):TrackingResult=>({reps:this.reps,phase:this.phase,confidence:o.confidence,message,accepted,paused,rejection:this.rejected&&t-this.rejected.at<TIP_MS?this.rejected.reason:null,progress:o.valid?Math.min(1,Math.max(0,(c.up-o.angle)/(c.up-c.down))):0});
   if(!Number.isFinite(t)||t<=this.last)return out(false,msg("Duplicate or stale frame ignored."));

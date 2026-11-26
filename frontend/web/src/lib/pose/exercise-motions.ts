@@ -45,7 +45,7 @@ export function placement(m:Move):[number,number]{
  return [.5-(x0+x1)/2,.5-(y0+y1)/2];
 }
 const both=(v:number):[number,number]=>[v,v];
-const LIE={torso:-88,thigh:both(92),shin:both(92),arm:both(95),fore:both(95)},KNEES={torso:-85,thigh:both(130),shin:both(30),arm:both(95),fore:both(95)},PLANK={torso:76,thigh:both(-76),shin:both(-76)},FOURS={torso:88,thigh:both(0),shin:both(-90)};
+const LIE={torso:-88,thigh:both(92),shin:both(92),arm:both(95),fore:both(95)},KNEES={torso:-85,thigh:both(130),shin:both(30),arm:both(95),fore:both(95)},PLANK={torso:67,thigh:both(-67),shin:both(-67)},FOURS={torso:88,thigh:both(0),shin:both(-90)};
 const SQUAT={torso:25,thigh:both(75),shin:both(-35)},CHEST={arm:both(30),fore:both(150)},UP={arm:both(178),fore:both(178)},RACK={arm:both(30),fore:both(172)};
 const SEAT={torso:4,thigh:both(82),shin:both(4)};
 export const MOVES={
@@ -67,7 +67,7 @@ export const MOVES={
  bridge:{view:'side',anchor:'shoulder',keys:[{...KNEES,thigh:both(150)},{torso:-112,thigh:both(108),shin:both(10),arm:both(95),fore:both(95)}]},
  hipthrust:{view:'side',anchor:'shoulder',keys:[{...KNEES,thigh:both(150)},{torso:-112,thigh:both(108),shin:both(10),arm:both(95),fore:both(95)}]},
  rdl:{view:'side',anchor:'foot',keys:[{},{torso:78,thigh:both(-12),shin:both(4)}]},
- pushup:{view:'side',anchor:'hand',keys:[{...PLANK},{torso:86,thigh:both(-86),shin:both(-86),arm:both(-58),fore:both(62)}]},
+ pushup:{view:'side',anchor:'hand',keys:[{...PLANK},{torso:79,thigh:both(-79),shin:both(-79),arm:both(-58),fore:both(62)}]},
  kneepush:{view:'side',anchor:'hand',keys:[{torso:62,thigh:both(-50),shin:both(-108)},{torso:78,thigh:both(-60),shin:both(-112),arm:both(-58),fore:both(62)}]},
  incline:{view:'side',anchor:'hand',keys:[{torso:38,thigh:both(-38),shin:both(-38),arm:both(40),fore:both(40)},{torso:54,thigh:both(-54),shin:both(-54),arm:both(-45),fore:both(95)}]},
  wallpush:{view:'side',anchor:'hand',keys:[{torso:12,thigh:both(-12),shin:both(-12),arm:both(95),fore:both(95)},{torso:18,thigh:both(-18),shin:both(-18),arm:both(35),fore:both(125)}]},

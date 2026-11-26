@@ -55,3 +55,6 @@ frontend/web/tests/tmp/
 
 # Volunteer pose recordings (body points only) for npm run rep-eval: personal data, never committed
 recordings/
+
+# Exercise videos for tools/video-bench: personal recordings never go into git.
+/videos/
