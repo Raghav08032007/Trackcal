@@ -8,6 +8,7 @@ import type * as Three from 'three';
 import type {Move} from '@/lib/pose/exercise-motions';
 import type {ExerciseGear} from '@/lib/pose/types';
 import {pose3dOf} from './athlete-3d';
+import type {AvatarLook} from '@/lib/avatar-look';
 
 const LEG_MS=1300,FINGER_CURL=1.25;   // radians per finger joint for a grip
 /** Each body point's partner on the other side (MediaPipe's 33 points: eyes, ears, mouth corners, then odd = left from 11). */
@@ -21,9 +22,9 @@ const CHAINS:[bone:string,from:number,to:number][]=[['thigh_l',23,25],['calf_l',
 /** Where a landmark sits on the avatar, for the angle label and equipment. */
 const AT:Record<number,string>={11:'upperarm_l',12:'upperarm_r',13:'lowerarm_l',14:'lowerarm_r',15:'hand_l',16:'hand_r',23:'thigh_l',24:'thigh_r',25:'calf_l',26:'calf_r',27:'foot_l',28:'foot_r'};
 
-export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint,showAngle=true,fists=false,turn=0,sway=true}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void;speed?:number;model?:AvatarModel;joint?:readonly [number,number,number];showAngle?:boolean;fists?:boolean;/** Extra camera turn in radians (the video bench films from other angles). */turn?:number;/** The gentle camera orbit while playing; off for recordings, which film like a phone on a stand. */sway?:boolean}){
+export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint,showAngle=true,fists=false,turn=0,sway=true,look=null}:{move:Move;gear:ExerciseGear;title:string;playing:boolean;onFail:()=>void;speed?:number;model?:AvatarModel;joint?:readonly [number,number,number];showAngle?:boolean;fists?:boolean;/** Extra camera turn in radians (the video bench films from other angles). */turn?:number;/** The gentle camera orbit while playing; off for recordings, which film like a phone on a stand. */sway?:boolean;/** Your character's colours and accessory; null shows the coach as designed. */look?:AvatarLook|null}){
  const pace=useRef(speed);pace.current=speed;
- const angleOn=useRef(showAngle);angleOn.current=showAngle;const turnRef=useRef(turn);turnRef.current=turn;const swayRef=useRef(sway);swayRef.current=sway;
+ const angleOn=useRef(showAngle);angleOn.current=showAngle;const turnRef=useRef(turn);turnRef.current=turn;const swayRef=useRef(sway);swayRef.current=sway;const lookRef=useRef(look);lookRef.current=look;
  const host=useRef<HTMLDivElement>(null),clock=useRef(0),drag=useRef({turn:0,down:false,x:0}),[ready,setReady]=useState(false);
  useEffect(()=>{
   const el=host.current;if(!el)return;
@@ -48,13 +49,13 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
    const yoga=new THREE.Mesh(new THREE.BoxGeometry(1.1,.012,.42),new THREE.MeshStandardMaterial({color:0x9b86f2,roughness:.9}));yoga.receiveShadow=true;scene.add(yoga);
 
    // The body: soften skin and fabric a little (a satin sheen reads as real skin and sportswear on screen).
-   const body=gltf.scene;scene.add(body);
+   const body=gltf.scene;scene.add(body);const mats:Record<string,Three.MeshPhysicalMaterial[]>={};
    body.traverse(o=>{const mesh=o as Three.Mesh;if(!mesh.isMesh)return;mesh.castShadow=true;mesh.receiveShadow=true;mesh.frustumCulled=false;
     const swap=(m:Three.Material)=>{const s=m as Three.MeshStandardMaterial,p=new THREE.MeshPhysicalMaterial({color:s.color,roughness:s.roughness,metalness:0});
      if(m.name==='skin'){p.sheen=.35;p.sheenRoughness=.6;p.sheenColor=new THREE.Color(0xffd6c4);p.roughness=.55;}
      else if(m.name==='top'||m.name==='shorts'){p.sheen=.8;p.sheenRoughness=.45;p.sheenColor=new THREE.Color(m.name==='top'?0xd8ccff:0x6366f1);}
      else if(m.name==='iris'||m.name==='eye'){p.clearcoat=1;p.clearcoatRoughness=.05;}
-     p.name=m.name;m.dispose();return p;};
+     p.name=m.name;(mats[m.name]??=[]).push(p);m.dispose();return p;};
     mesh.material=Array.isArray(mesh.material)?mesh.material.map(swap):swap(mesh.material);});
    const bone=(name:string)=>body.getObjectByName(name) as Three.Bone|undefined;
    const bones=Object.fromEntries([...new Set([...CHAINS.map(c=>c[0]),...Object.values(AT),'pelvis','calf_l','foot_l','ball_l','calf_r','foot_r','ball_r','lowerarm_l','hand_l','lowerarm_r','hand_r'])].map(n=>[n,bone(n)])) as Record<string,Three.Bone|undefined>;
@@ -75,6 +76,23 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
    const legOf=(p:Record<number,[number,number,number]>)=>(v(p[23]).distanceTo(v(p[25]))+v(p[25]).distanceTo(v(p[27]))+v(p[24]).distanceTo(v(p[26]))+v(p[26]).distanceTo(v(p[28])))/2;
    const avatarLeg=(wp(bones.thigh_l!).distanceTo(wp(bones.calf_l!))+wp(bones.calf_l!).distanceTo(wp(bones.foot_l!))+wp(bones.thigh_r!).distanceTo(wp(bones.calf_r!))+wp(bones.calf_r!).distanceTo(wp(bones.foot_r!)))/2;
    body.scale.setScalar(legOf(pose3dOf(move,0))/avatarLeg);
+   // Your character: colours from your look (the originals are kept to go back), and an accessory that follows the head or wrists.
+   const original=Object.fromEntries(Object.entries(mats).map(([k,v])=>[k,{color:v[0].color.clone(),sheen:v[0].sheenColor.clone()}]));
+   const PART:Record<string,keyof AvatarLook>={skin:'skin',hair:'hair',top:'top',shorts:'shorts',shoes:'shoes'};let applied:AvatarLook|null|undefined;
+   const applyLook=(l:AvatarLook|null)=>{applied=l;for(const [name,key] of Object.entries(PART))for(const m of mats[name]??[]){
+    if(!l){m.color.copy(original[name].color);m.sheenColor.copy(original[name].sheen);continue;}
+    // The studio light and filmic tone mapping lift colours a lot (the model's own skin is #af7a58 and reads light tan), so a
+    // swatch is darkened to match: what you pick is close to what you see.
+    m.color.setStyle(String(l[key])).multiplyScalar(name==='skin'?.5:.42);if(name==='top'||name==='shorts')m.sheenColor.copy(m.color).lerp(new THREE.Color(0xffffff),.12);}};
+   body.updateMatrixWorld(true);
+   const headTop=Math.max(.06,new THREE.Box3().setFromObject(body).max.y-(head?wp(head).y:0)),capR=headTop*.62;
+   const gearMat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.6});
+   const band=new THREE.Mesh(new THREE.TorusGeometry(capR*.98,capR*.13,10,32),gearMat);
+   const cap=new THREE.Group(),dome=new THREE.Mesh(new THREE.SphereGeometry(capR*1.04,24,12,0,Math.PI*2,0,Math.PI/2),gearMat),brim=new THREE.Mesh(new THREE.CylinderGeometry(capR*.95,capR*.95,capR*.06,24,1,false,-Math.PI/2,Math.PI),gearMat);
+   brim.position.set(0,0,capR*.45);cap.add(dome,brim);
+   const cuffs=[0,1].map(()=>new THREE.Mesh(new THREE.TorusGeometry(headTop*.24,headTop*.09,8,20),gearMat));
+   for(const m of [band,cap,...cuffs]){m.traverse(o=>{o.castShadow=true;});m.visible=false;scene.add(m);}
+   const zAxis=new THREE.Vector3(0,0,1);
 
    // Equipment, as on the simpler figure.
    const disc=new THREE.CylinderGeometry(1,1,1,28),metal=new THREE.MeshStandardMaterial({color:0x3b3d46,roughness:.35,metalness:.8}),plate=new THREE.MeshStandardMaterial({color:0x15161c,roughness:.5,metalness:.3});
@@ -129,6 +147,16 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
      if(w>0){const target=dirUp.clone().lerp(new THREE.Vector3(0,1,0),w).normalize(),turn=new THREE.Quaternion().setFromUnitVectors(dirUp,target);
       head.parent!.getWorldQuaternion(parentQ);head.quaternion.copy(parentQ.invert().multiply(turn.multiply(wq(head))));head.updateMatrixWorld(true);}}
     for(const s of [0,1] as const){const hand=bones[s?'hand_r':'hand_l'];if(bells[s]&&hand){const fore=bones[s?'lowerarm_r':'lowerarm_l']!,g=bells[s],at=wp(hand),dir=at.clone().sub(wp(fore)).normalize();g.position.copy(at).addScaledVector(dir,.03);g.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),view==='side'?new THREE.Vector3(0,0,1):dir.clone().cross(new THREE.Vector3(0,0,1)).normalize());}}
+    if(lookRef.current!==applied)applyLook(lookRef.current??null);
+    {const acc=lookRef.current?.accessory??'none',gearColor=lookRef.current?.top??'#ffffff';gearMat.color.setStyle(gearColor==='#f4f4f5'?'#111827':'#ffffff');
+     band.visible=acc==='headband'&&!!head;cap.visible=acc==='cap'&&!!head;cuffs.forEach(c=>{c.visible=acc==='wristbands';});
+     if(head&&(band.visible||cap.visible)){const at=wp(head),up=dirUp.clone();
+      // the head bone points up the neck; place on the crown, square to the spine, brim facing forward
+      const crown=at.clone().addScaledVector(up,headTop*.55);
+      if(band.visible){band.position.copy(crown);band.quaternion.setFromUnitVectors(zAxis,up);}
+      if(cap.visible){cap.position.copy(crown);const basis=new THREE.Matrix4().makeBasis(new THREE.Vector3().crossVectors(up,forward).normalize(),up,forward.clone().normalize());cap.quaternion.setFromRotationMatrix(basis);}
+      }
+     if(acc==='wristbands')for(const s of [0,1] as const){const hand=bones[s?'hand_r':'hand_l'],fore=bones[s?'lowerarm_r':'lowerarm_l'];if(!hand||!fore)continue;const a=wp(fore),b=wp(hand),dir=b.clone().sub(a).normalize();cuffs[s].position.copy(b).addScaledVector(dir,-headTop*.25);cuffs[s].quaternion.setFromUnitVectors(zAxis,dir);}}
     if(barbell){const mid=wp(bones.hand_l!).add(wp(bones.hand_r!)).multiplyScalar(.5);barbell.position.copy(mid);barbell.rotation.set(0,view==='side'?0:Math.PI/2,0);}
     if(joint&&angleOn.current&&AT[joint[1]]&&bones[AT[joint[1]]]){
      const a=q(joint[0]).sub(q(joint[1])),c=q(joint[2]).sub(q(joint[1])),deg=Math.round(a.angleTo(c)*180/Math.PI),at=wp(bones[AT[joint[1]]]!);

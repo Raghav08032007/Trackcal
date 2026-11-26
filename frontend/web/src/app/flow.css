@@ -500,3 +500,37 @@ html body .camera-page .camera-filters .camera-equipment:not(.x-a) button::after
 html body .camera-page .camera-filters>summary::-webkit-details-marker{display:none}
 html body .camera-page .camera-filters>summary::before{content:"▸";display:inline-block;margin-right:10px;transition:transform .2s}
 html body .camera-page .camera-filters[open]>summary::before{transform:rotate(90deg)}
+
+/* Your character */
+html body .avatar-studio .studio-head{max-width:760px;margin:28px 0 20px}
+html body .avatar-studio .studio-head h1{font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.03em;margin:10px 0}
+html body .avatar-studio .studio-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+html body .avatar-studio .studio-stage{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+html body .avatar-studio .studio-preview{aspect-ratio:4/5;border-radius:28px;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#ffffff,#e9e4ff 55%,#d6f3f1);box-shadow:0 18px 50px #4c1d9522}
+html body .avatar-studio .studio-preview .avatar-3d{width:100%;height:100%}
+html body .avatar-studio .studio-loading,html body .avatar-studio .studio-fallback{display:grid;place-items:center;height:100%;padding:24px;text-align:center}
+html body .avatar-studio .studio-level{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:8px 10px;padding:12px 16px;border-radius:18px;background:linear-gradient(120deg,#7c3aed,#0ea5e9);color:#fff}
+html body .avatar-studio .studio-level progress{width:100%;height:10px;accent-color:#fde047}
+html body .avatar-studio .studio-level small{grid-column:1/-1;opacity:.95;line-height:1.4}
+html body .avatar-studio .studio-moves{display:flex;flex-wrap:wrap;gap:8px}
+html body .avatar-studio .studio-moves button,html body .avatar-studio .studio-body button,html body .avatar-studio .studio-accessories button{min-height:40px;padding:8px 14px;border-radius:999px;border:1px solid var(--tc-line,#ddd);background:var(--tc-soft,#f4f2ff);font-weight:600}
+html body .avatar-studio :is(.studio-moves button[aria-pressed=true],.studio-body button[aria-checked=true],.studio-accessories button[aria-checked=true]){background:#6d28d9;color:#fff;border-color:#6d28d9}
+html body .avatar-studio .studio-controls{display:flex;flex-direction:column;gap:18px;min-width:0}
+html body .avatar-studio fieldset{border:0;margin:0;padding:0;min-width:0}
+html body .avatar-studio legend{font-weight:700;margin-bottom:8px}
+html body .avatar-studio fieldset>div{display:flex;flex-wrap:wrap;gap:8px}
+html body .avatar-studio .studio-swatches button{position:relative;width:38px;height:38px;min-height:0;padding:0;border-radius:50%;background:var(--swatch);border:2px solid #fff;box-shadow:0 0 0 1px #0002;display:grid;place-items:center;color:#fff;transition:transform .15s}
+html body .avatar-studio .studio-swatches button:hover:not(:disabled){transform:scale(1.1)}
+html body .avatar-studio .studio-swatches button[aria-checked=true]{box-shadow:0 0 0 3px #6d28d9}
+html body .avatar-studio .studio-swatches button:disabled{opacity:.45;cursor:not-allowed}
+html body .avatar-studio .studio-swatches button svg{filter:drop-shadow(0 0 2px #000)}
+html body .avatar-studio .studio-accessories button:disabled{opacity:.55}
+html body .avatar-studio .studio-photo{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:18px;background:var(--tc-soft,#f4f2ff)}
+html body .avatar-studio .studio-photo button{display:inline-flex;align-items:center;gap:8px;justify-content:center}
+html body .avatar-studio .studio-photo small{line-height:1.45}
+html body .avatar-studio .studio-demos{display:flex;align-items:center;gap:10px;flex-direction:row}
+html body .avatar-studio .studio-reset{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 14px;border-radius:12px}
+@media (max-width:850px){html body .avatar-studio .studio-layout{grid-template-columns:1fr}html body .avatar-studio .studio-stage{position:relative;top:0}html body .avatar-studio .studio-preview{aspect-ratio:1/1}}
+html body .avatar-studio .studio-swatches button:not(.x-a):not(.x-b):not(.x-c){background:var(--swatch);color:#fff}
+html body .avatar-studio .studio-accessories button:not(.x-a):not(.x-b){display:inline-flex;align-items:center;gap:6px}
+html body .avatar-studio .studio-accessories button small{font-weight:500;opacity:.8}

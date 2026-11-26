@@ -8,6 +8,7 @@ import {EXERCISES,EXERCISE_GEAR,gearOf,type ExerciseGear,type ExerciseKind} from
 import {formPoints} from '@/lib/pose/posture-match';
 import {useLocalState} from '@/lib/use-local-state';
 import type {AvatarModel} from './avatar-3d';
+import {useAvatarLook} from '@/lib/avatar-look';
 
 const LEG_MS=1300,HEAD=.058;
 const Athlete3D=lazy(()=>import('./athlete-3d').then(module=>({default:module.Athlete3D})));
@@ -128,15 +129,15 @@ export function WatchHow({kind}:{kind:ExerciseKind}){
 export function MoveDemo({move,gear,title,cues,joint,fists}:{move:Move;gear:ExerciseGear;title:string;cues:readonly string[];joint?:readonly [number,number,number];fists?:boolean}){
  const still=useMemo(()=>typeof window!=='undefined'&&!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,[]);
  const [mode,setMode]=useState<'avatar'|'3d'|'flat'>(()=>typeof window!=='undefined'&&canDraw3d()?'avatar':'flat'),[playing,setPlaying]=useState(!still),[slow,setSlow]=useState(false);
- const [model,setModel]=useLocalState<AvatarModel>('trackcal:demo:model','f'),[angles,setAngles]=useLocalState('trackcal:demo:angles',true);
+ const look=useAvatarLook(),mine=look?.onDemos?look:null;const [chosenModel,setModel]=useLocalState<AvatarModel>('trackcal:demo:model','f'),model=mine?mine.model:chosenModel,[angles,setAngles]=useLocalState('trackcal:demo:angles',true);
  const avatarFailed=useCallback(()=>setMode('3d'),[]),failed=useCallback(()=>setMode('flat'),[]);
  const speed=slow?.5:1,slowButton=<button type="button" aria-pressed={slow} onClick={()=>setSlow(v=>!v)}>{slow?t("Normal speed"):t("Slow motion")}</button>;
  if(mode==='flat')return <FlatDemo move={move} weights={['dumbbell','barbell','kettlebell'].includes(gear)} title={title} cues={cues} playing={playing} setPlaying={setPlaying} speed={speed} extra={slowButton}/>;
  return <figure className="exercise-demo exercise-demo-3d"><Suspense fallback={<div className="athlete-3d" aria-busy="true"/>}>{mode==='avatar'
-  ?<Avatar3D move={move} gear={gear} title={title} playing={playing} onFail={avatarFailed} speed={speed} model={model} joint={joint} showAngle={angles} fists={fists}/>
+  ?<Avatar3D move={move} gear={gear} title={title} playing={playing} onFail={avatarFailed} speed={speed} model={model} joint={joint} showAngle={angles} fists={fists} look={mine}/>
   :<Athlete3D move={move} gear={gear} title={title} playing={playing} onFail={failed} speed={speed}/>}</Suspense>
   <figcaption><span>{t("Example: {n}", { n: cues.join(' · ') })}</span><button type="button" onClick={()=>setPlaying(v=>!v)}>{playing?t("Pause"):t("Play")}</button>{slowButton}
-   {mode==='avatar'&&<button type="button" onClick={()=>setModel(m=>m==='f'?'m':'f')}>{t("Change model")}</button>}
+   {mode==='avatar'&&!mine&&<button type="button" onClick={()=>setModel(m=>m==='f'?'m':'f')}>{t("Change model")}</button>}
    {mode==='avatar'&&joint&&<button type="button" aria-pressed={angles} onClick={()=>setAngles(v=>!v)}>{t("Joint angle")}</button>}
    <button type="button" onClick={()=>setMode('flat')}>{t("Simple view")}</button></figcaption></figure>;
 }

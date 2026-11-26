@@ -55,13 +55,14 @@ export const SECTIONS: Section[] = [
     also: ["/play/sports", "/challenges/*", "/events/*", "/c/*", "/u/*", "/moderation", "/accuracy"] },
   { id: "me", label: "Me", href: "/me", icon: UserRound,
     pages: [["/me", "Overview"], ["/progress", "Progress"], ["/account", "Account"], ["/health", "My report"], ["/routine", "Reminders"]],
-    also: ["/premium", "/help", "/onboarding", "/guide", "/privacy", "/terms", "/credits", "/body-preview", "/design", "/coach/clients"],
+    also: ["/premium", "/help", "/onboarding", "/guide", "/privacy", "/terms", "/credits", "/body-preview", "/design", "/coach/clients", "/me/character"],
     groups: [
       { title: "You", items: [
         { href: "/account", title: "Account and profile", text: "Your name, password and what's saved to your account.", icon: UserRound },
         { href: "/health", title: "My report", text: "Your blood report, turned into food and exercise advice.", icon: FileHeart },
         { href: "/progress", title: "Progress", text: "Habits, training load and how each exercise is going.", icon: Trophy },
         { href: "/tracker", title: "Journal", text: "Every workout and meal by day, month and year, with your best days.", icon: CalendarDays },
+        { href: "/me/character", title: "Your character", text: "Dress your 3D character, or start from a photo. New kit unlocks as you train.", icon: Sparkles },
         { href: "/onboarding", title: "About you", text: "Age, goals, injuries and food you eat. Change any time.", icon: ClipboardList } ] },
       { title: "Settings", items: [
         { href: "/routine", title: "Reminders", text: "Gentle nudges for water, meals, workouts and sleep.", icon: Bell },
