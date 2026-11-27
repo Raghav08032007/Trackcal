@@ -319,8 +319,13 @@ export const CORE_PHASES = [
     "src/components/segments.tsx",
     "src/app/journal/page.tsx",
   ],
+  [ // 4: Food and health: the food workspace (photo, barcode, describe, search, recipes, goals), barcode camera, health report
+    "src/components/food-workspace.tsx",
+    "src/components/barcode-camera.tsx",
+    "src/app/health/page.tsx",
+  ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 3, ml: 3, gu: 3, pa: 3, ur: 3, fr: 3, de: 3 };
+export const WAVE_2: Record<string, number> = { kn: 4, ml: 4, gu: 4, pa: 4, ur: 4, fr: 4, de: 4 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);
