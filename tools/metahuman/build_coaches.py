@@ -160,7 +160,7 @@ def export(ch, name):
         unreal.MetaHumanCharacterExportBlueprintLibrary.export_dcc(ch, dcc)
         geo = unreal.MetaHumanGeometryExportParams()
         geo.project_path = f"/Game/Coaches/{name}_Geo"
-        geo.head_skeletal_mesh = False; geo.body_skeletal_mesh = False; geo.full_body_skeletal_mesh = True
+        geo.head_skeletal_mesh = True; geo.body_skeletal_mesh = False; geo.full_body_skeletal_mesh = True   # the head mesh carries the facial joints
         geo.overwrite_existing_assets = True
         unreal.MetaHumanCharacterExportBlueprintLibrary.export_geometry(ch, geo)
 
@@ -253,7 +253,8 @@ if STEP == "export":
             finally:
                 pass
             for m in [a for a in lib.list_assets(f"/Game/Coaches/{coach['name']}_Geo", recursive=True) if unreal.load_asset(a).get_class().get_name() == "SkeletalMesh"]:
-                export_fbx(m.split(".")[0], f"{OUT}/{coach['name']}/{coach['name']}_body.fbx")
+                part = "head" if "Face" in m or "Head" in m else "body"
+                export_fbx(m.split(".")[0], f"{OUT}/{coach['name']}/{coach['name']}_{part}.fbx")
             log(f"{coach['name']}: exported")
         except Exception:
             log(f"{coach['name']} FAILED: {traceback.format_exc()}")
