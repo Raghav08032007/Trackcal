@@ -48,3 +48,14 @@ describe("equipment you have", () => {
     expect(fitToGear(c, null)).toEqual({ circuit: c, changes: [] });
   });
 });
+
+import { gearFromProfile } from "@/lib/my-gear";
+describe("equipment from onboarding", () => {
+  it("maps the onboarding answer to camera gear; nothing answered means not set", () => {
+    expect(gearFromProfile(undefined)).toBeNull();
+    expect(gearFromProfile([])).toBeNull();
+    expect(gearFromProfile(["mat", "chair", "dumbbells"])).toEqual(["chair", "dumbbell"]);
+    expect(gearFromProfile(["machine"])).toEqual(["cable", "barbell"]);
+    expect(gearFromProfile(["mat", "bicycle"])).toEqual([]);   // only bodyweight moves on the camera
+  });
+});

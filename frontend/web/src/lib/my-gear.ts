@@ -11,6 +11,13 @@ export type MyGear = ExerciseGear[] | null;   // null: not set yet
 export const MY_GEAR_KEY = "trackcal:my-gear";
 export const useMyGear = () => useLocalState<MyGear>(MY_GEAR_KEY, null);
 
+/** Onboarding's "What do you have?" answer as camera gear; nothing answered means not set. */
+export function gearFromProfile(equipment: readonly string[] | undefined | null): MyGear {
+  if (!equipment?.length) return null;
+  const map: Record<string, ExerciseGear[]> = { chair: ["chair"], dumbbells: ["dumbbell"], machine: ["cable", "barbell"], band: ["band"], kettlebell: ["kettlebell"], bar: ["bar"] };
+  return [...new Set(equipment.flatMap(e => map[e] ?? []))];
+}
+
 /** Can you do this exercise with what you have? Unset gear means yes. */
 export const canDo = (kind: ExerciseKind, mine: MyGear) => { const gear = gearOf(kind); return mine === null || gear === "body" || mine.includes(gear); };
 /** What you would need for it (null for bodyweight). */
