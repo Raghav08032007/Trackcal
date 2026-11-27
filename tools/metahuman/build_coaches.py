@@ -64,6 +64,27 @@ def export_fbx(mesh_path, file_path):
         raise RuntimeError(f"FBX export failed for {mesh_path}")
 
 
+def capture_face(ch, folder):
+    """The face textures live only in memory (no asset path), which the DCC bake can't read, so it writes a grey
+    checkerboard. Copy each one through a GPU render target and save it as a PNG instead."""
+    world = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world()
+    rl = unreal.RenderingLibrary
+    count = 0
+    for key, texture in ch.synthesized_face_textures.items():
+        if not texture:
+            continue
+        w, h = texture.blueprint_get_size_x(), texture.blueprint_get_size_y()
+        rt = rl.create_render_target2d(world, w, h, unreal.TextureRenderTargetFormat.RTF_RGBA8_SRGB if texture.srgb else unreal.TextureRenderTargetFormat.RTF_RGBA8)
+        canvas, size, ctx = rl.begin_draw_canvas_to_render_target(world, rt)
+        canvas.draw_texture(texture, unreal.Vector2D(0, 0), unreal.Vector2D(w, h), unreal.Vector2D(0, 0), unreal.Vector2D(1, 1),
+                            unreal.LinearColor(1, 1, 1, 1), unreal.BlendMode.BLEND_OPAQUE, 0.0, unreal.Vector2D(0.5, 0.5))
+        rl.end_draw_canvas_to_render_target(world, ctx)
+        name = getattr(key, "name", str(key)).split(".")[-1].split(":")[0].strip("<> ")
+        rl.export_render_target(world, rt, folder, f"Face_{name}.png")
+        count += 1
+    log(f"face images captured: {count}")
+
+
 def build(coach):
     name, preset = coach["name"], coach["preset"]
     path = f"/Game/Coaches/{name}"
@@ -116,7 +137,7 @@ only = os.environ.get("TCMH_ONLY")
 queue = [c for c in coaches if not only or c["name"] == only]
 STEP = os.environ.get("TCMH_STEP", "prepare")
 WAIT = float(os.environ.get("TCMH_WAIT", "90"))
-state = {"coach": None, "ch": None, "since": 0.0, "clock": 0.0}
+state = {"coach": None, "ch": None, "since": 0.0, "clock": 0.0, "capture": []}
 
 
 def finish():
@@ -128,6 +149,17 @@ def finish():
 
 def tick(delta):
     state["clock"] += delta
+    if state["capture"]:
+        if state["clock"] < WAIT:
+            return
+        for ch, folder in state["capture"]:
+            try:
+                capture_face(ch, folder)
+            except Exception:
+                log(f"capture FAILED: {traceback.format_exc()}")
+            done(ch)
+        state["capture"] = []
+        return
     try:
         if state["coach"] is None:
             if not queue:
@@ -139,10 +171,9 @@ def tick(delta):
                 state["coach"] = None
                 return
             path = f"/Game/Coaches/{coach['name']}"
-            ch = unreal.load_asset(path)
-            edit(ch)
+            ch = state.pop("opened")      # opened in the start-up script (opening from a tick fails)
             state["ch"], state["since"] = ch, state["clock"]
-            log(f"{coach['name']}: opened, letting textures load for {WAIT:.0f}s")
+            log(f"{coach['name']}: open with {len(ch.synthesized_face_textures)} face textures; waiting {WAIT:.0f}s for the GPU")
             return
         if state["clock"] - state["since"] < WAIT:
             return
@@ -163,4 +194,34 @@ def tick(delta):
         state["coach"] = state["ch"] = None
 
 
+if STEP == "export":
+    # Export runs straight from the start-up script: Epic's exporter builds the face mesh through an import that cannot
+    # finish inside a tick callback. Compiled shaders are cached between runs, so the face bake reads the real skin.
+    for coach in queue:
+        try:
+            ch = unreal.load_asset(f"/Game/Coaches/{coach['name']}")
+            edit(ch)
+            try:
+                for kind in ("Texture", "Material", "StaticMesh", "SkeletalMesh"):
+                    unreal.SystemLibrary.execute_console_command(None, f"Editor.Async{kind}CompilationFinishAll")
+                log(f"{coach['name']}: {len(ch.synthesized_face_textures)} face textures")
+                export(ch, coach["name"])
+                # Ask for every mip of the face textures; they are captured after WAIT seconds, from the tick below.
+                for texture in ch.synthesized_face_textures.values():
+                    if texture:
+                        texture.set_editor_property("never_stream", True)
+                        texture.set_force_mip_levels_to_be_resident(600.0)
+                state["capture"].append((ch, f"{OUT}/{coach['name']}/Face"))
+            except Exception:
+                done(ch)
+                raise
+            finally:
+                pass
+            for m in [a for a in lib.list_assets(f"/Game/Coaches/{coach['name']}_Geo", recursive=True) if unreal.load_asset(a).get_class().get_name() == "SkeletalMesh"]:
+                export_fbx(m.split(".")[0], f"{OUT}/{coach['name']}/{coach['name']}_body.fbx")
+            log(f"{coach['name']}: exported")
+        except Exception:
+            log(f"{coach['name']} FAILED: {traceback.format_exc()}")
+    queue = []
+    state["since"] = 0.0
 handle = unreal.register_slate_post_tick_callback(tick)
