@@ -341,8 +341,16 @@ export const CORE_PHASES = [
     "src/app/challenge/page.tsx",
     "src/lib/challenges.ts",
   ],
+  [ // 8: Me and help: reminders, notifications, profiles, account security, help, terms
+    "src/components/reminders.tsx",
+    "src/components/push-settings.tsx",
+    "src/app/profile/page.tsx",
+    "src/components/account-security.tsx",
+    "src/app/help/page.tsx",
+    "src/app/terms/page.tsx",
+  ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 7, ml: 7, gu: 7, pa: 7, ur: 7, fr: 7, de: 7 };
+export const WAVE_2: Record<string, number> = { kn: 8, ml: 8, gu: 8, pa: 8, ur: 8, fr: 8, de: 8 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);
