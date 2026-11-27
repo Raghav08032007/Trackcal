@@ -34,7 +34,7 @@ function EntryForm({ start, onSave, onCancel }: { start: EntryInput; onSave: (e:
 export function WorkoutHistory() {
   const { user } = useAccount(), userId = user?.id, scope = useWorkspaceScope(), today = useLocalDate();
   const [kind, setKind] = useState<HistoryKind>("all"), [items, setItems] = useState<HistoryItem[] | null>(null), [more, setMore] = useState(false);
-  const [error, setError] = useState(""), [loadFailed, setLoadFailed] = useState(false), [editing, setEditing] = useState<string | null>(null), [undo, setUndo] = useState<HistoryItem | null>(null);
+  const [error, setError] = useState(""), [loadFailed, setLoadFailed] = useState(false), [editing, setEditing] = useState<string | null>(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("log") === "1" ? "new" : null), [undo, setUndo] = useState<HistoryItem | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null), shown = useRef(PAGE);
   const load = useCallback(async (k: HistoryKind, count: number) => {
     try { const page = await historyRequest(k, 0, Math.min(50, count)); setItems(page.items); setMore(page.has_more); setLoadFailed(false); }
@@ -60,6 +60,8 @@ export function WorkoutHistory() {
 
   const groups: [string, HistoryItem[]][] = [];
   for (const item of items ?? []) { const last = groups[groups.length - 1]; if (last && last[0] === item.day) last[1].push(item); else groups.push([item.day, [item]]); }
+  const opened = useRef(false);
+  useEffect(() => { if (editing === "new" && !opened.current && new URLSearchParams(window.location.search).get("log") === "1") { opened.current = true; document.getElementById("workout-history")?.scrollIntoView({ block: "start" }); } }, [editing]);
   return <section id="workout-history" className="ds-card history-card" aria-labelledby="history-title">
     <div className="history-head"><h2 id="history-title">{t("Your workouts")}</h2>
       {editing !== "new" && <button type="button" className="ds-btn ds-btn-primary" onClick={() => setEditing("new")}>{t("Log a workout")}</button>}</div>

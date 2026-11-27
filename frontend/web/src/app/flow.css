@@ -584,3 +584,23 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 .camera-mirrored .camera-setup { transform: scaleX(-1); }
 .camera-mirrored .camera-setup-card { transform: scaleX(-1); }
 @media (max-width: 480px) { .camera-setup-card { font-size: .92rem; padding: 10px 12px; } }
+
+/* Camera page intro: a title and three plain steps, so the camera itself is near the top. */
+.camera-intro.camera-intro-compact { margin: 12px 0 16px; }
+.camera-intro-compact h1 { font-size: clamp(1.7rem, 6vw, 2.4rem); margin: 0 0 8px; }
+.camera-steps { margin: 0 0 8px; padding-left: 1.4em; display: grid; gap: 4px; font-weight: 600; line-height: 1.4; }
+.camera-steps li::marker { color: #7c3aed; font-weight: 800; }
+.camera-privacy { margin: 0; color: var(--muted, #64748b); font-size: .92rem; line-height: 1.4; }
+.camera-page .camera-companion-slot:empty { display: none; }
+
+/* Workouts: three clear ways to start, at the top (the photo is dropped on phones to make room). */
+.workout-starts { display: grid; gap: 10px; margin-top: 16px; }
+.workout-start { display: grid; gap: 2px; padding: 14px 16px; border-radius: 16px; background: rgba(255, 255, 255, .16); color: #fff !important; text-decoration: none; border: 1px solid rgba(255, 255, 255, .28); }
+.workout-start strong { font-size: 1.05rem; }
+.workout-start small { opacity: .88; line-height: 1.35; }
+.workout-start.is-camera { background: #fff; color: #3b0764 !important; border-color: #fff; }
+.workout-start:focus-visible { outline: 3px solid #fde68a; outline-offset: 2px; }
+@media (max-width: 700px) { .workout-hero .hero-photo { display: none; } }
+
+/* Phones: the floating Pip covered cards and buttons. Pip is already in the header ("Ask Pip") and the Play tab. */
+@media (max-width: 700px) { .journey-float { display: none; } }

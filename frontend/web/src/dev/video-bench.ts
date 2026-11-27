@@ -17,7 +17,7 @@ async function model(variant:'full'|'lite'|'heavy'){
  const w=new Worker('/pose-worker.js');
  await new Promise<void>((resolve,reject)=>{const t=setTimeout(()=>reject(Error('pose model load timed out')),90000);
   w.onmessage=({data})=>{if(data.type==='ready'){clearTimeout(t);resolve();}else if(data.type==='error'){clearTimeout(t);reject(Error(data.message));}};
-  w.postMessage({type:'init',variant});});
+  w.postMessage({type:'init',variant,fixed:true});});   // keep the model under test even when frames are slow
  worker=w;return w;
 }
 

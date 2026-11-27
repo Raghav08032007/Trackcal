@@ -7,7 +7,7 @@ const SLOW_MS=45,WINDOW=15;
 let model=null,delegate='CPU',variant='full',recent=[];
 const options=(d,v)=>({baseOptions:{modelAssetPath:BASE+`pose_landmarker_${v}.task`,delegate:d},runningMode:'VIDEO',numPoses:2,minPoseDetectionConfidence:.4,minPosePresenceConfidence:.4,minTrackingConfidence:.4,outputSegmentationMasks:false});
 async function create(d,v){const {FilesetResolver,PoseLandmarker}=await import(BASE+'vision_bundle.mjs');return PoseLandmarker.createFromOptions(await FilesetResolver.forVisionTasks(BASE+'wasm'),options(d,v));}
-let switching=false;
+let switching=false,fixed=false;   // fixed: never switch models (the video bench compares models)
 /** Builds the new model while the old one keeps serving frames, then swaps: tracking never stops. */
 async function load(v){
  let next,d;
@@ -17,7 +17,7 @@ async function load(v){
 self.onmessage=async({data})=>{
  try{
   if(data.type==='init'){
-   await load(['lite','heavy'].includes(data.variant)?data.variant:'full');
+   fixed=!!data.fixed;await load(['lite','heavy'].includes(data.variant)?data.variant:'full');
    self.postMessage({type:'ready',delegate,variant});
   }else if(data.type==='frame'&&!model){data.bitmap?.close?.();self.postMessage({type:'skip',timestamp:data.timestamp});  // never leave a frame unanswered
   }else if(data.type==='frame'&&model){
@@ -29,7 +29,7 @@ self.onmessage=async({data})=>{
     const ms=performance.now()-started;
     self.postMessage({type:'pose',delegate,variant,landmarks:result.landmarks,worldLandmarks:result.worldLandmarks,timestamp:data.timestamp,width:data.width,height:data.height,ms,brightness:data.brightness});
     recent=[...recent.slice(1-WINDOW),ms];
-    if(variant!=='lite'&&!switching&&recent.length>=WINDOW&&recent.reduce((a,b)=>a+b,0)/recent.length>SLOW_MS){
+    if(variant!=='lite'&&!fixed&&!switching&&recent.length>=WINDOW&&recent.reduce((a,b)=>a+b,0)/recent.length>SLOW_MS){
      switching=true;load('lite').then(()=>self.postMessage({type:'ready',delegate,variant})).catch(()=>{}).finally(()=>{switching=false;});  // not awaited: frames keep flowing
     }
    }finally{data.bitmap.close();}
