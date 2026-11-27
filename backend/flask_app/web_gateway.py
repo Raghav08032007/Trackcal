@@ -238,7 +238,7 @@ DAY_ITEM = re.compile(r'^(\d{4}-\d{2}-\d{2}|import)$')
 def personalization(path):
     parts = path.split('/'); resource, item = parts[0], parts[1] if len(parts) > 1 else None
     if len(parts) > 2 or resource not in ('state', 'targets', 'days', 'exercise-safety', 'exercise-ack', 'recovery', 'pain-checkin', 'today', 'task-done', 'history-summary', 'progress', 'onboarding', 'measurements', 'plans', 'activities', 'education', 'reminders') or \
-            (item and not (UUID.match(item) if resource != 'days' else DAY_ITEM.match(item))):
+            (item and not (resource == 'targets' and item == 'adaptive') and not (UUID.match(item) if resource != 'days' else DAY_ITEM.match(item))):
         return error('Not found', 404)
     method = request.method
     if resource == 'days': allowed = method == 'POST' and bool(item) or method == 'GET' and item != 'import'
@@ -246,6 +246,7 @@ def personalization(path):
     elif resource in ('recovery', 'pain-checkin'): allowed = not item and method == ('GET' if resource == 'recovery' else 'POST')
     elif resource in ('today', 'task-done'): allowed = not item and method == ('GET' if resource == 'today' else 'POST')
     elif resource in ('history-summary', 'progress'): allowed = not item and method == 'GET'
+    elif resource == 'targets' and item == 'adaptive': allowed = method == 'GET'   # the adaptive calorie target (read only)
     else: allowed = (resource in ('state', 'reminders', 'targets') and not item) if method == 'GET' else (resource == 'measurements' and bool(item)) if method == 'DELETE' else \
         (resource == 'targets' and not item) if method == 'PUT' else \
         (resource in ('onboarding', 'education', 'measurements', 'plans') and (not item or resource == 'plans')) or (resource in ('activities', 'reminders') and bool(item))

@@ -632,3 +632,13 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 .micro-tips { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(16, 185, 129, .08); }
 .micro-tips p { margin: 4px 0 0; line-height: 1.4; }
 .micro-basis { margin: 10px 0 0; font-size: .8rem; color: var(--muted, #64748b); }
+
+/* Adaptive calorie target (components/adaptive-target-card.tsx). */
+.adaptive-card h2 { margin-bottom: 6px; }
+.adaptive-big { margin: 4px 0; font-size: 1.5rem; }
+.adaptive-note { padding: 8px 12px; border-radius: 12px; background: rgba(245, 158, 11, .12); line-height: 1.4; font-size: .92rem; }
+.adaptive-suggest { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+.adaptive-suggest p { margin: 0; font-weight: 600; }
+.adaptive-steps { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.adaptive-steps li.is-done { color: #059669; }
+.adaptive-steps li.is-done::marker { content: "✓  "; }

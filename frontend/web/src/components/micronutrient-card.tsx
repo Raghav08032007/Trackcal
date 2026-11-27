@@ -17,7 +17,7 @@ export function MicronutrientCard({ day, refresh }: { day?: string; refresh?: un
   const [view, setView] = useState<View | null>(null), [failed, setFailed] = useState(false);
   useEffect(() => {
     let alive = true;
-    wellnessRequest<View>("micronutrients" + (day ? "?target_date=" + day : "")).then(v => { if (alive) { setView(v); setFailed(false); } }).catch(() => { if (alive) setFailed(true); });
+    wellnessRequest<View>("micronutrients" + (day ? "?target_date=" + day : "")).then(v => { /* an unexpected reply hides the card instead of breaking the diary */ if (alive) { const ok = !!v && Array.isArray(v.nutrients); setView(ok ? v : null); setFailed(!ok); } }).catch(() => { if (alive) setFailed(true); });
     return () => { alive = false; };
   }, [day, refresh]);
   if (failed || !view) return null;

@@ -203,3 +203,12 @@ def test_micronutrients_from_logged_foods(account):
     got = next(r for r in view["nutrients"] if r["nutrient"] == "iron")
     assert abs(got["amount"] - round(iron * 2, 1)) < 0.11
     assert view["coverage"] == 1.0
+
+
+def test_adaptive_target_needs_data_then_suggests(account):
+    """Without meals and weigh-ins it asks for more logging; the endpoint is private and read-only."""
+    headers, _, _ = account
+    r = client.get("/api/v1/personalization/targets/adaptive", headers=headers)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["ready"] is False and body["reason"] == "more_logging" and body["current"] > 0

@@ -200,6 +200,22 @@ def targets(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     return calc.compute(prefs,latest_weight(db,user),plan,minor=bool(user.is_minor))
 
 
+
+def adaptive_target(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+    """Your real daily burn from the last 28 days of meals and weigh-ins, and the target it suggests (services/adaptive_target.py)."""
+    from services.adaptive_target import estimate, WINDOW
+    current=targets(user,db);row=db.get(models.PersonalizationProfile,user.id);prefs=prefs_for(row)
+    tz=ZoneInfo(prefs.timezone or 'UTC');today=datetime.now(timezone.utc).astimezone(tz).date()
+    since=datetime.now(timezone.utc).replace(tzinfo=None)-timedelta(days=WINDOW+1)
+    intake={}
+    for log in db.query(models.MealLog).filter(models.MealLog.user_id==user.id,models.MealLog.logged_at>=since,models.MealLog.is_deleted==False).all():  # noqa: E712
+        day=log.logged_at.replace(tzinfo=timezone.utc).astimezone(tz).date();intake[day]=intake.get(day,0)+(log.total_calories or 0)
+    weights=[(w.recorded_at.replace(tzinfo=timezone.utc).astimezone(tz).date(),w.canonical_value)
+             for w in db.query(models.WellnessMeasurement).filter(models.WellnessMeasurement.user_id==user.id,models.WellnessMeasurement.kind=='weight',models.WellnessMeasurement.recorded_at>=since).all()]
+    basis=current.get('basis') or {}
+    result=estimate(intake,weights,basis.get('maintenance'),today,adjustment=basis.get('adjustment',0) or 0,floor=basis.get('floor',1200) or 1200)
+    return {**result,'current':current['calories'],'manual':'calories' in current.get('manual',[]),'goal':prefs.goal}
+
 def set_targets(data:TargetInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
     lock(db,user);row=db.get(models.PersonalizationProfile,user.id)
     if not row:row=models.PersonalizationProfile(user_id=user.id,preferences=Preferences().model_dump(),step=1,revision=0);db.add(row)

@@ -9,6 +9,7 @@ bp = Blueprint('personalization', __name__, url_prefix='/api/v1/personalization'
 retry_deadlocks(bp)  # XP awards; handlers make no external calls before committing
 route(bp, 'GET', '/state', handlers.state)
 route(bp, 'GET', '/targets', handlers.targets)
+route(bp, 'GET', '/targets/adaptive', handlers.adaptive_target)
 route(bp, 'PUT', '/targets', handlers.set_targets)
 route(bp, 'GET', '/days', handlers.recent_days)
 route(bp, 'GET', '/exercise-safety', handlers.exercise_safety_view)
