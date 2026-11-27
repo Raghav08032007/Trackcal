@@ -49,6 +49,8 @@ function bendFromDrop(share:number){
 export interface ExerciseAnalyzer{observe(frame:PoseFrame):Observation;reset():void;}
 /** Measures one joint angle per frame from the config's triplet on the more visible body side. Landmarks are
  *  aspect-corrected before the angle is taken (normalize), and the three joint points are smoothed. */
+/** Nose, eyes and ears: any one of them in view shows the head is in the picture. */
+const HEAD=[0,2,5,7,8],HEAD_GRACE_MS=2000;
 export class JointAnalyzer implements ExerciseAnalyzer{
  side:0|1|null=null;private center:{x:number;y:number}|null=null;private filters:OneEuroFilter[]=[];private reach=0;private bones=0;private span:number|null=null;private top:number|null=null;private anchor=0;private torso=0;private shoulders:number|null=null;private dropMode:'hips'|'shoulders'|null=null;private restarted=false;private dropStart:number|null=null;private switchSince:number|null=null;private legLen=0;private torsoTop:number|undefined=undefined;
  /** The separate estimates behind the last reading, for diagnostics. */
@@ -67,6 +69,7 @@ export class JointAnalyzer implements ExerciseAnalyzer{
  reset(){this.side=null;this.center=null;this.reach=0;this.bones=0;this.span=null; this.clearDrop();this.resetFilters();}
  private clearDrop(){this.dropStart=null;this.legLen=0;this.switchSince=null;this.dropT=null;this.top=null;this.torso=0;this.shoulders=null;this.dropMode=null;this.torsoTop=undefined;this.level=null;this.floor=null;this.leg=0;this.lastT=null;this.stillFor=0;this.slow=null;this.feet=null;this.ankles=null;this.hips=null;this.jumpUntil=0;}
  private level:number|null=null;private floor:number|null=null;private leg=0;private lastT:number|null=null;private stillFor=0;private slow:number|null=null;private feet:number|null=null;private ankles:number|null=null;private hips:number|null=null;private jumpUntil=0;
+ private headAt:number|null=null;
  observe(frame:PoseFrame):Observation{
   const c=this.config,p=normalize(frame),bad=(reason:string,quality=0)=>{this.resetFilters();return {angle:0,confidence:quality,valid:false,reason};};
   if(!p)return bad(frame.landmarks.length>1?msg("Only one person should be in view."):msg("Step back so your whole body is in frame."));
@@ -77,6 +80,11 @@ export class JointAnalyzer implements ExerciseAnalyzer{
   else if(q[this.side]<c.minVisibility&&q[1-this.side]>=c.minVisibility){this.side=this.side===0?1:0;this.resetFilters();}  // the far side flickers side-on; the rep carries on
   const side=this.side,ids=c.required[side],quality=q[side];
   if(quality<c.minVisibility||!visible(frame,ids))return bad(msg("Step back so your whole body is in frame."),quality);
+  // Too close: with the head out of the picture the model still returns confident points for the parts it can't see
+  // (a small made-up body over the real one), so nothing is counted until part of the head is clearly in view.
+  // A jump can lift the head out of the top of the picture for a moment, so it only has to have been seen recently.
+  if(HEAD.some(i=>(p[i]?.visibility??0)>=.5&&visible(frame,[i])))this.headAt=frame.timestamp;
+  else if(this.headAt===null||frame.timestamp-this.headAt>HEAD_GRACE_MS)return bad(msg("Step back so I can see your head and hips."),quality);
   const edge=c.inFrame?.[side];if(edge&&confidence(p,edge)>=c.minVisibility&&!visible(frame,edge))return bad(msg("Step back so your whole body is in frame."),quality);
   const hipsSeen=confidence(p,[c.required[side][0],23+side])>=c.minVisibility&&visible(frame,[23+side]);
   const anchor=hipsSeen||!c.drop?[23,24]:[11,12],center={x:(p[anchor[0]].x+p[anchor[1]].x)/2,y:(p[anchor[0]].y+p[anchor[1]].y)/2};

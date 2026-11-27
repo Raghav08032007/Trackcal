@@ -11,3 +11,5 @@ for step in prepare export; do
   TCMH_STEP=$step "$UE" "$PROJECT" -RenderOffscreen -nop4 -nosplash -log -abslog="D:/TrackCalMetaHuman/$step.log" >/dev/null 2>&1 || true   # the editor may crash while closing, after saving
   grep -E "TCMH" "D:/TrackCalMetaHuman/$step.log" | sed 's/.*TCMH /  /'
 done
+echo "== Unreal: hair and eyebrow cards"
+"$(dirname "$UE")/UnrealEditor-Cmd.exe" "$PROJECT" -run=pythonscript -script="$HERE/export_grooms.py" -unattended -nop4 -nosplash -stdout -FullStdOutLogOutput 2>&1 | grep "TCMH" | sed 's/.*TCMH /  /'

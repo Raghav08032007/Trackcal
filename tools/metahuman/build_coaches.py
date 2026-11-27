@@ -85,6 +85,41 @@ def capture_face(ch, folder):
     log(f"face images captured: {count}")
 
 
+GROOMS = "/MetaHumanCharacter/Optional/Grooms/GroomAssets"
+
+
+def export_asset(path, file_path):
+    """A plugin asset with real source data (a static mesh or a texture) to FBX or PNG."""
+    obj = unreal.load_asset(path)
+    if not obj:
+        log(f"missing {path}")
+        return False
+    task = unreal.AssetExportTask()
+    task.object = obj; task.filename = file_path; task.automated = True; task.prompt = False; task.replace_identical = True
+    if file_path.endswith(".fbx"):
+        opts = unreal.FbxExportOption(); opts.collision = False; opts.level_of_detail = False; task.options = opts
+    ok = unreal.Exporter.run_asset_export_task(task)
+    if not ok:
+        log(f"export failed {path}")
+    return ok
+
+
+def export_grooms(coach):
+    """Hair and eyebrows as cards (flat strips with an alpha atlas): strands can't render on the web."""
+    folder = f"{OUT}/{coach['name']}/Groom"
+    for kind, group in (("hair", "Hair"), ("brows", "Eyebrows")):
+        style = coach.get(kind)
+        if not style:
+            continue
+        base = f"{GROOMS}/{group}/{style}/{style}"
+        for lod in (1, 2, 3):
+            export_asset(f"{base}_CardsMesh_Group0_LOD{lod}", f"{folder}/{kind}_cards_lod{lod}.fbx")
+        export_asset(f"{base}_CardsAtlas_Attribute", f"{folder}/{kind}_atlas_attribute.png")
+        export_asset(f"{base}_CardsAtlas_Tangent", f"{folder}/{kind}_atlas_tangent.png")
+        export_asset(f"{base}_Helmet_LOD5", f"{folder}/{kind}_helmet.fbx")
+    log(f"{coach['name']}: grooms exported")
+
+
 def build(coach):
     name, preset = coach["name"], coach["preset"]
     path = f"/Game/Coaches/{name}"

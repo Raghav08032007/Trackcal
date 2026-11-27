@@ -1,3 +1,4 @@
 [
-  { "name": "CoachA", "preset": "Sunita" }
+  { "name": "CoachA", "preset": "Sunita", "hair": "Hair_S_LowPonytail", "brows": "Eyebrows_M_Natural", "model": "f" },
+  { "name": "CoachB", "preset": "Kelvin", "hair": "Hair_S_BrushCut", "brows": "Eyebrows_M_Full", "model": "m" }
 ]
