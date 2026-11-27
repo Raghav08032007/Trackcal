@@ -18,7 +18,7 @@ import {config, chromium} from '../bench/lib/common.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..'), WEB = path.join(ROOT, 'frontend/web');
 const args = process.argv.slice(2), folder = path.resolve(args.find((a, i) => !a.startsWith('--') && !['--fps', '--only'].includes(args[i - 1])) ?? '');
 const dump = args.includes('--dump'), only = args.includes('--only') ? args[args.indexOf('--only') + 1] : null;
-const fps = Number(args[args.indexOf('--fps') + 1]) || 15, variant = args.includes('--lite') ? 'lite' : 'full', PORT = 3010;
+const fps = Number(args[args.indexOf('--fps') + 1]) || 15, variant = args.includes('--lite') ? 'lite' : args.includes('--heavy') ? 'heavy' : 'full', PORT = 3010;
 if (!existsSync(folder)) { console.error('Usage: node tools/video-bench/run.mjs <folder with videos>'); process.exit(1); }
 
 const MISTAKE = {shallow: ['shallow'], half: ['shallow'], fast: ['too_fast'], facing: ['turn_side'], front: ['turn_side'], side: ['face_camera'],

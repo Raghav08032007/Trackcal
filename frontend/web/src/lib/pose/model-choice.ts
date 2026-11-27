@@ -2,7 +2,7 @@
 // against 45.0 for "lite"); "lite" is 5.6 MB instead of 9 MB and runs faster. The worker already switches a slow device
 // from full to lite mid-workout, but by then the phone has downloaded the 9 MB model for nothing. So low-end phones,
 // Data Saver and slow connections start with lite, and a phone that had to switch starts with lite for a while.
-export type PoseVariant = "full" | "lite";
+export type PoseVariant = "full" | "lite" | "heavy";
 
 const REMEMBER_KEY = "trackcal:pose:lite-since";
 const REMEMBER_DAYS = 14;   // then full is tried again: the slow session may have been a one-off (low battery, hot phone)

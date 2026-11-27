@@ -9,6 +9,8 @@ const BASE='/pose/mediapipe-1.2.0-pose16-2/';
 const MODELS=[
  {name:'pose_landmarker_full',sha256:'5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1'},
  {name:'pose_landmarker_lite',sha256:'59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a'},
+ // "heavy" (30.7 MB) is measured on the video bench and offered only where it pays off (docs/VIDEO_BENCH.md, model comparison).
+ {name:'pose_landmarker_heavy',sha256:'64437af838a65d18e5ba7a0d39b465540069bc8aae8308de3e318aad31fcbc7b'},
 ];
 if(!(await readFile(new URL('../public/pose-worker.js',import.meta.url),'utf8')).includes(`const BASE='${BASE}'`))throw Error('public/pose-worker.js must use BASE '+BASE);
 const target=new URL('../public'+BASE,import.meta.url);await mkdir(target,{recursive:true});

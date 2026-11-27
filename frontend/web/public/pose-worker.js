@@ -17,7 +17,7 @@ async function load(v){
 self.onmessage=async({data})=>{
  try{
   if(data.type==='init'){
-   await load(data.variant==='lite'?'lite':'full');
+   await load(['lite','heavy'].includes(data.variant)?data.variant:'full');
    self.postMessage({type:'ready',delegate,variant});
   }else if(data.type==='frame'&&!model){data.bitmap?.close?.();self.postMessage({type:'skip',timestamp:data.timestamp});  // never leave a frame unanswered
   }else if(data.type==='frame'&&model){
@@ -29,7 +29,7 @@ self.onmessage=async({data})=>{
     const ms=performance.now()-started;
     self.postMessage({type:'pose',delegate,variant,landmarks:result.landmarks,worldLandmarks:result.worldLandmarks,timestamp:data.timestamp,width:data.width,height:data.height,ms,brightness:data.brightness});
     recent=[...recent.slice(1-WINDOW),ms];
-    if(variant==='full'&&!switching&&recent.length>=WINDOW&&recent.reduce((a,b)=>a+b,0)/recent.length>SLOW_MS){
+    if(variant!=='lite'&&!switching&&recent.length>=WINDOW&&recent.reduce((a,b)=>a+b,0)/recent.length>SLOW_MS){
      switching=true;load('lite').then(()=>self.postMessage({type:'ready',delegate,variant})).catch(()=>{}).finally(()=>{switching=false;});  // not awaited: frames keep flowing
     }
    }finally{data.bitmap.close();}

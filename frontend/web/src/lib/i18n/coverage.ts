@@ -48,6 +48,7 @@ export const TRANSLATED_FILES = [
   // Move
   "src/lib/pose/exercise-config.ts",
   "src/lib/pose/analyzers.ts",
+  "src/lib/pose/framing.ts",
   "src/lib/days.ts",
   "src/lib/workouts.ts",
   "src/components/camera-workout.tsx",

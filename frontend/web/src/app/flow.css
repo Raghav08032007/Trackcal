@@ -569,3 +569,18 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 .camera-gear-bar p { margin: 0; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
 .camera-gear-bar > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .camera-gear-bar button { min-height: 40px; max-width: 100%; white-space: normal; text-align: center; }
+
+/* Get in position (camera-workout CameraSetup): an outline to stand in, and the checklist. */
+.camera-setup { position: absolute; inset: 0; display: grid; align-items: end; justify-items: center; pointer-events: none; z-index: 3; }
+.camera-setup-outline { position: absolute; top: 6%; bottom: 6%; left: 50%; width: min(42%, 240px); transform: translateX(-50%); border: 3px dashed rgba(255, 227, 155, .85); border-radius: 46% 46% 18% 18% / 22% 22% 10% 10%; box-shadow: 0 0 0 9999px rgba(3, 23, 21, .28); }
+.camera-setup-card { position: relative; margin: 12px; padding: 12px 14px; max-width: min(92%, 360px); border-radius: 14px; background: rgba(3, 23, 21, .86); color: #f8fafc; box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
+.camera-setup-card strong { display: block; font-size: 1.05rem; }
+.camera-setup-card p { margin: 4px 0 6px; color: #ffe39b; font-weight: 600; line-height: 1.35; }
+.camera-setup-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: .9rem; }
+.camera-setup-card li { display: flex; gap: 8px; align-items: center; }
+.camera-setup-card li span { width: 1.1em; text-align: center; font-weight: 700; }
+.camera-setup-card li.is-ok { color: #86efac; }
+.camera-setup-card li.is-off { color: #e2e8f0; opacity: .85; }
+.camera-mirrored .camera-setup { transform: scaleX(-1); }
+.camera-mirrored .camera-setup-card { transform: scaleX(-1); }
+@media (max-width: 480px) { .camera-setup-card { font-size: .92rem; padding: 10px 12px; } }

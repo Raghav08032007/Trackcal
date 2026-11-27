@@ -6,13 +6,13 @@ import {focusPerson,normalize} from '@/lib/pose/landmarks';
 import {SessionTracker} from '@/lib/pose/session-tracker';
 import type {ExerciseKind,PoseFrame} from '@/lib/pose/types';
 
-export type BenchItem={url:string;kind:ExerciseKind;fps?:number;variant?:'full'|'lite';dump?:boolean};
+export type BenchItem={url:string;kind:ExerciseKind;fps?:number;variant?:'full'|'lite'|'heavy';dump?:boolean};
 export type BenchResult={url:string;kind:ExerciseKind;reps:number;said:{key:string;at:number}[];frames:number;seen:number;seconds:number;error?:string;rejections?:Record<string,number>;mismatches?:string[];trace?:[number,number,string][];landmarks?:PoseFrame[]};
 
 let worker:Worker|null=null,clock=0;
 const status=(text:string)=>{const el=document.getElementById('status');if(el)el.textContent=text;};
 
-async function model(variant:'full'|'lite'){
+async function model(variant:'full'|'lite'|'heavy'){
  if(worker)return worker;
  const w=new Worker('/pose-worker.js');
  await new Promise<void>((resolve,reject)=>{const t=setTimeout(()=>reject(Error('pose model load timed out')),90000);

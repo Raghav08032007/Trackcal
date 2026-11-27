@@ -16,7 +16,7 @@ export type PoseRecording = {
   counted_reps: number;                   // what the person really did (counted by them or a helper)
   app_reps: number;                       // what the app counted live, for reference
   fps: number; width: number; height: number;
-  model: "full" | "lite" | "";
+  model: "full" | "lite" | "heavy" | "";
   device: { mobile: boolean; cores?: number; memory?: number };
   recorded_on: string;                    // the day only
   frames: { t: number; l: number[][] }[]; // t: ms from the first frame; l: [x, y, visibility] for each of 33 points

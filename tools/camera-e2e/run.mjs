@@ -20,6 +20,7 @@ await p.request.post(base + '/api/account/login', {data: {email: 'cpmwrna80b@tes
 await p.goto(base + '/workouts/camera?steps=curl:4,hammer:4', {waitUntil: 'domcontentloaded'});
 await p.waitForSelector('button:has-text("Enable camera")', {timeout: 60000});
 await p.click('button:has-text("Enable camera")');
+await p.waitForTimeout(1800); await p.locator('.camera-preview').screenshot({path: `${S}/cam-setup.png`}).catch(() => {});
 const t0 = Date.now(); let last = '';
 while (Date.now() - t0 < 150000) {
   const st = await p.evaluate(() => ({notice: document.querySelector('.camera-notice')?.textContent || '', review: /Review your workout|Review your movement/.test(document.body.innerText), count: document.querySelector('.camera-mobile-controls strong')?.textContent || document.querySelector('.camera-count, .camera-reps')?.textContent || ''}));
