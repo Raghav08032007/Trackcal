@@ -333,8 +333,16 @@ export const CORE_PHASES = [
     "src/app/community/page.tsx",
     "src/app/communities/page.tsx",
   ],
+  [ // 7: together: events with QR check-in, the feed, challenges
+    "src/app/event/page.tsx",
+    "src/app/feed/page.tsx",
+    "src/app/events/page.tsx",
+    "src/app/challenges/page.tsx",
+    "src/app/challenge/page.tsx",
+    "src/lib/challenges.ts",
+  ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 6, ml: 6, gu: 6, pa: 6, ur: 6, fr: 6, de: 6 };
+export const WAVE_2: Record<string, number> = { kn: 7, ml: 7, gu: 7, pa: 7, ur: 7, fr: 7, de: 7 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);
