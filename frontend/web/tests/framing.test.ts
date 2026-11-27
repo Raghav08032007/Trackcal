@@ -49,4 +49,11 @@ describe("getting in position before counting", () => {
   it("a dark room is not ready", () => {
     expect(failing(frame([person()], 10))).toEqual(["light"]);
   });
+  it("asks for the right camera angle on moves that only count from one view", () => {
+    const sideOn = person(); for (const [a, b] of [[11, 12], [13, 14], [15, 16], [23, 24], [25, 26], [27, 28]]) sideOn[b] = { ...sideOn[a] };
+    expect(failing(frame([person()]), "pushup")).toContain("angle");      // push-ups filmed head-on
+    expect(failing(frame([sideOn]), "pushup")).not.toContain("angle");
+    expect(failing(frame([person()]), "curl")).not.toContain("angle");    // curls count from any view
+    expect(failing(frame([sideOn]), "raise")).toContain("angle");         // side arm raises need the front view
+  });
 });
