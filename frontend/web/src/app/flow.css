@@ -561,3 +561,11 @@ html[data-theme=dark] body .character-card{background:linear-gradient(120deg,#1e
 @media (prefers-reduced-motion: reduce) { .nav-progress-on span { animation: none; transform: scaleX(.6); } }
 html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: scaleX(.6); }
 .route-error-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+/* Equipment you have (camera-workout MyGearPicker) and the swap / skip bar for an exercise that needs gear. */
+.camera-my-gear { display: grid; gap: 6px; margin: 4px 0 12px; }
+.camera-my-gear small { color: var(--muted, #64748b); line-height: 1.4; }
+.camera-gear-bar { display: grid; gap: 8px; margin: 10px 0; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(14, 165, 233, .35); background: rgba(14, 165, 233, .08); }
+.camera-gear-bar.is-missing { border-color: rgba(245, 158, 11, .55); background: rgba(245, 158, 11, .12); }
+.camera-gear-bar p { margin: 0; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.camera-gear-bar > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.camera-gear-bar button { min-height: 40px; max-width: 100%; white-space: normal; text-align: center; }
