@@ -65,6 +65,8 @@ Check: the video bench gives each demo a form score; every demo must pass its ow
 
 ### C2: MetaHuman character
 
+**Status, 27 Nov:** the pipeline in `tools/metahuman/` (Unreal 5.8 project at `D:\TrackCalMetaHuman`) runs unattended: preset copy, cloud auto-rig, body textures, DCC export and FBX export (4 LODs, 51.6k / 12.6k / 4.9k / 1.5k vertices; 341 bones with the same names as our current rig). **Open:** the baked face texture comes out as the grey loading checkerboard, because the export reads it before Unreal has loaded it onto the GPU; letting the editor wait first then crashes the export (`OutFaceMesh && OutBodyMesh`). Next tries: export from the visible editor, or rebuild the face colour from the synthesized textures in Blender.
+
 What MetaHuman means here, honestly:
 - MetaHumans are made in **Unreal Engine 5.6+** (MetaHuman Creator). Since 5.6, Epic's license allows using MetaHuman characters outside Unreal. **Before launch, we confirm the current license terms** for a web app with a lawyer.
 - A full MetaHuman is far too heavy for a phone browser: hundreds of thousands of triangles, 8K textures, strand hair. It has to be **exported at a low level of detail**. Target: body 20–30k triangles, 1–2K textures, card hair, compressed GLB (Draco or meshopt, KTX2), under 8 MB.
