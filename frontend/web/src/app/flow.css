@@ -551,3 +551,13 @@ html body .character-card-link{align-self:flex-start;margin-top:4px}
 html body .character-card .celebration-host{position:absolute;inset:0;pointer-events:none}
 html[data-theme=dark] body .character-card{background:linear-gradient(120deg,#1e1b4b,#083344)}
 @media (max-width:480px){html body .character-card{grid-template-columns:88px minmax(0,1fr);gap:12px}html body .character-card-picture{width:88px;height:110px}}
+
+/* Page loading bar (components/nav-progress.tsx) and the page error screen (routes.tsx). */
+.nav-progress { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 1000; pointer-events: none; overflow: hidden; }
+.nav-progress span { display: block; height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, #22c55e, #06b6d4, #8b5cf6); box-shadow: 0 0 8px rgba(34, 197, 94, .55); }
+.nav-progress-on span { animation: nav-progress-grow 8s cubic-bezier(.1, .7, .2, 1) forwards; }
+.nav-progress-done span { transform: scaleX(1); opacity: 0; transition: transform .18s ease-out, opacity .25s ease .1s; }
+@keyframes nav-progress-grow { from { transform: scaleX(.04); } to { transform: scaleX(.92); } }
+@media (prefers-reduced-motion: reduce) { .nav-progress-on span { animation: none; transform: scaleX(.6); } }
+html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: scaleX(.6); }
+.route-error-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }

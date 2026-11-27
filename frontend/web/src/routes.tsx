@@ -1,6 +1,6 @@
 // URL -> page module. Each page loads on first visit and sets the tab title from its `metadata` export.
-import { lazy, Suspense, useEffect, type ComponentType } from "react";
-import { createBrowserRouter, type RouteObject } from "react-router";
+import { useEffect, type ComponentType } from "react";
+import { createBrowserRouter, isRouteErrorResponse, useRouteError, type RouteObject } from "react-router";
 import { RootLayout } from "@/app/root-layout";
 import { Link } from "@/lib/navigation";
 import { msg, t, subscribe } from "@/lib/i18n";
@@ -76,12 +76,19 @@ const pages: Record<string, () => Promise<PageModule>> = {
   "/me": () => import("@/app/me/page"),
 };
 
-function titled(load: () => Promise<PageModule>) {
-  return lazy(async () => {
-    const module = await load();
-    const Page = module.default, title = module.metadata?.title || DEFAULT_TITLE;
-    return { default: function TitledPage() { useEffect(() => { const show = () => { document.title = t(title); }; show(); return subscribe(show); }, []); return <Page />; } };
-  });
+/** A page whose tab title follows its `metadata` (and the language). */
+function titled(module: PageModule): ComponentType {
+  const Page = module.default, title = module.metadata?.title || DEFAULT_TITLE;
+  return function TitledPage() { useEffect(() => { const show = () => { document.title = t(title); }; show(); return subscribe(show); }, []); return <Page />; };
+}
+
+const RELOADED = "trackcal:chunk-reload";
+const chunkFailed = (error: unknown) => /dynamically imported module|Importing a module script failed|error loading dynamically|Failed to fetch/i.test(String((error as Error)?.message || error));
+/** Download a page. React Router drops errors from `lazy` on routes without a loader (the page would render empty),
+ *  so a failed download becomes a page that throws while rendering, which the route's error screen catches. */
+async function loadPage(load: () => Promise<PageModule>): Promise<ComponentType> {
+  try { const m = await load(); try { sessionStorage.removeItem(RELOADED); } catch { /* storage off */ } return titled(m); }
+  catch (error) { return function PageFailed(): never { throw error; }; }
 }
 
 function NotFound() {
@@ -89,13 +96,31 @@ function NotFound() {
   return <main className="account-page"><section className="account-card"><h1>{t("Page not found")}</h1><p>{t("This address does not match a TrackCal page.")}</p><p><Link href="/">{t("Go to the workspace →")}</Link></p></section></main>;
 }
 
+/** Shown in place of a page that crashed or could not load; the navigation and footer stay usable. */
+function RouteError() {
+  const error = useRouteError(), offline = typeof navigator !== "undefined" && navigator.onLine === false;
+  const missing = isRouteErrorResponse(error) && error.status === 404;
+  // A page's code failed to download: usually a new version was deployed and the old files are gone. The address already
+  // shows the page being opened, so reload once to get the new version there; if that already happened, offer a retry.
+  const reload = !missing && !offline && chunkFailed(error) && (() => { try { return !sessionStorage.getItem(RELOADED); } catch { return false; } })();
+  useEffect(() => { if (!reload) return; try { sessionStorage.setItem(RELOADED, "1"); } catch { /* storage off */ } window.location.reload(); }, [reload]);
+  useEffect(() => { if (!missing && !reload) console.error("Page failed:", error); }, [error, missing, reload]);
+  if (missing) return <NotFound />;
+  if (reload) return <main className="account-loading" aria-busy="true">{t("Loading…")}</main>;
+  return <main className="account-page"><section className="account-card route-error" role="alert"><h1>{offline ? t("You're offline") : t("This page didn't open")}</h1>
+    <p>{offline ? t("Reconnect and try again. Your saved records are safe on this device.") : t("Something went wrong while opening it. Nothing you saved was lost.")}</p>
+    <p className="route-error-actions"><button className="account-primary" onClick={() => window.location.reload()}>{t("Try again")}</button> <Link href="/">{t("Go to the workspace →")}</Link></p></section></main>;
+}
+
 function Loading() { return <main className="account-loading" aria-busy="true">{t("Loading…")}</main>; }
-const loading = <Loading />;
 export const routes: RouteObject[] = [{
   element: <RootLayout />,
+  hydrateFallbackElement: <Loading />,
   children: [
-    ...Object.entries(pages).map(([path, load]) => { const Page = titled(load); return { path, element: <Suspense fallback={loading}><Page /></Suspense> }; }),
-    { path: "*", element: <NotFound /> },
+    // `lazy` downloads the page before the address changes, so the current page stays on screen (with the progress bar)
+    // and the transition runs once, straight to the finished page, instead of flashing "Loading…".
+    ...Object.entries(pages).map(([path, load]): RouteObject => ({ path, errorElement: <RouteError />, lazy: async () => ({ Component: await loadPage(load) }) })),
+    { path: "*", element: <NotFound />, errorElement: <RouteError /> },
   ],
 }];
 

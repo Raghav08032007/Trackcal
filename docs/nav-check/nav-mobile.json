@@ -1,0 +1,36 @@
+{
+ "when": "2026-11-27T04:05:43.206Z",
+ "mobile": true,
+ "pages": 57,
+ "problems": [],
+ "slowLoading": [
+  {
+   "href": "/communities",
+   "clicked": false,
+   "loadingMs": 1634,
+   "ms": 1738,
+   "stuck": false
+  },
+  {
+   "href": "/guide",
+   "clicked": true,
+   "loadingMs": 437,
+   "ms": 530,
+   "stuck": false
+  },
+  {
+   "href": "/play",
+   "clicked": true,
+   "loadingMs": 401,
+   "ms": 497,
+   "stuck": false
+  },
+  {
+   "href": "/workouts",
+   "clicked": false,
+   "loadingMs": 348,
+   "ms": 615,
+   "stuck": false
+  }
+ ]
+}

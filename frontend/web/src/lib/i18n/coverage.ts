@@ -245,6 +245,7 @@ export const TRANSLATED_FILES = [
   "src/app/verify-email/page.tsx",
   "src/lib/pose/feedback.ts",
   "src/routes.tsx",
+  "src/components/nav-progress.tsx",
 ];
 /** Texts that reach t() only at run time (from the server, or a variable): listed so every language must have them too. */
 export const RUNTIME_KEYS = [

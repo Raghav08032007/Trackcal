@@ -1,0 +1,57 @@
+{
+ "when": "2026-11-27T04:13:15.662Z",
+ "mobile": false,
+ "pages": 55,
+ "problems": [],
+ "slowLoading": [
+  {
+   "href": "/me/character",
+   "clicked": false,
+   "loadingMs": 1799,
+   "ms": 1900,
+   "stuck": false
+  },
+  {
+   "href": "/workouts/camera?exercise=squat",
+   "clicked": false,
+   "loadingMs": 818,
+   "ms": 950,
+   "stuck": false
+  },
+  {
+   "href": "/communities",
+   "clicked": false,
+   "loadingMs": 733,
+   "ms": 885,
+   "stuck": false
+  },
+  {
+   "href": "/play",
+   "clicked": true,
+   "loadingMs": 596,
+   "ms": 789,
+   "stuck": false
+  },
+  {
+   "href": "/progress",
+   "clicked": true,
+   "loadingMs": 418,
+   "ms": 509,
+   "stuck": false
+  },
+  {
+   "href": "/plan",
+   "clicked": true,
+   "loadingMs": 366,
+   "ms": 455,
+   "stuck": false
+  },
+  {
+   "href": "/workouts/gps",
+   "clicked": true,
+   "loadingMs": 327,
+   "ms": 395,
+   "stuck": false
+  }
+ ]
+}

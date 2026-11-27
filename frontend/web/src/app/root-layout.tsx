@@ -13,6 +13,7 @@ import { TouchFeedback } from "@/components/touch-feedback";
 import { LivingCharacters } from "@/components/living-characters";
 import { ThemeControl } from "@/components/theme-control";
 import { HeldNotice } from "@/components/held-notice";
+import { NavProgress } from "@/components/nav-progress";
 
 // Not needed for the first screen: loaded just after it, so a phone downloads less before the page appears.
 const JourneyCompanion = lazy(() => import("@/components/journey-companion").then(m => ({ default: m.JourneyCompanion })));
@@ -21,7 +22,7 @@ const BetaFeedback = lazy(() => import("@/components/beta-feedback").then(m => (
 
 export function RootLayout() {
   return (
-    <AccountSession><DevicePersistence /><UpdatePrompt /><MotionLayer /><TouchFeedback /><LivingCharacters /><Suspense fallback={null}><JourneyCompanion /></Suspense><HeldNotice /><Suspense fallback={null}><PersonalReminderInbox /></Suspense><AppNavigation /><AccountUnavailable><Outlet /></AccountUnavailable><footer className="site-links site-footer" aria-label={t("Product links")}>
+    <AccountSession><NavProgress /><DevicePersistence /><UpdatePrompt /><MotionLayer /><TouchFeedback /><LivingCharacters /><Suspense fallback={null}><JourneyCompanion /></Suspense><HeldNotice /><Suspense fallback={null}><PersonalReminderInbox /></Suspense><AppNavigation /><AccountUnavailable><Outlet /></AccountUnavailable><footer className="site-links site-footer" aria-label={t("Product links")}>
       <div className="site-footer-brand"><Link href="/" className="site-footer-logo">trackcal<span>.</span></Link><p>{t("Eat well, move well, at your own pace.")}</p><Suspense fallback={null}><BetaFeedback /></Suspense></div>
       <nav className="site-footer-links" aria-label={t("Help and legal")}>
         <div><h2>{t("Get started")}</h2><Link href="/guide">{t("Guided test drive")}</Link><Link href="/help">{t("Help")}</Link></div>

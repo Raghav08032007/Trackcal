@@ -16,7 +16,7 @@ export default function Page() {
   const load = useCallback(() => events<{ events: EventView[] }>(`?scope=${scope}`).then(v => { setRows(v.events); setError(""); }, e => { if (e instanceof EventError && e.status === 404) setState("off"); else setError(e instanceof Error ? e.message : t("Unavailable.")); }), [scope]);
   useEffect(() => { if (user) social<{ profile: unknown }>("me").then(v => setState(v.profile ? "ready" : "no-profile"), (e: { status?: number }) => setState(e?.status === 404 ? "off" : "failed")); }, [user, attempt]);
   useEffect(() => { if (state === "ready") void load(); }, [state, load]);
-  if (!ready || state === "loading") return <main className="account-loading">{t("Opening events…")}</main>;
+  if (!ready || (user && state === "loading")) return <main className="account-loading">{t("Opening events…")}</main>;
   if (!user) return <main className="account-page"><CommunityStrip current="events" /><section className="account-card"><h1>{t("Events")}</h1><p>{t("Sign in to find runs, walks and classes near you.")}</p><Link className="account-primary" href="/login">{t("Sign in")}</Link></section></main>;
   if (state === "failed") return <main className="account-page"><CommunityStrip current="events" /><section className="account-card" role="alert"><h1>{t("We couldn't load events")}</h1><p>{t("This is usually temporary. Nothing was changed.")}</p><button className="account-primary" onClick={() => { setState("loading"); setAttempt(a => a + 1); }}>{t("Try again")}</button></section></main>;
   if (state === "off") return <main className="account-page"><CommunityStrip current="events" /><section className="account-card"><h1>{t("Events aren't available yet")}</h1><p>{t("They're coming soon.")}</p></section></main>;
