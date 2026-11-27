@@ -642,3 +642,9 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 .adaptive-steps { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px; }
 .adaptive-steps li.is-done { color: #059669; }
 .adaptive-steps li.is-done::marker { content: "✓  "; }
+
+
+/* Strength progression tip in the workout log form (lib/strength-progression.ts). */
+.progression-tip { padding: 10px 12px; border-radius: 12px; background: rgba(124, 58, 237, .08); border: 1px solid rgba(124, 58, 237, .25); display: grid; gap: 4px; }
+.progression-tip p { margin: 0; line-height: 1.4; }
+.progression-tip button { justify-self: start; }

@@ -249,6 +249,7 @@ export const TRANSLATED_FILES = [
   "src/components/nav-progress.tsx",
   "src/components/micronutrient-card.tsx",
   "src/components/adaptive-target-card.tsx",
+  "src/lib/strength-progression.ts",
 ];
 /** Texts that reach t() only at run time (from the server, or a variable): listed so every language must have them too. */
 export const RUNTIME_KEYS = [

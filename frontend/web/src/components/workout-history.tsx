@@ -5,6 +5,7 @@ import { Camera, Dumbbell, MapPin, NotebookPen, Pencil, Trash2 } from "lucide-re
 import Link from "@/lib/navigation";
 import { useAccount, useWorkspaceScope } from "@/components/account-session";
 import { useLocalDate } from "@/lib/use-local-state";
+import { suggestNext, type LoggedSet } from "@/lib/strength-progression";
 import { addWorkout, editWorkout, historyRequest, loadLibrary, removeHistoryItem, restoreHistoryItem, type EntryInput, type HistoryItem, type HistoryKind } from "@/lib/workouts";
 
 const FILTERS: [HistoryKind, string][] = [["all", msg("All")], ["camera", msg("Camera")], ["gym", msg("Gym")], ["manual", msg("Logged")], ["route", msg("Routes")]];
@@ -19,11 +20,19 @@ function dayLabel(day: string, today: string) {
   return new Date(day + "T12:00:00").toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
 }
 
-function EntryForm({ start, onSave, onCancel }: { start: EntryInput; onSave: (e: EntryInput) => Promise<void>; onCancel: () => void }) {
+function EntryForm({ start, onSave, onCancel, history = [] }: { start: EntryInput; onSave: (e: EntryInput) => Promise<void>; onCancel: () => void; history?: LoggedSet[] }) {
   const [form, setForm] = useState(start), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  // What to try next time, once the name matches an exercise logged before (lib/strength-progression.ts).
+  const tip = form.name.trim().length >= 3 ? suggestNext(form.name, history.filter(h => h.day < form.day || h.day === form.day && h.name !== start.name)) : null;
+  const sameAsTip = tip && form.sets === tip.sets && form.reps === tip.reps && form.load === tip.load;
   const num = (k: "minutes" | "sets" | "reps" | "load", label: string, max: number, step = 1) => <label>{label}<input type="number" min={0} max={max} step={step} inputMode="decimal" value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: Number(e.target.value) || 0 }))} /></label>;
   return <form className="history-form" onSubmit={async e => { e.preventDefault(); if (!form.name.trim()) { setError(t("Give the workout a name.")); return; } setBusy(true); setError(""); try { await onSave({ ...form, name: form.name.trim() }); } catch (x) { setError(x instanceof Error ? x.message : t("Could not save.")); } finally { setBusy(false); } }}>
     <label className="history-form-wide">{t("Workout")}<input required maxLength={120} value={form.name} placeholder={t("Leg day, swim, yoga…")} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></label>
+    {tip && <div className="history-form-wide progression-tip" role="status">
+      <p><strong>{t("Last time ({day}): {sets} × {reps}", { day: tip.last.day, sets: tip.last.sets, reps: tip.last.reps })}{tip.last.load ? " " + t("at {kg} kg", { kg: tip.last.load }) : ""}</strong></p>
+      <p>{t("Try: {sets} × {reps}", { sets: tip.sets, reps: tip.reps })}{tip.load ? " " + t("at {kg} kg", { kg: tip.load }) : ""}. {t(tip.why)}</p>
+      {!sameAsTip && <button type="button" className="ds-btn ds-btn-quiet" onClick={() => setForm(f => ({ ...f, sets: tip.sets, reps: tip.reps, load: tip.load }))}>{t("Use this")}</button>}
+    </div>}
     <label>{t("Date")}<input type="date" required value={form.day} onChange={e => setForm(f => ({ ...f, day: e.target.value }))} /></label>
     {num("minutes", t("Minutes"), 1440)}{num("sets", t("Sets"), 200)}{num("reps", t("Reps per set"), 1000)}{num("load", t("Weight (kg)"), 1000, 0.5)}
     {error && <p role="alert" className="account-error history-form-wide">{error}</p>}
@@ -59,13 +68,14 @@ export function WorkoutHistory() {
   async function bringBack() { const item = undo; setUndo(null); if (!item) return; try { await restoreHistoryItem(item); } catch { setError(t("Could not undo. Try again.")); } }
 
   const groups: [string, HistoryItem[]][] = [];
+  const logged: LoggedSet[] = (items ?? []).filter(i => (i.reps ?? 0) > 0).map(i => ({ day: i.day, name: i.title, sets: i.sets ?? 0, reps: i.reps ?? 0, load: i.load ?? 0 }));
   for (const item of items ?? []) { const last = groups[groups.length - 1]; if (last && last[0] === item.day) last[1].push(item); else groups.push([item.day, [item]]); }
   const opened = useRef(false);
   useEffect(() => { if (editing === "new" && !opened.current && new URLSearchParams(window.location.search).get("log") === "1") { opened.current = true; document.getElementById("workout-history")?.scrollIntoView({ block: "start" }); } }, [editing]);
   return <section id="workout-history" className="ds-card history-card" aria-labelledby="history-title">
     <div className="history-head"><h2 id="history-title">{t("Your workouts")}</h2>
       {editing !== "new" && <button type="button" className="ds-btn ds-btn-primary" onClick={() => setEditing("new")}>{t("Log a workout")}</button>}</div>
-    {editing === "new" && <EntryForm start={blank(today)} onCancel={() => setEditing(null)} onSave={async e => { await addWorkout(e); setEditing(null); }} />}
+    {editing === "new" && <EntryForm history={logged} start={blank(today)} onCancel={() => setEditing(null)} onSave={async e => { await addWorkout(e); setEditing(null); }} />}
     <div className="history-filters" role="group" aria-label={t("Show")}>{FILTERS.map(([k, label]) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)}>{t(label)}</button>)}</div>
     {error && <p role="alert" className="account-error">{error}</p>}
     {loadFailed && <p className="history-empty">{t("Your workouts could not load just now. Your records are safe;")}{" "}<button type="button" className="ds-btn ds-btn-quiet" onClick={() => void load(kind, shown.current)}>{t("try again")}</button>.</p>}
@@ -75,7 +85,7 @@ export function WorkoutHistory() {
       : groups.map(([day, rows]) => <div key={day} className="history-day"><h3>{dayLabel(day, today)}</h3><ul>{rows.map(item => {
         const Icon = ICONS[item.kind];
         return <li key={item.id} data-kind={item.kind}>
-          {editing === item.id ? <EntryForm start={{ day: item.day, name: item.title, minutes: item.minutes, sets: item.sets ?? 0, reps: item.reps ?? 0, load: item.load ?? 0 }} onCancel={() => setEditing(null)} onSave={async e => { await editWorkout(item.id, e); setEditing(null); }} />
+          {editing === item.id ? <EntryForm history={logged} start={{ day: item.day, name: item.title, minutes: item.minutes, sets: item.sets ?? 0, reps: item.reps ?? 0, load: item.load ?? 0 }} onCancel={() => setEditing(null)} onSave={async e => { await editWorkout(item.id, e); setEditing(null); }} />
           : <><span className="history-icon" aria-hidden><Icon size={20} /></span>
             <div className="history-main"><strong>{item.title}</strong><small>{[item.minutes ? `${item.minutes} min` : "", item.detail].filter(Boolean).join(" · ")}</small></div>
             <div className="history-actions">
