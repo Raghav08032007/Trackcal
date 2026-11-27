@@ -80,6 +80,19 @@ Steps:
 
 Check: frame rate ≥ 50 on a mid-range Android phone; a first-load size limit; the form score from C1 still passes.
 
+## Phase F: features competitors have (from docs/COMPETITORS.md)
+
+1. Play Store app (Android wrapper) and Google sign-in (with E5)
+2. Health Connect sync: steps, workouts, weight, sleep, heart rate
+3. Adaptive calorie target from weight trend and intake
+4. AI nutrition chat in all 16 languages, grounded in the user's log
+5. Micronutrient view and alerts (iron, B12, calcium, vitamin D, protein)
+6. Strength progression and a muscle recovery map
+7. GLP-1 / medication companion
+8. Open Food Facts India and chain restaurant menus
+9. 3D coach follow-along classes
+10. WhatsApp reminders and sharing
+
 ## Phase L: remaining languages
 
 About 1,100 texts in 119 files for kn, ml, gu, pa, ur, fr, de. About 90 files have only one text left, so one sweep finishes many screens. Then the tool screens (design, testing guide, device, gym and media tools, moderation, coach booking).
