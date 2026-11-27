@@ -25,6 +25,9 @@ def export_asset(path, file_path):
     return ok
 
 
+# The head every groom was authored on: to_web.py fits the hair from this head to each coach's own head.
+export_asset("/MetaHumanCharacter/Optional/Grooms/GroomMesh/MH_Groom_Head", f"{OUT}/groom_head.fbx")
+
 only = os.environ.get("TCMH_ONLY")
 for coach in json.load(open(f"{HERE}/coaches.json", encoding="utf-8")):
     if only and coach["name"] != only:

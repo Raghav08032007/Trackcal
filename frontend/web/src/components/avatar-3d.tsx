@@ -36,7 +36,8 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
    let renderer:Three.WebGLRenderer;
    try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch{onFail();return;}
    let gltf:Awaited<ReturnType<InstanceType<typeof GLTFLoader>['loadAsync']>>;
-   try{gltf=await new GLTFLoader().loadAsync(`/avatar/athlete-${model}.glb`);}catch{renderer.dispose();onFail();return;}
+   // The realistic MetaHuman coach first (tools/metahuman), the lighter MakeHuman athlete if it can't load.
+   try{gltf=await new GLTFLoader().loadAsync(`/avatar/coach-${model}.glb`);}catch{try{gltf=await new GLTFLoader().loadAsync(`/avatar/athlete-${model}.glb`);}catch{renderer.dispose();onFail();return;}}
    if(disposed){renderer.dispose();return;}
    renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
    el.appendChild(renderer.domElement);
@@ -51,8 +52,10 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
    // The body: soften skin and fabric a little (a satin sheen reads as real skin and sportswear on screen).
    const body=gltf.scene;scene.add(body);const mats:Record<string,Three.MeshPhysicalMaterial[]>={};
    body.traverse(o=>{const mesh=o as Three.Mesh;if(!mesh.isMesh)return;mesh.castShadow=true;mesh.receiveShadow=true;mesh.frustumCulled=false;
-    const swap=(m:Three.Material)=>{const s=m as Three.MeshStandardMaterial,p=new THREE.MeshPhysicalMaterial({color:s.color,roughness:s.roughness,metalness:0});
-     if(m.name==='skin'){p.sheen=.35;p.sheenRoughness=.6;p.sheenColor=new THREE.Color(0xffd6c4);p.roughness=.55;}
+    const swap=(m:Three.Material)=>{const s=m as Three.MeshStandardMaterial,p=new THREE.MeshPhysicalMaterial({color:s.color,roughness:s.roughness,metalness:0,map:s.map,normalMap:s.normalMap,side:s.side});
+     // Hair and eyelash cards: a cut-out mask drawn from both sides (blending would show the cards in the wrong order).
+     if(m.name==='hair'||m.name==='hair_brows'||m.name==='lashes'){p.alphaTest=.3;p.transparent=false;p.side=THREE.DoubleSide;p.depthWrite=true;}
+     if(m.name==='skin'&&!s.map){p.sheen=.35;p.sheenRoughness=.6;p.sheenColor=new THREE.Color(0xffd6c4);p.roughness=.55;}
      else if(m.name==='top'||m.name==='shorts'){p.sheen=.8;p.sheenRoughness=.45;p.sheenColor=new THREE.Color(m.name==='top'?0xd8ccff:0x6366f1);}
      else if(m.name==='iris'||m.name==='eye'){p.clearcoat=1;p.clearcoatRoughness=.05;}
      p.name=m.name;(mats[m.name]??=[]).push(p);m.dispose();return p;};
@@ -78,8 +81,8 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
    body.scale.setScalar(legOf(pose3dOf(move,0))/avatarLeg);
    // Your character: colours from your look (the originals are kept to go back), and an accessory that follows the head or wrists.
    const original=Object.fromEntries(Object.entries(mats).map(([k,v])=>[k,{color:v[0].color.clone(),sheen:v[0].sheenColor.clone()}]));
-   const PART:Record<string,keyof AvatarLook>={skin:'skin',hair:'hair',top:'top',shorts:'shorts',shoes:'shoes'};let applied:AvatarLook|null|undefined;
-   const applyLook=(l:AvatarLook|null)=>{applied=l;for(const [name,key] of Object.entries(PART))for(const m of mats[name]??[]){
+   const PART:Record<string,keyof AvatarLook>={skin:'skin',hair:'hair',hair_brows:'hair',top:'top',shorts:'shorts',shoes:'shoes'};let applied:AvatarLook|null|undefined;
+   const applyLook=(l:AvatarLook|null)=>{applied=l;for(const [name,key] of Object.entries(PART))for(const m of mats[name]??[]){if(name==='skin'&&m.map)continue;
     if(!l){m.color.copy(original[name].color);m.sheenColor.copy(original[name].sheen);continue;}
     // The studio light and filmic tone mapping lift colours a lot (the model's own skin is #af7a58 and reads light tan), so a
     // swatch is darkened to match: what you pick is close to what you see.

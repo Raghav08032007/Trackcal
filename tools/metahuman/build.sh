@@ -13,3 +13,9 @@ for step in prepare export; do
 done
 echo "== Unreal: hair and eyebrow cards"
 "$(dirname "$UE")/UnrealEditor-Cmd.exe" "$PROJECT" -run=pythonscript -script="$HERE/export_grooms.py" -unattended -nop4 -nosplash -stdout -FullStdOutLogOutput 2>&1 | grep "TCMH" | sed 's/.*TCMH /  /'
+echo "== Blender: web models"
+BLENDER="${BLENDER:-C:/Program Files/Blender Foundation/Blender 5.2/blender.exe}"
+WEB="$(cd "$HERE/../../frontend/web/public/avatar" && pwd)"
+"F:/track cal/backend/.venv/Scripts/python.exe" -c "import json;[print(c['name'],c.get('model','f')) for c in json.load(open(r'$HERE/coaches.json',encoding='utf-8')) if not '$1' or c['name']=='$1']" | while read name model; do
+  "$BLENDER" -b --factory-startup --python "$HERE/to_web.py" -- "D:/TrackCalMetaHuman/Export/$name" "$WEB/coach-$model.glb" 2>&1 | grep -E "EXPORTED|Error"
+done

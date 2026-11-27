@@ -13,4 +13,11 @@ texture download use Epic's cloud service).
 Licence: MetaHuman is covered by the Unreal Engine licence and may be used with other engines (free under US$1M
 revenue). Confirm the current MetaHuman EULA wording on export to the web before launch.
 
-Status: see docs/ROADMAP.md, Phase C2 (face texture bake still open).
+- `export_grooms.py`: hair and eyebrow cards (commandlet; run by build.sh).
+- `to_web.py` (Blender): the phone-friendly mesh level, real face and body skin, sportswear cut along straight planes
+  (clean hems, a little fabric and shoe thickness), hair cards on a scalp shell fitted to each skull, eyebrows placed by the
+  eyes; writes `frontend/web/public/avatar/coach-<f|m>.glb` (about 3-4 MB). The app loads it first and falls back to the
+  lighter `athlete-<f|m>.glb`.
+
+Known limits: Unreal normal maps made the face look metallic in three.js, so the face uses colour only (FACE_NORMAL=1 to
+try again); no facial animation yet; shoes are shaped from the feet (no separate shoe model).
