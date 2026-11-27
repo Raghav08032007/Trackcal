@@ -82,3 +82,23 @@ Fixed:
 
 Open:
 - **Side-on push-ups still count 1–2 of 5 on the 3D coach.** Lying flat, the pose model reads the straight arm at the top as 138–157°, often just under the 150° lockout the counter requires. A lower lockout (140–142°) would count these, but in the simulator it also counted quarter push-ups in 10% of sets and stopped telling people with shallow reps to go deeper, so it was not kept. Real push-up videos will decide it. If real straight arms also read about 140°, the lockout check should move to the shoulder-to-wrist distance.
+
+## Pose model comparison (27 Nov 2026: 44 videos of the 3D coach)
+
+The worker switches a slow device from a bigger model to lite by itself. Headless test browsers run on the CPU, so every
+earlier "full" run had silently become lite after ~15 frames. The bench now locks the model (`fixed: true`); the
+results below are the first real comparison. Compare reports with `node tools/video-bench/compare.mjs a.json b.json …`.
+
+| Model | Size | Within ±1 rep | Exact | Mean error | Mistakes caught | False alarms |
+|---|---|---|---|---|---|---|
+| lite | 5.8 MB | 95% | 93% | 0.28 | 4/4 | 1 |
+| full | 9.4 MB | 93% | 90% | 0.40 | 4/4 | 0 |
+| heavy | 30.7 MB | 95% | 93% | 0.28 | 4/4 | 0 |
+
+- The angles differ between models on about half the frames (more than 2°), but the counts barely change on clean
+  synthetic videos: model choice is not what limits accuracy here. Real-person videos decide it (sections 1, 3, 4).
+- The thresholds were tuned on lite without knowing it. Full misses the male side-on push-ups (too slow); re-tune with
+  full before making it the default on strong devices.
+- Push-ups filmed head-on fail on every model: the straight arm reads 149° (lockout 150°), and when that is corrected the
+  shape check calls the rep a different exercise. Push-ups are supported side-on; the setup check should say
+  "Turn side-on" instead of silently counting nothing (next step).
