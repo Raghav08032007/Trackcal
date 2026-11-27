@@ -324,8 +324,13 @@ export const CORE_PHASES = [
     "src/components/barcode-camera.tsx",
     "src/app/health/page.tsx",
   ],
+  [ // 5: food tools: pantry, shopping list and prices, recipe import and editor, meal planner
+    "src/components/meal-planner.tsx",
+    "src/components/recipe-workbench.tsx",
+    "src/components/pantry-tools.tsx",
+  ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 4, ml: 4, gu: 4, pa: 4, ur: 4, fr: 4, de: 4 };
+export const WAVE_2: Record<string, number> = { kn: 5, ml: 5, gu: 5, pa: 5, ur: 5, fr: 5, de: 5 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);
