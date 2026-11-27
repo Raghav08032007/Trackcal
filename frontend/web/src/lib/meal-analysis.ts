@@ -20,6 +20,8 @@ export interface MealComponent {
 
 export interface MealAnalysis {
   dish_name: string;
+  /** Other dishes the photo could be, best first: one tap corrects a wrong name. */
+  alternatives: string[];
   components: MealComponent[];
   total_nutrition: { calories: number; protein_g: number; carbs_g: number; fat_g: number };
   model: string;
@@ -68,6 +70,8 @@ export function normalizeMeal(raw: unknown, model: string): MealAnalysis {
     Math.round(components.reduce((total, item) => total + item[key], 0) * 10) / 10;
   return {
     dish_name: typeof root?.dish_name === "string" ? root.dish_name.slice(0, 200) : components.map(c => c.name).join(", "),
+    alternatives: (Array.isArray(root?.alternatives) ? root.alternatives : Array.isArray(root?.dish_alternatives) ? root.dish_alternatives : [])
+      .filter((a: unknown): a is string => typeof a === "string" && !!a.trim()).map((a: string) => a.trim().slice(0, 120)).slice(0, 3),
     components, total_nutrition: { calories: sum("calories"), protein_g: sum("protein_g"), carbs_g: sum("carbs_g"), fat_g: sum("fat_g") },
     model, is_mock: false,
     calorie_range: [0, 1].map(i => round1(components.reduce((total, item) => total + item.calorie_range[i], 0))) as [number, number],

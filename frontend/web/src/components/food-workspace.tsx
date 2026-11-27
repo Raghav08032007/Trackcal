@@ -328,9 +328,10 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [photoNote,setPhotoNote]=useState("");
   const [photoRange,setPhotoRange]=useState<PhotoRange|null>(null);
   const [pendingPhoto,setPendingPhoto]=useState<File|null>(null);
+  const [dishOptions,setDishOptions]=useState<string[]>([]),[dishFix,setDishFix]=useState("");
   const [cameraOpen,setCameraOpen]=useState(false);
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; await processPhoto(file); e.target.value = ""; };
-  const processPhoto = async (file?: File) => {
+  const processPhoto = async (file?: File, namedDish?: string) => {
     if (file) {
       if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>10*1024*1024){setScanError(t("Use a nonempty JPEG, PNG or WebP under 10 MB."));setScanReady(false);return;}
       setPendingPhoto(file); setPhotoRange(null);
@@ -342,7 +343,9 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       setIsScanning(true);
       setScanError(""); setScanReady(false);
       try {
-        const result = await analyzeMealPhoto(file, photoNote);
+        // A correction names the dish: the same photo is checked again with that name, so portion and nutrition fit the real dish.
+        const result = await analyzeMealPhoto(file, namedDish ? `This dish is ${namedDish}. ${photoNote}`.trim() : photoNote);
+        setDishOptions((result.alternatives ?? []).filter(a => a.toLowerCase() !== (namedDish ?? result.dish_name).toLowerCase()));setDishFix("");
         if (requestId !== photoRequest.current) return;
         const grams = Math.round(result.components.reduce((sum, item) => sum + item.quantity_g, 0));
         setAiOriginal(Number.isFinite(result.total_nutrition.calories) && grams > 0 ? { calories: Math.round(result.total_nutrition.calories), grams } : null);
@@ -682,6 +685,13 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                 </div>
 
                 <button className="food-camera-open" onClick={() => setCameraOpen(true)}><Camera size={20} /> {t("Scan food with camera")}</button>
+                <details className="photo-tips" open={!pendingPhoto || undefined}><summary>{t("For an accurate result")}</summary><ul>
+                  <li>{t("Hold the phone about 30–40 cm (one forearm) above the plate, tilted at about 45°.")}</li>
+                  <li>{t("Fit the whole plate or bowl in the picture, one meal per photo.")}</li>
+                  <li>{t("Use daylight or a bright room; avoid strong shadows and flash glare.")}</li>
+                  <li>{t("Leave a spoon or your hand beside the plate so the size can be judged.")}</li>
+                  <li>{t("Spread mixed dishes like biryani a little so the meat and vegetables show, or add a note such as “mutton biryani, 2 pieces”.")}</li>
+                </ul></details>
                 {cameraOpen && <FoodCamera consent={photoConsent} onConsent={setPhotoConsent} onClose={() => setCameraOpen(false)} onCapture={file => { setCameraOpen(false); void processPhoto(file); }} />}
                 <div className="scan-privacy-card"><label className="scanner-consent"><input type="checkbox" aria-label={t("Allow this photo to be sent to the configured AI provider")} checked={photoConsent} onChange={e=>setPhotoConsent(e.target.checked)}/> {t("Send this photo for AI analysis")}</label><p className="scanner-privacy-note">{t("Optional transfer to the configured AI provider. Without consent, your preview stays local. Review estimates; allergens are not assessed.")}</p><label className="scanner-note">{t("What the photo can't show (optional)")}<input maxLength={300} value={photoNote} onChange={e=>setPhotoNote(e.target.value)} placeholder={t("3 red bananas, apple 170 g")}/></label><div className="account-actions"><a className="destination-button" href="/nutrition#photo-review">{t("Private photo & manual food selection ↗")}</a>{pendingPhoto&&photoConsent&&<button type="button" disabled={isScanning} onClick={()=>void handleImageFileChange({target:{files:[pendingPhoto],value:''}} as unknown as React.ChangeEvent<HTMLInputElement>)}>{t("Analyze selected photo")}</button>}{uploadedImageUrl&&<button type="button" onClick={()=>{photoRequest.current++;setUploadedImageUrl(null);setPendingPhoto(null);if(fileInputRef.current)fileInputRef.current.value='';setScanReady(false);setScanError(t("Local photo removed."));}}>{t("Delete selected photo")}</button>}</div></div>
                 <div className="aspect-[4/3] rounded-xl bg-slate-950 border border-slate-800 relative flex flex-col items-center justify-center p-6 text-center overflow-hidden group">
@@ -778,6 +788,14 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                       {scanSource === "photo" ? t("Detected classification") : scanSource === "sample" ? t("Sample result, not your meal") : t("Waiting for a scan")}
                     </span>
                     <h2 id="scan-result-title" className="text-2xl font-bold text-white mt-1">{t(scanResult.foodName)}</h2>
+                    {scanSource === "photo" && pendingPhoto && <div className="dish-fix" role="group" aria-label={t("Correct the dish")}>
+                      <span>{t("Not right? Pick or type the dish:")}</span>
+                      <div className="dish-fix-options">{dishOptions.map(name => <button key={name} type="button" disabled={isScanning} onClick={() => void processPhoto(pendingPhoto, name)}>{name}</button>)}</div>
+                      <form className="dish-fix-form" onSubmit={e => { e.preventDefault(); if (dishFix.trim()) void processPhoto(pendingPhoto, dishFix.trim()); }}>
+                        <input value={dishFix} maxLength={120} onChange={e => setDishFix(e.target.value)} placeholder={t("e.g. mutton biryani")} aria-label={t("The correct dish")} />
+                        <button type="submit" disabled={isScanning || !dishFix.trim()}>{t("Fix")}</button>
+                      </form>
+                    </div>}
                     {scanSource !== "none" && <p className="text-xs text-slate-400 mt-1">
                       {t("Estimated portions — review and correct in your journal")}</p>}
                   </div>

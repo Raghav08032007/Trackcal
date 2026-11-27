@@ -604,3 +604,16 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 
 /* Phones: the floating Pip covered cards and buttons. Pip is already in the header ("Ask Pip") and the Play tab. */
 @media (max-width: 700px) { .journey-float { display: none; } }
+
+
+/* Food photo: tips for an accurate scan, and the one-tap dish correction under the result. */
+.photo-tips { margin: 10px 0; padding: 10px 14px; border-radius: 14px; border: 1px solid rgba(16, 185, 129, .3); background: rgba(16, 185, 129, .07); }
+.photo-tips summary { cursor: pointer; font-weight: 700; }
+.photo-tips ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px; line-height: 1.4; font-size: .92rem; }
+.dish-fix { margin-top: 10px; display: grid; gap: 8px; }
+.dish-fix > span { font-size: .85rem; opacity: .85; }
+.dish-fix-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.dish-fix-options button, .dish-fix-form button { min-height: 38px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(16, 185, 129, .45); background: rgba(16, 185, 129, .12); font-weight: 600; cursor: pointer; }
+.dish-fix-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.dish-fix-form input { flex: 1 1 160px; min-height: 38px; padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, .5); background: transparent; color: inherit; }
+.dish-fix button:disabled { opacity: .5; cursor: default; }

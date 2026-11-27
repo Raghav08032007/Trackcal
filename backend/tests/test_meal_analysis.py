@@ -29,3 +29,11 @@ def test_array_output_and_zero_calorie_items_remain_valid():
 
 def test_halves_round_up_like_javascript():
     assert normalize_meal([{**FOOD, 'calories': 0.25}], 'test')['components'][0]['calories'] == 0.3
+
+
+def test_dish_alternatives_pass_through_for_one_tap_correction():
+    raw = {"dish_name": "Vegetable pulao", "dish_alternatives": ["Mutton biryani", " Chicken biryani ", 5, "", "Jeera rice", "Fried rice"],
+           "components": [{"name": "Rice", "quantity_g": 250, "calories": 400, "protein_g": 8, "carbs_g": 70, "fat_g": 9, "confidence": .6}]}
+    out = normalize_meal(raw, "test")
+    assert out["alternatives"] == ["Mutton biryani", "Chicken biryani", "Jeera rice"]
+    assert normalize_meal({**raw, "dish_alternatives": None}, "test")["alternatives"] == []

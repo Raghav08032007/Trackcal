@@ -126,6 +126,8 @@ def normalize_meal(raw, model):
                            'calorie_range': [_round1(calories * portion_range[0] / quantity), _round1(calories * portion_range[1] / quantity)]})
     total = {key: _round1(sum(c[key] for c in components)) for key in ('calories', 'protein_g', 'carbs_g', 'fat_g')}
     dish = root.get('dish_name')
-    return {'dish_name': dish[:200] if isinstance(dish, str) else ', '.join(c['name'] for c in components),
+    raw_alts = root.get('dish_alternatives')
+    alternatives = [a.strip()[:120] for a in raw_alts if isinstance(a, str) and a.strip()][:3] if isinstance(raw_alts, list) else []
+    return {'dish_name': dish[:200] if isinstance(dish, str) else ', '.join(c['name'] for c in components), 'alternatives': alternatives,
             'components': components, 'total_nutrition': total, 'model': model, 'is_mock': False,
             'calorie_range': [_round1(sum(c['calorie_range'][i] for c in components)) for i in (0, 1)]}
