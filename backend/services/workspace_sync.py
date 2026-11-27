@@ -14,7 +14,7 @@ import models
 
 # Data that only lives in this app's own settings and lists. Diary, targets, days and workouts have their own tables.
 SYNC_KEY = re.compile(r'^trackcal:(studio:(recipes|pantry|shopping|plans|fast)|recipe:(name|servings|ingredients)|preferences|reminders|appearance|comfort'
-                      r'|play:(calm|character|theme|motion|sport-seconds|sport-sound)|guide:done|companion-offset)$')
+                      r'|play:(calm|character|theme|motion|sport-seconds|sport-sound)|guide:done|companion-offset|my-gear)$')
 MAX_VALUE = 200_000          # bytes of JSON per key
 MAX_TOTAL = 2_000_000        # bytes for one person
 

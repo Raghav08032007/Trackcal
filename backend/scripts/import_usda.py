@@ -23,6 +23,11 @@ DATASETS = ("foundation_food_json_2024-10-31", "sr_legacy_food_json_2018-04", "s
 SOURCE_NOTE = "USDA FoodData Central"
 # Our nutrient slug -> USDA nutrient ids, best first. Foundation foods often give energy only as Atwater values.
 NUTRIENTS = {"energy_kcal": (1008, 2047, 2048), "protein": (1003,), "fat": (1004,), "carbohydrates": (1005, 1050), "fiber": (1079,), "sugar": (2000,), "sodium": (1093,)}
+# Vitamins and minerals (FoodData Central nutrient ids; already in mg or micrograms per 100 g, like our definitions).
+NUTRIENTS.update({"calcium": (1087,), "iron": (1089,), "magnesium": (1090,), "potassium": (1092,), "zinc": (1095,),
+                  "vitamin_c": (1162,), "vitamin_d": (1114,), "vitamin_b12": (1178,), "folate": (1177, 1190),
+                  "cholesterol": (1253,), "saturated_fat": (1258,)})
+CORE = ("energy_kcal", "protein", "fat", "carbohydrates", "fiber", "sugar", "sodium")
 REQUIRED = ("energy_kcal", "protein", "fat", "carbohydrates")
 MAX_PORTIONS, MAX_INGREDIENTS = 12, 20
 
@@ -88,7 +93,7 @@ def run(rows, db):
         row.name, row.name_normalized = name, re.sub(r"\s+", " ", name.lower()).strip()[:255]
         row.category, row.is_verified, row.is_generic, row.ingredients = (category(food) or "")[:100] or None, True, True, ingredients(food)
         row.serving_size_g, row.serving_size_unit, row.serving_size_description = 100, "g", "100 g"
-        row.data_completeness_score = round(len(values) / len(NUTRIENTS), 2)
+        row.data_completeness_score = round(sum(k in values for k in CORE) / len(CORE), 2)
         row.nutrients = [models.FoodNutrient(nutrient_def_id=definitions[slug], amount_per_100g=round(value, 3), source_note=SOURCE_NOTE) for slug, value in values.items()]
         row.portions = [models.FoodPortion(label=label, grams=grams, position=i) for i, (label, grams) in enumerate(portions(food))]
         if index % 500 == 0: db.commit()

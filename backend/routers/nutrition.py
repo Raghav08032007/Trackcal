@@ -237,3 +237,34 @@ def recommend_macro_fill(
         "coach_advice": advice,
         "recommended_options": recommendations[:4],
     }
+
+
+def micronutrients(
+    target_date: Optional[date] = Query(None),
+    user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Vitamins and minerals for a day, from the foods logged (services/micronutrients.py)."""
+    from services.micronutrients import NEEDS, summarize
+    from sqlalchemy.orm import selectinload
+    from zoneinfo import ZoneInfo
+    from datetime import timezone
+    from routers.cloud_nutrition import prefs, today
+    # The diary keeps days in the person's own time zone (an Indian dinner at 21:00 is still today), so the same here.
+    zone = ZoneInfo(prefs(db, user).timezone)
+    day = target_date or today(db, user)
+    to_utc = lambda t: datetime.combine(day, t, zone).astimezone(timezone.utc).replace(tzinfo=None)
+    start, end = to_utc(datetime.min.time()), to_utc(datetime.max.time())
+    logs = db.query(models.MealLog).filter(models.MealLog.user_id == user.id, models.MealLog.logged_at.between(start, end),
+                                           models.MealLog.is_deleted == False).all()  # noqa: E712
+    items = [i for log in logs for i in log.items]
+    food_ids = {i.food_id for i in items if i.food_id}
+    per_food = {}
+    if food_ids:
+        foods = db.query(models.Food).filter(models.Food.id.in_(food_ids)).options(
+            selectinload(models.Food.nutrients).selectinload(models.FoodNutrient.nutrient_def)).all()
+        per_food = {f.id: {n.nutrient_def.slug: n.amount_per_100g for n in f.nutrients if n.nutrient_def and n.nutrient_def.slug in NEEDS} for f in foods}
+    profile = db.get(models.PersonalizationProfile, user.id)
+    sex = (profile.preferences or {}).get("sex") if profile else None
+    rows = [{"grams": i.quantity_g, "calories": i.calories or 0, "per_100g": per_food.get(i.food_id) or None} for i in items]
+    return {"date": day.isoformat(), **summarize(rows, sex if sex in ("male", "female") else None)}

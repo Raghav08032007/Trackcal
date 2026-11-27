@@ -24,7 +24,7 @@ class WorkspaceBackup(BaseModel):
         if len(json.dumps(entries)) > 900000 or len(entries) > 1500:
             raise HTTPException(413, "Backup exceeds the size limit")
         for key, value in entries.items():
-            if not re.fullmatch(r"trackcal:(play:(calm|character|theme|motion|sport-seconds|sport-sound)|appearance|comfort|reminders|preferences|journal:\d{4}-\d{2}-\d{2}|wellness:\d{4}-\d{2}-\d{2}|target:[a-zA-Z_]+|burn:\d{4}-\d{2}-\d{2}|recipe:(name|servings|ingredients)|guide:done|companion-offset|studio:(recipes|pantry|shopping|workouts|plans|circuits|circuit-run|fast|next-targets|program-days|checkins))", key):
+            if not re.fullmatch(r"trackcal:(play:(calm|character|theme|motion|sport-seconds|sport-sound)|appearance|comfort|reminders|preferences|journal:\d{4}-\d{2}-\d{2}|wellness:\d{4}-\d{2}-\d{2}|target:[a-zA-Z_]+|burn:\d{4}-\d{2}-\d{2}|recipe:(name|servings|ingredients)|guide:done|companion-offset|my-gear|demo:(angles|model)|studio:(recipes|pantry|shopping|workouts|plans|circuits|circuit-run|fast|next-targets|program-days|checkins))", key):
                 raise HTTPException(422, "Unsupported workspace key")
             def check(node, depth=0):
                 if depth > 8:
@@ -211,6 +211,7 @@ def export_data(user: models.User = Depends(get_current_active_user), db: Sessio
 # reason; tests/test_export_coverage.py fails when a new user-owned table is in neither list.
 ACCOUNT_RECORDS = [
     ('saved_meals', models.SavedMeal, ()),
+    ('planned_workouts', models.PlannedWorkout, ()),   # workouts you put on your calendar
     ('allergens', models.UserAllergen, ()),
     ('consents', models.ConsentRecord, ()),
     ('ai_scan_jobs', models.AIScanJob, ()),

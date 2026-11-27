@@ -9,6 +9,8 @@ retry_deadlocks(bp)  # XP awards; handlers make no external calls before committ
 route(bp, 'GET', '/foods', handlers.search)
 route(bp, 'GET', '/foods/<identifier>', handlers.detail)
 route(bp, 'GET', '/diary', handlers.diary)
+from routers.nutrition import micronutrients as _micronutrients
+route(bp, 'GET', '/micronutrients', _micronutrients)   # the web diary's vitamins and minerals card
 route(bp, 'POST', '/diary', handlers.save_diary)
 route(bp, 'PUT', '/diary/<identifier>', handlers.edit_diary)
 route(bp, 'DELETE', '/diary/<identifier>', handlers.delete_diary)

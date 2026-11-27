@@ -617,3 +617,18 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 .dish-fix-form { display: flex; gap: 8px; flex-wrap: wrap; }
 .dish-fix-form input { flex: 1 1 160px; min-height: 38px; padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, .5); background: transparent; color: inherit; }
 .dish-fix button:disabled { opacity: .5; cursor: default; }
+
+/* Vitamins & minerals card (components/micronutrient-card.tsx). */
+.micro-card h2 { margin-bottom: 6px; }
+.micro-note { margin: 0 0 10px; padding: 8px 12px; border-radius: 12px; background: rgba(245, 158, 11, .12); line-height: 1.4; font-size: .92rem; }
+.micro-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.micro-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: .95rem; }
+.micro-head span { color: var(--muted, #64748b); font-variant-numeric: tabular-nums; }
+.micro-bar { height: 8px; border-radius: 999px; background: rgba(148, 163, 184, .25); overflow: hidden; margin-top: 4px; }
+.micro-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #10b981, #06b6d4); }
+.micro-row.is-low .micro-bar span, .micro-row.is-partial .micro-bar span { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.micro-row.is-near .micro-bar span { background: linear-gradient(90deg, #84cc16, #22c55e); }
+.micro-row.is-over .micro-bar span { background: linear-gradient(90deg, #ef4444, #f97316); }
+.micro-tips { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(16, 185, 129, .08); }
+.micro-tips p { margin: 4px 0 0; line-height: 1.4; }
+.micro-basis { margin: 10px 0 0; font-size: .8rem; color: var(--muted, #64748b); }

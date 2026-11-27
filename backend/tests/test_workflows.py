@@ -184,3 +184,22 @@ def test_invalid_model_output_is_rejected():
     for data in [[], {}, [{"name": "No nutrients"}], [{"name": "Bad", "quantity_g": 0, "confidence": 1, "calories": 2, "protein_g": 0, "carbs_g": 0, "fat_g": 0}]]:
         with pytest.raises(ValueError):
             validate_food_estimates(data)
+
+
+def test_micronutrients_from_logged_foods(account):
+    """Vitamins and minerals come from the foods' own values (IFCT/USDA), scaled to the grams eaten."""
+    import database, models
+    headers, _, _ = account
+    with database.SessionLocal() as db:
+        food = db.query(models.Food).join(models.FoodNutrient).join(models.NutrientDefinition).filter(models.NutrientDefinition.slug == "iron").first()
+        if food is None:
+            pytest.skip("No food with iron in this database (run scripts/seed_ifct.py)")
+        iron = next(n.amount_per_100g for n in food.nutrients if n.nutrient_def.slug == "iron")
+        food_id = food.id
+    meal = client.post("/api/v1/meal-logs", headers=headers, json={"meal_type": "lunch", "log_method": "manual", "items": [
+        {"food_id": food_id, "display_name": "Test food", "quantity_g": 200, "calories": 300, "protein_g": 10, "carbs_g": 40, "fat_g": 5}]})
+    assert meal.status_code == 201, meal.text
+    view = client.get("/api/v1/nutrition/micronutrients", headers=headers).json()
+    got = next(r for r in view["nutrients"] if r["nutrient"] == "iron")
+    assert abs(got["amount"] - round(iron * 2, 1)) < 0.11
+    assert view["coverage"] == 1.0

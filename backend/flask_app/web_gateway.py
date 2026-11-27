@@ -263,7 +263,7 @@ def personalization(path):
 
 # ── Wellness ────────────────────────────────────────────────────────────────
 
-WELLNESS = {'GET': ('foods', 'diary', 'exercises', 'sessions', 'training', 'history', 'library', 'trend', 'journal'),
+WELLNESS = {'GET': ('foods', 'diary', 'exercises', 'sessions', 'training', 'history', 'library', 'trend', 'journal', 'micronutrients'),
             'POST': ('diary', 'saved-meals', 'favorites', 'templates', 'sessions', 'entries', 'library', 'plans'),
             'PUT': ('diary', 'sessions', 'entries', 'trend'), 'DELETE': ('diary', 'saved-meals', 'favorites', 'templates', 'sessions', 'entries', 'plans')}
 
@@ -271,7 +271,7 @@ WELLNESS = {'GET': ('foods', 'diary', 'exercises', 'sessions', 'training', 'hist
 @bp.route('/wellness/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def wellness(path):
     parts = path.split('/'); resource, item = parts[0], parts[1] if len(parts) > 1 else None
-    known = ('foods', 'diary', 'saved-meals', 'favorites', 'exercises', 'templates', 'sessions', 'training', 'history', 'entries', 'library', 'trend', 'journal', 'plans')
+    known = ('foods', 'diary', 'saved-meals', 'favorites', 'exercises', 'templates', 'sessions', 'training', 'history', 'entries', 'library', 'trend', 'journal', 'plans', 'micronutrients')
     restore = len(parts) == 3 and request.method == 'POST' and (resource in ('diary', 'sessions', 'entries') and parts[2] == 'restore'  # undo a delete
                                                                or resource == 'plans' and parts[2] == 'done')                     # a planned workout done
     if resource in ('history', 'journal') and item: return error('Not found', 404)
@@ -286,7 +286,7 @@ def wellness(path):
         if method in ('POST', 'PUT'):
             body, failed = json_object(64000, (msg('Request too large'), 413), msg('Invalid JSON'))
             if failed: return failed
-        search = {key: request.args[key] for key in ('q', 'category', 'equipment', 'offset', 'limit', 'day', 'kind', 'weeks', 'start', 'end') if key in request.args}
+        search = {key: request.args[key] for key in ('q', 'category', 'equipment', 'offset', 'limit', 'day', 'kind', 'weeks', 'start', 'end', 'target_date') if key in request.args}
         return forward(authenticated(method, '/wellness/' + path + (f'?{urlencode(search)}' if search else ''), body))
     except Exception:
         return error('Your saved records are safe. The service is unavailable; keep this draft open and retry.', 503)

@@ -26,6 +26,12 @@ LANGUAGES = {"A": "as", "B": "bn", "E": "en", "G": "gu", "H": "hi", "Kan": "kn",
              "M": "mni", "Mar": "mr", "N": "ne", "O": "or", "P": "pa", "S": "sa", "Tam": "ta", "Tel": "te", "U": "ur"}
 # Our nutrient slug -> (IFCT column, unit conversion).
 NUTRIENTS = {"energy_kcal": ("enerc", 1 / 4.184), "protein": ("protcnt", 1.0), "fat": ("fatce", 1.0), "carbohydrates": ("choavldf", 1.0), "fiber": ("fibtg", 1.0)}
+# Vitamins and minerals. IFCT publishes them in grams per 100 g: minerals and vitamin C to mg (x1000), folate and vitamin D
+# to micrograms (x1e6). Vitamin D is D2 + D3 (added up below). IFCT 2017 has no B12 column (it comes from USDA).
+MICRO = {"calcium": ("ca", 1e3), "iron": ("fe", 1e3), "zinc": ("zn", 1e3), "magnesium": ("mg", 1e3), "potassium": ("k", 1e3),
+         "sodium": ("na", 1e3), "vitamin_c": ("vitc", 1e3), "folate": ("folsum", 1e6)}
+NUTRIENTS.update(MICRO)
+VITAMIN_D = (("ergcal", "chocal"), 1e6)
 
 
 def download(cache: Path) -> bytes:
@@ -65,8 +71,8 @@ def local_names(text):
 
 
 def seed(rows, db):
-    definitions = {d.slug: d for d in db.query(models.NutrientDefinition).filter(models.NutrientDefinition.slug.in_(NUTRIENTS)).all()}
-    missing = set(NUTRIENTS) - set(definitions)
+    definitions = {d.slug: d for d in db.query(models.NutrientDefinition).filter(models.NutrientDefinition.slug.in_([*NUTRIENTS, "vitamin_d"])).all()}
+    missing = {*NUTRIENTS, "vitamin_d"} - set(definitions)
     if missing: raise RuntimeError(f"Nutrient definitions missing: {sorted(missing)} (run seed_data.py first)")
     created = updated = 0
     for row in rows:
@@ -77,13 +83,17 @@ def seed(rows, db):
         else:
             food = models.Food(data_source=models.NutritionDataSource.ifct, external_id=code); db.add(food); created += 1
         values = {slug: number(row.get(column)) for slug, (column, _) in NUTRIENTS.items()}
+        d_parts = [number(row.get(c)) for c in VITAMIN_D[0]]
+        d_value = sum(v for v in d_parts if v is not None) if any(v is not None for v in d_parts) else None
         food.name, food.name_normalized = name, re.sub(r"\s+", " ", name.lower()).strip()
         food.category, food.cuisine_region, food.is_verified, food.is_generic = row.get("grup") or None, "India", True, True
         food.serving_size_g, food.serving_size_unit, food.serving_size_description = 100, "g", "100 g edible portion"
-        food.data_completeness_score = round(sum(v is not None for v in values.values()) / len(values), 2)
+        core = [values[k] for k in ("energy_kcal", "protein", "fat", "carbohydrates", "fiber")]
+        food.data_completeness_score = round(sum(v is not None for v in core) / len(core), 2)
         # Update rows in place by their unique keys: replacing the collections would insert before deleting
         # and collide with the (food, nutrient) and (food, language) unique constraints on a re-run.
         amounts = {slug: value * NUTRIENTS[slug][1] for slug, value in values.items() if value is not None}
+        if d_value is not None: amounts["vitamin_d"] = d_value * VITAMIN_D[1]
         notes = {slug: (False, SOURCE_NOTE) for slug in amounts}
         # IFCT 2017 publishes 0 kJ for oils, ghee and vanaspati (14 foods): 0 there means "not given", which would log
         # cooking fat as 0 kcal. When energy is missing, or 0 while the macronutrients clearly contain energy, use the

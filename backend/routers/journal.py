@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 import models
 from database import get_db
 from routers.auth import get_current_active_user
+from services.i18n import tr
 from routers.workout_history import zone_name
 from services import journal as rules
 from services.journal import PlanInput
@@ -22,7 +23,7 @@ def _today(tz):
 
 def _day(value, name):
     try: return date.fromisoformat(value)
-    except (TypeError, ValueError): raise HTTPException(422, f'Choose a real {name} date.')
+    except (TypeError, ValueError): raise HTTPException(422, tr('Choose a real start date.') if name == 'start' else tr('Choose a real end date.'))
 
 
 def journal(start: str = Query('', max_length=10), end: str = Query('', max_length=10),
