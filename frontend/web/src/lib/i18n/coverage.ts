@@ -341,12 +341,13 @@ export const CORE_PHASES = [
     "src/app/challenge/page.tsx",
     "src/lib/challenges.ts",
   ],
-  [ // 8: Me and help: reminders, notifications, profiles, account security, help, terms
+  [ // 8: Me and help: reminders, notifications, profiles, account security, help, privacy, terms
     "src/components/reminders.tsx",
     "src/components/push-settings.tsx",
     "src/app/profile/page.tsx",
     "src/components/account-security.tsx",
     "src/app/help/page.tsx",
+    "src/app/privacy/page.tsx",
     "src/app/terms/page.tsx",
   ],
 ];
