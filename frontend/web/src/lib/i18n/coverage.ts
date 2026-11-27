@@ -329,8 +329,12 @@ export const CORE_PHASES = [
     "src/components/recipe-workbench.tsx",
     "src/components/pantry-tools.tsx",
   ],
+  [ // 6: communities: one community, the communities list, creating one, removal appeals
+    "src/app/community/page.tsx",
+    "src/app/communities/page.tsx",
+  ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 5, ml: 5, gu: 5, pa: 5, ur: 5, fr: 5, de: 5 };
+export const WAVE_2: Record<string, number> = { kn: 6, ml: 6, gu: 6, pa: 6, ur: 6, fr: 6, de: 6 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);
