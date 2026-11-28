@@ -1,4 +1,4 @@
-import { t } from "@/lib/i18n";
+import { msg, t } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "@/lib/navigation";
 import { useAccount } from "./account-session";
@@ -18,7 +18,7 @@ import { MeditationTimer } from "./yoga-meditation";
 import { SuryaNamaskar } from "./yoga-surya";
 
 type Tab = "asanas" | "surya" | "breathing" | "meditation";
-const TABS: [Tab, string][] = [["asanas", "Asanas"], ["surya", "Surya Namaskar"], ["breathing", "Breathing"], ["meditation", "Meditation"]];
+const TABS: [Tab, string][] = [["asanas", msg("Asanas")], ["surya", msg("Surya Namaskar")], ["breathing", msg("Breathing")], ["meditation", msg("Meditation")]];
 
 const query = () => typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
 

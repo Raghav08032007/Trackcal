@@ -12,6 +12,8 @@ const server = await createServer({root: WEB, configFile: path.join(WEB, 'vite.c
 await server.listen(); const base = 'http://127.0.0.1:3014';
 const b = await chromium.launch({executablePath: config.chrome, headless: true});
 const ctx = await b.newContext({viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true, deviceScaleFactor: 1});
+// LOCALE=hi (or any app language) shows the screens in that language, as if the person had picked it.
+if (process.env.LOCALE) await ctx.addInitScript(code => { try { localStorage.setItem('trackcal:locale', code); } catch { /* storage blocked */ } }, process.env.LOCALE);
 const p = await ctx.newPage(); const errors = [];
 p.on('pageerror', e => errors.push(`${p.url()}: ${e.message.slice(0, 160)}`));
 if (process.env.LOGIN) await p.request.post(base + '/api/account/login', {data: {email: process.env.LOGIN, password: process.env.PASSWORD}, headers: {Origin: base}});

@@ -250,6 +250,17 @@ export const TRANSLATED_FILES = [
   "src/components/micronutrient-card.tsx",
   "src/components/adaptive-target-card.tsx",
   "src/lib/strength-progression.ts",
+  // Yoga, breathing and meditation (Phase 2 of docs/PHASE_PLAN.md)
+  "src/lib/yoga/asanas.ts",
+  "src/lib/yoga/score.ts",
+  "src/lib/yoga/breathing.ts",
+  "src/lib/yoga/meditation.ts",
+  "src/lib/yoga/surya.ts",
+  "src/components/yoga-studio.tsx",
+  "src/components/yoga-breathing.tsx",
+  "src/components/yoga-meditation.tsx",
+  "src/components/yoga-surya.tsx",
+  "src/app/yoga/page.tsx",
 ];
 /** Texts that reach t() only at run time (from the server, or a variable): listed so every language must have them too. */
 export const RUNTIME_KEYS = [
@@ -355,8 +366,20 @@ export const CORE_PHASES = [
     "src/app/privacy/page.tsx",
     "src/app/terms/page.tsx",
   ],
+  [ // 9: yoga, breathing and meditation
+    "src/lib/yoga/asanas.ts",
+    "src/lib/yoga/score.ts",
+    "src/lib/yoga/breathing.ts",
+    "src/lib/yoga/meditation.ts",
+    "src/lib/yoga/surya.ts",
+    "src/components/yoga-studio.tsx",
+    "src/components/yoga-breathing.tsx",
+    "src/components/yoga-meditation.tsx",
+    "src/components/yoga-surya.tsx",
+    "src/app/yoga/page.tsx",
+  ],
 ];
-export const WAVE_2: Record<string, number> = { kn: 8, ml: 8, gu: 8, pa: 8, ur: 8, fr: 8, de: 8 };
+export const WAVE_2: Record<string, number> = { kn: 9, ml: 9, gu: 9, pa: 9, ur: 9, fr: 9, de: 9 };
 /** Every core file a wave-2 language must cover at its phase. */
 export const coreFiles = (phase: number) => CORE_PHASES.slice(0, phase).flat();
 export const CORE_FILES = coreFiles(CORE_PHASES.length);

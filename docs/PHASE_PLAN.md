@@ -62,6 +62,20 @@ Still missing from the catalog: toned milk, makhana (roasted fox nut). Waiting o
 
 **Better than:** cult.fit has video yoga but no posture check; yoga apps such as Down Dog and Glo have no food tracking and no camera scoring.
 
+**Progress (28 November 2026)**
+
+| Done | Measured |
+|---|---|
+| 41 asanas with steps, benefits, who should avoid them, breath cue, easier version; 3D coach demo | Each demo drawn and checked by eye; 3 corrected |
+| Live 0-100 pose match with one spoken correction; hold timer counts only while matching | Every pose scores at least 98 on its own demo and 85 with camera jitter; 410/410 jittered demos recognised |
+| Surya Namaskar (spoken guide or camera follows, rounds counted), 7 breathing techniques, 5 meditations with bell | Unit tests for timing, order and prompts |
+| /yoga page, Move menu, saving to history | Phone layout: no sideways scroll on 6 pages |
+| All yoga text in 16 languages (521 texts each), enforced by the translation tests | Hindi and Arabic (right-to-left) checked on screen |
+
+Still to do: the camera test on rendered video of the 3D coach doing each asana (through the real pose model), and your recordings
+for real-person accuracy. Translations are drafts for native review.
+
+
 ---
 
 ## Phases 3–20: one competitor feature each
