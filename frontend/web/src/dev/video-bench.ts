@@ -5,6 +5,8 @@ import {LiveCoach} from '@/lib/pose/live-coach';
 import {focusPerson,normalize} from '@/lib/pose/landmarks';
 import {SessionTracker} from '@/lib/pose/session-tracker';
 import type {ExerciseKind,PoseFrame} from '@/lib/pose/types';
+import {ASANAS,ASANA_BY_ID} from '@/lib/yoga/asanas';
+import {closest,match,measure} from '@/lib/yoga/score';
 
 export type BenchItem={url:string;kind:ExerciseKind;fps?:number;variant?:'full'|'lite'|'heavy';dump?:boolean};
 export type BenchResult={url:string;kind:ExerciseKind;reps:number;said:{key:string;at:number}[];frames:number;seen:number;seconds:number;error?:string;rejections?:Record<string,number>;mismatches?:string[];trace?:[number,number,string][];landmarks?:PoseFrame[]};
@@ -54,3 +56,31 @@ async function one(item:BenchItem):Promise<BenchResult>{
 
 async function runBench(items:BenchItem[]){const out:BenchResult[]=[];for(const item of items)out.push(await one(item));status('done');return out;}
 (window as unknown as {runBench:typeof runBench}).runBench=runBench;
+
+/* Yoga: a video of one held asana. Each frame is scored against that asana (0-100) and against all of them (which one it
+ * looks most like). Returns the median score over frames where the body was seen, and how often the right asana won. */
+export type YogaItem={url:string;asana:string;fps?:number;variant?:'full'|'lite'|'heavy'};
+export type YogaResult={url:string;asana:string;frames:number;seen:number;median:number;scores:number[];recognised:number;confusedWith:Record<string,number>;error?:string};
+async function yogaOne(item:YogaItem):Promise<YogaResult>{
+ const v=document.getElementById('clip') as HTMLVideoElement,fps=item.fps??8,w=await model(item.variant??'full'),asana=ASANA_BY_ID[item.asana];
+ const blob=await (await fetch(item.url)).blob(),src=URL.createObjectURL(blob);
+ try{
+  v.src=src;await new Promise<void>((resolve,reject)=>{v.onloadeddata=()=>resolve();v.onerror=()=>reject(Error('this browser cannot play the video'));});
+  const scale=Math.min(640/v.videoWidth,480/v.videoHeight),width=Math.round(v.videoWidth*scale),height=Math.round(v.videoHeight*scale);
+  let frames=0,seen=0,recognised=0;const scores:number[]=[],confusedWith:Record<string,number>={};
+  for(let t=1;t<v.duration-.3;t+=1/fps){   // skip the first second while the 3D coach loads into place
+   await seek(v,t);frames++;
+   let bitmap:ImageBitmap;try{bitmap=await createImageBitmap(v,{resizeWidth:width,resizeHeight:height});}catch{continue;}
+   const raw=await detect(w,bitmap,width,height);if(!raw||!raw.landmarks.length)continue;
+   const p=normalize(focusPerson(raw));if(!p)continue;
+   const body=measure(p),m=match(asana,body);if(m.seen<.5)continue;
+   seen++;scores.push(m.score);
+   const best=closest(body,ASANAS);if(best&&(best.asana.id===asana.id||best.match.score===m.score))recognised++;else if(best)confusedWith[best.asana.id]=(confusedWith[best.asana.id]??0)+1;
+  }
+  const sorted=[...scores].sort((a,b)=>a-b),median=sorted.length?sorted[Math.floor(sorted.length/2)]:0;
+  return {url:item.url,asana:item.asana,frames,seen,median,scores,recognised,confusedWith};
+ }catch(e){return {url:item.url,asana:item.asana,frames:0,seen:0,median:0,scores:[],recognised:0,confusedWith:{},error:e instanceof Error?e.message:String(e)};}
+ finally{URL.revokeObjectURL(src);}
+}
+async function runYoga(items:YogaItem[]){const out:YogaResult[]=[];for(const item of items)out.push(await yogaOne(item));status('done');return out;}
+(window as unknown as {runYoga:typeof runYoga}).runYoga=runYoga;
