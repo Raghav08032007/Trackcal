@@ -72,11 +72,25 @@ Still missing from the catalog: toned milk, makhana (roasted fox nut). Waiting o
 | /yoga page, Move menu, saving to history | Phone layout: no sideways scroll on 6 pages |
 | All yoga text in 16 languages (521 texts each), enforced by the translation tests | Hindi and Arabic (right-to-left) checked on screen |
 
-Still to do: the camera test on rendered video of the 3D coach doing each asana (through the real pose model), and your recordings
-for real-person accuracy. Translations are drafts for native review.
+| Camera test on rendered video: the 3D coach holds each asana, 2 coaches x 2 camera angles = 164 videos through the real pose model (tools/video-bench/yoga.mjs) | Median match 100; 162/164 videos score 70+; right asana is the closest of 41 in 97 % of frames; body seen in 93 % of frames |
+| Found by that test and fixed: child's pose and bow pose were drawn lying on the back; yoga/breathing/meditation sessions could not be saved | Fixed and covered by tests |
+
+Weakest: child's pose (a body folded this small is hard for the pose model to see; the page now says so) and kneeling poses
+filmed from behind (keep the phone side-on). Still to do: your recordings for real-person accuracy. Translations are drafts
+for native review.
 
 
 ---
+
+## Phase 3 progress (28 November 2026)
+
+| Done | Measured |
+|---|---|
+| Recovery 0-100 % per muscle from camera workouts, logged sets, holds, yoga, Surya Namaskar, runs and walks; volume-based fatigue, 48-72 h by muscle size, doses add up; ready-in hours | 10 unit tests; checked on screen with saved sessions |
+| Overall readiness out of 100 with advice; 'good for today' only from muscles at 85 %+ | On screen |
+| 16 languages | Translation tests |
+
+Still to do: your 4 weeks of real training to compare the map with how you feel (Phase 3's real-sample check).
 
 ## Phases 3–20: one competitor feature each
 
