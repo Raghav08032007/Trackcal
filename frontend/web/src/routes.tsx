@@ -73,6 +73,7 @@ const pages: Record<string, () => Promise<PageModule>> = {
   "/fasting": () => import("@/app/fasting/page"),
   "/food": () => import("@/app/food/page"),
   "/move": () => import("@/app/move/page"),
+  "/yoga": () => import("@/app/yoga/page"),
   "/me": () => import("@/app/me/page"),
 };
 

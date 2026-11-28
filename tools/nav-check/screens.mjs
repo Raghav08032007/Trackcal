@@ -18,7 +18,7 @@ if (process.env.LOGIN) await p.request.post(base + '/api/account/login', {data: 
 for (const route of paths) {
   await p.goto(base + route, {waitUntil: 'domcontentloaded'});
   await p.waitForTimeout(2500);
-  const name = (route === '/' ? 'home' : route.slice(1).replace(/\//g, '-'));
+  const name = (route === '/' ? 'home' : route.slice(1).replace(/[^A-Za-z0-9-]+/g, '-'));
   const wide = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   await p.screenshot({path: path.join(out, `${name}.png`), fullPage: true});
   console.log(`${route}  sideways overflow: ${wide}px`);

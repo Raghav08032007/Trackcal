@@ -1,7 +1,7 @@
 // The app's structure in one place: five sections, each with a few main pages (shown as the section's page links)
 // and, for Food, Move and Me, an overview page with every destination in clear groups. Every page belongs to a
 // section, so the right tab is always marked, including detail pages such as one activity or one challenge.
-import { Activity, BookOpen, CalendarDays, Camera, ChefHat, ClipboardList, Dumbbell, FileHeart, Flag, Footprints, Gem, HeartPulse, House,
+import { Activity, BookOpen, Flower2, Sun, Wind, CalendarDays, Camera, ChefHat, ClipboardList, Dumbbell, FileHeart, Flag, Footprints, Gem, HeartPulse, House,
   LifeBuoy, ListChecks, MapPin, MessageSquare, Moon, Bell, ScanBarcode, Search, ShieldCheck, ShoppingBasket, Sparkles, Timer,
   Trophy, UserRound, Utensils, Wand2, type LucideIcon } from "lucide-react";
 
@@ -34,7 +34,7 @@ export const SECTIONS: Section[] = [
         { href: "/tools", title: "Recipe import and smart tools", text: "Bring in a recipe from a link, plan within a budget.", icon: Wand2 } ] } ] },
   { id: "move", label: "Move", href: "/move", icon: Activity,
     pages: [["/move", "Overview"], ["/workouts/muscles", "By muscle"], ["/workouts/camera", "Camera"], ["/workouts/gps", "Record"], ["/workouts", "Workouts"]],
-    also: ["/workouts/*", "/activities", "/activities/*", "/segments", "/segments/*", "/weekly", "/programs", "/recovery", "/plan"],
+    also: ["/yoga", "/workouts/*", "/activities", "/activities/*", "/segments", "/segments/*", "/weekly", "/programs", "/recovery", "/plan"],
     groups: [
       { title: "Train", items: [
         { href: "/workouts/muscles", title: "Plan by muscle", text: "Pick the muscles to train; get a plan that leaves out anything not suitable for your injuries.", icon: Search },
@@ -42,6 +42,11 @@ export const SECTIONS: Section[] = [
         { href: "/workouts", title: "Your workouts", text: "Your sessions, sets and every workout you've done.", icon: Dumbbell },
         { href: "/tracker", title: "Journal", text: "Every workout and meal by day, month and year; add gym sessions and plan ahead.", icon: CalendarDays },
         { href: "/programs", title: "Programs", text: "Step-by-step plans that grow with you.", icon: ListChecks } ] },
+      { title: "Mind and body", items: [
+        { href: "/yoga", title: "Yoga with posture score", text: "40 asanas step by step; the camera scores your pose out of 100 and helps you correct it.", icon: Flower2 },
+        { href: "/yoga?tab=surya", title: "Surya Namaskar", text: "The 12-step sun salutation, guided or followed by the camera.", icon: Sun },
+        { href: "/yoga?tab=breathing", title: "Breathing (pranayama)", text: "Anulom vilom, bhramari, box breathing and more, with a guide circle.", icon: Wind },
+        { href: "/yoga?tab=meditation", title: "Meditation", text: "Guided or silent sessions of 3 to 20 minutes, in your language.", icon: Moon } ] },
       { title: "Outdoors", items: [
         { href: "/workouts/gps", title: "Record a route", text: "Run, walk, hike or ride with GPS.", icon: MapPin },
         { href: "/activities", title: "Your activities", text: "Routes, splits and personal records.", icon: Footprints },
