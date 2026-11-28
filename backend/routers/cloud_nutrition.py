@@ -115,6 +115,19 @@ def diary(day:str|None=None,offset:int=Query(0,ge=0,le=10000),limit:int=Query(30
  history=db.query(models.FoodSearchHistory).filter_by(user_id=user.id).order_by(models.FoodSearchHistory.updated_at.desc()).limit(8).all()
  return {'history':acc,'today':str(today(db,user)),'day':str(selected),'timezone':settings.timezone,'entries':[diary_view(r,settings.timezone) for r in rows[:limit]],'has_more':len(rows)>limit,'favorites':[{'id':r.id,'food_key':r.food_key,'item':r.snapshot} for r in favorites],'saved_meals':[saved_view(s) for s in saved],'recent':[diary_view(r,settings.timezone) for r in recent],'recent_searches':[r.query for r in history],'suggestions':personal.recommendations(settings)}
 
+def diary_week(user=Depends(get_current_active_user),db:Session=Depends(get_db)):
+ """Today's meals and the 7 days before, totalled per day: what the AI nutrition chat answers from (services/nutrition_chat.py)."""
+ from datetime import time
+ settings=prefs(db,user);zone=ZoneInfo(settings.timezone);now=today(db,user);first=now-timedelta(days=7)
+ start=datetime.combine(first,time.min,zone).astimezone(timezone.utc).replace(tzinfo=None);end=datetime.combine(now+timedelta(days=1),time.min,zone).astimezone(timezone.utc).replace(tzinfo=None)
+ rows=db.query(models.MealLog).filter_by(user_id=user.id,is_deleted=False).filter(models.MealLog.logged_at>=start,models.MealLog.logged_at<end).options(selectinload(models.MealLog.items)).order_by(models.MealLog.logged_at).limit(400).all()
+ days={str(first+timedelta(days=n)):{'day':str(first+timedelta(days=n)),'meals':0,'calories':0.0,'protein':0.0} for n in range(7)};meals=[]
+ for log in rows:
+  view=diary_view(log,settings.timezone);kcal=view['totals']['calories'] or 0;protein=view['totals']['protein'] or 0
+  if view['day']==str(now):meals.append({'name':', '.join(i['name'] for i in view['items'][:3])[:80],'time':view['time'],'calories':round(kcal),'protein':round(protein,1)})
+  elif view['day'] in days:row=days[view['day']];row['meals']+=1;row['calories']+=kcal;row['protein']+=protein
+ return {'today':str(now),'today_meals':meals[:15],'last_7_days':[{**d,'calories':round(d['calories']),'protein':round(d['protein'],1)} for d in days.values()]}
+
 def save_diary(data:DiaryInput,user=Depends(get_current_active_user),db:Session=Depends(get_db)):
  consume(db,'cloud-diary',str(user.id),90,3600);lock(db,user)
  existing=db.get(models.MealLog,str(data.id))

@@ -183,7 +183,7 @@ def test_the_coach_speaks_as_the_chosen_character_and_gets_the_days_numbers(inte
     response = coach(client)
     assert response.status_code == 200 and response.get_json()['reply'] == 'Try curd and fruit!'
     messages = calls[-1]['json']['messages']
-    assert 'Rio' in messages[0]['content'] and 'calories_left' in messages[1]['content'] and messages[-1] == {'role': 'user', 'content': 'What should I eat?'}
+    assert 'Rio' in messages[0]['content'] and '"calories_left_today": 700' in messages[1]['content'] and messages[-1] == {'role': 'user', 'content': 'What should I eat?'}
 
 
 def test_an_unknown_character_falls_back_to_pip(internet):
@@ -208,9 +208,9 @@ def test_the_under_18_rules_come_from_the_account_not_the_browser(internet, monk
     class Minor:
         ok, status, data = True, 200, {'is_minor': True}
     monkeypatch.setattr(gateway, 'authenticated', lambda method, path, body=None: Minor if path == '/auth/me' else real(method, path, body))
-    assert coach(client, {'context': {'calories_left': 700, 'streak': 3}}).status_code == 200
+    assert coach(client, {'context': {'calories_left': 700, 'workout_streak_days': 3}}).status_code == 200
     system = calls[-1]['json']['messages'][0]['content'] + calls[-1]['json']['messages'][1]['content']
-    assert 'under 18' in system and 'calories_left' not in system and 'streak' in system
+    assert 'under 18' in system and 'calories_left' not in system and 'workout_streak_days' in system
 
 
 def test_provider_failures_do_not_leak_details(internet):
@@ -218,3 +218,52 @@ def test_provider_failures_do_not_leak_details(internet):
     client = browser(); signed_up(client)
     response = coach(client)
     assert response.status_code == 502 and 'unavailable' in response.get_json()['error']
+
+
+def test_the_coach_takes_diet_and_allergies_from_the_account_and_drops_food_that_breaks_them(internet, monkeypatch):
+    import flask_app.web_gateway as gateway
+    calls, replies = internet
+    client = browser(); signed_up(client)
+    real = gateway.authenticated
+
+    class State:
+        ok, status, data = True, 200, {'minor_account': False, 'preferences': {'diet': 'vegetarian', 'allergies': ['peanut'], 'budget': 150, 'currency': 'INR'}}
+    monkeypatch.setattr(gateway, 'authenticated', lambda method, path, body=None: State if path == '/personalization/state' else real(method, path, body))
+    replies.append(model_reply(json.dumps({'reply': 'Paneer bhurji with a roti suits tonight.', 'foods': [
+        {'name': 'Paneer bhurji', 'grams': 150, 'per_100g': {'calories': 230, 'protein_g': 14, 'carbs_g': 6, 'fat_g': 17}},
+        {'name': 'Peanut chikki', 'grams': 30, 'per_100g': {'calories': 520}}]})))
+    response = coach(client, {'context': {'calories_left': 700, 'diet': 'non_veg'}})
+    body = response.get_json()
+    assert response.status_code == 200 and [f['name'] for f in body['foods']] == ['Paneer bhurji'] and body['foods'][0]['totals']['calories'] > 0
+    data = calls[-1]['json']['messages'][1]['content']
+    assert '"diet": "vegetarian"' in data and 'peanut' in data and '"amount": 150' in data
+
+
+def test_a_crisis_message_gets_a_helpline_without_any_ai_call_or_quota(internet, monkeypatch):
+    calls, replies = internet
+    client = browser(); signed_up(client)
+    monkeypatch.setenv('DAILY_AI_LIMIT', '0'); monkeypatch.setenv('GUEST_DAILY_AI_LIMIT', '0')
+    response = coach(client, {'message': 'I want to end my life'})
+    assert response.status_code == 200 and '14416' in response.get_json()['reply'] and response.get_json()['safety'] == 'crisis' and not calls
+
+
+def test_an_unsafe_reply_is_retried_then_replaced(internet):
+    calls, replies = internet
+    client = browser(); signed_up(client)
+    replies.extend([model_reply(json.dumps({'reply': 'Eat 600 kcal a day for two weeks.', 'foods': []}))] * 2)
+    response = coach(client, {'message': 'How do I lose weight fast?'})
+    assert response.status_code == 200 and response.get_json()['safety'] == 'fallback' and '600' not in response.get_json()['reply']
+
+
+def test_the_coach_sees_the_saved_diary_for_today_and_the_week(internet):
+    import uuid as _uuid
+    calls, replies = internet
+    client = browser(); signed_up(client)
+    today = client.get('/api/wellness/diary').get_json()['today']
+    meal = {'id': str(_uuid.uuid4()), 'day': today, 'meal_type': 'lunch', 'method': 'manual', 'notes': '',
+            'items': [{'name': 'Rajma chawal', 'grams': 300, 'nutrients': {'calories': 140, 'protein': 5, 'carbs': 24, 'fat': 2.5}, 'food_id': None, 'manual_override': True, 'estimated': False, 'source': 'test'}]}
+    assert post(client, '/api/wellness/diary', meal).status_code in (200, 201)
+    replies.append(model_reply(json.dumps({'reply': 'Nice lunch.', 'foods': []})))
+    assert coach(client, {'context': {'today_meals': [{'name': 'Invented pizza', 'calories': 2000}]}}).status_code == 200
+    data = calls[-1]['json']['messages'][1]['content']
+    assert 'Rajma chawal' in data and '"calories": 420' in data and 'Invented pizza' not in data and data.count('"day"') == 7

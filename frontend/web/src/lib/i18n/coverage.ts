@@ -26,6 +26,7 @@ export const TRANSLATED_FILES = [
   "src/components/photos.tsx",
   "src/components/quick-log.tsx",
   "src/lib/coach.ts",
+  "src/lib/nutrition-chat.ts",
   // Food
   "src/components/nutrition-dashboard.tsx",
   "src/components/food-workspace.tsx",
@@ -298,6 +299,8 @@ export const CORE_PHASES = [
   [ // 2: onboarding, food diary and search, Food hub
     "src/app/food/page.tsx", "src/app/nutrition/page.tsx", "src/app/onboarding/page.tsx", "src/components/personal-onboarding.tsx",
     "src/components/legacy-onboarding.tsx", "src/components/nutrition-dashboard.tsx", "src/components/device-journal-import.tsx",
+    // Phase 4: the AI nutrition chat, with voice in and out
+    "src/components/coach-chat.tsx", "src/lib/nutrition-chat.ts", "src/app/coach/page.tsx", "src/components/voice-input.tsx",
   ],
   [ // 3: Move, Play and Me: camera workouts and the live coach, routes, journal, progress, sports games, your character, account, Premium
     "src/lib/pose/exercise-config.ts",

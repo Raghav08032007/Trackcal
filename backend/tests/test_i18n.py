@@ -120,6 +120,8 @@ def test_numbers_are_written_like_the_browser_writes_them():
 
 
 def test_the_coach_is_asked_to_reply_in_the_persons_language():
-    from flask_app import web_gateway
-    assert web_gateway.reply_language('en') == '' and web_gateway.reply_language(None) == ''
-    assert 'Reply in Hindi' in web_gateway.reply_language('hi') and 'Reply in Arabic' in web_gateway.reply_language('ar')
+    from services import nutrition_chat
+    prompt = lambda code: nutrition_chat.system_prompt('Pip', code, False, False)
+    assert 'Write "reply" in' not in prompt('en')
+    for code in i18n.LANGS[1:]:  # all 16 languages
+        assert f'Write "reply" in {nutrition_chat.LANGUAGE[code]}' in prompt(code), code

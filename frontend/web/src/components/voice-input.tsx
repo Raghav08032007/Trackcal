@@ -2,6 +2,8 @@ import { t, msg } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import { encodeWav } from "@/lib/wav";
+import { LOCALES } from "@/lib/i18n/locales";
+import { speechLang } from "@/lib/nutrition-chat";
 
 interface Recognition { lang: string; interimResults: boolean; continuous: boolean; onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null; onerror: ((event?: { error?: string }) => void) | null; onend: (() => void) | null; start(): void; abort(): void; stop?(): void; }
 type SpeechWindow = Window & { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
@@ -20,7 +22,8 @@ async function recordingToWavBase64(blob: Blob) {
   } finally { await context.close(); }
 }
 /** Live words from the browser where its speech service works. Browsers where it fails (often Edge) record a short clip for the AI to write down. */
-export function VoiceInput({ onText, value = "" }: { onText: (text: string) => void; value?: string }) {
+/** purpose "question" words the button and hint for asking the coach instead of describing a meal. */
+export function VoiceInput({ onText, value = "", purpose = "meal" }: { onText: (text: string) => void; value?: string; purpose?: "meal" | "question" }) {
   const recognition = useRef<Recognition | null>(null), recorder = useRef<MediaRecorder | null>(null), silence = useRef<ReturnType<typeof setTimeout> | undefined>(undefined), latest = useRef(value), alive = useRef(true);
   const [mode, setMode] = useState<Mode>("idle");
   const [error, setError] = useState("");
@@ -54,7 +57,7 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
     clip.start(); setMode("recording"); silence.current = setTimeout(() => clip.stop(), MAX_RECORDING_MS);
   }
 
-  const [language, setLanguage] = useState("en-IN");
+  const [language, setLanguage] = useState(() => speechLang());  // the app's language; any other can be picked
   function start() {
     if (mode === "listening") { clearTimeout(silence.current); recognition.current?.stop?.() ?? recognition.current?.abort(); setMode("idle"); return; }
     if (mode === "recording") { recorder.current?.stop(); return; }
@@ -79,7 +82,7 @@ export function VoiceInput({ onText, value = "" }: { onText: (text: string) => v
     instance.onend = () => { clearTimeout(silence.current); setMode("idle"); };
     try { instance.start(); setMode("listening"); silence.current = setTimeout(() => instance.stop?.(), SILENCE_MS * 2); } catch { void record(); }
   }
-  const label = mode === "listening" ? t("Stop listening") : mode === "recording" ? t("Stop and write it down") : mode === "working" ? t("Writing it down…") : t("Speak a meal");
-  const hint = mode === "listening" ? t("Listening. Your words appear below.") : mode === "recording" ? t("Recording. Press stop when you finish.") : t("Say what you ate and how much. Audio is sent to a speech or AI service to write it down.");
-  return <div className={`voice-input voice-${mode}`}><label className="voice-language">{t("Language")}<select value={language} disabled={mode !== "idle"} onChange={event => setLanguage(event.target.value)}><option value="en-IN">{t("English")}</option><option value="hi-IN">हिन्दी</option><option value="ta-IN">தமிழ்</option></select></label><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button>{mode !== "idle" && <span>{hint}</span>}{error && <p role="alert">{error}</p>}</div>;
+  const label = mode === "listening" ? t("Stop listening") : mode === "recording" ? t("Stop and write it down") : mode === "working" ? t("Writing it down…") : purpose === "question" ? t("Speak your question") : t("Speak a meal");
+  const hint = mode === "listening" ? t("Listening. Your words appear below.") : mode === "recording" ? t("Recording. Press stop when you finish.") : purpose === "question" ? t("Ask out loud. Audio is sent to a speech or AI service to write it down.") : t("Say what you ate and how much. Audio is sent to a speech or AI service to write it down.");
+  return <div className={`voice-input voice-${mode}`}><label className="voice-language">{t("Language")}<select value={language} disabled={mode !== "idle"} onChange={event => setLanguage(event.target.value)}>{LOCALES.map(l => <option key={l.code} value={speechLang(l.code)}>{l.native}</option>)}</select></label><button type="button" onClick={start} disabled={mode === "working"} aria-pressed={mode === "listening" || mode === "recording"}>{mode === "listening" || mode === "recording" ? <Square size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}{label}</button>{(mode !== "idle" || purpose === "question") && <span>{hint}</span>}{error && <p role="alert">{error}</p>}</div>;
 }

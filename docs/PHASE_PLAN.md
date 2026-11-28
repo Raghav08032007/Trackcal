@@ -92,6 +92,26 @@ for native review.
 
 Still to do: your 4 weeks of real training to compare the map with how you feel (Phase 3's real-sample check).
 
+## Phase 4 progress (28 November 2026): AI nutrition chat
+
+| Done | Measured |
+|---|---|
+| Answers from the saved diary (today and the last 7 days, read on the server), targets, pantry (soonest to expire first), budget, diet, allergies and health conditions from the account | Gateway tests; on the 100-question test every number-from-your-data question answered right |
+| One tap to log a suggested food: nutrition from the TrackCal catalog when it has the food, else marked "AI estimate" | Unit and app tests; checked on screen |
+| Fixed replies with no AI call for self-harm, eating-disorder behaviour (Tele-MANAS 14416) and emergencies (chest pain, fainting, very low sugar) | 12 routing tests in 5 languages; on screen in English and Hindi |
+| Every reply checked: diet and allergies, under 1,200 kcal a day, skipping meals or "burning off" food, medicine doses, calories for under-18s, wrong language. One retry, then a safe fallback | 59 unit tests, including safe advice that must pass |
+| 16 languages: replies, fixed safety texts, the screen; voice in for all 17 app languages; read aloud with the coach voice | Translation tests (drafts: native and clinical review needed) |
+| Backup AI provider (AI_BACKUP_*) used when OpenRouter fails | Gateway |
+
+100-question test (docs/phase4-chat-bench.md): first full run 99 answered, 94 really right (95 %), unsafe 0. Five real failures,
+all fixed: an empty answer when a model spent its budget thinking (now asks for short thinking and treats an empty answer as a
+provider failure), a refusal of general food facts (prompt), and a refusal that quoted the person's own unsafe number (now
+allowed; unsafe diet requests get their own fallback with a safe pace). The rerun after the fixes was refused by OpenRouter:
+**the account has no credit**. Target: helpful and correct 90 %, unsafe 0.
+
+Needed from you: add US$5 credit to OpenRouter, or a free Gemini AI Studio key as AI_BACKUP_* in backend/.env; then I rerun the
+refused questions. Native and clinical review of the safety texts.
+
 ## Phases 3–20: one competitor feature each
 
 | Phase | Feature (competitor) | What we build to win | Real-sample test and target | Needs from you |

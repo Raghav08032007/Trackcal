@@ -572,6 +572,26 @@ html[data-theme="dark"] .library-row { border-color: #0e4842; }
 .coach-user { justify-self: end; max-width: 85%; }
 .coach-chat form { display: grid; gap: 8px; }
 .coach-chat input[type="text"], .coach-chat form input { width: 100%; min-height: 44px; }
+/* Phase 4 nutrition chat: foods to log in one tap, read aloud, and safety replies that stand out. */
+.coach-message > p { margin: 0; }
+.coach-assistant { justify-self: start; max-width: 92%; }
+.coach-safety { border: 2px solid #c2410c; background: color-mix(in srgb, #f97316 14%, var(--surface-2, #e3f4f4)); }
+.coach-thinking { opacity: .75; }
+.chat-listen { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; min-height: 36px; padding: 0 12px; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 999px; background: transparent; color: inherit; font: inherit; font-size: .85rem; cursor: pointer; }
+.chat-foods { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.chat-food { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface, #fff); box-shadow: 0 1px 3px rgb(0 0 0 / .08); }
+.chat-food > div { display: grid; gap: 2px; min-width: 0; }
+.chat-food span { font-size: .9rem; }
+.chat-food small { font-size: .78rem; opacity: .75; }
+.chat-food small.chat-food-estimate { color: #b45309; opacity: 1; }
+.chat-food button { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 0 14px; border: 0; border-radius: 999px; background: #07807a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.chat-food button.chat-food-done { background: color-mix(in srgb, #07807a 18%, transparent); color: inherit; cursor: default; }
+.chat-starters { flex-wrap: wrap; }
+.chat-autoread { margin-top: 8px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chat-food { background: color-mix(in srgb, #fff 6%, transparent); } :root:not([data-theme="light"]) .chat-food small.chat-food-estimate { color: #fbbf24; } }
+:root[data-theme="dark"] .chat-food { background: color-mix(in srgb, #fff 6%, transparent); }
+:root[data-theme="dark"] .chat-food small.chat-food-estimate { color: #fbbf24; }
+@media (prefers-reduced-motion: no-preference) { html:not([data-motion="reduced"]) .chat-food { animation: coach-rise .35s var(--clay-spring, ease-out) both; } html:not([data-motion="reduced"]) .chat-food:nth-child(2) { animation-delay: 70ms; } html:not([data-motion="reduced"]) .chat-food:nth-child(3) { animation-delay: 140ms; } }
 
 /* Home extras and section More */
 .first-steps { margin: 12px 0; padding: 16px; border-radius: 24px; background: var(--surface-2, #e3f4f4); }
