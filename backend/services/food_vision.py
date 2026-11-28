@@ -9,7 +9,7 @@ tools/food-vision/evaluate.py measures it against the photo bench.
 """
 from __future__ import annotations
 
-import hashlib, io, json, os, threading
+import hashlib, io, json, os, re, threading
 from pathlib import Path
 
 import numpy as np
@@ -121,7 +121,7 @@ def examples():
     return _state["examples"]
 
 
-def classify(image_bytes: bytes, top: int = 4, examples=None, weight: float = 1.0):
+def classify(image_bytes: bytes, top: int = 4, examples=None, weight: float = 0.25):
     """[{'name', 'confidence'}] best first. examples: optional (embeddings [n, 512], dish index per row) of labelled photos:
     each dish's closest example photos (mean of its best 2) add to its text score."""
     st = _load()
@@ -138,3 +138,76 @@ def classify(image_bytes: bytes, top: int = 4, examples=None, weight: float = 1.
     p = np.exp(logits - logits.max()); p /= p.sum()
     order = np.argsort(-p)[:top]
     return [{"name": DISHES[i][0], "confidence": round(float(p[i]), 3)} for i in order]
+
+
+def enabled() -> bool:
+    """On when the model files are present, unless FOOD_VISION=off."""
+    return os.getenv("FOOD_VISION", "on").lower() != "off" and available()
+
+
+def suggest(image_bytes: bytes, top: int = 4):
+    """The classifier's best dishes for a photo, or [] when it is off or anything goes wrong (it is only ever a helper)."""
+    if not enabled():
+        return []
+    try:
+        return classify(image_bytes, top, examples())
+    except Exception:
+        return []
+
+
+def _key(name: str) -> str:
+    return " ".join(sorted(w for w in re.findall(r"[a-z]+", name.lower()) if w not in {"and", "with", "the", "a"}))
+
+
+def merge_alternatives(dish: str, alternatives: list, picks: list, limit: int = 4, floor: float = 0.05):
+    """The AI's alternatives first, then the classifier's picks it didn't already name (same words in any order count as
+    the same dish), at most `limit` in all."""
+    seen = {_key(dish), *(_key(a) for a in alternatives)}
+    out = list(alternatives)
+    for p in picks:
+        k = _key(p["name"])
+        if len(out) >= limit:
+            break
+        if p.get("confidence", 0) >= floor and k not in seen:
+            out.append(p["name"]); seen.add(k)
+    return out[:limit]
+
+
+# Typical one-person portion in grams, by the words in the dish name (first match wins); 200 g otherwise.
+PORTIONS = (("biryani", 300), ("pulao", 250), ("fried rice", 250), ("rice", 200), ("khichdi", 250), ("pongal", 200), ("bath", 250),
+            ("naan", 90), ("bhatura", 80), ("paratha", 80), ("parotta", 80), ("kulcha", 80), ("roti", 40), ("chapati", 40), ("thepla", 40), ("puri", 30),
+            ("dosa", 120), ("uttapam", 150), ("idli", 120), ("vada", 100), ("appam", 100), ("pesarattu", 120),
+            ("samosa", 100), ("kachori", 80), ("pakora", 100), ("tikki", 100), ("momos", 150), ("pani puri", 100), ("vada pav", 150),
+            ("gulab jamun", 80), ("rasgulla", 80), ("jalebi", 60), ("ladoo", 40), ("barfi", 40), ("kulfi", 70), ("ice cream", 100),
+            ("lassi", 250), ("chai", 150), ("coffee", 150), ("smoothie", 250),
+            ("thali", 600), ("chole bhature", 350), ("pav bhaji", 350), ("misal pav", 350),
+            ("curry", 200), ("masala", 200), ("dal", 200), ("sambar", 200), ("rasam", 200), ("paneer", 200), ("kofta", 200), ("soup", 250),
+            ("chutney", 30), ("peanuts", 30), ("boiled eggs", 100), ("omelette", 120), ("banana", 120), ("apple", 180), ("mango", 150),
+            ("pizza", 250), ("burger", 220), ("sandwich", 180), ("fries", 150), ("noodles", 250), ("pasta", 250), ("sushi", 200))
+
+
+def typical_grams(name: str) -> int:
+    n = name.lower()
+    return next((g for w, g in PORTIONS if w in n), 200)
+
+
+def offline_meal(image_bytes: bytes, lookup, picks=None):
+    """A meal estimate without the AI: the classifier names the dish and the catalog gives its nutrition for a typical
+    portion. None when the classifier is off, unsure (best pick under 25%) or the catalog doesn't know the dish.
+    Shaped like the AI's reply so services.meal_analysis.normalize_meal can check it."""
+    picks = picks if picks is not None else suggest(image_bytes)
+    if not picks or picks[0]["confidence"] < 0.25:
+        return None
+    name = picks[0]["name"]
+    try:
+        per = lookup(name.split("(")[0].strip())
+    except Exception:
+        per = None
+    if not per or not per.get("calories"):
+        return None
+    grams = typical_grams(name)
+    f = grams / 100
+    item = {"name": name, "quantity_g": grams, "quantity_g_low": round(grams * .7), "quantity_g_high": round(grams * 1.4),
+            "calories": per["calories"] * f, "protein_g": per["protein_g"] * f, "carbs_g": per["carbs_g"] * f, "fat_g": per["fat_g"] * f,
+            "confidence": round(min(.6, picks[0]["confidence"]), 2), "nutrition_source": per.get("source") or "TrackCal catalog"}
+    return {"dish_name": name, "dish_alternatives": [p["name"] for p in picks[1:4]], "components": [item]}

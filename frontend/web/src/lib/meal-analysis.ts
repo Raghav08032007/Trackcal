@@ -27,6 +27,8 @@ export interface MealAnalysis {
   model: string;
   is_mock: false;
   calorie_range: [number, number];
+  /** True when the server's own photo classifier answered because the AI was unavailable: typical portion, check the grams. */
+  offline?: boolean;
 }
 
 function portionRange(item: Record<string, unknown>, quantity: number, confidence: number): [[number, number], "model" | "confidence"] {
@@ -71,7 +73,7 @@ export function normalizeMeal(raw: unknown, model: string): MealAnalysis {
   return {
     dish_name: typeof root?.dish_name === "string" ? root.dish_name.slice(0, 200) : components.map(c => c.name).join(", "),
     alternatives: (Array.isArray(root?.alternatives) ? root.alternatives : Array.isArray(root?.dish_alternatives) ? root.dish_alternatives : [])
-      .filter((a: unknown): a is string => typeof a === "string" && !!a.trim()).map((a: string) => a.trim().slice(0, 120)).slice(0, 3),
+      .filter((a: unknown): a is string => typeof a === "string" && !!a.trim()).map((a: string) => a.trim().slice(0, 120)).slice(0, 4),
     components, total_nutrition: { calories: sum("calories"), protein_g: sum("protein_g"), carbs_g: sum("carbs_g"), fat_g: sum("fat_g") },
     model, is_mock: false,
     calorie_range: [0, 1].map(i => round1(components.reduce((total, item) => total + item.calorie_range[i], 0))) as [number, number],

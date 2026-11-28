@@ -648,3 +648,7 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 .progression-tip { padding: 10px 12px; border-radius: 12px; background: rgba(124, 58, 237, .08); border: 1px solid rgba(124, 58, 237, .25); display: grid; gap: 4px; }
 .progression-tip p { margin: 0; line-height: 1.4; }
 .progression-tip button { justify-self: start; }
+
+
+/* Photo answered by the server's own classifier while the AI was unavailable (services/food_vision.py). */
+.dish-offline { margin: 0 0 6px; padding: 8px 10px; border-radius: 10px; font-size: .8rem; line-height: 1.4; color: #fde68a; background: rgba(245, 158, 11, .12); border: 1px solid rgba(245, 158, 11, .35); }

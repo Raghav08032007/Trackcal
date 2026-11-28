@@ -1,6 +1,7 @@
 """Run integration writes inside rollback-only transactions on the existing schema."""
 import os
 os.environ["APP_ENV"] = "testing"
+os.environ.setdefault("FOOD_VISION", "off")  # the local photo classifier loads ~430 MB; tests fake it (test_food_vision.py)
 import pytest
 from sqlalchemy.orm import Session
 import database

@@ -757,8 +757,9 @@ def analyze():
             from services import photo_prep
             try: image = photo_prep.prepare(image)  # resized, metadata (GPS, device) removed; never stored
             except photo_prep.PhotoError as failure: return error(str(failure), 400)
+        picks = _photo_picks(image) if image else None  # classifier runs beside the AI call (services/food_vision.py)
         refused = _ai_allowance()
-        if refused: return refused
+        if refused: return reply(offline) if (offline := _offline_meal(image, picks)) else refused  # free, so no daily limit
         content = [{'type': 'text', 'text': f'Analyze this meal photo. Note from the person: {text}' if text else 'Analyze this meal photo.'}, {'type': 'image_url', 'image_url': {'url': image}}] if image else text
         payload = {**model_fields(), 'messages': [{'role': 'system', 'content': SYSTEM_PROMPT}, {'role': 'user', 'content': content}],
                    'response_format': {'type': 'json_object'}, 'temperature': 0.1, 'max_tokens': 4000}
@@ -767,21 +768,81 @@ def analyze():
                 response = _external('POST', 'https://openrouter.ai/api/v1/chat/completions', json=payload, timeout=40,
                                      headers={'Authorization': f"Bearer {os.environ['OPENROUTER_API_KEY']}", 'Content-Type': 'application/json', 'X-Title': 'TrackCal'})
                 if response.status_code >= 400:  # never forward provider bodies: they can echo request details or credentials
+                    offline = _offline_meal(image, picks)
+                    if offline: return reply(offline)
                     message = 'OpenRouter rejected the API key.' if response.status_code == 401 else 'Free AI rate limit reached. Retry later or log manually.' \
                         if response.status_code == 429 else f'AI provider unavailable ({response.status_code}). Retry or log manually.'
                     return error(message, 429 if response.status_code == 429 else 502)
                 body = response.json(); raw = (body.get('choices') or [{}])[0].get('message', {}).get('content')
                 if not isinstance(raw, str): raise ValueError('No response')
                 cleaned = re.sub(r'\s*```$', '', re.sub(r'^```(?:json)?\s*', '', raw.strip(), flags=re.I))
-                return reply(normalize_meal(ground_in_catalog(json.loads(cleaned), _official_values), body.get('model') or 'unknown model'))
+                meal = normalize_meal(ground_in_catalog(json.loads(cleaned), _official_values), body.get('model') or 'unknown model')
+                return reply(_with_photo_picks(meal, picks))
             except Exception as failure:
                 if str(failure).startswith('No readable food found'): return error(str(failure), 422)
                 if attempt == 1: break
+        offline = _offline_meal(image, picks)
+        if offline: return reply(offline)
         return error('AI could not return a valid nutrition estimate. Retry or log manually.', 502)
     except Exception:
         return error('AI could not return a valid nutrition estimate. Retry or log manually.', 502)
     finally:
         with _running_lock: _running -= 1
+
+
+def _food_vision():
+    """The optional local food classifier, or None when its packages or model files are missing."""
+    try:
+        from services import food_vision
+        return food_vision if food_vision.enabled() else None
+    except Exception:
+        return None
+
+
+class _Picks:
+    """The classifier's answer for one photo, computed in a background thread while the AI call runs."""
+    def __init__(self, raw):
+        self.raw, self.value = raw, []
+        self.thread = threading.Thread(target=self._run, daemon=True); self.thread.start()
+
+    def _run(self):
+        vision = _food_vision()
+        if vision: self.value = vision.suggest(self.raw)
+
+    def get(self, wait=8):
+        self.thread.join(wait)
+        return self.value if not self.thread.is_alive() else []
+
+
+def _photo_picks(image):
+    if not _food_vision(): return None
+    try: return _Picks(base64.b64decode(image.split(',', 1)[1]))
+    except Exception: return None
+
+
+def _with_photo_picks(meal, picks):
+    """Adds the classifier's dishes to the one-tap corrections the AI offered, so a look-alike mistake is one tap to fix."""
+    found = picks.get() if picks else []
+    vision = _food_vision()
+    if found and vision:
+        meal['alternatives'] = vision.merge_alternatives(meal['dish_name'], meal.get('alternatives') or [], found)
+        meal['photo_match'] = found
+    return meal
+
+
+def _offline_meal(image, picks):
+    """When the AI is unavailable: the classifier's dish with catalog nutrition for a typical portion, clearly labelled."""
+    found = picks.get() if picks else []
+    vision = _food_vision()
+    if not found or not vision: return None
+    try:
+        raw = vision.offline_meal(b'', _official_values, found)
+        if not raw: return None
+        meal = normalize_meal(raw, 'TrackCal photo classifier (offline)')
+        meal['offline'] = True; meal['photo_match'] = found
+        return meal
+    except Exception:
+        return None
 
 
 @bp.post('/pack/read')

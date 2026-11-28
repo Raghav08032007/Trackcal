@@ -1,0 +1,6 @@
+# Optional: the food photo classifier that works without an LLM (services/food_vision.py).
+# Install with: pip install -r requirements-vision.txt, then run scripts/setup_food_vision.py for the model files.
+# Without these packages or files the app simply uses the AI model alone.
+numpy==2.5.4
+onnxruntime==1.32.0
+tokenizers==0.23.3

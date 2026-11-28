@@ -4102,6 +4102,7 @@
  "That's a thoughtful step. Your next chapter is taking shape.": "هذه خطوة متأنية. فصلك التالي يتشكّل.",
  "That's it, much better!": "هكذا تمامًا، أفضل بكثير!",
  "The AI copies the printed values for you to check. Names and IDs are not read; the photo is not kept.": "ينسخ الذكاء الاصطناعي القيم المطبوعة لتراجعها. لا تُقرأ الأسماء أو الأرقام التعريفية؛ ولا تُحفظ الصورة.",
+ "The AI is busy, so the dish was recognised without it. Calories are for a typical portion: check the grams before saving.": "الذكاء الاصطناعي مشغول، لذا تم التعرّف على الطبق من دونه. السعرات لحصة معتادة: راجع الغرامات قبل الحفظ.",
  "The QR code appears here 30 minutes before the start and stays until the end.": "يظهر رمز QR هنا قبل البدء بـ30 دقيقة ويبقى حتى النهاية.",
  "The TrackCal feed": "موجز TrackCal",
  "The application does not currently implement advertising or marketing analytics. Server request logs contain request IDs, methods, status codes and duration; the application middleware does not log meal bodies, addresses or recovery links. Infrastructure/provider logs are governed by their configuration. Recovery tokens are stored as hashes and expire. No nutrition-accuracy or regulatory-compliance certification is claimed.": "لا يطبّق التطبيق حاليًا إعلانات أو تحليلات تسويقية. تحتوي سجلات طلبات الخادم على معرّفات الطلبات والطرق ورموز الحالة والمدة؛ ولا يسجّل الوسيط محتوى الوجبات أو العناوين أو روابط الاستعادة. تخضع سجلات البنية التحتية والمزوّدين لإعداداتها. تُخزَّن رموز الاستعادة مُجزّأة وتنتهي صلاحيتها. لا يُدّعى أي اعتماد لدقة التغذية أو الامتثال التنظيمي.",
