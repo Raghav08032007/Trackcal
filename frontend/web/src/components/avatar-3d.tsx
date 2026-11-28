@@ -130,7 +130,7 @@ export function Avatar3D({move,gear,title,playing,onFail,speed=1,model='f',joint
      const across=g(11).sub(g(12));if(across.length()<.05)across.set(0,0,1);across.normalize();
      const fwd=new THREE.Vector3().crossVectors(across,up).normalize();
      const toes=g(31).add(g(32)).multiplyScalar(.5).sub(g(27).add(g(28)).multiplyScalar(.5));let flip=view==='side'?fwd.dot(toes)<0:fwd.z<0;
-     if(Math.abs(up.y)<.6){const hands=g(15).add(g(16)).multiplyScalar(.5),prone=hands.y<sm.y-.05,f=flip?fwd.clone().negate():fwd;if(prone?f.y>0:f.y<0)flip=!flip;}
+     if(Math.abs(up.y)<.6){const hands=g(15).add(g(16)).multiplyScalar(.5),prone=move.face?move.face==='down':hands.y<sm.y-.05,f=flip?fwd.clone().negate():fwd;if(prone?f.y>0:f.y<0)flip=!flip;}
      return {sm,hm,up,fwd,flip};};
     const first=facing(raw),p=first.flip?mirrorSides(raw):raw,q=(id:number)=>v(p[id]);
     const turned=first.flip?facing(p):first,hm=turned.hm,dirUp=turned.up,forward=turned.fwd;

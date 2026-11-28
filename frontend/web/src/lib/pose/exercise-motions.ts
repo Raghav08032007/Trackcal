@@ -4,7 +4,8 @@ import {EXERCISE_VARIANTS,type ExerciseKind} from './types';
 export type Pose={back?:number;torso?:number;arm?:[number,number];fore?:[number,number];thigh?:[number,number];shin?:[number,number];heel?:number;lift?:number};
 /** view is the plane the body moves in; camera is where the phone stands (the same unless set). A move that goes forward and
  *  back, seen from the front, loses its depth; a move out to the sides, seen side-on, loses its width. */
-export type Move={view:'side'|'front';anchor:'hip'|'foot'|'hand'|'shoulder';keys:Pose[];camera?:'side'|'front'};
+/** face: for a body lying along the floor, whether it faces the floor ('down') or the ceiling ('up'); otherwise guessed from the hands. */
+export type Move={view:'side'|'front';anchor:'hip'|'foot'|'hand'|'shoulder';keys:Pose[];camera?:'side'|'front';face?:'down'|'up'};
 /** The same move filmed from the other angle. */
 export const seenFrom=(m:Move,camera:'side'|'front'):Move=>({...m,camera});
 const T=.25,ARM=.13,LEG=.21;

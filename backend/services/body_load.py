@@ -73,6 +73,31 @@ LOADS: dict[str, dict[str, str]] = {
     'camera_downdog': _load(shoulder=L, wrist=H, ankle=L), 'camera_forwardfold': _load(lower_back=L), 'camera_tree': _load(ankle=L, knee=L),
     'camera_warrior': _load(knee=L, hip=L, shoulder=L), 'camera_legbalance': _load(ankle=L, knee=L),
 }
+# Yoga (frontend lib/yoga/asanas.ts), breathing and meditation. Each asana by what it asks of joints and spine; breathing and
+# meditation load nothing. H: weight or end-range on the part; L: light use.
+YOGA_LOADS = {
+    'tadasana': {}, 'pranamasana': {}, 'urdhva-hastasana': _load(shoulder=L, lower_back=L),
+    'utkatasana': _load(knee=H, hip=L, lower_back=L), 'trikonasana': _load(hip=L, knee=L, lower_back=L, neck=L),
+    'virabhadrasana-1': _load(knee=H, hip=L, lower_back=L, shoulder=L), 'virabhadrasana-2': _load(knee=H, hip=L, shoulder=L),
+    'virabhadrasana-3': _load(knee=L, ankle=H, hip=L, lower_back=L), 'parsvakonasana': _load(knee=H, hip=L, neck=L),
+    'prasarita-padottanasana': _load(lower_back=L, hip=L), 'uttanasana': _load(lower_back=L), 'ardha-uttanasana': _load(lower_back=L),
+    'ardha-chakrasana': _load(lower_back=H, neck=L), 'malasana': _load(knee=H, ankle=H, hip=L),
+    'vrikshasana': _load(ankle=L, knee=L, hip=L), 'natarajasana': _load(ankle=H, knee=L, shoulder=L, lower_back=L), 'ardha-chandrasana': _load(ankle=H, knee=L, wrist=L),
+    'vajrasana': _load(knee=H, ankle=H), 'ustrasana': _load(knee=L, lower_back=H, neck=L), 'balasana': _load(knee=H, ankle=L),
+    'marjaryasana': _load(wrist=L, knee=L, lower_back=L), 'anjaneyasana': _load(knee=H, hip=L, lower_back=L), 'ashwa-sanchalanasana': _load(knee=H, hip=L, wrist=L),
+    'sukhasana': _load(knee=L, hip=L), 'dandasana': _load(lower_back=L), 'paschimottanasana': _load(lower_back=H, hip=L),
+    'baddha-konasana': _load(knee=L, hip=L), 'navasana': _load(abdomen=H, lower_back=L, hip=L),
+    'phalakasana': PLANK, 'ashtanga-namaskara': _load(wrist=H, shoulder=H, elbow=L, neck=L), 'bhujangasana': _load(lower_back=H, wrist=L),
+    'urdhva-mukha-svanasana': _load(lower_back=H, wrist=H, shoulder=L), 'shalabhasana': _load(lower_back=H, neck=L), 'dhanurasana': _load(lower_back=H, knee=L, shoulder=L, neck=L),
+    'makarasana': {}, 'setu-bandhasana': _load(lower_back=L, neck=L, knee=L), 'pawanmuktasana': _load(lower_back=L, knee=L),
+    'matsyasana': _load(neck=H, lower_back=L), 'shavasana': {}, 'adho-mukha-svanasana': _load(wrist=H, shoulder=L, ankle=L),
+    'sarvangasana': _load(neck=H, shoulder=H, lower_back=L),
+    'surya-namaskar': _load(wrist=H, shoulder=L, knee=L, lower_back=L),
+}
+LOADS.update({f'yoga_{k}': v for k, v in YOGA_LOADS.items()})
+LOADS.update({k: {} for k in ('breath_calm', 'breath_box', 'breath_nadi-shodhana', 'breath_bhramari', 'breath_ujjayi', 'breath_478', 'breath_kapalbhati',
+                              'meditation_silent', 'meditation_breath', 'meditation_body-scan', 'meditation_kindness', 'meditation_sleep')})
+
 
 LABELS = {'neck': 'neck', 'shoulder': 'shoulder', 'elbow': 'elbow', 'wrist': 'wrist', 'chest': 'chest', 'abdomen': 'abdomen',
           'lower_back': 'lower back', 'hip': 'hip', 'knee': 'knee', 'ankle': 'ankle'}

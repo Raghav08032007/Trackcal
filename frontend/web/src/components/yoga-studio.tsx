@@ -14,6 +14,8 @@ import type { PoseFrame } from "@/lib/pose/types";
 import { say, stepMinutes } from "@/lib/workout-coach";
 import { wellnessRequest, type Session } from "@/lib/wellness";
 import { BreathingCoach } from "./yoga-breathing";
+import { useExerciseSafety } from "@/lib/exercise-safety";
+import { SafetyGate, SafetyNotice } from "./safety-gate";
 import { MeditationTimer } from "./yoga-meditation";
 import { SuryaNamaskar } from "./yoga-surya";
 
@@ -34,7 +36,7 @@ export function YogaStudio() {
     <div className="yoga-tabs" role="tablist" aria-label={t("Yoga sections")}>
       {TABS.map(([id, label]) => <button key={id} role="tab" type="button" aria-selected={tab === id} onClick={() => pick(id)}>{t(label)}</button>)}
     </div>
-    {tab === "asanas" && (chosen ? <AsanaDetail key={chosen.id} asana={chosen} onBack={() => open(null)} /> : <Library onOpen={open} />)}
+    {tab === "asanas" && (chosen ? <AsanaDetail key={chosen.id} asana={chosen} onBack={() => open(null)} onOpen={open} /> : <Library onOpen={open} />)}
     {tab === "surya" && <SuryaNamaskar />}
     {tab === "breathing" && <BreathingCoach />}
     {tab === "meditation" && <MeditationTimer />}
@@ -85,7 +87,7 @@ function Library({ onOpen }: { onOpen: (a: Asana) => void }) {
   </section>;
 }
 
-function AsanaDetail({ asana, onBack }: { asana: Asana; onBack: () => void }) {
+function AsanaDetail({ asana, onBack, onOpen }: { asana: Asana; onBack: () => void; onOpen: (a: Asana) => void }) {
   const { ready, user } = useAccount();
   return <section className="yoga-detail">
     <button type="button" className="ds-btn ds-btn-quiet yoga-back" onClick={onBack}>{t("← All poses")}</button>
@@ -100,7 +102,7 @@ function AsanaDetail({ asana, onBack }: { asana: Asana; onBack: () => void }) {
         <p className="yoga-avoid" role="note"><strong>{t("Who should avoid it:")}</strong> {asana.avoid}</p>
         <p className="yoga-hold">{asana.sides ? t("Hold about {n} seconds on each side.", { n: asana.hold }) : t("Hold about {n} seconds.", { n: asana.hold })}</p>
       </article>
-      {!ready ? <article className="account-card">{t("Loading…")}</article> : user ? <Practice key={user.id} asana={asana} />
+      {!ready ? <article className="account-card">{t("Loading…")}</article> : user ? <Practice key={user.id + asana.id} asana={asana} onSwitch={onOpen} />
         : <article className="account-card"><h2>{t("Check your pose with the camera")}</h2><p>{t("Sign in to get a live match score and spoken corrections, and to save your practice.")}</p><Link className="gate-primary" href="/login">{t("Sign in")}</Link></article>}
     </div>
   </section>;
@@ -111,7 +113,9 @@ const seconds = (ms: number) => Math.floor(ms / 1000);
 const EMPTY: YogaLive = { score: 0, visible: false, inPose: false, held: 0, current: 0, best: 0, average: 0, tip: null };
 
 /** Camera practice for one asana: live match score, hold timer (only while matching), one correction at a time. */
-function Practice({ asana }: { asana: Asana }) {
+function Practice({ asana, onSwitch }: { asana: Asana; onSwitch?: (a: Asana) => void }) {
+  const safety = useExerciseSafety(), template = `yoga_${asana.id}`, advice = safety.adviceForTemplate(template), [gate, setGate] = useState(false);
+  const safer = ASANAS.filter(a => a.id !== asana.id && a.family === asana.family && !safety.adviceForTemplate(`yoga_${a.id}`)).slice(0, 3).map(a => ({ id: a.id, title: a.english }));
   const video = useRef<HTMLVideoElement>(null), service = useRef<PoseDetectionService | null>(null), tracker = useRef(new AsanaTracker(asana));
   const started = useRef(0), voiceRef = useRef(false), spokenTip = useRef<string | null>(null), cheered = useRef(false), stats = useRef({ frames: 0, seen: 0 });
   const [status, setStatus] = useState<Status>("setup"), [live, setLive] = useState<YogaLive>(EMPTY), [error, setError] = useState(""), [voice, setVoice] = useState(true);
@@ -166,7 +170,9 @@ function Practice({ asana }: { asana: Asana }) {
       <label>{t("Hold for")}<select value={target} onChange={e => setTarget(Number(e.target.value))}>{[10, 15, 20, 30, 45, 60, 90, 180].map(v => <option key={v} value={v}>{t("{value} seconds", { value: v })}</option>)}</select></label>
       <label className="scanner-consent"><input type="checkbox" checked={voice} onChange={e => setVoice(e.target.checked)} /> {t("Speak corrections out loud")}</label>
       {asana.level > 1 && <label className="scanner-consent yoga-caution"><input type="checkbox" checked={readCaution} onChange={e => setReadCaution(e.target.checked)} /> {t("I have read who should avoid this pose, and I will stop if anything hurts.")}</label>}
-      <button className="account-primary" disabled={!readCaution} onClick={() => void start()}>{t("Start {title}", { title: asana.english })}</button>
+      {advice && <SafetyNotice advice={advice} accepted={safety.acceptedTemplate(template)} />}
+      {gate && advice && <SafetyGate title={asana.english} template={template} advice={advice} safer={safer} onSafer={id => { setGate(false); const next = ASANA_BY_ID[id]; if (next) onSwitch?.(next); }} onContinue={() => { setGate(false); void start(); }} onClose={() => setGate(false)} />}
+      <button className="account-primary" disabled={!readCaution} onClick={() => { if (advice && !safety.acceptedTemplate(template)) { setGate(true); return; } void start(); }}>{t("Start {title}", { title: asana.english })}</button>
     </>}
     {(status === "live" || status === "loading") && <button className="account-primary" onClick={stop}>{t("Stop")}</button>}
     {status === "review" && <div className="hold-review">

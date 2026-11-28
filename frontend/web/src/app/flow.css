@@ -711,3 +711,21 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 .surya-steps li[data-done] { opacity: .55; }
 .surya-steps li[data-now] { font-weight: 700; color: #7c3aed; }
 @media (max-width: 420px) { .surya-steps { columns: 1; } }
+
+/* Muscle recovery map: readiness and a bar per muscle (lib/muscle-recovery.ts). */
+.recovery-score { display: flex; align-items: center; gap: 16px; }
+.recovery-score > div { flex: none; display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; color: #fff; background: #dc2626; }
+.recovery-score[data-band="ok"] > div { background: #d97706; }
+.recovery-score[data-band="good"] > div { background: #16a34a; }
+.recovery-score strong { font-size: 1.8rem; line-height: 1; }
+.recovery-score p { margin: 0; }
+.recovery-bars { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+.recovery-bars li { display: grid; grid-template-columns: minmax(90px, 1fr) 2fr auto; grid-template-areas: "name bar pct" ". when when"; gap: 2px 10px; align-items: center; }
+.recovery-bars li > span:first-child { grid-area: name; }
+.recovery-bar { grid-area: bar; height: 10px; border-radius: 999px; background: color-mix(in srgb, #64748b 18%, transparent); overflow: hidden; }
+.recovery-bar i { display: block; height: 100%; border-radius: inherit; background: #e5484d; transition: width .6s ease; }
+.recovery-bar[data-state="recovering"] i { background: #f5a524; }
+.recovery-bar[data-state="nearly"] i { background: #f7d774; }
+.recovery-bar[data-state="ready"] i { background: #22c55e; }
+.recovery-bars strong { grid-area: pct; font-variant-numeric: tabular-nums; }
+.recovery-bars small { grid-area: when; color: var(--ds-muted, #5b6b6b); }

@@ -136,7 +136,8 @@ export const ASANAS: Asana[] = [
     pose: { torso: 112, thigh: both(80), shin: both(-88), arm: both(102), fore: both(102) }, setup: FLOOR_SIDE,
     steps: [msg("Kneel and sit back on the heels."), msg("Fold forward and rest the forehead on the floor."), msg("Stretch the arms forward or rest them beside the body."), msg("Relax completely.")],
     benefits: msg("Rests the back and calms the mind."), avoid: msg("Knee injury or pregnancy: widen the knees or skip."),
-    breath: msg("Breathe slowly into the back."), easier: msg("Put a cushion under the forehead or hips.") }),
+    breath: msg("Breathe slowly into the back."), easier: msg("Put a cushion under the forehead or hips."),
+    unseen: msg("Folded this small, the camera can hardly see your body, so the score may stay low. It is a resting pose: rest as long as you like.") }),
   A({ id: "marjaryasana", sanskrit: "Marjaryasana-Bitilasana", english: msg("Cat-cow (tabletop)"), family: "kneeling", level: 1, hold: 20, sides: false, view: "side", anchor: "foot",
     pose: { torso: 88, thigh: both(0), shin: both(-88), arm: both(0), fore: both(0) }, setup: FLOOR_SIDE,
     steps: [msg("Come onto hands and knees: hands under shoulders, knees under hips."), msg("Breathing in, drop the belly and look up (cow)."), msg("Breathing out, round the back and tuck the chin (cat)."), msg("Move slowly with the breath.")],
@@ -257,7 +258,10 @@ export const ASANAS: Asana[] = [
 ];
 
 export const ASANA_BY_ID: Record<string, Asana> = Object.fromEntries(ASANAS.map(a => [a.id, a]));
-export const moveOf = (a: Asana): Move => ({ view: a.view, anchor: a.anchor, keys: [a.pose] });
+/** Which way a body along the floor faces, so the 3D coach never lies on its back for a pose done face down. */
+const FACE: Partial<Record<AsanaFamily, Move["face"]>> = { prone: "down", supine: "up" };
+const FACE_OF: Record<string, Move["face"]> = { balasana: "down", marjaryasana: "down", "ashtanga-namaskara": "down", "adho-mukha-svanasana": "down", sarvangasana: "up" };
+export const moveOf = (a: Asana): Move => ({ view: a.view, anchor: a.anchor, keys: [a.pose], face: FACE_OF[a.id] ?? FACE[a.family] });
 
 localized(ASANAS, ["english", "setup", "steps", "benefits", "avoid", "breath", "easier", "unseen"]);
 localizedMap(FAMILIES);

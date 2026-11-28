@@ -95,6 +95,21 @@ for key,base,title,gear in (('widepush','pushup','Wide push-ups',''),('diamondpu
 # Holds: timed positions for core, balance and flexibility.
 for key,title in (('plank','plank'),('wallsit','wall sit'),('bridgehold','glute bridge'),('tree','tree pose'),('legbalance','single-leg balance'),('warrior','warrior II'),('downdog','downward dog'),('forwardfold','standing forward fold')):
     TEMPLATES['camera_'+key]={**TEMPLATES['camera_bridge'],'name':f'Camera {title} hold','instructions':'Hold only a position you can keep comfortably and stop if anything hurts. The camera times the hold; it does not check form.'}
+# Yoga, breathing and meditation, logged from the yoga page (frontend lib/yoga). Logged only: never put into generated plans.
+YOGA_ASANAS=('tadasana','urdhva-hastasana','utkatasana','trikonasana','virabhadrasana-1','virabhadrasana-2','virabhadrasana-3','parsvakonasana',
+ 'prasarita-padottanasana','uttanasana','ardha-uttanasana','ardha-chakrasana','malasana','vrikshasana','natarajasana','ardha-chandrasana','vajrasana',
+ 'ustrasana','balasana','marjaryasana','anjaneyasana','ashwa-sanchalanasana','sukhasana','dandasana','paschimottanasana','baddha-konasana','navasana',
+ 'phalakasana','ashtanga-namaskara','bhujangasana','urdhva-mukha-svanasana','shalabhasana','dhanurasana','makarasana','setu-bandhasana','pawanmuktasana',
+ 'matsyasana','shavasana','adho-mukha-svanasana','sarvangasana','pranamasana','surya-namaskar')
+BREATHS=('calm','box','nadi-shodhana','bhramari','ujjayi','478','kapalbhati')
+MEDITATIONS=('silent','breath','body-scan','kindness','sleep')
+for key in YOGA_ASANAS:
+    TEMPLATES['yoga_'+key]=dict(name='Yoga practice',interests=['yoga','mobility'],equipment=[],setting=['home','gym','outdoor'],seated=False,floor=True,
+        instructions='Hold only a position you can keep comfortably and stop if anything hurts.',alternative='yoga',difficulty='familiar practice',logged_only=True)
+for prefix,keys,name in (('breath_',BREATHS,'Breathing practice'),('meditation_',MEDITATIONS,'Meditation')):
+    for key in keys:
+        TEMPLATES[prefix+key]=dict(name=name,interests=['mobility','routine'],equipment=[],setting=['home','gym','outdoor'],seated=True,floor=False,
+            instructions='Make time for a quiet pause, comfortable rest or reflection. No movement or performance target is required.',alternative='recovery',difficulty='rest',logged_only=True)
 for template in TEMPLATES.values():template.update({'version':1,'review':'Application safety review 2026-10-28; not a clinical prescription'})
 RECOVERY='Stop if an activity causes pain, dizziness or unusual symptoms. Use your professional guidance; these templates are not treatment plans.'
 MEALS=[
@@ -119,6 +134,7 @@ def eligible_templates(prefs,include_camera=False):
  equipment=set(prefs.equipment)
  result=[]
  for key,t in TEMPLATES.items():
+  if t.get('logged_only'):continue   # yoga, breathing and meditation are logged from their own pages
   if t.get('camera_only') and not include_camera:continue
   if key=='recovery':continue
   if prefs.setting not in t['setting'] or not set(t['equipment'])<=equipment:continue
