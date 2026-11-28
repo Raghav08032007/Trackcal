@@ -652,3 +652,6 @@ html[data-motion="reduced"] .nav-progress-on span { animation: none; transform: 
 
 /* Photo answered by the server's own classifier while the AI was unavailable (services/food_vision.py). */
 .dish-offline { margin: 0 0 6px; padding: 8px 10px; border-radius: 10px; font-size: .8rem; line-height: 1.4; color: #fde68a; background: rgba(245, 158, 11, .12); border: 1px solid rgba(245, 158, 11, .35); }
+
+/* The AI and the photo classifier disagree on veg vs non-veg: the person confirms (services/food_vision.py). */
+.dish-check { margin: 0 0 6px; padding: 8px 10px; border-radius: 10px; font-size: .85rem; font-weight: 600; line-height: 1.4; color: #fecaca; background: rgba(239, 68, 68, .14); border: 1px solid rgba(239, 68, 68, .4); }

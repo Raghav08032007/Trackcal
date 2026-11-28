@@ -761,33 +761,44 @@ def analyze():
         refused = _ai_allowance()
         if refused: return reply(offline) if (offline := _offline_meal(image, picks)) else refused  # free, so no daily limit
         content = [{'type': 'text', 'text': f'Analyze this meal photo. Note from the person: {text}' if text else 'Analyze this meal photo.'}, {'type': 'image_url', 'image_url': {'url': image}}] if image else text
-        payload = {**model_fields(), 'messages': [{'role': 'system', 'content': SYSTEM_PROMPT}, {'role': 'user', 'content': content}],
-                   'response_format': {'type': 'json_object'}, 'temperature': 0.1, 'max_tokens': 4000}
-        for attempt in range(2):
-            try:
-                response = _external('POST', 'https://openrouter.ai/api/v1/chat/completions', json=payload, timeout=40,
-                                     headers={'Authorization': f"Bearer {os.environ['OPENROUTER_API_KEY']}", 'Content-Type': 'application/json', 'X-Title': 'TrackCal'})
-                if response.status_code >= 400:  # never forward provider bodies: they can echo request details or credentials
-                    offline = _offline_meal(image, picks)
-                    if offline: return reply(offline)
-                    message = 'OpenRouter rejected the API key.' if response.status_code == 401 else 'Free AI rate limit reached. Retry later or log manually.' \
-                        if response.status_code == 429 else f'AI provider unavailable ({response.status_code}). Retry or log manually.'
-                    return error(message, 429 if response.status_code == 429 else 502)
-                body = response.json(); raw = (body.get('choices') or [{}])[0].get('message', {}).get('content')
-                if not isinstance(raw, str): raise ValueError('No response')
-                cleaned = re.sub(r'\s*```$', '', re.sub(r'^```(?:json)?\s*', '', raw.strip(), flags=re.I))
-                meal = normalize_meal(ground_in_catalog(json.loads(cleaned), _official_values), body.get('model') or 'unknown model')
-                return reply(_with_photo_picks(meal, picks))
-            except Exception as failure:
-                if str(failure).startswith('No readable food found'): return error(str(failure), 422)
-                if attempt == 1: break
+        messages = [{'role': 'system', 'content': SYSTEM_PROMPT}, {'role': 'user', 'content': content}]
+        status = None
+        for url, key, fields in _ai_providers():  # OpenRouter first, then the optional backup provider
+            payload = {**fields, 'messages': messages, 'response_format': {'type': 'json_object'}, 'temperature': 0.1, 'max_tokens': 4000}
+            for attempt in range(2):
+                try:
+                    response = _external('POST', url, json=payload, timeout=40,
+                                         headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json', 'X-Title': 'TrackCal'})
+                    if response.status_code >= 400:  # never forward provider bodies: they can echo request details or credentials
+                        status = response.status_code; break
+                    body = response.json(); raw = (body.get('choices') or [{}])[0].get('message', {}).get('content')
+                    if not isinstance(raw, str): raise ValueError('No response')
+                    cleaned = re.sub(r'\s*```$', '', re.sub(r'^```(?:json)?\s*', '', raw.strip(), flags=re.I))
+                    meal = normalize_meal(ground_in_catalog(json.loads(cleaned), _official_values), body.get('model') or fields.get('model') or 'unknown model')
+                    return reply(_with_photo_picks(meal, picks))
+                except Exception as failure:
+                    if str(failure).startswith('No readable food found'): return error(str(failure), 422)
         offline = _offline_meal(image, picks)
         if offline: return reply(offline)
+        if status:
+            message = 'OpenRouter rejected the API key.' if status == 401 else 'Free AI rate limit reached. Retry later or log manually.' \
+                if status == 429 else f'AI provider unavailable ({status}). Retry or log manually.'
+            return error(message, 429 if status == 429 else 502)
         return error('AI could not return a valid nutrition estimate. Retry or log manually.', 502)
     except Exception:
         return error('AI could not return a valid nutrition estimate. Retry or log manually.', 502)
     finally:
         with _running_lock: _running -= 1
+
+
+def _ai_providers():
+    """Where meal requests go, in order: OpenRouter, then an optional backup with an OpenAI-compatible API (for example
+    Groq or Gemini's OpenAI endpoint), set with AI_BACKUP_URL, AI_BACKUP_KEY and AI_BACKUP_MODEL in backend/.env."""
+    out = [('https://openrouter.ai/api/v1/chat/completions', os.environ['OPENROUTER_API_KEY'], model_fields())]
+    url, key, model = os.getenv('AI_BACKUP_URL', ''), os.getenv('AI_BACKUP_KEY', ''), os.getenv('AI_BACKUP_MODEL', '')
+    if url.startswith('https://') and key and model:
+        out.append((url, key, {'model': model}))
+    return out
 
 
 def _food_vision():
@@ -827,6 +838,10 @@ def _with_photo_picks(meal, picks):
     if found and vision:
         meal['alternatives'] = vision.merge_alternatives(meal['dish_name'], meal.get('alternatives') or [], found)
         meal['photo_match'] = found
+        other = vision.disagreement(meal['dish_name'], found)
+        if other:  # veg vs non-veg conflict: ask the person, with the classifier's dish as the first fix
+            meal['check_dish'] = other
+            meal['alternatives'] = [other] + [a for a in meal['alternatives'] if a.lower() != other.lower()][:3]
     return meal
 
 

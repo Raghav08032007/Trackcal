@@ -29,6 +29,8 @@ export interface MealAnalysis {
   calorie_range: [number, number];
   /** True when the server's own photo classifier answered because the AI was unavailable: typical portion, check the grams. */
   offline?: boolean;
+  /** The server's photo classifier strongly sees a different dish on the veg / non-veg line: ask the person to check. */
+  check_dish?: string;
 }
 
 function portionRange(item: Record<string, unknown>, quantity: number, confidence: number): [[number, number], "model" | "confidence"] {

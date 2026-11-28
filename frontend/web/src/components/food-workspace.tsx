@@ -328,7 +328,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
   const [photoNote,setPhotoNote]=useState("");
   const [photoRange,setPhotoRange]=useState<PhotoRange|null>(null);
   const [pendingPhoto,setPendingPhoto]=useState<File|null>(null);
-  const [dishOptions,setDishOptions]=useState<string[]>([]),[dishFix,setDishFix]=useState(""),[photoOffline,setPhotoOffline]=useState(false);
+  const [dishOptions,setDishOptions]=useState<string[]>([]),[dishFix,setDishFix]=useState(""),[photoOffline,setPhotoOffline]=useState(false),[checkDish,setCheckDish]=useState("");
   const [cameraOpen,setCameraOpen]=useState(false);
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; await processPhoto(file); e.target.value = ""; };
   const processPhoto = async (file?: File, namedDish?: string) => {
@@ -345,7 +345,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
       try {
         // A correction names the dish: the same photo is checked again with that name, so portion and nutrition fit the real dish.
         const result = await analyzeMealPhoto(file, namedDish ? `This dish is ${namedDish}. ${photoNote}`.trim() : photoNote);
-        setDishOptions((result.alternatives ?? []).filter(a => a.toLowerCase() !== (namedDish ?? result.dish_name).toLowerCase()));setDishFix("");setPhotoOffline(result.offline === true);
+        setDishOptions((result.alternatives ?? []).filter(a => a.toLowerCase() !== (namedDish ?? result.dish_name).toLowerCase()));setDishFix("");setPhotoOffline(result.offline === true);setCheckDish(!namedDish && typeof result.check_dish === "string" ? result.check_dish : "");
         if (requestId !== photoRequest.current) return;
         const grams = Math.round(result.components.reduce((sum, item) => sum + item.quantity_g, 0));
         setAiOriginal(Number.isFinite(result.total_nutrition.calories) && grams > 0 ? { calories: Math.round(result.total_nutrition.calories), grams } : null);
@@ -789,6 +789,7 @@ function Workspace({initialTab}:{initialTab:AppTab}) {
                     </span>
                     <h2 id="scan-result-title" className="text-2xl font-bold text-white mt-1">{t(scanResult.foodName)}</h2>
                     {scanSource === "photo" && pendingPhoto && <div className="dish-fix" role="group" aria-label={t("Correct the dish")}>
+                      {checkDish && <p className="dish-check" role="alert">{t("This photo may be {dish}. Please check, and tap the right dish below.", { dish: checkDish })}</p>}
                       {photoOffline && <p className="dish-offline" role="status">{t("The AI is busy, so the dish was recognised without it. Calories are for a typical portion: check the grams before saving.")}</p>}
                       <span>{t("Not right? Pick or type the dish:")}</span>
                       <div className="dish-fix-options">{dishOptions.map(name => <button key={name} type="button" disabled={isScanning} onClick={() => void processPhoto(pendingPhoto, name)}>{name}</button>)}</div>

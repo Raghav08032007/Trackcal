@@ -65,7 +65,7 @@ def _text_embeddings():
 
 def _load():
     with _lock:
-        if not _state:
+        if "vision" not in _state:
             _state["vision"] = _session("vision_model_quantized")
             _state["dishes"] = _text_embeddings()
     return _state
@@ -211,3 +211,24 @@ def offline_meal(image_bytes: bytes, lookup, picks=None):
             "calories": per["calories"] * f, "protein_g": per["protein_g"] * f, "carbs_g": per["carbs_g"] * f, "fat_g": per["fat_g"] * f,
             "confidence": round(min(.6, picks[0]["confidence"]), 2), "nutrition_source": per.get("source") or "TrackCal catalog"}
     return {"dish_name": name, "dish_alternatives": [p["name"] for p in picks[1:4]], "components": [item]}
+
+
+NON_VEG = re.compile(r"\b(mutton|lamb|goat|chicken|egg|eggs|omelette|fish|prawn|prawns|shrimp|crab|beef|pork|meat|keema|"
+                     r"shawarma|steak|kabsa|rogan josh)\b", re.I)  # ambiguous words (tikka, kebab, burger) are not enough
+VEG_WORDS = re.compile(r"\b(veg|vegetable|vegetarian|paneer|dal|pulao|jeera|plain)\b", re.I)
+
+
+def is_non_veg(name: str):
+    """True for a meat, fish or egg dish, False for a clearly vegetarian name, None when the name doesn't say."""
+    if NON_VEG.search(name):
+        return True
+    return False if VEG_WORDS.search(name) else None
+
+
+def disagreement(dish: str, picks: list, floor: float = 0.45):
+    """The classifier's dish when it is confident and disagrees with the AI on vegetarian vs non-vegetarian (the
+    'mutton biryani read as vegetable pulao' mistake), else None."""
+    if not picks or picks[0].get("confidence", 0) < floor:
+        return None
+    mine, theirs = is_non_veg(picks[0]["name"]), is_non_veg(dish)
+    return picks[0]["name"] if mine is not None and theirs is not None and mine != theirs else None

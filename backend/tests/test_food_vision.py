@@ -44,8 +44,8 @@ def test_the_classifier_adds_its_picks_to_the_ai_corrections(internet, classifie
     _, replies = internet
     replies.append(model_reply(json.dumps({"dish_name": "Vegetable pulao", "dish_alternatives": ["Jeera rice"], "components": [ITEM]})))
     body = post(browser(), "/api/analyze", {"image": phone_photo()}).get_json()
-    assert body["dish_name"] == "Vegetable pulao"
-    assert body["alternatives"] == ["Jeera rice", "Mutton biryani", "Chicken biryani"]
+    assert body["dish_name"] == "Vegetable pulao" and body["check_dish"] == "Mutton biryani"  # confident veg/non-veg conflict
+    assert body["alternatives"] == ["Mutton biryani", "Jeera rice", "Chicken biryani"]
     assert body["photo_match"][0]["name"] == "Mutton biryani"
 
 
@@ -74,3 +74,46 @@ def test_the_daily_ai_limit_still_gets_a_free_classifier_answer(internet, classi
     response = post(browser(), "/api/analyze", {"image": phone_photo()})
     assert response.status_code == 200 and response.get_json()["offline"] is True and not calls
     assert post(browser(), "/api/analyze", {"text": "Egg"}).status_code == 429  # text still needs the AI
+
+
+def test_veg_and_non_veg_names_are_told_apart():
+    assert food_vision.is_non_veg("Mutton biryani") is True and food_vision.is_non_veg("Egg fried rice") is True
+    assert food_vision.is_non_veg("Vegetable pulao") is False and food_vision.is_non_veg("Paneer tikka") is False
+    assert food_vision.is_non_veg("Masala dosa") is None
+
+
+def test_a_confident_veg_non_veg_conflict_asks_the_person(internet, classifier):
+    _, replies = internet
+    replies.append(model_reply(json.dumps({"dish_name": "Vegetable pulao", "dish_alternatives": ["Jeera rice", "Chicken biryani"], "components": [ITEM]})))
+    body = post(browser(), "/api/analyze", {"image": phone_photo()}).get_json()
+    assert body["check_dish"] == "Mutton biryani" and body["alternatives"][0] == "Mutton biryani"
+    assert body["alternatives"].count("Chicken biryani") == 1
+
+
+def test_agreement_or_an_unsure_classifier_does_not_interrupt(internet, classifier, monkeypatch):
+    _, replies = internet
+    replies.append(model_reply(json.dumps({"dish_name": "Chicken biryani", "components": [ITEM]})))
+    assert "check_dish" not in post(browser(), "/api/analyze", {"image": phone_photo()}).get_json()
+    monkeypatch.setattr(food_vision, "suggest", lambda raw, top=4: [{"name": "Mutton biryani", "confidence": 0.3}])
+    replies.append(model_reply(json.dumps({"dish_name": "Vegetable pulao", "components": [ITEM]})))
+    assert "check_dish" not in post(browser(), "/api/analyze", {"image": phone_photo()}).get_json()
+
+
+def test_a_backup_provider_answers_when_openrouter_fails(internet, monkeypatch):
+    from tests.test_web_gateway import Fake
+    monkeypatch.setenv("AI_BACKUP_URL", "https://backup.example/v1/chat/completions")
+    monkeypatch.setenv("AI_BACKUP_KEY", "backup-key"); monkeypatch.setenv("AI_BACKUP_MODEL", "backup-vision")
+    calls, replies = internet
+    replies += [Fake(429), model_reply(json.dumps({"dish_name": "Idli", "components": [ITEM]}))]
+    body = post(browser(), "/api/analyze", {"image": phone_photo()}).get_json()
+    assert body["dish_name"] == "Idli" and body["model"] == "backup-vision"
+    assert calls[1]["url"] == "https://backup.example/v1/chat/completions" and calls[1]["json"]["model"] == "backup-vision"
+    assert calls[1]["headers"]["Authorization"] == "Bearer backup-key"
+
+
+def test_without_a_backup_the_rate_limit_message_stays(internet):
+    from tests.test_web_gateway import Fake
+    _, replies = internet
+    replies.append(Fake(429))
+    response = post(browser(), "/api/analyze", {"image": phone_photo()})
+    assert response.status_code == 429 and "rate limit" in response.get_json()["error"]
