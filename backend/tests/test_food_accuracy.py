@@ -12,8 +12,9 @@ import pytest
 import database
 import models
 from services.food_search import search
+from tests.food_bench import BENCH  # 188 everyday foods, by group
 
-BENCH = [  # group, typed, name pattern, kcal per 100 g, first portion grams (or None)
+CORE = [  # must all pass: the everyday foods people log most  # group, typed, name pattern, kcal per 100 g, first portion grams (or None)
     ('grains', 'rice', r'rice, cooked', (100, 160), (100, 300)),
     ('grains', 'boiled rice', r'rice, cooked', (100, 160), (100, 300)),
     ('grains', 'roti', r'roti / chapati', (220, 320), (30, 60)),
@@ -51,6 +52,7 @@ BENCH = [  # group, typed, name pattern, kcal per 100 g, first portion grams (or
 ]
 
 
+
 @pytest.fixture(scope='module')
 def db():
     with database.SessionLocal() as session:
@@ -70,10 +72,22 @@ def check(db, typed, pattern, kcal, portion):
 
 
 def test_everyday_foods_are_found_with_the_right_calories_and_portions(db):
+    misses = []
+    for group, typed, pattern, kcal, portion in CORE:
+        verdict, top = check(db, typed, pattern, kcal, portion)
+        if verdict != 'ok': misses.append(f"{typed}: {verdict} ({top['name']} {top['calories']} kcal)" if top else f'{typed}: {verdict}')
+    assert not misses, misses
+
+
+def test_the_wider_food_bench_scores_at_least_90(db):
+    """188 foods across 13 groups. A smaller catalog (the test database has IFCT and a USDA sample) lacks some foods,
+    so the bar is a score, and the misses are printed (pytest -s) to show what to fix next."""
     groups, misses = {}, []
     for group, typed, pattern, kcal, portion in BENCH:
         verdict, top = check(db, typed, pattern, kcal, portion)
         groups.setdefault(group, []).append(verdict == 'ok')
-        if verdict != 'ok': misses.append(f"{typed}: {verdict} ({top['name']} {top['calories']} kcal)" if top else f'{typed}: {verdict}')
-    for group, oks in groups.items(): print(f'{group:8} {round(100 * sum(oks) / len(oks)):3d}/100  ({sum(oks)}/{len(oks)})')
-    assert not misses, misses
+        if verdict != 'ok': misses.append(f"{group}/{typed}: {verdict} ({top['name']} {top['calories']} kcal)" if top else f'{group}/{typed}: {verdict}')
+    for group, oks in groups.items(): print(f'{group:12} {round(100 * sum(oks) / len(oks)):3d}/100  ({sum(oks)}/{len(oks)})')
+    score = round(100 * sum(sum(o) for o in groups.values()) / len(BENCH))
+    print(f'total {score}/100;', 'misses:', misses)
+    assert score >= 90, (score, misses)

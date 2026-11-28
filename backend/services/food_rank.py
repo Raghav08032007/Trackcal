@@ -8,7 +8,9 @@ spelling-variant form (search_synonyms: idly -> idli, ragi -> finger millet). Th
   - every typed word present;
   - a cooking word that was typed (boiled, roasted...) must be in the name; with none typed, the plain raw food is preferred;
   - processed variants (dried, powder, oil, juice, canned, fried, "fat added", glutinous...) rank below the plain food unless asked for;
-  - shorter, plainer names win ties; verified catalog values win over unverified ones.
+  - shorter, plainer names win ties; verified catalog values win over unverified ones;
+  - between equally good matches, IFCT foods and TrackCal recipes (Indian values, Indian portions) win over USDA's versions
+    of the same dish ("Upma" from USDA's survey foods is 87 kcal per 100 g; the IFCT-based recipe is the one people mean).
 """
 from __future__ import annotations
 
@@ -27,7 +29,7 @@ VARIANT = {'dried', 'dehydrated', 'powder', 'powdered', 'oil', 'flour', 'juice',
            'stuffed', 'breaded', 'paste', 'chips', 'pickle', 'pickled', 'desiccated', 'imitation', 'substitute', 'formula', 'drink', 'beverage',
            'dessert', 'frosted', 'pie', 'cake', 'cookie', 'candy', 'farmer', 'farmers', 'paneer', 'paratha', 'curry', 'masala', 'cup',
            'light', 'ready', 'heat', 'ns', 'sliced', 'butter', 'margarine', 'made', 'duck', 'goose', 'quail', 'emu', 'ostrich', 'deli', 'luncheon', 'nonfat', 'lowfat', 'reduced', 'lite', 'turkey',
-           'quial', 'yolk'}   # 'quial': IFCT's spelling of quail
+           'quial', 'yolk', 'dry'}   # 'quial': IFCT's spelling of quail
 COOKING = {'cooked', 'boiled', 'baked', 'roasted', 'fried', 'steamed', 'grilled', 'raw', 'fresh', 'roast', 'boil'}
 POOL = 400
 # Foods people eat cooked, never as bought: with no cooking word typed, the cooked food is the one they mean
@@ -39,7 +41,7 @@ COOKED_WORDS = {'cooked', 'boiled', 'steamed', 'baked', 'roasted', 'grilled', 'c
 
 def rank_columns():
     """Only what ranking reads: id, name, normalised name and whether the values are verified."""
-    return load_only(models.Food.id, models.Food.name, models.Food.name_normalized, models.Food.is_verified, models.Food.external_id)
+    return load_only(models.Food.id, models.Food.name, models.Food.name_normalized, models.Food.is_verified, models.Food.external_id, models.Food.data_source)
 
 
 def canonical_term(db, query):
@@ -115,7 +117,8 @@ def relevance(food, phrase, words, alias_names, favourite=False, recent=False):
     if name == phrase or parts[0] == phrase:
         s += 120
     elif phrase in aliases:
-        s += 110
+        # An Indian everyday name ("dal", "chai", "sugar") on an IFCT food or TrackCal recipe is as exact as a name.
+        s += 120 if getattr(food, 'data_source', None) == models.NutritionDataSource.ifct else 110
     elif words and {stem(w) for w in words} <= {stem(c) for c in core} and len(core) <= len(words) + 2:
         s += 95                                        # "Milk, whole" for "whole milk", "Egg, white, raw" for "egg white"
     elif re.match(re.escape(phrase) + r'\b', name):
@@ -124,6 +127,8 @@ def relevance(food, phrase, words, alias_names, favourite=False, recent=False):
         s += 60
     matched = sum(1 for w in words if any(t.startswith(stem(w)) for t in name_words) or any(w in a for a in aliases))
     s += 15 * matched + (25 if words and matched == len(words) else 0)
+    if words and all(any(t.startswith(stem(w)) for t in name_words) for w in words):
+        s += 6                                         # in the name itself, not only a local nickname (IFCT calls pomfret "halwa")
     asked = {w for w in words if w in COOKING}
     for w in asked:
         s += 20 if any(t.startswith(w[:4]) for t in name_words) else -12
@@ -145,6 +150,8 @@ def relevance(food, phrase, words, alias_names, favourite=False, recent=False):
     s -= .02 * len(name)
     if food.is_verified:
         s += 5
+    if getattr(food, 'data_source', None) == models.NutritionDataSource.ifct:
+        s += 6                                         # Indian values and portions break ties with USDA's version of a dish
     return s
 
 

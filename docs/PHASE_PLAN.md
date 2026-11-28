@@ -28,6 +28,20 @@ Scores are out of 100. "Now" is what we measured on 27–28 November 2026.
 
 **Better than:** Cal AI and HealthifyMe publish no Indian-dish accuracy. We publish ours (see Phase 20).
 
+**Progress (28 November 2026)**
+
+| Done | Measured |
+|---|---|
+| Veg/non-veg guard (AI and local classifier disagree: the person confirms) | Caught the one real meat/veg mistake in 36 bench photos; 1 false alarm |
+| Local classifier picks added to the one-tap fixes; offline answer when the AI fails | Right dish in the fixes 83% (was 81%); 5/5 photos answered with the AI down |
+| Optional backup AI provider (Groq, Gemini or any OpenAI-compatible API) | Tested |
+| Food search test grown from 34 to 188 foods in 13 groups (tests/food_bench.py) | Test catalog 71 → 93/100; full catalog 77 → 85/100 with the new ranking alone, more after the update below |
+| 18 missing everyday dishes added as IFCT-calculated recipes (rava dosa, pav, pav bhaji, daliya, kachori, murukku, rasmalai, jalebi, pani puri, bhel puri, vada pav, dum aloo, aloo matar, sarson ka saag, roasted chana, banana chips, popcorn, kaju katli) | Recipe checks pass |
+| Ranking: Indian values win ties with USDA's versions of Indian dishes; a food named with the typed word beats a local nickname | "upma" no longer 87 kcal (USDA), "halwa" no longer a fish |
+
+Still missing from the catalog: toned milk, makhana (roasted fox nut). Waiting on your data: meal photos, weighed meals, exercise videos.
+
+
 ---
 
 ## Phase 2: Yoga, breathing and meditation with posture scoring (your idea; no competitor has all of it)
